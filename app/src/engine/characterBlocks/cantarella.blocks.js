@@ -24,6 +24,26 @@
 // already accurate; converting to resource-threshold would add no real precision here, only risk
 // (see Buling's Trigram-gauge note for the double-fire class that conversion can introduce when done
 // without a genuine need).
+//
+// Completeness pass 2026-09-07 (next character after Camellya, alphabetically, same "bring every
+// character up to Aalto's reference standard" direction): Minor Fortes (Crit Rate+8%, ATK%+12%,
+// Data dump/Cantarella/Cantarella.md line 128) and Inherent Skill Cure (Healing Bonus+20%) had no
+// block at all. Also added her whole base kit and Mirage-state siblings that had real
+// SKILL_MULTIPLIERS rows but no block anywhere — Heavy ATK Standard, Mid-air Plunging Attack, Dodge
+// Counter Standard, Forte Abysmal Vortex (Mirage's Mid-air replacement), Forte Shadowy Sweep
+// (Mirage's Dodge Counter replacement), Intro Tidal Surge (Mirage's Intro replacement, the dump's
+// own Review says "essentially never realistically used"), and Skill Jolt (the Hazy Dream auto-proc
+// hit, already flagged inert in cantarella.skill.flickering-reverie's and cantarella.chain.s2's own
+// notes but never actually given a block) — none of these appear in CHARACTER_ROTATIONS['Cantarella']
+// (her real rotation never touches base kit or these Mirage siblings), same "documented gap" status
+// as Aalto's/Augusta's/Camellya's own inert blocks. Dodge Counter Standard and Shadowy Sweep are both
+// basicDmg per the dump's own "Dodge Counter: Basic Attack after successful Dodge" text (Shadowy
+// Sweep takes over that same Dodge-Counter-as-basic-attack role in Mirage); Mid-air Plunging Attack
+// and Abysmal Vortex (its Mirage sibling) are basicDmg per this schema's established convention for
+// mid-air attacks with no explicit "considered Heavy Attack DMG" override (same precedent as Aalto's/
+// Camellya's own mid-air blocks); Heavy ATK Standard has no override text and keeps heavyDmg; Jolt is
+// basicDmg per its own explicit "considered Basic Attack DMG" kit text; Tidal Surge carries no
+// category, matching every other Intro/Outro block in this file (excluded from dmgFocus routing).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -154,6 +174,67 @@ export const CANTARELLA_BLOCKS = [
     note: 'Considered Basic ATK DMG per its own kit text and also counted as an Echo Skill cast. Also heals the team and re-applies Hazy Dream — not modeled (no DPS component).',
   },
 
+  // Added 2026-09-07 (completeness pass): her base kit and Mirage-state siblings, previously entirely
+  // absent — real, sourced SKILL_MULTIPLIERS rows, none in CHARACTER_ROTATIONS (see file header).
+  {
+    id: 'cantarella.heavy.standard',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('57.18%×2'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Base Heavy Attack, replaced by Delusive Dive once Trance is capped. No "considered X DMG" override text — kept heavyDmg. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'cantarella.midair.plunging-attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Plunging Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('41.99%+62.99%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Mid-air Attack. No explicit override text — kept basicDmg per this schema\'s established convention for mid-air attacks with no override (same precedent as Aalto\'s/Camellya\'s own mid-air blocks). Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'cantarella.basic.dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('53.01%×4'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Dodge Counter — the dump\'s own text calls it a Basic Attack variant explicitly ("Basic Attack after successful Dodge, Havoc DMG"), hence basicDmg. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'cantarella.forte.abysmal-vortex',
+    source: SOURCE, kind: 'damage', section: 'Forte',
+    trigger: { type: 'cast', on: 'Forte:Abysmal Vortex' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('41.99%+62.99%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Mirage-state Mid-air Attack replacement, same basicDmg convention as base Mid-air. Hitting also consumes 1 Trance for 1 Shiver + team heal (not modeled, no DPS component). Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'cantarella.forte.shadowy-sweep',
+    source: SOURCE, kind: 'damage', section: 'Forte',
+    trigger: { type: 'cast', on: 'Forte:Shadowy Sweep' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('75.09%×3'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Mirage-state Dodge Counter replacement, basicDmg per the same "Dodge Counter is a Basic Attack variant" text as base Dodge Counter. Basic Attack right after casts Phantom Sting Stage 2 (not separately modeled). Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'cantarella.intro.tidal-surge',
+    source: SOURCE, kind: 'damage', section: 'Intro',
+    trigger: { type: 'cast', on: 'Intro:Tidal Surge' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    // No category — Intro/Outro excluded from calcEngine.js's dmgFocus-routing buckets, same as
+    // cantarella.intro.ripple above and every other converted character's Intro/Outro block.
+    damage: { hits: parseSkillMultiplierHits('16.90%×3+118.30%'), basis: 'ATK' },
+    note: 'Mirage-state Intro replacement, resets the Phantom Sting combo. Not in CHARACTER_ROTATIONS: the dump\'s own Review says this variant is "essentially never realistically used" (no benefit over the normal Ripple cast) — a sourced reason, not an oversight.',
+  },
+  {
+    id: 'cantarella.skill.jolt',
+    source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Jolt' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('198.81%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Hazy Dream\'s auto-proc follow-up hit, considered Basic Attack DMG per its own kit text — real, sourced, but a genuine proc-only auto-trigger with no CHARACTER_ROTATIONS step to anchor it (already flagged inert in cantarella.skill.flickering-reverie\'s and cantarella.chain.s2\'s own notes); this block gives the real number a home even though it never fires in the modeled rotation.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'cantarella.outro.gentle-tentacles',
@@ -179,6 +260,30 @@ export const CANTARELLA_BLOCKS = [
     effects: [{ stat: 'elemDmg', value: 6, stacking: 'stacking', maxStacks: 2, source: 'self-kit' }],
     note: 'Inherent Skill Poison: +6% Havoc DMG Bonus per Echo Skill cast, stacks up to 2x (12% cap) — modeled as per-stack 6% x2, matching the real stacking mechanic rather than a flat 12%. No Echo Skill cast step exists in CHARACTER_ROTATIONS to anchor the trigger precisely, kept passive per the source table\'s own condition text.',
   },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere
+  // in this file, same class of gap as every other converted character's own missing Minor Fortes.
+  {
+    id: 'cantarella.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Cantarella/Cantarella.md line 128). Unconditional, always active.',
+  },
+  // Added 2026-09-07 (completeness pass): her other Inherent Skill, Cure, previously not referenced
+  // anywhere in this file — real, sourced, kind:'utility' with effects:[] since Healing Bonus has no
+  // representable DPS stat in this schema, same pattern as Aalto's/Augusta's own inert Inherent
+  // Skill blocks.
+  {
+    id: 'cantarella.inherent.cure',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Cure — Healing Bonus +20%. Purely a healing-power stat, no DPS component to model.',
+  },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
   //    each node's real mechanic; S4/S5 correctly have NO block — heal-only / hit-count-cap-only,
@@ -200,12 +305,19 @@ export const CANTARELLA_BLOCKS = [
     note: "Real scope: Graceful Step / Flickering Reverie / Perception Drain's own DMG Multiplier +50% ONLY (mixed Skill+Forte-that-counts-as-Basic-ATK scope, doesn't cleanly map to one existing stat category — kept as totalMult per the audit comment's own reasoning, now correctly scoped to just those 3 blocks). Also grants 1 Resonance Skill cast Trance recovery and Perception Drain interrupt immunity, both utility, not modeled.",
   },
   {
+    // Scoped 2026-09-07 (found while wiring cantarella.skill.jolt above): was unscoped totalMult:245 —
+    // NOT actually inert like the prior note assumed. totalMult applies unconditionally to EVERY hit
+    // regardless of category (the same mechanism Augusta's/Camellya's own chain-scoping fixes document),
+    // so this was silently over-crediting Cantarella's ENTIRE kit (every Basic/Heavy/Skill/Forte/
+    // Liberation block) a flat +245% multiplier this whole time — a real, live bug, not a "no block to
+    // apply to" no-op. Now scoped via scopedToBlockId to only cantarella.skill.jolt, matching the same
+    // multi-block-scoping pattern already used on this file's own S1/S3/S6 nodes.
     id: 'cantarella.chain.s2',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 245, source: 'self-kit' }],
-    note: "Jolt's own DMG Multiplier +245%. Jolt itself is a proc-only auto-trigger not anchored to a CHARACTER_ROTATIONS step (see cantarella.skill.flickering-reverie note), so this buff has no block to apply to in the current rotation simulation — recorded faithfully anyway per the audit's real value, same documented-but-currently-inert pattern as Buling's S6/libBuff overlap.",
+    effects: [{ stat: 'totalMult', value: 245, scopedToBlockId: 'cantarella.skill.jolt', source: 'self-kit' }],
+    note: "Jolt's own DMG Multiplier +245% — scoped to cantarella.skill.jolt only. Jolt is a proc-only auto-trigger with no CHARACTER_ROTATIONS step to anchor it (see cantarella.skill.jolt's own note), so this remains currently inert in the modeled rotation, but correctly scoped rather than silently boosting unrelated hits.",
   },
   {
     // stat fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was `libDmg`, matching the

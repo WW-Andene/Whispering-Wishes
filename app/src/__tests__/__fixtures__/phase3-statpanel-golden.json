@@ -56,11 +56,11 @@
     "score": 1593
   },
   "Cantarella": {
-    "effAtk": 1008,
-    "avgCrit": 1.061,
+    "effAtk": 1116,
+    "avgCrit": 1.1586,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 825
+    "score": 998
   },
   "Carlotta": {
     "effAtk": 1079,
