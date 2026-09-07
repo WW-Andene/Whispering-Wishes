@@ -7816,6 +7816,7 @@ const SKILL_ICONS = {
   // (same as Changli/Camellya's).
   'Brant': {
     "Captain's Rhapsody": './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Stage 1-4': './characters/_shared/x86mmjbD-skill-sword.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row, same generic weapon icon — was NULL, which also cascaded into the Mid-air/Heavy-ATK aux-move fallback (both derive from this row)
     'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Rhapsodic Riff': './characters/_shared/x86mmjbD-skill-sword.webp', // Basic ATK-chained Heavy ATK, same generic weapon icon
     'Stage 2-3 + Charged Attack + Flip': './characters/_shared/x86mmjbD-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same generic weapon icon
