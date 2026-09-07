@@ -20,7 +20,15 @@
 /**
  * @typedef {Object} PriorityRule
  * @property {string} id             Unique rule id (for debugging/tests).
- * @property {{type: string, skill: string}} step  The rotation step this rule produces when fired.
+ * @property {{type: string, skill: string}} [step]  The rotation step this rule produces when
+ *   fired — a fixed object, for a rule whose step never needs data from the current state. Mutually
+ *   exclusive with `buildStep` below (a rule provides exactly one of the two).
+ * @property {(state: Object) => {type: string, skill: string}} [buildStep]  Self-kit
+ *   cross-interaction support (2026-09-07): builds the step from the CURRENT state, called BEFORE
+ *   `apply()` mutates it — for a real per-cast value that depends on live resource state at the
+ *   moment of casting (e.g. Hiyuki's Blade Liberation carrying exactly how many Snowforged Blade
+ *   stacks she's actually banked this rotation, via a `snowforgedBladeConsumed` extra field the
+ *   damage block's own `hit.perStepUnit` reads — see hiyuki.blocks.js/resolveHitComposedDps.js).
  * @property {(state: Object) => boolean} condition  Whether this rule can fire given current state.
  * @property {(state: Object) => void} apply  Mutates state in place to reflect the step happening
  *   (resource gains/costs, stance transitions, counters) — same real numbers the character's own
@@ -46,8 +54,9 @@ export function runDecisionRotation(initialState, rules, maxSteps = 200) {
   for (let i = 0; i < maxSteps; i++) {
     const rule = rules.find(r => r.condition(state));
     if (!rule) break;
+    const step = rule.buildStep ? rule.buildStep(state) : rule.step;
     rule.apply(state);
-    steps.push(rule.step);
+    steps.push(step);
     firedRuleIds.push(rule.id);
   }
 

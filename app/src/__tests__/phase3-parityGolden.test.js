@@ -31,6 +31,7 @@ import { ECHO_SETS } from '../data/echoes.js';
 import { applyFullEchoSet, getWeaponPv } from '../features/teams/calcEngine.js';
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
+import { deriveRotationFromKitRules } from '../engine/resolver/decision/kitRulesRegistry.js';
 import { PARITY_CHARACTERS } from './phase3-parityCharacterList.js';
 import GOLDEN from './__fixtures__/phase3-parity-golden.json';
 import STATPANEL_GOLDEN from './__fixtures__/phase3-statpanel-golden.json';
@@ -275,7 +276,14 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: legacy and modern DPS match their golden snapshot, and agree with each other unless a documented divergence`, () => {
       const d = CHARACTER_DATA[name];
-      const rotation = CHARACTER_ROTATIONS[name];
+      const curatedRotation = CHARACTER_ROTATIONS[name];
+      // For a character with real registered decision-layer kit rules (currently Hiyuki/Lucilla —
+      // see kitRulesRegistry.js), derive her rotation from live resource state, matching exactly
+      // what calcTeamStats.js's own real RAW-tier branch does — otherwise this test's own "engine"
+      // path would silently diverge from what the actual calculator computes (e.g. Hiyuki's Blade
+      // Liberation self-kit Snowforged Blade scaling, only present on the decision-engine-derived
+      // rotation's own extra step field, not on the plain curated array).
+      const rotation = deriveRotationFromKitRules(name, curatedRotation) || curatedRotation;
       const blocks = BLOCKS_BY_NAME[name];
       const golden = GOLDEN[name];
       expect(blocks, `no blocks loaded for ${name}`).toBeTruthy();

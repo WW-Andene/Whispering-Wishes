@@ -11,15 +11,15 @@ describe('kitRulesRegistry — deriveRotationFromKitRules', () => {
   it('derives Hiyuki\'s real rotation from her decision layer, plus the curated Echo/Outro tail her state machine does not model', () => {
     const derived = deriveRotationFromKitRules('Hiyuki', CHARACTER_ROTATIONS['Hiyuki']);
     expect(derived).not.toBeNull();
-    // Byte-identical to the curated rotation for the proven solo case — this is the "adaptability
-    // without discarding proven-good data" guarantee: the SOURCE changed (live resource state
-    // instead of hand-transcribed prose), the OUTPUT for this scenario did not.
+    // Same {type, skill} sequence as the curated rotation for the proven solo case — this is the
+    // "adaptability without discarding proven-good data" guarantee: the SOURCE changed (live
+    // resource state instead of hand-transcribed prose), the step SEQUENCE for this scenario did
+    // not. The blade-liberation step also carries a real `snowforgedBladeConsumed` extra field
+    // (self-kit cross-interaction pass) curated steps don't have, checked separately below.
     const curated = CHARACTER_ROTATIONS['Hiyuki'];
-    const expected = [
-      ...curated.slice(0, 11).map(s => ({ type: s.type, skill: s.skill })),
-      ...curated.slice(11), // Echo/Outro tail, passed through with its real note/duration fields intact
-    ];
-    expect(derived).toEqual(expected);
+    expect(derived.slice(0, 11).map(s => ({ type: s.type, skill: s.skill }))).toEqual(curated.slice(0, 11).map(s => ({ type: s.type, skill: s.skill })));
+    expect(derived.slice(11)).toEqual(curated.slice(11)); // Echo/Outro tail, passed through with its real note/duration fields intact
+    expect(derived.find(s => s.skill === 'Foreclaiming: Blade Liberation').snowforgedBladeConsumed).toBe(1);
   });
 
   it('derives Lucilla\'s real rotation from her decision layer, plus the curated Echo/Outro tail her state machine does not model', () => {

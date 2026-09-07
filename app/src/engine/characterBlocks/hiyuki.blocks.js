@@ -153,8 +153,24 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Foreclaiming: Blade Liberation' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.81%+795.24%'), category: 'libDmg', basis: 'ATK' },
-    note: '2nd Ultimate; base value used. Real DMG also scales +795.24% additional per Snowforged Blade stack consumed (up to 3 stacks, +2385.72% max) — not modeled (no stacking-scalar field for a per-resource-unit damage bonus). Ends Foreclaimed Self.',
+    // Self-kit cross-interaction (2026-09-07): the real +795.24% total bonus (up to 3 Snowforged
+    // Blade stacks, so 795.24/3 = 265.08% per stack — the source's own total divided evenly across
+    // its own stated cap, not an invented per-stack figure) now reads the REAL stack count off this
+    // specific cast's own `snowforgedBladeConsumed` step field, set by hiyuki.kitRules.js's
+    // blade-liberation rule from her actual accumulated Snowforged Blade resource at the moment of
+    // cast — not a fabricated max-stacks assumption. Previously modeled at the flat base value only
+    // ("no stacking-scalar field for a per-resource-unit damage bonus"); resolveHitComposedDps.js/
+    // resolveHitComposedTeamDps.js's new `hit.perStepUnit`/`hit.atkPctPerUnit` support (same pass) is
+    // what makes this representable now. A rotation that only ever banks 1 stack (the curated case —
+    // only 1 Bitterfrost cast happens) correctly scales less than a hypothetical full-3-stack cast.
+    damage: {
+      hits: [
+        { atkPct: 198.81 },
+        { atkPct: 0, perStepUnit: 'snowforgedBladeConsumed', atkPctPerUnit: 265.08 },
+      ],
+      category: 'libDmg', basis: 'ATK',
+    },
+    note: "2nd Ultimate. Real DMG scales +795.24% additional across up to 3 Snowforged Blade stacks consumed (265.08%/stack), now read from her own real accumulated resource state at cast time (see this block's own header comment) rather than a fixed base value or a fabricated max. Ends Foreclaimed Self.",
   },
 
   // Added 2026-09-07 (full-kit completeness re-pass): 8 real, sourced SKILL_MULTIPLIERS rows with no

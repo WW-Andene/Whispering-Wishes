@@ -187,9 +187,13 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       // see its own comment on this exact line for the full writeup): applied as its own
       // multiplicative factor, matching legacy calcTeamStats.js's `mult * (1 + seqTotalMultBonus/100)`
       // pattern.
-      const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
+      // `hit.perStepUnit`/`hit.atkPctPerUnit` — see resolveHitComposedDps.js's identical comment
+      // (self-kit cross-interaction pass, 2026-09-07): a real per-resource-unit scaling bonus read
+      // off this specific step's own extra field, not a fabricated max-stacks assumption.
+      const perUnitAtkPct = hit.perStepUnit ? (hit.atkPctPerUnit || 0) * (r.step?.[hit.perStepUnit] || 0) : 0;
+      const damage = (effBase * ((hit.atkPct + perUnitAtkPct) / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
       totalDamage += damage;
-      hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
+      hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct + perUnitAtkPct, damage, category });
     }
   }
 

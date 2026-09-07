@@ -110,8 +110,14 @@ export const HIYUKI_PRIORITY_RULES = [
   },
   {
     id: 'blade-liberation',
-    step: { type: 'Liberation', skill: 'Foreclaiming: Blade Liberation' },
+    // Self-kit cross-interaction (2026-09-07): "press-release consumes all 3 Snowforged Blade
+    // stacks if present" (dump line 67) — buildStep() reads her REAL accumulated snowforgedBlade
+    // count at this exact moment (before apply() below would spend it), so
+    // hiyuki.liberation.foreclaiming-blade-liberation's own perStepUnit scaling gets the actual
+    // banked amount, not a fabricated max. This modeled rotation only ever reaches 1 stack (a
+    // single Bitterfrost cast) — a real, sourced, less-than-maximum value, not an approximation.
+    buildStep: s => ({ type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', snowforgedBladeConsumed: s.snowforgedBlade }),
     condition: s => s.bitterfrostCast && !s.bladeLiberationCast,
-    apply: s => { s.bladeLiberationCast = true; s.inForeclaimedSelf = false; },
+    apply: s => { s.bladeLiberationCast = true; s.inForeclaimedSelf = false; s.snowforgedBlade = 0; },
   },
 ];

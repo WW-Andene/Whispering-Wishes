@@ -252,9 +252,18 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
         // the crit/dmgBonus/defMult/resMult chain, matching legacy calcTeamStats.js's own
         // `mult * (1 + seqTotalMultBonus/100)` pattern (the flat-tier totalMult% is itself always a
         // separate multiplicative factor from dmgBonus, never summed into it).
-        const damage = (effBase * (hit.atkPct / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
+        // `hit.perStepUnit`/`hit.atkPctPerUnit` (2026-09-07, self-kit cross-interaction pass): a
+        // real per-resource-unit scaling bonus some kit text carries (e.g. Hiyuki's Blade
+        // Liberation, "+795.24% additional per Snowforged Blade stack consumed, up to 3 stacks") —
+        // previously undepresentable ("no stacking-scalar field for a per-resource-unit damage
+        // bonus"). Reads the REAL count off this specific step's own extra field (set by whichever
+        // decision-layer kit rule emitted it — see hiyuki.kitRules.js's own blade-liberation rule),
+        // not a fabricated max-stacks assumption, so a rotation that only ever banked 1 stack (the
+        // curated case) correctly scales less than a hypothetical 3-stack cast would.
+        const perUnitAtkPct = hit.perStepUnit ? (hit.atkPctPerUnit || 0) * (r.step?.[hit.perStepUnit] || 0) : 0;
+        const damage = (effBase * ((hit.atkPct + perUnitAtkPct) / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
         totalDamage += damage;
-        hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct, damage, category });
+        hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct + perUnitAtkPct, damage, category });
       }
     }
   }

@@ -596,7 +596,13 @@ export function deriveStepsFromRotation(rotation, blocks, stepSeconds = DEFAULT_
   const ownOutroBlock = blocks.find(b => b.trigger.type === 'swap-out');
 
   return rotation.map((raw, i) => {
-    const step = { type: raw.type, skill: raw.skill, stepSeconds };
+    // Spread `raw` FIRST (self-kit cross-interaction pass, 2026-09-07): preserves any extra,
+    // decision-layer-only fields a step carries beyond {type, skill} — e.g. Hiyuki's
+    // `snowforgedBladeConsumed` (see hiyuki.kitRules.js/hiyuki.blocks.js's own comments) — so a
+    // block's `hit.perStepUnit` can still read them downstream. Every field this function itself
+    // computes below (stepSeconds, isSwapIn, etc.) still overrides `raw`'s own value if present,
+    // same behavior as before this change for every existing (no-extra-fields) rotation.
+    const step = { ...raw, type: raw.type, skill: raw.skill, stepSeconds };
     const label = raw.type && raw.skill ? `${raw.type}:${raw.skill}` : null;
 
     if (i === 0 && raw.type === 'Intro') step.isSwapIn = true;
