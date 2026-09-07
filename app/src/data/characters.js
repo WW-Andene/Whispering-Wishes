@@ -8396,6 +8396,7 @@ const SKILL_ICONS = {
   // Resonance Skill row on the wiki, with no separate per-variant icon files uploaded.
   'Youhu': {
     'Frosty Punches': './characters/_shared/QvdmVfvF-Skill-Gauntlets.webp',
+    'Frostfall': './characters/_shared/QvdmVfvF-Skill-Gauntlets.webp', // base Heavy Attack at full Frost, no dedicated icon
     'Scroll Divination': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
     'Chime': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
     'Ruyi': './characters/youhu/Z66ZH20V-Skill-Scroll-Divination.webp',
