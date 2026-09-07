@@ -8029,6 +8029,12 @@ const SKILL_ICONS = {
   // Source: the wiki Skill_*.png assets for Galbrena, re-hosted on ibb.co (2026-08-17).
   'Galbrena': {
     "Slayer's Trigger": './characters/_shared/8gYdwYCF-skill-pistols.webp', // Basic ATK — generic Pistols icon (the wiki's own File:Skill_Slayer's_Trigger.png resolves to this same asset)
+    'Basic Attack Stage': './characters/_shared/8gYdwYCF-skill-pistols.webp', // SKILL_MULTIPLIERS' individual-stage rows (Stage 1/2/3/4), Slayer's Trigger's real name, same icon
+    'Blood for Blood': './characters/_shared/8gYdwYCF-skill-pistols.webp', // Dodge Counter's real cast name, no dedicated icon per the Data dump
+    'Ashfall Barrage': './characters/_shared/8gYdwYCF-skill-pistols.webp', // Mid-air Attack's real cast name (tap = Plunging Attack, hold = Sustained Fire), no dedicated icon
+    'Purgatory Scourge': './characters/_shared/8gYdwYCF-skill-pistols.webp', // Demon Hypostasis's Dodge Counter replacement, same treatment as base Dodge Counter (no dedicated icon)
+    'Hellsent Barrage': './characters/_shared/8gYdwYCF-skill-pistols.webp', // Demon Hypostasis's Mid-air Attack replacement, parallel to Ashfall Barrage
+    'Hellstride': './characters/_shared/8gYdwYCF-skill-pistols.webp', // ground-Dodge cancel move, considered Basic Attack DMG per the Data dump, no dedicated icon
     'Stage 1-4': './characters/_shared/8gYdwYCF-skill-pistols.webp',
     'Stage 2-4, 2-3': './characters/_shared/8gYdwYCF-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Seraphic Execution': './characters/_shared/8gYdwYCF-skill-pistols.webp', // Demon Hypostasis Basic ATK replacement, same generic weapon icon
