@@ -7903,6 +7903,11 @@ const SKILL_ICONS = {
   // (same as Carlotta's).
   'Ciaccona': {
     'Quadruple Time Steps': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Stage 1': './characters/_shared/NG3jXXG-skill-pistols.webp', // SKILL_MULTIPLIERS' individual Basic ATK combo-stage rows, same icon as 'Stage 4' below
+    'Stage 2': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Stage 3': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Aimed Shot': './characters/_shared/NG3jXXG-skill-pistols.webp', // Heavy ATK, listed under the Basic Attack section's own Multipliers table, no dedicated icon
+    'Fully Charged Aimed Shot': './characters/_shared/NG3jXXG-skill-pistols.webp',
     'Standard': './characters/_shared/NG3jXXG-skill-pistols.webp',
     'Stage 3-4': './characters/_shared/NG3jXXG-skill-pistols.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Stage 4': './characters/_shared/NG3jXXG-skill-pistols.webp',
