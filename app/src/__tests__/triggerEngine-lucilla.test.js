@@ -67,12 +67,56 @@ describe('triggerEngine parity — Lucilla', () => {
     // comment). Without scopedToBlockId, each would inflate EVERY basicDmg/echoDmg-category block
     // in the kit (Tracing Forms, the other of the S3/S5/S6 pair's own moves, Clear As Day itself),
     // not just the one move its own kit text names.
+    // 2026-09-07 update: each key now scopes to ITS OWN mode's block (basicDmg -> the Chafe-mode
+    // block, echoDmg -> the new Echo-mode sibling) — see lucilla.blocks.js's own note on this fix:
+    // previously the echoDmg key pointed at the Chafe-mode (basicDmg-category) block id, a dead
+    // effect that could never match any real hit.
     const s3 = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s3');
-    for (const e of s3.effects) expect(e.scopedToBlockId).toBe('lucilla.basic.letting-it-go');
+    expect(s3.effects.find(e => e.stat === 'basicDmg').scopedToBlockId).toBe('lucilla.basic.letting-it-go');
+    expect(s3.effects.find(e => e.stat === 'echoDmg').scopedToBlockId).toBe('lucilla.basic.letting-it-go-echo');
     const s5 = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s5');
-    for (const e of s5.effects) expect(e.scopedToBlockId).toBe('lucilla.basic.oblivion');
+    expect(s5.effects.find(e => e.stat === 'basicDmg').scopedToBlockId).toBe('lucilla.basic.oblivion');
+    expect(s5.effects.find(e => e.stat === 'echoDmg').scopedToBlockId).toBe('lucilla.basic.oblivion-echo');
     const s6 = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s6');
-    for (const e of s6.effects) expect(e.scopedToBlockId).toBe('lucilla.basic.letting-it-go');
+    expect(s6.effects.find(e => e.stat === 'basicDmg').scopedToBlockId).toBe('lucilla.basic.letting-it-go');
+    expect(s6.effects.find(e => e.stat === 'echoDmg').scopedToBlockId).toBe('lucilla.basic.letting-it-go-echo');
+  });
+
+  it('2026-09-07 full-kit audit: mode-rivalry now covers her core damage kit, not just buffs', () => {
+    // Real gap found: Clear As Day, Oblivion, and Letting It Go were hardcoded to basicDmg (Chafe
+    // mode) with NO Echo-mode sibling, even though her own real, sourced teams (Sigrika/Phrolova/
+    // Galbrena) put her in Echo mode, where the same hits are "considered Echo Skill DMG" instead.
+    const pairs = [
+      ['lucilla.liberation.clear-as-day', 'lucilla.liberation.clear-as-day-echo', 'basicDmg', 'echoDmg'],
+      ['lucilla.basic.oblivion', 'lucilla.basic.oblivion-echo', 'basicDmg', 'echoDmg'],
+      ['lucilla.basic.letting-it-go', 'lucilla.basic.letting-it-go-echo', 'basicDmg', 'echoDmg'],
+    ];
+    for (const [chafeId, echoId, chafeCat, echoCat] of pairs) {
+      const chafe = LUCILLA_BLOCKS.find(b => b.id === chafeId);
+      const echo = LUCILLA_BLOCKS.find(b => b.id === echoId);
+      expect(chafe.condition.requiresStance).toBe('Glacio Chafe mode');
+      expect(echo.condition.requiresStance).toBe('Echo mode');
+      expect(chafe.damage.category).toBe(chafeCat);
+      expect(echo.damage.category).toBe(echoCat);
+      expect(echo.damage.hits).toEqual(chafe.damage.hits);
+      expect(echo.trigger).toEqual(chafe.trigger);
+    }
+    // Tracing Forms is confirmed NOT mode-dependent ("considered Basic Attack DMG regardless of
+    // mode") and correctly has no Echo sibling.
+    expect(LUCILLA_BLOCKS.find(b => b.id === 'lucilla.basic.tracing-forms-echo')).toBeUndefined();
+  });
+
+  it('2026-09-07: Forte Circuit Zoom is modeled, scoped only to her Echo-mode hits (not the whole kit)', () => {
+    const zoom = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.buff.forte-zoom');
+    expect(zoom).toBeTruthy();
+    expect(zoom.effects[0].stat).toBe('critDmg');
+    expect(zoom.effects[0].value).toBe(40);
+    expect(Array.isArray(zoom.effects[0].scopedToBlockId)).toBe(true);
+    // Must NOT include Tracing Forms — its own move text is never considered Echo Skill DMG.
+    expect(zoom.effects[0].scopedToBlockId).not.toContain('lucilla.basic.tracing-forms');
+    expect(zoom.effects[0].scopedToBlockId).toEqual(expect.arrayContaining([
+      'lucilla.liberation.clear-as-day-echo', 'lucilla.basic.oblivion-echo', 'lucilla.basic.letting-it-go-echo',
+    ]));
   });
 
   it('Phase A audit (2026-09-04): Inherent Skill Slow Motion Echo-mode team Echo Skill DMG buff is modeled', () => {

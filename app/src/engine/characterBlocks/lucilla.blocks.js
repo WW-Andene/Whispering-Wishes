@@ -4,13 +4,29 @@
 // CHAR_BUFF_TABLE['Lucilla'], RESONANCE_CHAIN_DATA['Lucilla'] (+ its own detailed
 // 2026-09-01 re-audit comment, read directly for each node's real mechanic),
 // SKILL_MULTIPLIERS['Lucilla'], and CHARACTER_ROTATIONS['Lucilla']. No new numbers
-// invented. Dual Resonance Mode (Glacio Chafe vs Echo) — Glacio Chafe mode is
-// modeled throughout as the default; the Echo-mode branch's identical values are
-// documented but not separately fired, since only one mode is ever active in a
-// given build (matching the source table's own "never double-count" reasoning).
-// A real Liberation-cast self-buff (+30% Basic ATK/Echo Skill DMG, 10s) sourced
-// from CHARACTER_ROTATIONS' own note text was entirely missing from
+// invented. A real Liberation-cast self-buff (+30% Basic ATK/Echo Skill DMG, 10s)
+// sourced from CHARACTER_ROTATIONS' own note text was entirely missing from
 // CHAR_BUFF_TABLE['Lucilla'].selfBuffs before this read.
+//
+// Dual Resonance Mode (Glacio Chafe vs Echo) — full-kit cross-interaction audit,
+// 2026-09-07 (direct user correction: "i said all cross interactions, condition and
+// logic... inside the kit", not just Liberation/stacks): mode is the CENTRAL
+// conditional structure of her entire kit, not a side detail. Every mode-dependent
+// damage/buff move (Clear As Day, Oblivion, Letting It Go, the Liberation self-buff)
+// now has a real Echo-mode sibling block tagged `condition.requiresStance`, so the
+// engine's existing filterExclusiveModeBlocks/winningStanceForOwner mode-rivalry
+// mechanism (sequenceGating.js — already used for her outro/Inherent-Skill buff
+// pairs) resolves which one actually fires per composition/forcedStance, instead of
+// hardcoding Glacio Chafe mode as though it were the only mode her real, sourced
+// teams (Sigrika/Phrolova/Galbrena Echo squads — see this file's own Synergies
+// section) ever use. Tracing Forms Stage 1-3 is the one dual-mode move confirmed
+// NOT mode-dependent ("considered Basic Attack DMG regardless of mode") and
+// correctly has no Echo sibling. Forte Circuit's own passives (Film Roll, Zoom) —
+// previously entirely unrepresented anywhere, not just unmodeled as blocks — are
+// now covered too: Zoom is a real block (self-scoped Crit DMG on her own Echo-mode
+// hits); Film Roll's real effect is documented as a genuine, sourced mechanic this
+// engine's per-step-boolean Chafe-tag model cannot represent a distinct number for
+// (see its own comment below), not silently omitted.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -53,14 +69,29 @@ export const LUCILLA_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Clear As Day' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category corrected 2026-09-02: her own move text makes this DMG mode-dependent and NEVER
-    // Liberation-type ("When in Resonance Mode - Glacio Chafe, the DMG dealt is considered Basic
-    // Attack DMG... When in Resonance Mode - Echo, the DMG dealt is considered Echo Skill DMG") — was
-    // libDmg, which meant real Basic ATK DMG buffs from teammates were silently skipping this hit.
-    // Modeled as basicDmg (Glacio Chafe mode, the modeled default elsewhere in this file); Echo mode
-    // would be echoDmg instead, not separately fired, same convention as the other dual-mode blocks.
+    // Mode-rivalry fix (2026-09-07, full-kit cross-interaction audit): this was hardcoded to basicDmg
+    // ALWAYS, even though her own real, sourced teams (Sigrika/Phrolova/Galbrena Echo squads — see this
+    // file's own build-guide Synergies section) put her in Echo mode, where this same hit is
+    // "considered Echo Skill DMG" instead. Without a requiresStance-tagged Echo sibling, an Echo-mode
+    // composition would silently still classify every one of her real, sourced hits as Basic Attack
+    // DMG — missing real Echo Skill DMG Bonus buffs (Sigrika/Phrolova's own kits) and wrongly picking
+    // up unrelated Basic ATK DMG buffs instead. `condition.requiresStance` here lets the engine's
+    // existing filterExclusiveModeBlocks/winningStanceForOwner mode-rivalry mechanism (already used for
+    // her outro/Inherent-Skill buff pairs) pick between this and lucilla.liberation.clear-as-day-echo
+    // below, driven by the real per-composition Resonance Mode toggle (forcedStance), same as any other
+    // dual-mode buff pair in this file.
+    condition: { requiresStance: 'Glacio Chafe mode' },
     damage: { hits: parseSkillMultiplierHits('142.74%'), category: 'basicDmg', basis: 'ATK' },
-    note: 'Costs no Resonance Energy, enters Reminiscence for ~10s. Glacio Chafe mode: considered Basic Attack DMG (modeled). Echo mode: considered Echo Skill DMG instead — not separately fired.',
+    note: 'Costs no Resonance Energy, enters Reminiscence for ~10s. Glacio Chafe mode: considered Basic Attack DMG.',
+  },
+  {
+    id: 'lucilla.liberation.clear-as-day-echo',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Clear As Day' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    condition: { requiresStance: 'Echo mode' },
+    damage: { hits: parseSkillMultiplierHits('142.74%'), category: 'echoDmg', basis: 'ATK' },
+    note: 'Echo-mode sibling of lucilla.liberation.clear-as-day (see its own note) — same 142.74% value, considered Echo Skill DMG instead of Basic Attack DMG in Echo mode.',
   },
   {
     id: 'lucilla.basic.tracing-forms',
@@ -68,7 +99,7 @@ export const LUCILLA_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Tracing Forms Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('30.64%+45.95% → 59.77%+89.65% → 52.12%×8'), category: 'basicDmg', basis: 'ATK' },
-    note: 'Reminiscence-state Basic ATK replacement; considered Basic Attack DMG regardless of mode. Consumes her 3 Photos as it goes (see lucilla.basic.oblivion below).',
+    note: 'Reminiscence-state Basic ATK replacement; considered Basic Attack DMG regardless of mode (real dump text: "considered Basic Attack DMG regardless of mode" — the ONE dual-mode move that is NOT mode-dependent, so unlike Clear As Day/Oblivion/Letting It Go it correctly has no Echo-mode sibling). Consumes her 3 Photos as it goes (see lucilla.basic.oblivion below).',
   },
   {
     id: 'lucilla.basic.oblivion',
@@ -80,18 +111,40 @@ export const LUCILLA_BLOCKS = [
     // own comment. One tag per cast (this block already condenses 3 real Oblivion hits into one
     // cast-triggered block), not per individual Photo consumed.
     appliesTags: [{ tag: 'glacio-chafe' }],
+    // Mode-rivalry fix (2026-09-07) — see lucilla.liberation.clear-as-day's own note for why an
+    // Echo-mode sibling (lucilla.basic.oblivion-echo below) is required, not optional documentation.
+    condition: { requiresStance: 'Glacio Chafe mode' },
     // 3 separate Oblivion hits, one per Photo consumed during Tracing Forms (a full 3-Photo
     // Reminiscence reliably hits all 3, same "use the max case" convention as this table's S6).
     damage: { hits: [{ atkPct: 285.48 }, { atkPct: 285.48 }, { atkPct: 285.48 }], category: 'basicDmg', basis: 'ATK' },
-    note: 'Glacio Chafe mode: considered Basic Attack DMG, inflicts Glacio Chafe. Echo mode: same 285.48% value but considered Echo Skill DMG instead (each cast a different Echo Skill) — not separately fired, only Glacio Chafe mode is modeled.',
+    note: 'Glacio Chafe mode: considered Basic Attack DMG, inflicts Glacio Chafe.',
+  },
+  {
+    id: 'lucilla.basic.oblivion-echo',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Tracing Forms Stage 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    condition: { requiresStance: 'Echo mode' },
+    damage: { hits: [{ atkPct: 285.48 }, { atkPct: 285.48 }, { atkPct: 285.48 }], category: 'echoDmg', basis: 'ATK' },
+    note: 'Echo-mode sibling of lucilla.basic.oblivion (see its own note) — same 285.48%×3 value, considered Echo Skill DMG instead (each cast counted as a different Echo Skill); does NOT inflict Glacio Chafe in this mode (that\'s a Chafe-mode-only side effect), so no appliesTags here.',
   },
   {
     id: 'lucilla.basic.letting-it-go',
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Letting It Go' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    condition: { requiresStance: 'Glacio Chafe mode' },
     damage: { hits: parseSkillMultiplierHits('84.81%×3+593.64%'), category: 'basicDmg', basis: 'ATK' },
-    note: 'Interruption-immune AoE finisher, fully restores Concerto Energy, ends Reminiscence. Glacio Chafe mode: considered Basic Attack DMG (modeled). Echo mode: same value, considered Echo Skill DMG instead — not separately fired.',
+    note: 'Interruption-immune AoE finisher, fully restores Concerto Energy, ends Reminiscence. Glacio Chafe mode: considered Basic Attack DMG.',
+  },
+  {
+    id: 'lucilla.basic.letting-it-go-echo',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Letting It Go' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    condition: { requiresStance: 'Echo mode' },
+    damage: { hits: parseSkillMultiplierHits('84.81%×3+593.64%'), category: 'echoDmg', basis: 'ATK' },
+    note: 'Echo-mode sibling of lucilla.basic.letting-it-go (see its own note) — same value, considered Echo Skill DMG instead.',
   },
 
   // Added 2026-09-07 (full-kit completeness re-pass): 7 real, sourced SKILL_MULTIPLIERS rows with no
@@ -191,8 +244,19 @@ export const LUCILLA_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Clear As Day' },
     timing: { duration: 10 },
     target: { scope: 'self' },
+    condition: { requiresStance: 'Glacio Chafe mode' },
     effects: [{ stat: 'basicDmg', value: 30, source: 'self-kit' }],
-    note: "Real effect sourced from CHARACTER_ROTATIONS' own Liberation step note: +30% Basic ATK DMG Bonus for 10s in Glacio Chafe mode (modeled; the Echo-mode branch is +30% Echo Skill DMG Bonus instead, same value, not separately fired) — this was entirely absent from CHAR_BUFF_TABLE['Lucilla'].selfBuffs before this read.",
+    note: "Real effect sourced from CHARACTER_ROTATIONS' own Liberation step note: +30% Basic ATK DMG Bonus for 10s in Glacio Chafe mode — this was entirely absent from CHAR_BUFF_TABLE['Lucilla'].selfBuffs before this read. Mode-rivalry fix (2026-09-07): now paired with lucilla.selfbuff.clear-as-day-bonus-echo below via requiresStance, same fix class as the 4 dual-mode damage blocks above.",
+  },
+  {
+    id: 'lucilla.selfbuff.clear-as-day-bonus-echo',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Clear As Day' },
+    timing: { duration: 10 },
+    target: { scope: 'self' },
+    condition: { requiresStance: 'Echo mode' },
+    effects: [{ stat: 'echoDmg', value: 30, source: 'self-kit' }],
+    note: 'Echo-mode sibling of lucilla.selfbuff.clear-as-day-bonus (see its own note) — same +30% value, Echo Skill DMG Bonus instead of Basic ATK DMG Bonus.',
   },
   {
     id: 'lucilla.debuff.inherent-skill-resshred',
@@ -254,9 +318,9 @@ export const LUCILLA_BLOCKS = [
     timing: {}, target: { scope: 'self' },
     effects: [
       { stat: 'basicDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
-      { stat: 'echoDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
+      { stat: 'echoDmg', value: 100, scopedToBlockId: 'lucilla.basic.letting-it-go-echo', source: 'self-kit' },
     ],
-    note: "Letting It Go's own DMG Multiplier +100% (recategorized from libDmg to {basicDmg, echoDmg} per the re-audit — its own move text makes damage type mode-dependent, never Liberation-type despite being part of the Liberation combo). Both keys carry the same value since only one mode's SKILL_MULTIPLIERS type ever applies in a given build, so they never double-count. Scoped to lucilla.basic.letting-it-go only (see scoping fix note above) — kept passive so it applies whenever that block fires, without leaking to the rest of the kit.",
+    note: "Letting It Go's own DMG Multiplier +100% (recategorized from libDmg to {basicDmg, echoDmg} per the re-audit — its own move text makes damage type mode-dependent, never Liberation-type despite being part of the Liberation combo). Each key scoped to its own mode's block (2026-09-07 mode-rivalry fix: previously both keys pointed at the same Chafe-mode block id, which meant the echoDmg key scoped to a basicDmg-category block and could never actually match any hit — a real dead-effect bug, not just an over-crediting one). Kept passive so it applies whenever the matching block fires, without leaking to the rest of the kit.",
   },
   {
     id: 'lucilla.chain.s4',
@@ -278,9 +342,9 @@ export const LUCILLA_BLOCKS = [
     timing: {}, target: { scope: 'self' },
     effects: [
       { stat: 'basicDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion', source: 'self-kit' },
-      { stat: 'echoDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion', source: 'self-kit' },
+      { stat: 'echoDmg', value: 50, scopedToBlockId: 'lucilla.basic.oblivion-echo', source: 'self-kit' },
     ],
-    note: "Oblivion's own DMG Multiplier +50% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3) — scoped to lucilla.basic.oblivion only (see scoping fix note above), kept passive so it applies whenever that block fires.",
+    note: "Oblivion's own DMG Multiplier +50% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Each key scoped to its own mode's block (2026-09-07 mode-rivalry fix, same dead-effect bug class as S3 — see its own note) — kept passive so it applies whenever the matching block fires.",
   },
   {
     id: 'lucilla.chain.s6',
@@ -295,9 +359,43 @@ export const LUCILLA_BLOCKS = [
     timing: {}, target: { scope: 'self' },
     effects: [
       { stat: 'basicDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
-      { stat: 'echoDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go', source: 'self-kit' },
+      { stat: 'echoDmg', value: 600, scopedToBlockId: 'lucilla.basic.letting-it-go-echo', source: 'self-kit' },
     ],
-    note: "Each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence reliably hits max, using the max value +600% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Scoped to lucilla.basic.letting-it-go only (see scoping fix note above), kept passive.",
+    note: "Each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence reliably hits max, using the max value +600% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Each key scoped to its own mode's block (2026-09-07 mode-rivalry fix, same dead-effect bug class as S3 — see its own note), kept passive.",
+  },
+  // Added 2026-09-07 (full-kit cross-interaction audit, direct user correction: "i said all cross
+  // interactions, condition and logic between inside the kit"): two real, sourced Forte Circuit
+  // resources — Film Roll and Zoom (Data dump/Lucilla/Lucilla.md line 73-79) — had NO representation
+  // anywhere (not CHAR_BUFF_TABLE, not a block), the same class of gap the S1/S2/S4 chain audit already
+  // covered for Resonance Chain but never applied to her Forte Circuit's own passives.
+  //   Film Roll (Chafe mode, gained via Déjà Vu on casting Clear As Day: 4 stacks/30s, 10 with
+  //   Inherent Skill Remembrance): consumes 1 stack whenever ANOTHER active teammate inflicts Glacio
+  //   Chafe, to make Lucilla herself inflict Glacio Chafe 2x more on nearby targets. This is a real,
+  //   sourced ally-triggered self-resource interaction (same shape as an ally-action block), but its
+  //   payoff is a raw Chafe-APPLICATION-count increase, not a damage or %-buff value — and this engine's
+  //   cross-character reactivity (actionTags, see hiyuki.procdmg.glacio-bite) is a once-per-step boolean
+  //   tag, not a per-instance stack counter, so "2x more Chafe applications within the same step" has no
+  //   distinct number to compute (the tag is already set; setting it again is a no-op). Deliberately NOT
+  //   modeled as a block — a block with an empty/no-op effect would be dead code (CLAUDE.md §4.7), not a
+  //   real fix. Left here as an explicit, sourced limitation for if a future engine revision tracks raw
+  //   Chafe-stack counts instead of a per-step boolean.
+  {
+    id: 'lucilla.buff.forte-zoom',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Skill:Spotlight' },
+    timing: { duration: 30 },
+    target: { scope: 'self' },
+    condition: { requiresStance: 'Echo mode' },
+    // Zoom's own value scoped to exactly the 4 Echo-mode (echoDmg-category) blocks in this file — an
+    // unscoped critDmg buff would (per this session's own Hiyuki chain audit finding) inflate every hit
+    // in the kit regardless of category, since critDmg isn't category-gated by the damage formula
+    // (calcAvgCrit takes a flat cr/cd, not a per-category one — see engine/math/damageFormula.js).
+    effects: [{ stat: 'critDmg', value: 40, scopedToBlockId: [
+      'lucilla.liberation.clear-as-day-echo',
+      'lucilla.basic.oblivion-echo',
+      'lucilla.basic.letting-it-go-echo',
+    ], source: 'self-kit' }],
+    note: 'Forte Circuit Zoom (Echo mode, gained via Déjà Vu on casting Clear As Day: 1 stack/30s, cap raised to 4 by Inherent Skill Remembrance — assumed active/maxed, same convention as Minor Fortes and every other Inherent Skill in this file): each stack grants the active Resonator\'s Echo Skill +10% Crit DMG — modeled at the 4-stack max (+40%), anchored to the same Spotlight cast that unlocks Zoom\'s generation path in the modeled rotation. Scoped to her own 3 Echo-mode damage blocks (Tracing Forms Stage 1-3 is excluded — its own move text says "considered Basic Attack DMG regardless of mode", never Echo Skill DMG, so Zoom\'s own "Echo Skill" gate never covers it).',
   },
   // Added 2026-09-07 (completeness pass): Minor Fortes had no block anywhere in this file.
   // Inherent Skill Remembrance (Film Roll cap -> 10, Zoom cap -> 4, both consumption base amounts

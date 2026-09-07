@@ -2911,9 +2911,17 @@ const CHAR_BUFF_TABLE = {
     selfBuffs: [
       { stat: 'critRate', value: 20, target: 'self', duration: 10, condition: 'Resonance Chain 1' },
       { stat: 'echoDmg', value: 25, target: 'team', duration: 30, condition: 'Echo mode, Inherent Skill: Slow Motion, on casting Spotlight' },
+      // Added 2026-09-07 (full-kit cross-interaction audit, direct user correction — "all cross
+      // interactions, condition and logic... inside the kit"): Forte Circuit Zoom was entirely missing
+      // from this table (not just from the engine blocks) despite being a real Echo-mode passive with
+      // its own sourced numeric value (Data dump/Lucilla/Lucilla.md line 77, 89): each stack grants the
+      // active Resonator's Echo Skill +10% Crit DMG, cap raised 1->4 by Inherent Skill Remembrance.
+      // Modeled at the 4-stack max, same "Inherent Skill assumed active/maxed" convention as every
+      // other Inherent Skill entry in this table.
+      { stat: 'critDmg', value: 40, target: 'self', duration: 30, condition: 'Echo mode, Forte Circuit: Zoom (4 stacks via Inherent Skill: Remembrance), gained via Déjà Vu on casting Clear As Day, active Resonator\'s Echo Skill only' },
     ],
     debuffs: [{ stat: 'resShred', value: 8, duration: 30, condition: 'Glacio Chafe mode, Inherent Skill: Slow Motion, on casting Spotlight' }],
-    note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s). Inherent Skill Slow Motion (on casting Spotlight): Chafe mode -8% Glacio RES near the active Resonator (30s); Echo mode team +25% Echo Skill DMG Bonus (30s) — ends early on mode switch either way.',
+    note: 'Dual Resonance Mode: Glacio Chafe mode Outro amplifies team Glacio Chafe DMG by 60% (30s); Echo mode Outro grants next Resonator +50% Echo Skill DMG Amp (14s). Inherent Skill Slow Motion (on casting Spotlight): Chafe mode -8% Glacio RES near the active Resonator (30s); Echo mode team +25% Echo Skill DMG Bonus (30s) — ends early on mode switch either way. Forte Circuit Film Roll (Chafe mode: consumes 1 stack per ally Glacio Chafe application to inflict Chafe 2x more herself) is a real, sourced mechanic with no representable numeric DPS effect at this engine\'s per-step-boolean Chafe-tag granularity — documented in lucilla.blocks.js, deliberately not modeled as a block (see its own comment there for why a stub block would be dead code).',
   },
   'Mornye': {
     outroBuffs: [{ stat: 'allDmg', value: 25, target: 'team', duration: 30 }],
