@@ -8189,12 +8189,21 @@ const SKILL_ICONS = {
     'Stagecraft Form Stage 4': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Phantom Bubble': './characters/denia/ZpdRC3Kx-denia-res-Skill.webp', // Resonance Skill — Bubbles and Baits
     'Banish': './characters/denia/ZpdRC3Kx-denia-res-Skill.webp', // Breakdown Form's Resonance Skill replacement, same wiki icon
+    'Beckon': './characters/denia/ZpdRC3Kx-denia-res-Skill.webp', // Breakdown Form's other Resonance Skill cast (shares CD with Banish), same wiki icon
     'Final Act: Stagecraft': './characters/denia/xtj5xwht-denia-liberation.webp', // Resonance Liberation — 1st Ultimate
     'Final Act: Breakdown': './characters/denia/xtj5xwht-denia-liberation.webp', // Resonance Liberation — 2nd Ultimate, same wiki icon
     'Erosion Field': './characters/denia/PGHNXhY3-denia-forte.webp', // Forte Circuit "Flawless"
     "It's Been A While!": './characters/denia/hx2nmhpT-denia-intro.webp', // Intro Skill — Formal Greetings
     'Formal Greetings': './characters/denia/hx2nmhpT-denia-intro.webp',
+    'Knock Knock': './characters/denia/hx2nmhpT-denia-intro.webp', // Breakdown Form's own Intro Skill cast, same wiki icon as Stagecraft Form's "It's Been A While!"
     'Unfinished Lies': './characters/denia/BVB2jBsW-denia-outro.webp', // Outro Skill
+    // These two are declared LAST and deliberately generic: 'Stagecraft Form'/'Breakdown Form' are
+    // substrings of several of the more specific keys above (e.g. 'Phantom Bubble - Stagecraft
+    // Form', 'Final Act: Breakdown Form') — placed after those so the specific keys still win, and
+    // only the bare Heavy ATK rows ('Heavy ATK: Stagecraft Form'/'Breakdown Form', which have no
+    // dedicated icon per the Data dump) fall through to here.
+    'Stagecraft Form': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Breakdown Form': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
   },
   // Source: the wiki Skill_*.png assets for Lucy/Rebecca, pulled via the MediaWiki
   // API (bypasses the site's Cloudflare challenge) and re-hosted on ibb.co (2026-08-17).
