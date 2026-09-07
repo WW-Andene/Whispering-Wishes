@@ -80,7 +80,7 @@ describe('triggerEngine parity — Hiyuki', () => {
   it('Minor Fortes (Crit Rate+8%/ATK%+12%) and Ephemeral Realm are both present', () => {
     const mf = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.buff.minor-fortes');
     expect(mf.effects).toEqual([
-      { stat: 'cr', value: 8, source: 'self-kit' },
+      { stat: 'critRate', value: 8, source: 'self-kit' },
       { stat: 'atkPct', value: 12, source: 'self-kit' },
     ]);
     expect(HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.inherent.ephemeral-realm')).toBeDefined();

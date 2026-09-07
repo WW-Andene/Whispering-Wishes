@@ -177,7 +177,7 @@ export const HIYUKI_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'cr', value: 8, source: 'self-kit' },
+      { stat: 'critRate', value: 8, source: 'self-kit' },
       { stat: 'atkPct', value: 12, source: 'self-kit' },
     ],
     note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Hiyuki/Hiyuki.md line 118-119). Unconditional, always active.',

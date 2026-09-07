@@ -177,7 +177,7 @@ export const IUNO_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [
-      { stat: 'cr', value: 8, source: 'self-kit' },
+      { stat: 'critRate', value: 8, source: 'self-kit' },
       { stat: 'atkPct', value: 12, source: 'self-kit' },
     ],
     note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Iuno/Iuno.md line 128-129). Unconditional, always active.',

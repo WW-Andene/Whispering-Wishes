@@ -134,17 +134,17 @@
   },
   "Hiyuki": {
     "effAtk": 1302,
-    "avgCrit": 1.4887,
+    "avgCrit": 1.5607,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1294
+    "score": 1357
   },
   "Iuno": {
     "effAtk": 1463,
-    "avgCrit": 1.287,
+    "avgCrit": 1.343,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1130
+    "score": 1179
   },
   "Jianxin": {
     "effAtk": 1262,
