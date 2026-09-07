@@ -129,8 +129,15 @@ export const HIYUKI_PRIORITY_RULES = [
     //      characters' own established convention), so modeling "always hold, consume real banked
     //      amount" is the correct optimal-play assumption, not a data gap — the fix needed was the
     //      gating condition above, not this formula.
-    buildStep: s => ({ type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', snowforgedBladeConsumed: s.snowforgedBlade }),
+    // resourceLevel (2026-09-07, "treat the level as absolute, no charge-duration modeling
+    // needed"): Blade Liberation is a leveled action over Snowforged Blade (0-3 stacks spent, each
+    // level a real, distinct damage output per the dump's own "each Snowforged Blade point consumed
+    // increases this hit's DMG Multiplier") — validateSequence() can check a hypothetical specific
+    // level request against what's really banked; the generator below still always spends the max
+    // banked amount (real optimal play).
+    resourceLevel: { field: 'snowforgedBlade', min: 0, max: 3 },
+    buildStep: (s, level) => ({ type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', snowforgedBladeConsumed: level != null ? level : s.snowforgedBlade }),
     condition: s => s.inForeclaimedSelf && !s.bladeLiberationCast,
-    apply: s => { s.bladeLiberationCast = true; s.inForeclaimedSelf = false; s.snowforgedBlade = 0; },
+    apply: (s, level) => { s.bladeLiberationCast = true; s.inForeclaimedSelf = false; s.snowforgedBlade = level != null ? s.snowforgedBlade - level : 0; },
   },
 ];

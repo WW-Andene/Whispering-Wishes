@@ -57,6 +57,38 @@ describe('decision engine — validateSequence (real kit legality on an arbitrar
     expect(finalState.snowforgedBlade).toBe(0);
   });
 
+  it('leveled action (resourceLevel): explicitly requesting a Blade Liberation level she can actually afford is legal', () => {
+    const withExplicitLevel = [
+      { type: 'Liberation', skill: 'Frostedge' },
+      { type: 'Basic ATK', skill: 'Present Self Stage 1-3' },
+      { type: 'Liberation', skill: 'Frost Splinter: Present Self' },
+      { type: 'Liberation', skill: 'Foreclaiming: Inward Vision' },
+      // Requests level 0 explicitly (a deliberate, if suboptimal, choice) — legal even with 0 banked.
+      { type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', snowforgedBladeConsumed: 0 },
+    ];
+    const { results, allLegal } = validateSequence(createHiyukiInitialState(), HIYUKI_PRIORITY_RULES, withExplicitLevel);
+    expect(allLegal).toBe(true);
+    expect(results.at(-1).levelUsed).toBe(0);
+  });
+
+  it('leveled action (resourceLevel): requesting a level higher than what is actually banked is illegal, with a real reason naming the shortfall', () => {
+    const curated = CHARACTER_ROTATIONS['Hiyuki'].slice(0, 11).map(s => ({ type: s.type, skill: s.skill }));
+    // The curated sequence only ever banks 1 Snowforged Blade (a single Bitterfrost cast) —
+    // requesting level 3 here is asking for more than she actually has.
+    const overspend = curated.slice(0, -1).concat([{ type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', snowforgedBladeConsumed: 3 }]);
+    const { results, allLegal } = validateSequence(createHiyukiInitialState(), HIYUKI_PRIORITY_RULES, overspend);
+    expect(allLegal).toBe(false);
+    const last = results.at(-1);
+    expect(last.legal).toBe(false);
+    expect(last.reason).toMatch(/requested snowforgedBlade level \(3\) isn't available — has 1 banked/);
+  });
+
+  it('leveled action (resourceLevel): omitting the explicit level defaults to "spend everything banked", matching the generator\'s own optimal-play assumption', () => {
+    const curated = CHARACTER_ROTATIONS['Hiyuki'].slice(0, 11).map(s => ({ type: s.type, skill: s.skill }));
+    const { results } = validateSequence(createHiyukiInitialState(), HIYUKI_PRIORITY_RULES, curated);
+    expect(results.at(-1).levelUsed).toBe(1);
+  });
+
   it('flags a move that is not part of her kit rules at all, distinctly from a mistimed real move', () => {
     const { results } = validateSequence(createHiyukiInitialState(), HIYUKI_PRIORITY_RULES, [
       { type: 'Skill', skill: 'This Is Not A Real Hiyuki Move' },

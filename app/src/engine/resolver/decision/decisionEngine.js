@@ -23,16 +23,30 @@
  * @property {{type: string, skill: string}} [step]  The rotation step this rule produces when
  *   fired — a fixed object, for a rule whose step never needs data from the current state. Mutually
  *   exclusive with `buildStep` below (a rule provides exactly one of the two).
- * @property {(state: Object) => {type: string, skill: string}} [buildStep]  Self-kit
+ * @property {(state: Object, level?: number) => {type: string, skill: string}} [buildStep]  Self-kit
  *   cross-interaction support (2026-09-07): builds the step from the CURRENT state, called BEFORE
  *   `apply()` mutates it — for a real per-cast value that depends on live resource state at the
  *   moment of casting (e.g. Hiyuki's Blade Liberation carrying exactly how many Snowforged Blade
  *   stacks she's actually banked this rotation, via a `snowforgedBladeConsumed` extra field the
- *   damage block's own `hit.perStepUnit` reads — see hiyuki.blocks.js/resolveHitComposedDps.js).
+ *   damage block's own `hit.perStepUnit` reads — see hiyuki.blocks.js/resolveHitComposedDps.js). The
+ *   optional `level` param is only ever passed by validateSequence()'s `resourceLevel` handling
+ *   below (a specific requested level, e.g. "what if she only spent 1 of her 3 banked stacks") —
+ *   omit it to mean "use whatever's currently banked" (runDecisionRotation() never passes it).
  * @property {(state: Object) => boolean} condition  Whether this rule can fire given current state.
- * @property {(state: Object) => void} apply  Mutates state in place to reflect the step happening
- *   (resource gains/costs, stance transitions, counters) — same real numbers the character's own
- *   kit rules file sources from its Data dump, never invented here.
+ * @property {(state: Object, level?: number) => void} apply  Mutates state in place to reflect the
+ *   step happening (resource gains/costs, stance transitions, counters) — same real numbers the
+ *   character's own kit rules file sources from its Data dump, never invented here. Same optional
+ *   `level` param as `buildStep`.
+ * @property {{field: string, min?: number, max?: number}} [resourceLevel]  Leveled-action support
+ *   (2026-09-07, direct request: "Liberation has multiple levels, level needs this resource, level
+ *   deals that much damage — treat the level as absolute, no animation/charge-duration modeling
+ *   needed"): declares this rule represents an action whose real output scales with how much of
+ *   `state[field]` gets spent on it (0 to `max`, defaulting to unbounded), rather than always
+ *   spending everything banked. ONLY consulted by validateSequence() — the generator
+ *   (runDecisionRotation) always spends the max available (real optimal play: more of a resource
+ *   spent on a damage-scaling move is never worse), so this only matters for checking a
+ *   HYPOTHETICAL candidate sequence that explicitly requests a specific level via a
+ *   `${field}Consumed` field on its own step object.
  */
 
 /**
@@ -117,6 +131,28 @@ export function validateSequence(initialState, rules, candidateSteps) {
     if (!readyRule) {
       results.push({ step: candidate, legal: false, reason: 'prerequisites not met yet at this point in the sequence', ruleId: null });
       allLegal = false;
+      continue;
+    }
+
+    // Leveled-action support (see PriorityRule.resourceLevel's own doc): a candidate step can
+    // explicitly request a specific level (e.g. "spend only 1 of her banked 3 Snowforged Blade")
+    // via a `${field}Consumed` field — checked against what's REALLY banked at this exact point,
+    // not the rule's own default "spend everything" behavior. Omitting the field on the candidate
+    // means "use whatever's banked," matching the generator's own default.
+    if (readyRule.resourceLevel) {
+      const { field, min = 0, max = Infinity } = readyRule.resourceLevel;
+      const available = state[field] ?? 0;
+      const requestedLevel = candidate[`${field}Consumed`] != null ? candidate[`${field}Consumed`] : available;
+      if (requestedLevel < min || requestedLevel > available || requestedLevel > max) {
+        results.push({
+          step: candidate, legal: false, ruleId: readyRule.id,
+          reason: `requested ${field} level (${requestedLevel}) isn't available — has ${available} banked, allowed range ${min}-${max}`,
+        });
+        allLegal = false;
+        continue;
+      }
+      readyRule.apply(state, requestedLevel);
+      results.push({ step: candidate, legal: true, reason: 'ok', ruleId: readyRule.id, levelUsed: requestedLevel });
       continue;
     }
 
