@@ -7727,6 +7727,7 @@ const SKILL_ICONS = {
   // re-hosted for Encore/Yinlin/Verina/Zhezhi.
   'Shorekeeper': {
     'Origin Calculus': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Unbound Form': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // base Heavy Attack's hold-charge mechanic, no dedicated icon
     'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
     // Key shortened 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c) from 'Heavy Attack: Illation' —
     // getSkillIcon() does skillName.includes(key), and the CHARACTER_ROTATIONS step's own skill field
