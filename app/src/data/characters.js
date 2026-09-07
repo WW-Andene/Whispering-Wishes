@@ -7635,6 +7635,7 @@ const SKILL_ICONS = {
   // resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before upload.
   'Lingyang': {
     'Majestic Fists': './characters/lingyang/Cs76xkJK-Skill-Majestic-Fists.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
+    'Stormy Kicks': './characters/lingyang/Cs76xkJK-Skill-Majestic-Fists.webp', // Basic Attack replacement below 10 Lion's Spirit, same generic weapon icon
     'Standard': './characters/lingyang/Cs76xkJK-Skill-Majestic-Fists.webp',
     'Ancient Arts': './characters/lingyang/5h5F3YrR-Skill-Ancient-Arts.webp',
     'Unification of Spirits': './characters/lingyang/4R6ggr17-Skill-Unification-of-Spirits.webp',
