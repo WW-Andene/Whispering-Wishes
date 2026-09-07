@@ -110,14 +110,27 @@ export const HIYUKI_PRIORITY_RULES = [
   },
   {
     id: 'blade-liberation',
-    // Self-kit cross-interaction (2026-09-07): "press-release consumes all 3 Snowforged Blade
-    // stacks if present" (dump line 67) — buildStep() reads her REAL accumulated snowforgedBlade
-    // count at this exact moment (before apply() below would spend it), so
-    // hiyuki.liberation.foreclaiming-blade-liberation's own perStepUnit scaling gets the actual
-    // banked amount, not a fabricated max. This modeled rotation only ever reaches 1 stack (a
-    // single Bitterfrost cast) — a real, sourced, less-than-maximum value, not an approximation.
+    // Self-kit cross-interaction, corrected 2026-09-07 (a swap/legality test surfaced a real gating
+    // bug in the first version of this rule): the dump's own text (line 67) is "press-release
+    // consumes all 3 Snowforged Blade stacks if present (else none consumed); OR hold to charge,
+    // consuming 1 Snowforged Blade periodically, auto-casts on release/depletion/timeout." Two
+    // distinct real facts follow:
+    //   1. The TRUE legality gate is "Foreclaimed Self only" (the dump's own parenthetical) — NOT
+    //      "only after casting Bitterfrost." Blade Liberation can legally be cast at ANY point
+    //      during Foreclaimed Self, even with 0 Snowforged Blade banked (dealing base damage only,
+    //      via a tap). The previous version of this rule wrongly required `bitterfrostCast`, which
+    //      happened to match the curated rotation's own real play order but wasn't the actual
+    //      underlying legality requirement.
+    //   2. The tap-vs-hold input choice only matters for a player who executes imperfectly (tapping
+    //      away banked stacks instead of holding to actually consume them) — since more stacks
+    //      always means more damage, a DPS-optimal play always holds to consume whatever is
+    //      currently banked (0-3), never taps one away. This engine already assumes optimal
+    //      execution everywhere else (e.g. "perfect timing," "reliably hits max stacks" — see other
+    //      characters' own established convention), so modeling "always hold, consume real banked
+    //      amount" is the correct optimal-play assumption, not a data gap — the fix needed was the
+    //      gating condition above, not this formula.
     buildStep: s => ({ type: 'Liberation', skill: 'Foreclaiming: Blade Liberation', snowforgedBladeConsumed: s.snowforgedBlade }),
-    condition: s => s.bitterfrostCast && !s.bladeLiberationCast,
+    condition: s => s.inForeclaimedSelf && !s.bladeLiberationCast,
     apply: s => { s.bladeLiberationCast = true; s.inForeclaimedSelf = false; s.snowforgedBlade = 0; },
   },
 ];

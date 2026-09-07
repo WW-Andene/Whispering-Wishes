@@ -43,6 +43,20 @@ describe('decision engine — validateSequence (real kit legality on an arbitrar
     expect(swapped[firstIllegal].skill).toBe('Iai');
   });
 
+  it('Blade Liberation cast immediately after entering Foreclaimed Self (before ever casting Bitterfrost) is LEGAL — real kit text gates it on "Foreclaimed Self only", not on having cast Bitterfrost first — and correctly banks 0 Snowforged Blade', () => {
+    const early = [
+      { type: 'Liberation', skill: 'Frostedge' },
+      { type: 'Basic ATK', skill: 'Present Self Stage 1-3' },
+      { type: 'Liberation', skill: 'Frost Splinter: Present Self' },
+      { type: 'Liberation', skill: 'Foreclaiming: Inward Vision' },
+      { type: 'Liberation', skill: 'Foreclaiming: Blade Liberation' },
+    ];
+    const { results, allLegal, finalState } = validateSequence(createHiyukiInitialState(), HIYUKI_PRIORITY_RULES, early);
+    expect(allLegal).toBe(true);
+    expect(results.every(r => r.legal)).toBe(true);
+    expect(finalState.snowforgedBlade).toBe(0);
+  });
+
   it('flags a move that is not part of her kit rules at all, distinctly from a mistimed real move', () => {
     const { results } = validateSequence(createHiyukiInitialState(), HIYUKI_PRIORITY_RULES, [
       { type: 'Skill', skill: 'This Is Not A Real Hiyuki Move' },
