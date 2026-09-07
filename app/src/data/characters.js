@@ -7744,6 +7744,9 @@ const SKILL_ICONS = {
   // icon (same as Changli's).
   'Camellya': {
     'Burgeoning': './characters/_shared/x86mmjbD-skill-sword.webp',
+    'Thorns 1-5': './characters/_shared/x86mmjbD-skill-sword.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row (Burgeoning's real name), same generic weapon icon
+    'Vining Ronde': './characters/_shared/x86mmjbD-skill-sword.webp', // Jump/Mid-air move, considered Basic Attack DMG per the Data dump — same generic weapon icon, not the Skill's Vining Waltz
+    'Atonement': './characters/_shared/x86mmjbD-skill-sword.webp', // Dodge Counter move, considered Basic Attack DMG per the Data dump
     'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Valse of Bloom and Blight': './characters/camellya/wrNPQ1TC-skill-valse.webp',
     'Crimson Blossom': './characters/camellya/wrNPQ1TC-skill-valse.webp', // Resonance Skill mechanic (a named hit within Valse of Bloom and Blight), same wiki icon
