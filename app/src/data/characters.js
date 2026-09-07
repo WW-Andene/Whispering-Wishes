@@ -7765,6 +7765,10 @@ const SKILL_ICONS = {
   // Skill_Pistols.png icon.
   'Carlotta': {
     'Silent Execution': './characters/_shared/NG3jXXG-skill-pistols.webp',
+    'Stage 1-2': './characters/_shared/NG3jXXG-skill-pistols.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row (Silent Execution's real name), same generic weapon icon
+    'Containment Tactics': './characters/_shared/NG3jXXG-skill-pistols.webp', // Heavy Attack's Substance-full replacement, listed under "Active skills" (no dedicated wiki asset) per the Data dump
+    'Customary Greetings': './characters/_shared/NG3jXXG-skill-pistols.webp', // Mid-air Attack, same "Active skills" generic icon
+    'Riposte': './characters/_shared/NG3jXXG-skill-pistols.webp', // Dodge Counter's real cast name, same "Active skills" generic icon
     'Standard': './characters/_shared/NG3jXXG-skill-pistols.webp',
     'Necessary Measures': './characters/_shared/NG3jXXG-skill-pistols.webp', // Moldable-Crystal Basic ATK replacement, same generic weapon icon
     'Plunging Attack': './characters/_shared/NG3jXXG-skill-pistols.webp', // Mid-air Basic ATK finisher, same generic weapon icon (no dedicated wiki asset)
