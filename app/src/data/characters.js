@@ -8059,6 +8059,7 @@ const SKILL_ICONS = {
   // Source: the wiki Skill_*.png assets for Chisa, re-hosted on ibb.co (2026-08-17).
   'Chisa': {
     'Reign of Silence': './characters/chisa/39ZxR3C4-skill-broadblade.webp', // Basic ATK — generic Broadblade icon (the wiki's own File:Skill_Reign_of_Silence.png resolves to this same asset)
+    'Stage 1-2': './characters/chisa/39ZxR3C4-skill-broadblade.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row (Reign of Silence's real name), same icon
     'Rending Lunge': './characters/chisa/39ZxR3C4-skill-broadblade.webp',
     'Death Snip': './characters/chisa/39ZxR3C4-skill-broadblade.webp',
     'Thread Withdrawn': './characters/chisa/39ZxR3C4-skill-broadblade.webp',
