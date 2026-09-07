@@ -8365,6 +8365,7 @@ const SKILL_ICONS = {
   // Gauntlets weapon-type icon.
   'Yuanwu': {
     'Leihuangquan': './characters/_shared/QvdmVfvF-Skill-Gauntlets.webp',
+    'Lightning Infused': './characters/_shared/QvdmVfvF-Skill-Gauntlets.webp', // Lightning-Infused-state Basic/Heavy Attack (see Forte Circuit — Unassuming Blade), same generic weapon icon
     'Thunder Field': './characters/yuanwu/MK40ZPV-Skill-Leihuang-Master.webp',
     'Thunder Wedge': './characters/yuanwu/MK40ZPV-Skill-Leihuang-Master.webp',
     'Rumbling Spark': './characters/yuanwu/Q7zJbCct-Skill-Unassuming-Blade.webp',
