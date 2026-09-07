@@ -229,7 +229,7 @@ export const CHISA_BLOCKS = [
     timing: { duration: 2 },
     target: { scope: 'all-enemies' },
     effects: [{ stat: 'defShred', value: 2, stacking: 'stacking', maxStacks: 6 }],
-    note: 'Havoc Bane: 1 stack (2% DEF Shred) per hit on an Unseen Snare target, up to 6 stacks (12% cap), refreshed every 2s — modeled as a real per-stack stacking debuff rather than the flat 12% cap total.',
+    note: 'Havoc Bane: 1 stack (2% DEF Shred) per hit on an Unseen Snare target, up to 6 stacks (12% cap), refreshed every 2s — modeled as a real per-stack stacking debuff rather than the flat 12% cap total. Not tagged for cross-character Havoc-Bane reactivity (e.g. Cartethyia\'s chain.s4): this block\'s trigger.type is \'on-hit\', which the actionTags collection loop (rotationSimulator.js) only ever populates for blocks matching a step\'s own cast label — \'on-hit\' has no such label and is not itself wired into the firing mechanism (a pre-existing gap, confirmed via Yinlin/Chisa\'s other own on-hit blocks never actually resolving through resolveHitComposedDps.js either), so tagging here would be a no-op, not a real reactive link.',
   },
   // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
   // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere

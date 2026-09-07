@@ -34,7 +34,7 @@
 
 import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../../features/teams/calcEngine.js';
 import { simulateRotation } from './rotationSimulator.js';
-import { triggerFired, conditionHolds } from '../gating/triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches } from '../gating/triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
 import { cumulativeTieredValue } from '../gating/tieredStacking.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../gating/sequenceGating.js';
@@ -201,7 +201,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       // shared simulateStepsCore() every mode runs through, so a character's own ally-action-tagged
       // proc correctly fires off her own casts even with no team present.
       const triggerMatches = db.trigger.type === 'ally-action'
-        ? r.actionTags?.has(db.trigger.action)
+        ? actionMatches(r.actionTags, db.trigger.action)
         : triggerFired(db.trigger, r.firedTriggers);
       if (!triggerMatches) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;

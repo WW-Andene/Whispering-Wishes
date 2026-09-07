@@ -21,7 +21,7 @@
 
 import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
-import { triggerFired, conditionHolds } from '../gating/triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches } from '../gating/triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
 import { cumulativeTieredValue } from '../gating/tieredStacking.js';
 import { COORD_SNAPSHOT_DISCOUNT } from '../gating/coordinatedAtk.js';
@@ -222,7 +222,7 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     if (db.trigger.type !== 'ally-action') continue;
     for (const r of results) {
       if (r.ineligibleBlockIds.has(db.id)) continue;
-      if (!r.actionTags?.has(db.trigger.action)) continue;
+      if (!actionMatches(r.actionTags, db.trigger.action)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
       pushHit(r, db, hits, category, basis, guaranteedCrit);
     }

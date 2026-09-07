@@ -349,11 +349,21 @@ export const CARTETHYIA_BLOCKS = [
   {
     id: 'cartethyia.chain.s4',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
+    // Retrofitted 2026-09-07 (cross-character reactivity pass): was `trigger:{type:'passive'}`, an
+    // always-on approximation of a real 6-status ally-action trigger this schema previously had no
+    // anchor for. Now real: 'havoc-bane' is a new appliesTags marker (Yangyang: Xuanling's/Chisa's
+    // own real Havoc Bane appliers — see their own comments), 'glacio-chafe' is the shared marker
+    // already built for Hiyuki's Glacio Bite pilot, and 'fusionBurst'/'frazzle'/'electroFlare'/
+    // 'erosion' are the SAME mechanic names every dotApplier-tagged block across the roster already
+    // carries (rotationSimulator.js's own universal per-mechanic actionTags rule, added the same
+    // pass — no per-character re-tagging needed for those four). `trigger.action` as an array is a
+    // new, small schema extension (see triggerEngine.js's own actionMatches() doc) for this exact
+    // "reacts to any of several distinct real statuses" shape.
+    trigger: { type: 'ally-action', action: ['havoc-bane', 'fusionBurst', 'frazzle', 'electroFlare', 'glacio-chafe', 'erosion'] },
     timing: { duration: 20 },
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 20, source: 'self-kit' }],
-    note: 'After any team member inflicts Havoc Bane/Fusion Burst/Spectro Frazzle/Electro Flare/Glacio Chafe/Aero Erosion, the WHOLE team gains +20% DMG Bonus for ALL Attributes for 20s (confirmed exact, team-wide) — a cross-character trigger this schema has no clean anchor for, kept passive as an approximation.',
+    effects: [{ stat: 'allDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' }],
+    note: 'After any team member inflicts Havoc Bane/Fusion Burst/Spectro Frazzle/Electro Flare/Glacio Chafe/Aero Erosion, the WHOLE team gains +20% DMG Bonus for ALL Attributes for 20s (confirmed exact, team-wide) — now a real ally-action trigger reacting to the actual inflicting cast, not an always-on passive approximation.',
   },
   // S5 correctly has NO block — (a) fatal-blow immunity once per 10 real-time minutes granting a
   // Shield = 20% of Max HP for 10s, (b) Liberation1 HP cost reduced from 50% to 25% of Max HP — both

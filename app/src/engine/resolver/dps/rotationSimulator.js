@@ -412,6 +412,22 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
           if (entry.requiresStance == null || stanceForOwner(owner) === entry.requiresStance) actionTags.add(entry.tag);
         }
       }
+      // Universal per-mechanic status tags (added 2026-09-07, cross-character reactivity pass): any
+      // block that already carries a real, sourced `dotApplier.mechanic` (frazzle/erosion/
+      // fusionBurst/electroFlare/tuneBreak) automatically tags THIS step's actionTags with that same
+      // mechanic name — same "one universal rule, not a per-character declaration" reasoning as the
+      // 'echo-skill-cast' tag just below: a character's own dotApplier tag already states, as real
+      // sourced data, that this specific cast inflicts that status; nothing new needs sourcing to
+      // also expose it as an ally-reactive tag. Lets a real, previously "no clean anchor" mechanic
+      // like Cartethyia's chain.s4 ("after ANY team member inflicts Havoc Bane/Fusion Burst/Spectro
+      // Frazzle/Electro Flare/Glacio Chafe/Aero Erosion...") react to the real cast instead of being
+      // approximated as an always-on passive buff. Reuses the same appliesTags-eligibility rule
+      // (cooldown-ineligible this step -> doesn't count) as the loop just above.
+      for (const b of blocks) {
+        if ((b.trigger.on ?? b.trigger.attemptOn) !== label || !b.dotApplier?.mechanic) continue;
+        if (ineligibleBlockIds.has(b.id)) continue;
+        actionTags.add(b.dotApplier.mechanic);
+      }
       // Universal 'echo-skill-cast' tag (added 2026-09-02, the engine-merge history (git log) Phase 0.5 gap #2 —
       // Sigrika's S4 retrofit): using an equipped Echo isn't a per-character KIT fact the way Shifting
       // application is (any character can use ANY Echo, unrelated to their own kit) — real

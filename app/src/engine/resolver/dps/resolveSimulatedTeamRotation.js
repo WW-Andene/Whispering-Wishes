@@ -35,7 +35,7 @@
 
 import { createStats, applyBuff } from '../../../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
-import { triggerFired, conditionHolds } from '../gating/triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches } from '../gating/triggerEngine.js';
 import { buildBlockWindows, timeWeightedAverageConcurrency } from '../gating/blockWindows.js';
 import { cumulativeTieredValue } from '../gating/tieredStacking.js';
 import { sequenceAllows } from '../gating/sequenceGating.js';
@@ -135,7 +135,7 @@ export function resolveSimulatedTeamRotation(ownedSteps, blocksByOwner, targetNa
     if (!hasDuration) {
       const everFired = ownResults.some(r => {
         if (r.ineligibleBlockIds.has(block.id)) return false;
-        return block.trigger.type === 'ally-action' ? r.actionTags?.has(block.trigger.action) : triggerFired(block.trigger, r.firedTriggers);
+        return block.trigger.type === 'ally-action' ? actionMatches(r.actionTags, block.trigger.action) : triggerFired(block.trigger, r.firedTriggers);
       });
       if (everFired) perHitScopedBlockIds.push(block.id);
       continue;

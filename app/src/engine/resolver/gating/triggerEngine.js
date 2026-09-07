@@ -94,6 +94,17 @@ function triggerFired(trigger, firedTriggers) {
   return firedTriggers.has(triggerKey(trigger));
 }
 
+// 'ally-action' matching, shared by every consumer of a step's real `actionTags` set
+// (blockWindows.js's buff windowing, resolveHitComposedDps.js/resolveHitComposedTeamDps.js's damage
+// proc handling) — added 2026-09-07 alongside `trigger.action` accepting an array, for a real,
+// sourced "reacts to ANY of several distinct statuses" shape (Cartethyia's chain.s4: "after ANY team
+// member inflicts Havoc Bane/Fusion Burst/Spectro Frazzle/Electro Flare/Glacio Chafe/Aero Erosion").
+// A bare string `action` (every existing ally-action block) keeps working unchanged.
+function actionMatches(actionTags, action) {
+  if (!actionTags) return false;
+  return Array.isArray(action) ? action.some(a => actionTags.has(a)) : actionTags.has(action);
+}
+
 function conditionHolds(condition, targetElementLower, targetRole, casterHpPctAssumed = null) {
   if (!condition) return true;
   // A block explicitly confirmed (via this character's own real CHARACTER_ROTATIONS/desc — see
@@ -123,4 +134,4 @@ function conditionHolds(condition, targetElementLower, targetRole, casterHpPctAs
 // time-integration driver — see its own file header) can determine per-step block eligibility with
 // the EXACT same logic resolveTriggerBlocks() uses, instead of re-deriving a second copy that could
 // silently drift out of sync.
-export { triggerKey, triggerFired, conditionHolds };
+export { triggerKey, triggerFired, conditionHolds, actionMatches };

@@ -26,6 +26,10 @@ export const YANGYANG_XUANLING_BLOCKS = [
     // category/basis added for Layer 4 migration — were entirely missing (block previously silently
     // uncategorized). No override text names a different category, same default-to-skillDmg convention
     // applied project-wide for a generically-labeled opener hit.
+    // 2026-09-07 cross-character reactivity: real, sourced Havoc Bane application (see this block's
+    // own note below) — tagged so ANY teammate's own 'ally-action' Havoc-Bane-reactive block (e.g.
+    // Cartethyia's chain.s4) can fire off it.
+    appliesTags: [{ tag: 'havoc-bane' }],
     damage: { hits: parseSkillMultiplierHits('116.59%'), basis: 'ATK' },
     note: 'Applies 1 stack of Havoc Bane, grants 1 point of Azure Plume.',
   },
@@ -35,6 +39,8 @@ export const YANGYANG_XUANLING_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Azure Sword Stance Stage 1-4' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // Row has separate Azure/Feather variant segments — the Azure variant matches this step.
+    // 2026-09-07 cross-character reactivity — see yangyangxuanling.intro.skybound-feather's comment.
+    appliesTags: [{ tag: 'havoc-bane' }],
     damage: { hits: parseSkillMultiplierHits('47.72% → 20.14%×2+60.41% → 30.21%+70.48% → 18.57%×2+148.49%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Consumes Melody as it goes, Stage 4 applies another Havoc Bane stack.',
   },
@@ -54,6 +60,8 @@ export const YANGYANG_XUANLING_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack: Feather Sword Stance' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity — see yangyangxuanling.intro.skybound-feather's comment.
+    appliesTags: [{ tag: 'havoc-bane' }],
     damage: { hits: parseSkillMultiplierHits('21.71%+195.34%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Once Azure Plume is capped — applies 2 Havoc Bane stacks, grants Streaming Storm (+160% Crit DMG on the next few Feather-stance hits, see yangyangxuanling.selfbuff.bated-breath below), auto-chains into Mid-air Attack: Feather Fall (see block below).',
   },
@@ -78,6 +86,8 @@ export const YANGYANG_XUANLING_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Hush of a Thousand Voices' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity — see yangyangxuanling.intro.skybound-feather's comment.
+    appliesTags: [{ tag: 'havoc-bane' }],
     damage: { hits: parseSkillMultiplierHits('1988.10%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Counted as Heavy ATK DMG despite the Liberation slot. Consumes all Melody, restores 1 Azure Plume, maxes Havoc Bane on hit.',
   },
@@ -86,6 +96,8 @@ export const YANGYANG_XUANLING_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack: Azure Sword Stance' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity — see yangyangxuanling.intro.skybound-feather's comment.
+    appliesTags: [{ tag: 'havoc-bane' }],
     damage: { hits: parseSkillMultiplierHits('135.16%×2+180.21%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Once Azure Plume is capped again — a big cyclone hit applying 2 more Havoc Bane stacks, can gain bonus Crit DMG from Bated Breath (see selfbuff below).',
   },

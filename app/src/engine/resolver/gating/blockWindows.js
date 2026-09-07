@@ -16,7 +16,7 @@
 // hit," which a time-averaged fraction cannot answer on its own.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import { triggerFired, conditionHolds } from './triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches } from './triggerEngine.js';
 
 /**
  * @param {import('./triggerBlocks.schema.js').TriggerBlock} block  Must have a real `timing.duration`
@@ -52,7 +52,7 @@ export function buildBlockWindows(block, ownResults, targetElementLower = null, 
     // owner-scoped firedTriggers Set every other trigger type uses — see this function's own
     // ownResults doc above for why callers must pass the full results list for these.
     if (block.trigger.type === 'ally-action') {
-      if (!r.actionTags?.has(block.trigger.action)) continue;
+      if (!actionMatches(r.actionTags, block.trigger.action)) continue;
     } else if (!triggerFired(block.trigger, r.firedTriggers)) continue;
     if (!conditionHolds(block.condition, targetElementLower, targetRole)) continue;
 
