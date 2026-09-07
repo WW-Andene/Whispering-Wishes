@@ -27,6 +27,21 @@
 // block for the Manifest-transform Liberation cast — a real, always-cast rotation step with real,
 // sourced Concerto Energy/cooldown numbers that had no block anywhere to hold them (correctly no
 // damage: the transform itself has no published direct-damage value, only an HP cost).
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Crit Rate+8%, HP%+12%, Data dump/Cartethyia/Cartethyia.md's own "Minor Fortes (Total)" section)
+// and Inherent Skill "A Heart's Truest Wishes" (team healing-received +20%/interrupt-resistance
+// buff) had no block at all — "Wind's Indelible Imprint," her OTHER Inherent Skill, was already
+// modeled as cartethyia.debuff.winds-indelible-imprint. Also added her real base-kit moves that had
+// SKILL_MULTIPLIERS rows (or, for 4 of them, newly-added rows this same pass) but no block anywhere:
+// Heavy ATK Fleurdelys Enhanced, Intro Sword to Call for Freedom, Basic ATK Dodge Counter -
+// Cartethyia/Heavy Attack - Cartethyia/Dodge Counter - Fleurdelys/Upward Cut - Fleurdelys — none of
+// these appear in CHARACTER_ROTATIONS['Cartethyia'], same "documented gap" status as every other
+// converted character's own unused-but-sourced blocks. Heavy Attack - Cartethyia is categorized
+// basicDmg per its own explicit "Counted as Basic Attack DMG" kit text (not the Heavy-ATK-type
+// default) — its multiplier happens to numerically match Intro:Sword to Mark Tide's Trace's own row
+// (both independently stated as 2.08%×3+6.24% in the same dump), a real, sourced coincidence, not a
+// copy-paste error on this file's part.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -193,6 +208,59 @@ export const CARTETHYIA_BLOCKS = [
     concertoEnergyGain: 20,
     note: "Transforms Cartethyia into Fleurdelys (Manifest, 12s), costing 50% Max HP (25% at S5, free below 50% HP already) and 125 Resonance Energy — neither the HP cost nor the transform itself has a DPS component or a published direct-damage value; this block exists only to carry the real, sourced cooldown/Concerto Energy Regen numbers.",
   },
+  // Added 2026-09-07 (completeness pass): real, sourced base-kit/Fleurdelys-kit moves that had no
+  // block anywhere, none in CHARACTER_ROTATIONS — documented inert, same convention as Aalto's/
+  // Camellya's/Carlotta's own unused-but-sourced blocks.
+  {
+    id: 'cartethyia.heavy.fleurdelys-enhanced',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Fleurdelys Enhanced' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('7.78%×2 + 3.89%'), category: 'basicDmg', basis: 'HP' },
+    note: "Enhanced Heavy Attack in Fleurdelys form, counted as Basic Attack DMG per its own kit text. Basic Attack shortly after chains into Upward Cut. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.",
+  },
+  {
+    id: 'cartethyia.intro.sword-to-call-for-freedom',
+    source: SOURCE, kind: 'damage', section: 'Intro',
+    trigger: { type: 'cast', on: 'Intro:Sword to Call for Freedom' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('4.28% + 9.97%'), basis: 'HP' },
+    concertoEnergyGain: 10,
+    note: "Fleurdelys-form Intro (swapping in while already Manifest) — restores Conviction on hit. Not in CHARACTER_ROTATIONS — her real rotation always opens from base Cartethyia form via Sword to Mark Tide's Trace instead.",
+  },
+  {
+    id: 'cartethyia.basic.dodge-counter-cartethyia',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Dodge Counter - Cartethyia' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('6.85%×4'), category: 'basicDmg', basis: 'HP' },
+    note: 'Base-form Dodge Counter. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'cartethyia.basic.heavy-attack-cartethyia',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Heavy Attack - Cartethyia' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('2.08%×3+6.24%'), category: 'basicDmg', basis: 'HP' },
+    note: "Base-form Heavy Attack, counted as Basic Attack DMG per its own kit text (see file header on the value coincidentally matching Intro's own row). Summons Sword of Discord's Shadow (cap 1, 20s). Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation (her modeled rotation gets that Shadow from Intro instead).",
+  },
+  {
+    id: 'cartethyia.basic.dodge-counter-fleurdelys',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Dodge Counter - Fleurdelys' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('3.20%×3+6.39%'), category: 'basicDmg', basis: 'HP' },
+    note: 'Fleurdelys-form Dodge Counter, restores Conviction on hit. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'cartethyia.basic.upward-cut-fleurdelys',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Upward Cut - Fleurdelys' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('4.54%×2'), category: 'basicDmg', basis: 'HP' },
+    note: 'Fleurdelys-form Jump-while-grounded move, restores Conviction on hit. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+
   {
     id: 'cartethyia.outro.winds-divine-blessing',
     source: SOURCE, kind: 'buff', section: 'Outro',
@@ -212,6 +280,32 @@ export const CARTETHYIA_BLOCKS = [
     target: { scope: 'all-enemies' },
     effects: [{ stat: 'elemDmg', value: 60 }],
     note: "Wind's Indelible Imprint: targets at max (6) Erosion stacks take +60% more DMG from her (scales from +30% at 1-3 stacks, +10%/stack beyond — modeled at the max-stack ceiling) — a real base-kit mechanic, kept passive.",
+  },
+
+  // ── Buff blocks (Minor Fortes, Inherent Skills) ──
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, HP%+12%" — a permanent,
+  // always-on passive stat bonus, previously had no block anywhere in this file. hpPct is a real,
+  // resolver-consumed stat that directly scales every HP-basis hit in this file (see
+  // resolveHitComposedDps.js), same as Jingran's own Minor Fortes.
+  {
+    id: 'cartethyia.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'hpPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, HP%+12% (Data dump/Cartethyia/Cartethyia.md). Unconditional, always active.',
+  },
+  // Added 2026-09-07 (completeness pass): her other Inherent Skill, "A Heart's Truest Wishes" —
+  // previously not referenced anywhere in this file. "Wind's Indelible Imprint" (her other Inherent
+  // Skill) was already modeled above as cartethyia.debuff.winds-indelible-imprint.
+  {
+    id: 'cartethyia.inherent.a-hearts-truest-wishes',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: "A Heart's Truest Wishes — healing received by all OTHER team Resonators +20%, their interruption resistance enhanced; if Rover: Aero is on the team, Rover: Aero additionally restores 25 Windstrings on casting their own Omega Storm. Purely defensive/utility, no DPS component to model.",
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for

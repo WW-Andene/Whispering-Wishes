@@ -71,10 +71,10 @@
   },
   "Cartethyia": {
     "effAtk": 27262,
-    "avgCrit": 1.075,
+    "avgCrit": 1.115,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 24683
+    "score": 25601
   },
   "Changli": {
     "effAtk": 1176,

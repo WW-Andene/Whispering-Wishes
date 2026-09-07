@@ -4171,9 +4171,19 @@ const SKILL_MULTIPLIERS = {
   // Sword to Mark Tide's Trace / Sword to Call for Freedom, Sword to Answer Waves' Call / May Tempest Break the
   // Tides sections) — every value already matched exactly (sums of per-hit % + flat %HP components check out to
   // the digit), no corrections needed here, unlike the RESONANCE_CHAIN_DATA row above where s2/s5 were wrong.
+  // Re-verified 2026-09-07 against Data dump/Cartethyia/Cartethyia.md's own base-kit "Basic
+  // Attack — Sword to Carve My Forms" section — every existing row already matched exactly. Added 4
+  // real, previously entirely-missing base-kit rows (Dodge Counter — Cartethyia, Heavy Attack —
+  // Cartethyia, Dodge Counter — Fleurdelys, Upward Cut — Fleurdelys). Heavy Attack — Cartethyia is
+  // explicitly "Counted as Basic Attack DMG" per its own kit text (a real override, not the usual
+  // Heavy-ATK-type default) — modeled in cartethyia.blocks.js accordingly.
   'Cartethyia': [
     ['Basic ATK', 'Base Form 1-4', '4.78%HP → 13.13%HP → 17.12%HP → 15.1%HP', 'Standard combo in her base sword form, scales off Max HP.'],
+    ['Basic ATK', 'Dodge Counter - Cartethyia', '6.85%×4', 'Base-form Dodge Counter, post-Dodge Normal Attack.'],
+    ['Basic ATK', 'Heavy Attack - Cartethyia', '2.08%×3+6.24%', "Base-form Heavy Attack; counted as Basic Attack DMG per its own kit text (not the usual Heavy ATK category). Summons Sword of Discord's Shadow (cap 1, 20s)."],
     ['Basic ATK', 'Fleurdelys 1-5', '6.49%HP → 9.09%HP → 10.65%HP → 13.7%HP → 36%HP', 'Empowered combo used in Fleurdelys form.'],
+    ['Basic ATK', 'Dodge Counter - Fleurdelys', '3.20%×3+6.39%', 'Fleurdelys-form Dodge Counter, restores Conviction on hit.'],
+    ['Basic ATK', 'Upward Cut - Fleurdelys', '4.54%×2', 'Fleurdelys-form Jump-while-grounded move, restores Conviction on hit.'],
     ['Heavy ATK', 'Fleurdelys Enhanced', '7.78%×2 + 3.89%HP', 'Charged strike in Fleurdelys form.'],
     ['Skill', 'Base Form', '6.89%×3 + 8.86%HP', 'Skill strike that applies 2 stacks of Aero Erosion and summons Sword of Virtue\'s Shadow (max 1, 20s).'],
     ['Skill', 'Fleurdelys 1-2', '24.8%HP / 24.8%HP', "Fleurdelys-form Skill variants (Sword to Answer Waves' Call / May Tempest Break the Tides) — see CHARACTER_ROTATIONS for the cast-order window between them."],
