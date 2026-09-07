@@ -218,4 +218,19 @@ export const LUCILLA_BLOCKS = [
     ],
     note: "Each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence reliably hits max, using the max value +600% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Scoped to lucilla.basic.letting-it-go only (see scoping fix note above), kept passive.",
   },
+  // Added 2026-09-07 (completeness pass): Minor Fortes had no block anywhere in this file.
+  // Inherent Skill Remembrance (Film Roll cap -> 10, Zoom cap -> 4, both consumption base amounts
+  // doubled) is pure resource-cap/economy utility with zero DPS component of its own — correctly has
+  // no block, same reasoning already used for Iuno's S4/Waxing Ascent.
+  {
+    id: 'lucilla.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Lucilla/Lucilla.md line 100-102). Unconditional, always active.',
+  },
 ];
