@@ -9146,6 +9146,17 @@ const CHAIN_NODE_ICONS = {
     s5: './characters/rover-spectro/rover-spectro-s5.webp',
     s6: './characters/rover-spectro/rover-spectro-s6.webp',
   },
+  // Added 2026-09-07 — user-supplied upload, same treatment as the 5 sets above: moved from the
+  // repo root into its character folder and wired in here. Closes the last of the 6
+  // "no CHAIN_NODE_ICONS entry at all" gaps flagged by the full-roster CharacterDetailModal audit.
+  'Rover: Aero': {
+    s1: './characters/rover-aero/rover-aero-s1.webp',
+    s2: './characters/rover-aero/rover-aero-s2.webp',
+    s3: './characters/rover-aero/rover-aero-s3.webp',
+    s4: './characters/rover-aero/rover-aero-s4.webp',
+    s5: './characters/rover-aero/rover-aero-s5.webp',
+    s6: './characters/rover-aero/rover-aero-s6.webp',
+  },
 };
 
 // [SECTION:CHAIN_NODE_NAMES] — Per-character S1-S6 Resonance Chain sequence-node names
