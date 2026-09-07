@@ -16,6 +16,23 @@
 // concertoEnergyGain is the SUMMED total across those real casts, not the single-cast value, to stay
 // consistent with how their own damage.hits already combine multiple real casts. Imminent
 // Oblivion/Wintertime Aria have no sourced Concerto Regen value anywhere in the dump — left as-is.
+//
+// Completeness pass 2026-09-07 (next character after Cantarella, alphabetically): found a REAL bug,
+// not just a completeness gap — CHARACTER_ROTATIONS['Carlotta'] has a genuine
+// `{ type: 'Mid-air', skill: 'Plunging Attack' }` step (framed as "pure repositioning, no damage
+// focus" in its own note, but it still deals its real 104.78% ATK hit every rotation cycle per
+// SKILL_MULTIPLIERS['Carlotta']'s own 'Mid-air, Attack' row), yet this file had NO block for it at
+// all — the prior comment near that SKILL_MULTIPLIERS row ("None of these 3 rows are wired into a
+// CHARACTER_ROTATIONS step... so this only fills the data table, no engine block added for them")
+// was simply wrong about this one: 'Plunging Attack' DOES substring-match the row name 'Attack', so
+// the rotation step resolves a real hit that the modern engine was silently dropping for lack of a
+// block. Added carlotta.midair.plunging-attack below to close this real, DPS-relevant gap. Also
+// added Minor Fortes (Crit Rate+8%, ATK%+12%, Data dump/Carlotta/Carlotta.md line 89), both Inherent
+// Skills (Flawless Purity, Ars Gratia Artis — the latter already referenced by
+// carlotta.debuff.deconstruction's own note but never given its own block), and the remaining real,
+// sourced-but-genuinely-unused base-kit rows (Basic ATK Stage 1-2, Necessary Measures 1-3, Heavy ATK
+// Standard/Containment Tactics, Mid-air Customary Greetings, Dodge Counter Riposte) as documented
+// inert blocks, same convention as Aalto's/Camellya's/Cantarella's own unused-but-sourced blocks.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -148,6 +165,70 @@ export const CARLOTTA_BLOCKS = [
     note: 'S3 Kaleidoscope Sparks: Closing Remark gains 1 additional 1032.18%-ATK strike on the same Outro cast, gated to sequence 3+.',
   },
 
+  // Added 2026-09-07 (completeness pass): the REAL bug — CHARACTER_ROTATIONS['Carlotta'] casts this
+  // exact step every rotation cycle, and SKILL_MULTIPLIERS['Carlotta']'s 'Mid-air, Attack' row
+  // (104.78%) substring-matches it, but no block existed to compose the hit — see file header.
+  {
+    id: 'carlotta.midair.plunging-attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Plunging Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('104.78%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Mid-air Attack. No explicit "considered X DMG" override text — kept basicDmg per this schema\'s established convention for mid-air attacks with no override. Genuinely IS in CHARACTER_ROTATIONS (used to reposition after Art of Violence/Chromatic Splendor) — previously missing a block entirely, silently dropping this real per-rotation hit from computed DPS.',
+  },
+
+  // Added 2026-09-07 (completeness pass): her remaining base-kit rows, genuinely unused in
+  // CHARACTER_ROTATIONS (confirmed — only Plunging Attack above is a real rotation step among her
+  // whole base kit) — real, sourced SKILL_MULTIPLIERS rows, previously had no block anywhere.
+  {
+    id: 'carlotta.basic.stage1-2',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Stage 1-2' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('54.08% → 39.55%+39.55%+52.73%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base 2-stage Basic ATK combo (in-game name "Silent Execution"). Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'carlotta.basic.necessary-measures',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Necessary Measures 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('65.91% → 60.08%+73.43% → 139.93%+23.33%×4'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Moldable-Crystal Basic ATK replacement, consumes 1 crystal per strike. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'carlotta.heavy.standard',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('22.82%×4 + 60.84%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Base Heavy Attack. No override text — kept heavyDmg. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'carlotta.heavy.containment-tactics',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Containment Tactics' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('34.23%×4 + 91.26%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Substance-full Heavy Attack replacement, reduces Art of Violence cooldown 6s. No override text — kept heavyDmg. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation (her modeled rotation uses Imminent Oblivion instead).',
+  },
+  {
+    id: 'carlotta.midair.customary-greetings',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Customary Greetings' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('107.99% + 131.99%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Basic Attack shortly after landing from a Mid-air Attack casts this flip-over surprise shot. basicDmg per the same mid-air convention as carlotta.midair.plunging-attack. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'carlotta.basic.dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Riposte' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('103.77% + 137.55%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Dodge Counter — the dump\'s own text calls it "Normal Attack shortly after a successful Dodge," hence basicDmg. Consumes 1 Moldable Crystal. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'carlotta.selfbuff.final-bow',
@@ -178,6 +259,35 @@ export const CARLOTTA_BLOCKS = [
     target: { scope: 'all-enemies' },
     effects: [{ stat: 'defIgnore', value: 18, stacking: 'refresh' }],
     note: 'Also applied by Intro/Chromatic Splendor/Death Knell/Forte Heavy via Ars Gratia Artis — only the Liberation:Era of New Wave application is wired to a real CHARACTER_ROTATIONS step, the others not separately modeled.',
+  },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere
+  // in this file, same class of gap as every other converted character's own missing Minor Fortes.
+  {
+    id: 'carlotta.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Carlotta/Carlotta.md line 89). Unconditional, always active.',
+  },
+  // Added 2026-09-07 (completeness pass): her 2 Inherent Skills, previously not referenced anywhere
+  // in this file — real, sourced, kind:'utility' with effects:[] since neither has a representable
+  // DPS stat, same pattern as Aalto's own inert Inherent Skill blocks.
+  {
+    id: 'carlotta.inherent.flawless-purity',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Flawless Purity — after Chromatic Splendor, Mid-air Attacks are DMG/interruption-immune before the hit lands; team\'s active Resonator gets -20% Flight STA cost while Carlotta is on team. Purely defensive/utility, no DPS component to model.',
+  },
+  {
+    id: 'carlotta.inherent.ars-gratia-artis',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: 'Ars Gratia Artis — Wintertime Aria, Chromatic Splendor, Death Knell, and Imminent Oblivion can also inflict Deconstruction. Already referenced by carlotta.debuff.deconstruction\'s own note; this block gives the Inherent Skill itself a home. No separate DPS component (Deconstruction\'s own defIgnore effect is modeled on carlotta.debuff.deconstruction).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
