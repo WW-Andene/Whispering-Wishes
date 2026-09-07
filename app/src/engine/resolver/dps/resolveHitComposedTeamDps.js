@@ -210,9 +210,28 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
     }
   }
 
+  // 'ally-action' damage blocks — cross-character reactivity (e.g. Hiyuki's Glacio Bite proc firing
+  // off ANY teammate's real Chafe-applying cast, not just her own): the causing step can belong to
+  // ANY team member, not just targetName, so — same reason the crossCharacterHit case just above
+  // needs the full `results` list instead of `targetResults` — this scans every real step in the
+  // whole team simulation for the block's own declared `trigger.action` tag (populated onto that
+  // step's real `actionTags` set by whichever block's `appliesTags` fired there, per
+  // rotationSimulator.js's own collection pass), and credits the damage to targetName (whose OWN
+  // block this still is — `damageBlocks` is already scoped to `blocksByOwner[targetName]` above).
+  for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+    if (db.trigger.type !== 'ally-action') continue;
+    for (const r of results) {
+      if (r.ineligibleBlockIds.has(db.id)) continue;
+      if (!r.actionTags?.has(db.trigger.action)) continue;
+      if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
+      pushHit(r, db, hits, category, basis, guaranteedCrit);
+    }
+  }
+
   for (const r of targetResults) {
     for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
       if (db.trigger.type === 'windowed-proc' && db.trigger.crossCharacterHit) continue; // handled above
+      if (db.trigger.type === 'ally-action') continue; // handled above
       if (r.ineligibleBlockIds.has(db.id)) continue;
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;

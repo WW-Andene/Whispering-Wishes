@@ -21,6 +21,11 @@ export const SUISUI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Tinkling Jade' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity: real, sourced Glacio Chafe application (see this
+    // block's own note below) — tagged so ANY teammate's own 'ally-action' Chafe-reactive block
+    // (e.g. Hiyuki's Glacio Bite proc) can fire off it, same general mechanism used for
+    // Hiyuki's/Lucilla's own Chafe-applying blocks.
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('28.63%'), category: 'introDmg', basis: 'HP' },
     note: 'Max HP-scaling opener. Inflicts 1 stack of Glacio Chafe, consumes all Cloud Breath to pull in nearby targets, enters Drizzle Stance.',
   },
@@ -37,6 +42,11 @@ export const SUISUI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Drizzle Stance Stage 1-4' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity: Stage 4 inflicts real Glacio Chafe (see this block's
+    // own note below) — see suisui.intro.tinkling-jade's own comment for the mechanism. Tagged at
+    // the whole-combo block level (this schema doesn't split Stage 4 into its own block), same
+    // "one tag per cast" granularity already used for Lucilla's Oblivion.
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('19.57%×4 → 31.81%×3+15.91%×4 → 13.76%×12 → 159.05%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Builds Floral Epistle toward the 600 cap; Stage 4 also inflicts Glacio Chafe.',
   },

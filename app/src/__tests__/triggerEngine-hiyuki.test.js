@@ -44,17 +44,35 @@ describe('triggerEngine parity — Hiyuki', () => {
   // (elemDmg:60, matching legacy.selfBuffs[1]) was a real correctness bug — elemDmg is Glacio DMG
   // Bonus, which the dump's own text says does NOT apply to Glacio Bite ("a distinct multiplier from
   // base Glacio DMG Bonus"), so it was broadly over-buffing Hiyuki's entire kit instead of the
-  // (previously nonexistent) Glacio Bite instances. Replaced by real hiyuki.procdmg.glacio-bite-*
-  // damage blocks with the Amp/Multiplier folded directly into their own %ATK value — see
+  // (previously nonexistent) Glacio Bite instances. Replaced by a real hiyuki.procdmg.glacio-bite
+  // damage block with the Amp/Multiplier folded directly into its own %ATK value — see
   // hiyuki.blocks.js's own header comment for the full derivation.
-  it('Glacio Bite is now modeled as real per-cast proc damage blocks, not the old broad elemDmg buff', () => {
+  //
+  // 2026-09-07 (cross-character reactivity pass): this used to be 7 separate self-only
+  // 'cast'-triggered proc blocks (one per Chafe-applying move); now a single 'ally-action'-
+  // triggered block firing off the shared 'glacio-chafe' tag any team member's own Chafe-applying
+  // block can carry — see kitRulesRegistry/decisionEngine-hiyuki.test.js and
+  // resolveHitComposedDps.js's own ally-action handling for the cross-character mechanism itself.
+  it('Glacio Bite is now modeled as a real ally-action proc damage block, not the old broad elemDmg buff', () => {
     expect(HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.selfbuff.fine-snow-glacio-bite')).toBeUndefined();
-    const procBlocks = HIYUKI_BLOCKS.filter(b => b.id.startsWith('hiyuki.procdmg.glacio-bite-'));
-    expect(procBlocks.length).toBe(7);
-    for (const b of procBlocks) {
-      expect(b.kind).toBe('damage');
-      expect(b.damage.category).toBeUndefined();
-      expect(b.damage.hits[0].atkPct).toBeCloseTo(660.96, 2);
+    const proc = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.procdmg.glacio-bite');
+    expect(proc).toBeDefined();
+    expect(proc.kind).toBe('damage');
+    expect(proc.trigger).toEqual({ type: 'ally-action', action: 'glacio-chafe' });
+    expect(proc.damage.category).toBeUndefined();
+    expect(proc.damage.hits[0].atkPct).toBeCloseTo(660.96, 2);
+  });
+
+  it('every real Glacio-Chafe-applying block carries the shared glacio-chafe appliesTags marker', () => {
+    const chafeBlockIds = [
+      'hiyuki.liberation.frostedge', 'hiyuki.basic.present-self-stage3',
+      'hiyuki.liberation.frost-splinter-present-self', 'hiyuki.liberation.foreclaiming-inward-vision',
+      'hiyuki.liberation.foreclaimed-self-stage1-3', 'hiyuki.liberation.iai',
+      'hiyuki.liberation.bitterfrost-foreclaimed-self',
+    ];
+    for (const id of chafeBlockIds) {
+      const b = HIYUKI_BLOCKS.find(x => x.id === id);
+      expect(b.appliesTags, `${id} should carry the glacio-chafe tag`).toEqual([{ tag: 'glacio-chafe' }]);
     }
   });
 

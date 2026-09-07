@@ -25,6 +25,10 @@ export const LUCILLA_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Clip It' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity: real, sourced Glacio Chafe application (see this
+    // block's own note below and Data dump/Lucilla/Lucilla.md line 63) — tagged so ANY teammate's
+    // own 'ally-action' Chafe-reactive block (e.g. Hiyuki's Glacio Bite proc) can fire off it.
+    appliesTags: [{ tag: 'glacio-chafe' }],
     // category/basis added during Layer 4 migration: was uncategorized, silently rejecting Resonance
     // Skill DMG Bonus. No override text names a different category, same default-to-skillDmg convention
     // as Aalto/Calcharo/Encore/Denia/Galbrena/Iuno/Jiyan's own Intro blocks.
@@ -36,6 +40,9 @@ export const LUCILLA_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Spotlight' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity: real, sourced "inflicts an extra Glacio Chafe stack in
+    // Chafe mode" (Data dump/Lucilla/Lucilla.md line 29) — see lucilla.intro.clip-it's own comment.
+    appliesTags: [{ tag: 'glacio-chafe' }],
     // Row 'Phantom Frame / Compensate / Spotlight' has 3 alternative values — the Spotlight variant
     // (perfect-timed release) matches this step's own label.
     damage: { hits: parseSkillMultiplierHits('82.35%×2+274.48%+109.80%'), category: 'skillDmg', basis: 'ATK' },
@@ -68,6 +75,11 @@ export const LUCILLA_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Tracing Forms Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    // 2026-09-07 cross-character reactivity: real, sourced "Glacio Chafe mode: considered Basic
+    // Attack DMG, inflicts 1 Glacio Chafe stack" (Data dump line 78) — see lucilla.intro.clip-it's
+    // own comment. One tag per cast (this block already condenses 3 real Oblivion hits into one
+    // cast-triggered block), not per individual Photo consumed.
+    appliesTags: [{ tag: 'glacio-chafe' }],
     // 3 separate Oblivion hits, one per Photo consumed during Tracing Forms (a full 3-Photo
     // Reminiscence reliably hits all 3, same "use the max case" convention as this table's S6).
     damage: { hits: [{ atkPct: 285.48 }, { atkPct: 285.48 }, { atkPct: 285.48 }], category: 'basicDmg', basis: 'ATK' },

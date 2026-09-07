@@ -72,6 +72,7 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Frostedge' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('156.15%'), category: 'libDmg', basis: 'ATK' },
     note: 'Opener hit applying Glacio Chafe; considered Resonance Liberation DMG despite the Intro Skill input.',
   },
@@ -82,6 +83,7 @@ export const HIYUKI_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     // CHARACTER_ROTATIONS' own note says the Intro leaves her primed to land Stage 3 directly (only
     // that segment of the row's 3-stage combo fires) — plain Basic ATK DMG, not reclassified.
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('4.92%×5+98.37%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Only Stage 3 lands (the Intro skips straight to it). Applies Glacio Chafe.',
   },
@@ -90,6 +92,7 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Frost Splinter: Present Self' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('79.31%×2+158.61%'), category: 'libDmg', basis: 'ATK' },
     note: 'Interruption-immune throughout, applies Glacio Chafe on the last hit; considered Resonance Liberation DMG despite the Heavy ATK input.',
   },
@@ -98,6 +101,7 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Foreclaiming: Inward Vision' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('397.62%'), category: 'libDmg', basis: 'ATK' },
     note: 'Ultimate: enters Foreclaimed Self, applies 4 stacks of Glacio Chafe on hit, grants 3 Frostharden Iai.',
   },
@@ -106,6 +110,7 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Foreclaimed Self Stage 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('49.27% → 40.02%×2 → 25.16%×4+67.08%'), category: 'libDmg', basis: 'ATK' },
     note: 'Basic ATK replacement in Foreclaimed Self; Stage 3 applies Glacio Chafe. Considered Resonance Liberation DMG. Fires twice in the real rotation (real, repeated cast, not a bug).',
   },
@@ -130,6 +135,7 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Iai' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('283.82%+47.31%×4'), category: 'libDmg', basis: 'ATK' },
     note: 'Cast in Iai Stance (100+ Frostheart), up to 3 uses per entry; each cast consumes 1 Frostharden Iai for 3 Glacio Chafe stacks and grants 1 Whiteout Bitterfrost. Considered Resonance Liberation DMG.',
   },
@@ -138,6 +144,7 @@ export const HIYUKI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Bitterfrost: Foreclaimed Self' },
     timing: {}, target: { scope: 'self' }, effects: [],
+    appliesTags: [{ tag: 'glacio-chafe' }],
     damage: { hits: parseSkillMultiplierHits('15.41%×8+493.05%'), category: 'libDmg', basis: 'ATK' },
     note: 'Forte finisher once Whiteout Bitterfrost is full; consumes it for 1 Snowforged Blade. Considered Resonance Liberation DMG despite the Heavy ATK input.',
   },
@@ -261,64 +268,29 @@ export const HIYUKI_BLOCKS = [
     note: 'Inherent Skill Ephemeral Realm: after 4s out of combat (post-fight or post-knockout) with <1 Snowforged Blade, restore 1 (Data dump line 100) — pure out-of-combat resource economy, zero DPS component.',
   },
 
-  // ── Glacio Bite proc blocks — see this file's own header comment for the full derivation.
+  // ── Glacio Bite proc block — see this file's own header comment for the full derivation.
   //    combinedPct = 102 * (1 + 0.60 + 4.88) = 660.96 (base 102% x [Fine Snow Amp ceiling 60% +
-  //    chain.s3 Multiplier 488%], summed as one %DMG-Bonus-shaped layer, then applied to the base). ──
+  //    chain.s3 Multiplier 488%], summed as one %DMG-Bonus-shaped layer, then applied to the base).
+  //
+  //    Cross-character reactivity (2026-09-07, real engine work, not a per-team-pairing hack):
+  //    ONE 'ally-action' block firing off the shared 'glacio-chafe' tag — populated by ANY block on
+  //    ANY team member whose own note already confirms it applies real Glacio Chafe (currently
+  //    tagged: this file's own 7 Chafe-applying blocks above, Lucilla's Clip It/Spotlight/Oblivion,
+  //    Suisui's Tinkling Jade/Drizzle Stance Stage 4 — see each file's own appliesTags addition).
+  //    This is the general mechanism, not a Hiyuki+Lucilla-specific one: it fires identically for
+  //    solo Hiyuki (her own tagged casts populate the same actionTags set — see
+  //    resolveHitComposedDps.js's own ally-action handling), for Hiyuki+Suisui with no Lucilla at
+  //    all, or for any future Glacio-Chafe-applying character the moment their own block file tags
+  //    itself the same way — nothing here names a specific teammate. Replaces the 7 separate
+  //    self-only 'cast'-triggered proc blocks this file used before cross-character reactivity was
+  //    built (each of those only fired off Hiyuki's OWN casts). ──
   {
-    id: 'hiyuki.procdmg.glacio-bite-frostedge',
+    id: 'hiyuki.procdmg.glacio-bite',
     source: SOURCE, kind: 'damage', section: 'Buff',
-    trigger: { type: 'cast', on: 'Liberation:Frostedge' },
+    trigger: { type: 'ally-action', action: 'glacio-chafe' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
-    note: 'Glacio Bite proc off Frostedge\'s own Glacio Chafe application — see this file\'s header comment for the full derivation/assumptions.',
-  },
-  {
-    id: 'hiyuki.procdmg.glacio-bite-present-self-stage3',
-    source: SOURCE, kind: 'damage', section: 'Buff',
-    trigger: { type: 'cast', on: 'Basic ATK:Present Self Stage 1-3' },
-    timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
-    note: 'Glacio Bite proc off Present Self Stage 3\'s own Glacio Chafe application — see this file\'s header comment.',
-  },
-  {
-    id: 'hiyuki.procdmg.glacio-bite-frost-splinter',
-    source: SOURCE, kind: 'damage', section: 'Buff',
-    trigger: { type: 'cast', on: 'Liberation:Frost Splinter: Present Self' },
-    timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
-    note: 'Glacio Bite proc off Frost Splinter\'s own Glacio Chafe application (last hit) — see this file\'s header comment.',
-  },
-  {
-    id: 'hiyuki.procdmg.glacio-bite-foreclaiming-inward-vision',
-    source: SOURCE, kind: 'damage', section: 'Buff',
-    trigger: { type: 'cast', on: 'Liberation:Foreclaiming: Inward Vision' },
-    timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
-    note: 'Glacio Bite proc off Foreclaiming: Inward Vision\'s own Glacio Chafe application (modeled as one application event per cast, not stack-granular — it applies 4 stacks in the real kit text) — see this file\'s header comment.',
-  },
-  {
-    id: 'hiyuki.procdmg.glacio-bite-foreclaimed-self-stage1-3',
-    source: SOURCE, kind: 'damage', section: 'Buff',
-    trigger: { type: 'cast', on: 'Liberation:Foreclaimed Self Stage 1-3' },
-    timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
-    note: 'Glacio Bite proc off Foreclaimed Self Stage 3\'s own Glacio Chafe application — fires twice, matching the real rotation\'s own repeated cast. See this file\'s header comment.',
-  },
-  {
-    id: 'hiyuki.procdmg.glacio-bite-iai',
-    source: SOURCE, kind: 'damage', section: 'Buff',
-    trigger: { type: 'cast', on: 'Liberation:Iai' },
-    timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
-    note: 'Glacio Bite proc off Iai\'s own Glacio Chafe application (modeled as one application event per cast, not per Frostharden-Iai-use-granular, matching how the base Iai damage block already condenses its up-to-3 real casts into one block) — see this file\'s header comment.',
-  },
-  {
-    id: 'hiyuki.procdmg.glacio-bite-bitterfrost',
-    source: SOURCE, kind: 'damage', section: 'Buff',
-    trigger: { type: 'cast', on: 'Liberation:Bitterfrost: Foreclaimed Self' },
-    timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
-    note: 'Glacio Bite proc off Bitterfrost\'s own Glacio Chafe application — see this file\'s header comment.',
+    note: 'Glacio Bite proc firing off ANY real Glacio Chafe application on the team (her own included) — see this file\'s header comment for the full derivation/assumptions and the cross-character mechanism.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's

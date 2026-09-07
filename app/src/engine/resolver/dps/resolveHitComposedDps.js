@@ -192,7 +192,18 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   for (const r of results) {
     for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
       if (r.ineligibleBlockIds.has(db.id)) continue; // this specific cast is on cooldown
-      if (!triggerFired(db.trigger, r.firedTriggers)) continue;
+      // 'ally-action' damage blocks (cross-character reactivity, e.g. Hiyuki's Glacio Bite proc
+      // firing off ANY Chafe-applying cast, her own included) key off the step's real `actionTags`
+      // set (populated by any appliesTags-tagged block that fired on it — see rotationSimulator.js's
+      // own actionTags collection), not `firedTriggers`/triggerFired() — same distinction
+      // resolveSimulatedTeamRotation.js's own buff-side ally-action handling already makes. Solo mode
+      // (this resolver) still populates actionTags for a single character's own steps via the same
+      // shared simulateStepsCore() every mode runs through, so a character's own ally-action-tagged
+      // proc correctly fires off her own casts even with no team present.
+      const triggerMatches = db.trigger.type === 'ally-action'
+        ? r.actionTags?.has(db.trigger.action)
+        : triggerFired(db.trigger, r.firedTriggers);
+      if (!triggerMatches) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
 
       const stats = statsAtInstant(r.time, db.id, r.firedTriggers);
