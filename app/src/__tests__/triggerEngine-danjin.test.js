@@ -50,13 +50,18 @@ describe('triggerEngine parity — Danjin', () => {
     expect(fired.has('danjin.forte.chaoscleave')).toBe(true);
   });
 
-  it('Inherent Skill Overflow matches CHAR_BUFF_TABLE and is the only heavyDmg-categorized buff (no over-crediting risk)', () => {
+  // Updated 2026-09-07 (completeness pass): danjin.heavy.execution (a real, sourced but
+  // rotation-unused base Heavy ATK block) was added this same pass, so Chaoscleave is no longer the
+  // ONLY heavyDmg block — Overflow was rescoped via scopedToBlockId to Chaoscleave specifically to
+  // avoid over-crediting the new block, so the real assertion now is that scoping, not exclusivity.
+  it('Inherent Skill Overflow matches CHAR_BUFF_TABLE and is correctly scoped to Chaoscleave only', () => {
     const legacy = CHAR_BUFF_TABLE['Danjin'];
     const overflow = DANJIN_BLOCKS.find(b => b.id === 'danjin.selfbuff.overflow');
     expect(overflow.effects[0].value).toBe(legacy.selfBuffs[0].value);
     expect(overflow.timing.duration).toBe(legacy.selfBuffs[0].duration);
+    expect(overflow.effects[0].scopedToBlockId).toBe('danjin.forte.chaoscleave');
     const heavyDmgBlocks = DANJIN_BLOCKS.filter(b => b.kind === 'damage' && b.damage?.category === 'heavyDmg');
-    expect(heavyDmgBlocks.map(b => b.id)).toEqual(['danjin.forte.chaoscleave']);
+    expect(heavyDmgBlocks.map(b => b.id).sort()).toEqual(['danjin.forte.chaoscleave', 'danjin.heavy.execution']);
   });
 
   it("Intro (Vindication) is skillDmg-categorized (was uncategorized)", () => {
