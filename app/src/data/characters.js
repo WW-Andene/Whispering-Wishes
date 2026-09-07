@@ -8263,6 +8263,8 @@ const SKILL_ICONS = {
     'Tracing Forms Stage 1-3': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Letting It Go': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // auto-follow-up after Basic Attack - Tracing Forms Stage 3, same generic weapon icon
     'Phantom Frame': './characters/lucilla/G4jbSdr2-lucilla-res-Skill.webp', // Resonance Skill
+    'Compensate': './characters/lucilla/G4jbSdr2-lucilla-res-Skill.webp', // release-outside-Focus variant of Phantom Frame, same wiki icon
+    'Spotlight': './characters/lucilla/G4jbSdr2-lucilla-res-Skill.webp', // release-inside-Focus variant of Phantom Frame — used standalone in the rotation guide, unlike SKILL_MULTIPLIERS' combined row name
     'Clear As Day': './characters/lucilla/Q7dvwN32-lucilla-liberation.webp', // Resonance Liberation
     'Oblivion': './characters/lucilla/qYZ1pTZ0-lucilla-forte.webp', // Forte Circuit — Memory Palace
     'Clip It': './characters/lucilla/7JWJhpcF-lucilla-intro.webp', // Intro Skill
