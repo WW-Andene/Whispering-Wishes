@@ -46,6 +46,23 @@
 // rotationSimulator.js's `resourceGain`/`resourceAtLeast` gauge simulation — the two systems don't
 // interact, unlike the real collision found and fixed in Buling's Trigram gauge (see that file's own
 // note) where `resourceGain` and `resourceStepOn` DID target the same simulated resource.
+//
+// Completeness pass 2026-09-07 (next character after Calcharo, alphabetically, same "bring every
+// character up to Aalto's reference standard" direction): Minor Fortes (Crit DMG+16%, ATK%+12%,
+// Data dump/Camellya/Camellya.md line 125) had no block at all, same class of gap as Aalto's/
+// Aemeath's/Augusta's/Calcharo's own missing Minor Fortes. Also added her whole base (non-Blossom-
+// Mode) kit — Basic ATK Thorns 1-5, Heavy ATK Standard, Mid-air Plunging Attack, Dodge Counter
+// Standard — plus Blossom Mode's Jump/Dodge-Counter replacements Vining Ronde/Atonement: all 6 are
+// real moves with their own SKILL_MULTIPLIERS['Camellya'] rows, previously had no block anywhere in
+// this file, and none appear in CHARACTER_ROTATIONS['Camellya'] (her real opener casts Intro
+// straight into Crimson Blossom/Blossom Mode, never touching base kit) — present and sourced but
+// inert, same "documented gap" status as Aalto's/Augusta's own inert blocks. Base Heavy ATK
+// (in-game name "Pruning") is categorized basicDmg, not heavyDmg: her Inherent Skill Seedbed's own
+// text is explicit ("Heavy Attack Pruning's DMG is now considered Basic Attack DMG"), and this
+// file's own camellya.selfbuff.seedbed block already models Seedbed as an unconditional passive
+// (Inherent Skills are always-unlocked in this codebase's convention, same as every other
+// character's own Minor Fortes/Inherent Skill blocks) — so the category override is live, not
+// conditional on anything this rotation doesn't already satisfy.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -213,6 +230,59 @@ export const CAMELLYA_BLOCKS = [
     note: 'Base 329.24% ATK Havoc DMG, unconditional.',
   },
 
+  // Added 2026-09-07 (completeness pass): her base (non-Blossom-Mode) kit, previously entirely
+  // absent — real, sourced SKILL_MULTIPLIERS['Camellya'] rows, none in CHARACTER_ROTATIONS (see file
+  // header). Category basicDmg per Seedbed's own "Pruning's DMG is now considered Basic Attack DMG"
+  // (see file header note on why that override applies unconditionally here).
+  {
+    id: 'camellya.basic.thorns',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Thorns 1-5' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('62.53% → 46.48%×2 → 50.70%×3 → 24.70%×20 → 48.17%×4'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base 5-stage Basic ATK combo (in-game name "Burgeoning"). Not in CHARACTER_ROTATIONS — real move, but her real opener casts Intro straight into Crimson Blossom/Blossom Mode, never touching base kit.',
+  },
+  {
+    id: 'camellya.heavy.pruning',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('88.14%×3'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Heavy Attack (in-game name "Pruning"). Categorized basicDmg per Inherent Skill Seedbed\'s own text: "Heavy Attack Pruning\'s DMG is now considered Basic Attack DMG" (see file header). Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'camellya.midair.plunging-attack',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Plunging Attack' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('65.61%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Mid-air Attack. No explicit "considered X DMG" override text — kept basicDmg per this schema\'s established convention for mid-air attacks with no override (same precedent as Aalto\'s/Lupa\'s own mid-air blocks). Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'camellya.basic.dodge-counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('99.40%×3'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Base Dodge Counter — the dump\'s own text calls it a Basic Attack variant explicitly ("Basic Attack after successful Dodge, Havoc DMG"), hence basicDmg. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+  {
+    id: 'camellya.basic.vining-ronde',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Vining Ronde' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('52.95%×3'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Blossom Mode\'s Jump replacement, considered Basic Attack DMG per its own kit text; ends Blossom Mode on cast. Not in CHARACTER_ROTATIONS — real move, but her real rotation always exits Blossom Mode via Floral Ravage instead.',
+  },
+  {
+    id: 'camellya.basic.atonement',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Atonement' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('113.33%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Blossom Mode\'s Dodge Counter replacement, considered Basic Attack DMG per its own kit text. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'camellya.selfbuff.seedbed',
@@ -233,6 +303,21 @@ export const CAMELLYA_BLOCKS = [
     target: { scope: 'self' },
     effects: [{ stat: 'basicDmg', value: 15, source: 'self-kit' }],
     note: 'Epiphyte: +15% Basic DMG.',
+  },
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit DMG+16%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus unlocked via Forte-tree ascension, entirely separate from Seedbed/
+  // Epiphyte. Previously had no block anywhere in this file, same class of gap as Aalto's/Aemeath's/
+  // Augusta's/Calcharo's own missing Minor Fortes.
+  {
+    id: 'camellya.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critDmg', value: 16, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit DMG+16%, ATK%+12% (Data dump/Camellya/Camellya.md line 125). Unconditional, always active.',
   },
 
   // ── The cast-order dependency (Twining's conditional bonus DMG) ──
