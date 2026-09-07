@@ -7830,6 +7830,18 @@ const SKILL_ICONS = {
   // (2026-08-17), resolved via the MediaWiki imageinfo API — all 6 URLs verified 200/live before
   // upload. Illusion Collapse (Basic ATK) has a dedicated icon (not a shared generic weapon one).
   'Cantarella': {
+    // Cross-checked against Data dump/Cantarella/Cantarella.md: every SKILL_MULTIPLIERS row uses
+    // the specific named CAST inside a section, not that section's own header name, so none of
+    // them ever matched the keys below on their own (same class of gap as Zani's Forte). Added
+    // explicit aliases for each real move name to the section's real, already-sourced icon.
+    'Stage 1-3': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp', // Basic ATK combo row phrasing
+    'Graceful Step': './characters/cantarella/VWcwSf2F-skill-dancewithshadows.webp', // Resonance Skill's real cast name (Skill section is "Dance with Shadows")
+    'Jolt': './characters/cantarella/VWcwSf2F-skill-dancewithshadows.webp', // Graceful Step's Hazy-Dream-removal follow-up, same Skill
+    'Abysmal Vortex': './characters/cantarella/SDPF5pzn-skill-betweenillusion.webp', // Forte(Mirage)'s Mid-air Attack replacement (Forte section is "Between Illusion and Reality")
+    'Shadowy Sweep': './characters/cantarella/SDPF5pzn-skill-betweenillusion.webp', // Forte(Mirage)'s Dodge Counter replacement, same Forte
+    'Flowing Suffocation': './characters/cantarella/60bNqfnF-skill-beneaththesea.webp', // Ultimate's real cast name (Liberation section is "Beneath the Sea")
+    'Ripple': './characters/cantarella/DgDVdZ3T-skill-cruise.webp', // Intro's real cast name (Intro section is "Cruise")
+    'Tidal Surge': './characters/cantarella/DgDVdZ3T-skill-cruise.webp', // Mirage-state Intro variant of Ripple, same Intro
     'Illusion Collapse': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp',
     'Standard': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp',
     'Delusive Dive': './characters/cantarella/Jw0SD1X0-skill-illusioncollapse.webp', // Trance's Heavy Attack replacement, same generic Basic/Heavy icon
