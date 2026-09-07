@@ -1039,27 +1039,27 @@ const CHARACTER_DATA = {
     // weeklyDrop Skyward Glazed Heart, forgery Carved Crystal family — both confirmed same source.
     skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Carved Crystal' },
     // bestWeapon confirmed real via the source: Thousandfold Deliverance (Broadblade, 412 ATK / +72.2% HP, "Hark, Spirits and Stars").
-    // No community build guide exists yet — the wiki's own wiki still flags him "upcoming content" and
-    // "not featured in any Event Convene" as of 2026-08-20 (he's confirmed for the 3.6-p2 banner,
-    // ~Sept 10, per BANNER_HISTORY, not live day-one like Qingxiao) — bestEchoes/teams/weaponAlts
-    // remain genuinely unconfirmed, not guessed.
+    // weaponAlts added 2026-09-07 against a real nanoka.cc dump (Data dump/Jingran/Jingran.md) —
+    // its "Recommended Weapons" list ranks Thousandfold Deliverance #1 (already bestWeapon), Radiance
+    // Cleaver #2, Aureate Zenith #3; no ATK%/comparison figures given on that page to rank further alts.
+    // bestEchoes/teams remain genuinely unconfirmed — that same dump's guide content for him has no
+    // Echo-set/team-synergy/rotation section written yet (a newly-released character), not guessed.
     // bestEchoes/teams left empty rather than a placeholder sentinel string: DamageCalculator.jsx's
     // "Recommended" line (`m.d.bestEchoes && ...`) renders any truthy bestEchoes verbatim to the
     // user, sentinel prose included — found via a team-recommendation audit (2026-09-01). An empty
     // array renders nothing (falls through to the "no recommendation yet" empty state) instead of
-    // leaking "Unconfirmed (releases 3.6-p2, ~Sept 2026)" as if it were a real echo-set suggestion.
+    // leaking placeholder prose as if it were a real echo-set suggestion.
     bestEchoes: [], bestWeapon: 'Thousandfold Deliverance',
+    weaponAlts: { alt5: ['Radiance Cleaver', 'Aureate Zenith'] },
     teams: [] },
-    // Re-checked 2026-08-31 (deepened rotation/Resonance-Chain data pass): Jingran remains the sole gap
-    // in CHARACTER_ROTATIONS/RESONANCE_CHAIN_DATA out of the 58-entry roster, and it is still not
-    // fabricatable — reconfirmed via headless-browser fetch (Chrome UA + google.com referer, load-wait
-    // 8s) against both sources: the source/wuthering-waves/characters/jingran explicitly states "Jingran
-    // skills aren't available yet" / "rotation information aren't available yet" (page last updated
-    // 17/July/2026, pre-kit-reveal); the wiki/Jingran is flagged "This page is
-    // about upcoming content" with an explicit "Jingran doesn't have any Forte yet" / "doesn't have any
-    // Sequence Nodes yet" under its Combat Overview, and gives his release date as September 10, 2026 —
-    // still in the future as of this pass (today: 2026-08-31). No rotation/S1-S6/skill-multiplier entry
-    // has been added for him; do not fill this in until his kit is actually revealed post-release.
+    // Re-checked 2026-09-07 against a real nanoka.cc .mht snapshot (Data dump/Jingran/Jingran.md) —
+    // he is now LIVE ("Version 3.6 (live)" on that page, captured 7/September/2026), no longer
+    // pre-release. His real kit — SKILL_MULTIPLIERS, RESONANCE_CHAIN_DATA, Minor Fortes, Inherent
+    // Skills — has now been filled in from that source (see the dump's own "App Data Comparison"
+    // section for exactly what changed). CHARACTER_ROTATIONS['Jingran'] is still correctly absent:
+    // that same dump's guide content has no rotation/combo/team section written yet for him (a
+    // newly-released character) — not fabricated here either. Do not fill it in until a real source
+    // publishes his actual optimal rotation.
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
@@ -3732,10 +3732,21 @@ const SKILL_MULTIPLIERS = {
     ['Intro', 'Tonality Shift', '39.79%+46.42%×2'],
     ['Outro', 'Lingering Song', '800% ATK'],
   ],
+  // Re-verified 2026-09-07 against a real nanoka.cc .mht snapshot (Data dump/Jingran/Jingran.md,
+  // he is now live as of that dump's capture) — every value below already matched the source exactly,
+  // no numeric corrections needed. Added 3 real, previously entirely-missing rows: Mid-air Attack,
+  // Dodge Counter (both stance variants — Nether Dive/Light Watch). The source is also explicit that
+  // Basic ATK Stage 3/4 (both stances) and BOTH Dodge Counter variants are "considered Heavy Attack
+  // DMG," not Basic Attack DMG — this flat table has no per-stage category column, so that split is
+  // modeled at the jingran.blocks.js level (separate Stage 1-2/Stage 3-4 blocks with different
+  // categories) rather than here.
   'Jingran': [
     ['Basic ATK', "Drink Soul / Devil's Bane Stage 1-4", '44.74%→37.28%×2→27.33%×4→45.95%×2+30.63%×2 (Yin) / 39.82%→59.68%+39.79%→47.73%×2+63.64%→86.95%+12.43%×3 (Yang)'],
+    ['Mid-air', 'Attack', '92.45%'],
+    ['Dodge Counter', 'Nether Dive', '49.70%×4', "Yin Vessel Dodge Counter; considered Heavy Attack DMG per its own kit text."],
+    ['Dodge Counter', 'Light Watch', '74.57%+74.57%+99.43%', "Yang Font Dodge Counter; considered Heavy Attack DMG per its own kit text."],
     ['Skill', 'Encroaching Yin / Scorching Yang', '65.61%+32.81%×3'],
-    ['Skill', "Netherworld Traverse / Afterlife's Guide", '51.69%+25.85%×2+38.77%×4 / 65.87%×2+131.74%'],
+    ['Skill', "Netherworld Traverse / Afterlife's Guide", '51.69%+25.85%×2+38.77%×4 / 65.87%×2+131.74%', 'Considered Heavy Attack DMG per its own kit text.'],
     ['Heavy ATK', 'Soul Raid', '16.40%×2+21.09%×3+138.22% (+ Max HP scaling)'],
     ['Heavy ATK', 'Stardome Meander', '24.04%+24.04%+48.08%+144.22% (+ Max HP scaling)'],
     ['Liberation', 'Burial of Thousand Souls', '93.15%×8'],
@@ -6221,8 +6232,31 @@ const RESONANCE_CHAIN_DATA = {
   // Juque Perdition, not her full kit), but 'amplify' is the closest available category and the value is
   // exact, so kept as-is.
   'Qingxiao':     { s1: { critRate: 16 }, s2: { heavyDmg: 40 }, s3: { critDmg: 100 }, s4: { atkPct: 20 }, s5: { skillDmg: 100 }, s6: { amplify: 40 } },
-  // Jingran S1: Skill mult+80% (confirmed). S2: Heavy ATK mult+46% (confirmed). S6: Heavy ATK DMG taken+40% (confirmed)
-  'Jingran':      { s1: { skillDmg: 80 }, s2: { heavyDmg: 46 }, s3: { atkPct: 15 }, s4: { totalMult: 10 }, s5: { totalMult: 5 }, s6: { heavyDmg: 40 } },
+  // Re-audited 2026-09-07 against a real nanoka.cc .mht snapshot (Data dump/Jingran/Jingran.md,
+  // his real live kit) — S1/S3/S4/S5 were all unsourced placeholders, not real values:
+  // S1 was skillDmg:80, an unscoped approximation of a real effect scoped to exactly 4 named moves
+  //   (Encroaching Yin, Netherworld Traverse, Scorching Yang, Afterlife's Guide) — 2 of which
+  //   (Netherworld Traverse/Afterlife's Guide) are heavyDmg-categorized per the same dump's own
+  //   "considered Heavy Attack DMG" text, so a flat skillDmg buff would never even reach them.
+  //   Zeroed here; rebuilt as 4 scopedToBlockId buff entries in jingran.blocks.js instead (same
+  //   multi-block-scoping pattern used roster-wide for this exact bug class).
+  // S3 was atkPct:15, with NO basis anywhere in the real S3 text (Ghost Shroud +5 on Heavy ATK cast,
+  //   plus a flat-ATK-from-HP conversion upgrade — +50/1000 HP cap +2500, replacing the base kit's
+  //   +36/1000 cap +1800 — not a %ATK stat this schema can represent without a flat-ATK-from-HP
+  //   mechanism it doesn't have). Zeroed; real mechanic documented as unmodeled in jingran.blocks.js.
+  // S4 was totalMult:10, not matching the real S4 text at all (a conditional team-wide "+20%
+  //   All-Attribute DMG Bonus for 30s on any Resonator gaining a Shield" — matches
+  //   CHAR_BUFF_TABLE['Jingran']'s own note, itself never modeled as a live buff either). Zeroed.
+  // S5 was totalMult:5 — real S5 is purely defensive (revive-on-fatal-blow shield, 10min ICD), zero
+  //   DPS component. Zeroed.
+  // S2 (heavyDmg:46) and S6 (heavyDmg:40) were already confirmed correct against the real text —
+  //   S2 also rebuilt as scopedToBlockId in jingran.blocks.js (an unscoped heavyDmg:46 would
+  //   over-credit Netherworld Traverse/Afterlife's Guide too, now that those are correctly
+  //   heavyDmg-categorized) rather than changed here, since this flat table has no scoping concept.
+  //   S6 also carries 2 more real effects newly found in the dump (Chimei Wangliang DMG Multiplier
+  //   +80%, Parade of Thousand Souls proc mechanic) — both added as real blocks in jingran.blocks.js,
+  //   not representable in this flat table's single-stat-per-node shape.
+  'Jingran':      { s1: {}, s2: { heavyDmg: 46 }, s3: {}, s4: {}, s5: {}, s6: { heavyDmg: 40 } },
   // Yangyang: Xuanling S2: Heavy/Mid-air/Havoc-in-Bloom DMG+100% (confirmed exact). S3: Hush of a Thousand Voices
   // Liberation DMG+175% (confirmed exact via the source 2026-08-16 cross-check; was 80, didn't match comment or kit)
   // S1 re-audited 2026-09-02 against a fresh the source dump (user-provided): was totalMult:10, an
