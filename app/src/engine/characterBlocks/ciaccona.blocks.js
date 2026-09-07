@@ -22,6 +22,14 @@
 // value (10 per successful interaction) is summed across the 20 real pulses this block already
 // combines into one hit-list, matching its existing "one representative full-duration hit-set"
 // convention rather than the single-pulse value.
+//
+// Completeness pass 2026-09-07 (continuing the same character-by-character pass): Minor Fortes
+// (Crit DMG+16%, ATK%+12%) had no block at all. Also found a real, significant gap in her Inherent
+// Skill Winds of Rinascita — "Quadruple Downbeat's DMG Multiplier +30%" — a real, sourced DMG
+// Multiplier on ciaccona.forte.quadruple-downbeat (her real Heavy ATK replacement, previously
+// flagged in this very file as her "2nd-largest damage bucket") that had no block at all. Her other
+// Inherent Skill, Interlude Tune (a shield on Liberation cast), is purely defensive — added as
+// documented utility.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -163,6 +171,41 @@ export const CIACCONA_BLOCKS = [
     condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 24, stacking: 'refresh', source: 'self-kit' }],
     note: 'Solo Concert: team +24% Aero DMG Bonus, from Basic ATK Stage 4\'s Ensemble Sylph summon, NOT Liberation itself — near-permanent uptime once active. Was wrongly allDmg (all-element) in an earlier version, corrected to elemDmg (Aero-only).',
+  },
+
+  // ── Buff blocks (Minor Fortes, Inherent Skills) ──
+  // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit DMG+16%, ATK%+12%" — a permanent,
+  // always-on passive stat bonus, previously had no block anywhere in this file.
+  {
+    id: 'ciaccona.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critDmg', value: 16, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit DMG+16%, ATK%+12% (Data dump/Ciaccona/Ciaccona.md). Unconditional, always active.',
+  },
+  // Added 2026-09-07 (completeness pass): Inherent Skill Winds of Rinascita's real, sourced DMG
+  // Multiplier — "Quadruple Downbeat's DMG Multiplier +30%" — had no block at all despite being a
+  // real bonus on her real Heavy ATK-replacement Forte finisher. Scoped via scopedToBlockId to
+  // ciaccona.forte.quadruple-downbeat only.
+  {
+    id: 'ciaccona.inherent.winds-of-rinascita',
+    source: SOURCE, kind: 'buff', section: 'Forte',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 30, scopedToBlockId: 'ciaccona.forte.quadruple-downbeat', source: 'self-kit' }],
+    note: 'Inherent Skill Winds of Rinascita: Quadruple Downbeat DMG Multiplier +30% — scoped to ciaccona.forte.quadruple-downbeat only.',
+  },
+  // Added 2026-09-07 (completeness pass): her other Inherent Skill, Interlude Tune — previously not
+  // referenced anywhere in this file. Purely defensive, no DPS component.
+  {
+    id: 'ciaccona.inherent.interlude-tune',
+    source: SOURCE, kind: 'utility', section: 'Liberation',
+    trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [],
+    note: "Interlude Tune — casting Singer's Triple Cadenza grants a Shield = 100% of her Max HP for 4s (removed if she's swapped out). Purely defensive, no DPS component to model.",
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for

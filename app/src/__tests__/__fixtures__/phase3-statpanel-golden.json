@@ -98,11 +98,11 @@
     "score": 1001
   },
   "Ciaccona": {
-    "effAtk": 980,
-    "avgCrit": 1.205,
+    "effAtk": 1085,
+    "avgCrit": 1.2706,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 963
+    "score": 1125
   },
   "Danjin": {
     "effAtk": 952,
