@@ -7661,6 +7661,7 @@ const SKILL_ICONS = {
     'Slash of Breaking Dawn': './characters/jinhsi/tMmTFPJH-Skill-Broadblade.webp', // Basic ATK — also covers Heavy ATK/Mid-air/Dodge Counter
     'Standard': './characters/jinhsi/tMmTFPJH-Skill-Broadblade.webp',
     'Trailing Lights of Eons': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp',
+    'Crescent Divinity': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // explicitly "an alternative Resonance Skill" per the Data dump, same wiki icon
     'Overflowing Radiance': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic (alt-cast after Basic Attack 4/Intro), same wiki icon as Trailing Lights of Eons
     'Incarnation': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill state entered via Overflowing Radiance, same wiki icon
     'Illuminous Epiphany': './characters/jinhsi/zVbYMXzG-Skill-Trailing-Lights-of-Eons.webp', // Resonance Skill mechanic cast from within Incarnation, same wiki icon
