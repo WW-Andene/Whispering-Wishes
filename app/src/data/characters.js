@@ -8112,6 +8112,7 @@ const SKILL_ICONS = {
   },
   'Mornye': {
     'Stage 1-4': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // Basic ATK — generic Broadblade icon (same asset already used for Calcharo/Jiyan)
+    'Standard': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // base Heavy Attack, no dedicated icon per the Data dump
     'Wide Field Observation Mode Stage 1-3': './characters/_shared/CpPvLLVt-Skill-Broadblade.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Optimal Solution': './characters/mornye/q3z1KKmg-Mornye-res-Skill.webp', // Resonance Skill — Resolution
     'Distributed Array': './characters/mornye/q3z1KKmg-Mornye-res-Skill.webp',
