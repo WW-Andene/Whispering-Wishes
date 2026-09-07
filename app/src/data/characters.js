@@ -7810,6 +7810,7 @@ const SKILL_ICONS = {
   // Encore/Yinlin/Verina/Zhezhi/Shorekeeper.
   'Phoebe': {
     'O Come Divine Light': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
+    'Stage 1-3': './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row (O Come Divine Light's real name), same icon
     'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
     "Chamuel's Star": './characters/_shared/RkMykBkT-Skill-Rectifier.webp', // Ring-of-Mirrors Basic ATK replacement, same generic weapon icon
     'To Where Light Shines': './characters/phoebe/6JNhMwTC-skill-towherelight.webp',
