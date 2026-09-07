@@ -35,6 +35,7 @@ import { computeLegacyMemberDamage } from './legacyMemberDamage.js';
 import { computeLegacyMainDpsStats } from './legacyMainDpsStats.js';
 import { resolveDotReactionDps } from '../../engine/resolver/dot/dotReactions.js';
 import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotationOrderSearch.js';
+import { deriveRotationFromKitRules } from '../../engine/resolver/decision/kitRulesRegistry.js';
 import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/resolver/gating/sequenceGating.js';
 import { defaultResonanceMode } from '../../data/resonanceModes.js';
@@ -188,7 +189,10 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // "counted as if R6" bug Stage 3 item 1 already fixed for the RAW/solo tier, silently reintroduced
     // here since this tier never threaded m.seqLevel through at all.
     const engineChosenOrder = allMembersConverted
-      ? chooseOnFieldOrder(mems.map(m => ({ name: m.name, blocks: filterExclusiveModeBlocks(gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name], m.seqLevel), m.resonanceMode), rotation: CHARACTER_ROTATIONS[m.name] })), mainDps.name)
+      ? chooseOnFieldOrder(mems.map(m => {
+          const curated = CHARACTER_ROTATIONS[m.name];
+          return { name: m.name, blocks: filterExclusiveModeBlocks(gateBlocksBySequence(BLOCKS_BY_CHARACTER[m.name], m.seqLevel), m.resonanceMode), rotation: deriveRotationFromKitRules(m.name, curated) || curated };
+        }), mainDps.name)
       : null;
 
     const rotationTimeline = (() => {
@@ -644,7 +648,14 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       // for any not-yet-converted character (currently just Jingran, unreleased) so an incomplete
       // roster never breaks a team containing one.
       const blocks = BLOCKS_BY_CHARACTER[m.name];
-      const rotation = CHARACTER_ROTATIONS[m.name];
+      const curatedRotation = CHARACTER_ROTATIONS[m.name];
+      // ADAPTIVE_ENGINE_DESIGN.md's decision layer: for a character with real registered kit rules
+      // (currently just the Hiyuki pilot), derive her rotation from live resource state instead of
+      // reading the hand-authored CHARACTER_ROTATIONS array directly — see
+      // kitRulesRegistry.js's own header for why this changes nothing for the proven curated case
+      // (decisionEngine-hiyuki.test.js already proves byte-identical steps) and only ever falls back
+      // to curatedRotation, never silently regresses below it.
+      const rotation = deriveRotationFromKitRules(m.name, curatedRotation) || curatedRotation;
       if (blocks && rotation) {
         const gearDelta = { ...rStats, cr: rStats.cr - BASE_CRIT_RATE, cd: rStats.cd - BASE_CRIT_DMG };
         // Between the Stars real stack count (2026-09-05, item unblocked by the Resonance Mode
