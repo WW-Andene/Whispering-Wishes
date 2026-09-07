@@ -7604,7 +7604,9 @@ const SKILL_ICONS = {
     'Standard': './characters/_shared/RkMykBkT-Skill-Rectifier.webp',
     'Magnetic Roar': './characters/yinlin/6785t0vK-Skill-Magnetic-Roar.webp',
     'Lightning Execution': './characters/yinlin/6785t0vK-Skill-Magnetic-Roar.webp', // second phase of the same Resonance Skill, no separate wiki icon
+    'Electromagnetic Blast': './characters/yinlin/6785t0vK-Skill-Magnetic-Roar.webp', // proc triggered by Basic/Skill/Dodge Counter hits on a Sinner's-Mark target, documented under the Resonance Skill section, same icon
     'Chameleon Cipher': './characters/yinlin/ymCP6ZNM-Skill-Chameleon-Cipher.webp',
+    'Judgment Strike': './characters/yinlin/ymCP6ZNM-Skill-Chameleon-Cipher.webp', // Forte Circuit's own auto-trigger, same icon
     'Thundering Wrath': './characters/yinlin/0y3Tswfv-Skill-Thundering-Wrath.webp',
     'Raging Storm': './characters/yinlin/TMqQ3Sdc-Skill-Raging-Storm.webp',
     'Strategist': './characters/yinlin/dJzzqS1V-Skill-Strategist.webp',
