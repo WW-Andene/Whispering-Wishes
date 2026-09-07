@@ -5,8 +5,58 @@
 // audit comment, read directly for each node's real mechanic), SKILL_MULTIPLIERS
 // ['Hiyuki'], and CHARACTER_ROTATIONS['Hiyuki']. No new numbers invented.
 // Foreclaiming: Blade Liberation's per-Snowforged-Blade DMG scaling (up to
-// +2385.72% max) and S6's further conditional Crit DMG/Glacio Bite stacking have
-// no home in this flat schema and are documented rather than force-fit.
+// +2385.72% max) is not modeled (no stacking-scalar field for a per-resource-unit
+// damage bonus).
+//
+// Completeness pass 2026-09-07: added Minor Fortes (Crit Rate+8%/ATK%+12%,
+// Data dump/Hiyuki/Hiyuki.md line 118-119) and Inherent Skill Ephemeral Realm
+// (line 100, pure resource-restore utility, zero DPS component).
+//
+// Glacio Bite (2026-09-07, direct user instruction to build a real mechanic rather
+// than document it as an unmodeled gap — this was her single largest itemized real
+// damage bucket after aggregate Liberation, 30.3%/438,900 dmg per her own dump's
+// Damage Profile, line 219/221): modeled as one 'cast'-triggered damage proc block
+// per real Glacio-Chafe-applying move in her CHARACTER_ROTATIONS (Frostedge, Present
+// Self Stage 3, Frost Splinter, Foreclaiming: Inward Vision, Foreclaimed Self Stage
+// 1-3, Iai, Bitterfrost — dump line 82's own "each new Glacio Bite stack triggers a
+// DMG instance" text, cross-referenced against each move's own "applies Glacio
+// Chafe" note already present in the damage blocks below), NOT via DOT_MECHANICS'
+// existing rotation-aggregate Level-Mult tick formulas (Frazzle/Erosion/Fusion
+// Burst/Electro Flare) — those are for defense-independent flat-Level-Mult status
+// ticks; Glacio Bite is explicitly an ATK%-scaling instance (Fine Snow's own "+102%
+// Glacio Bite DMG instance" text, dump line 99) that needs the real
+// crit/dmgBonus/defMult/resMult per-hit chain resolveHitComposedDps.js already
+// applies to every other 'cast' block here, so a plain damage block is the more
+// correct shape, not a new DOT-tick mechanic.
+//
+// Fine Snow's own Glacio Bite DMG Amp (+30%/+30% at 1/3 Snow Rust stacks, dump line
+// 99) and chain.s3's own Glacio Bite proc Multiplier (+488% at 2 Snow Rust stacks,
+// dump line 113) are folded directly into each proc block's own %ATK value — same
+// established "modeled at the ceiling rather than the ramp" convention this file
+// already used for the block this replaces (the old hiyuki.selfbuff.fine-snow-
+// glacio-bite elemDmg:60 buff, REMOVED: elemDmg is Glacio DMG Bonus, which per the
+// dump's own text is "a distinct multiplier from base Glacio DMG Bonus" and so does
+// NOT apply to Glacio Bite at all — that block was a real correctness bug, broadly
+// buffing Hiyuki's ENTIRE kit by +60% Glacio DMG instead of only the (previously
+// nonexistent) Glacio Bite instances). The Amp/Multiplier layers are combined
+// additively with the base 102% (100% + 60% + 488% = 648% -> ×6.48), matching this
+// engine's own calcDmgBonus() convention of summing %DMG-Bonus-shaped layers rather
+// than compounding them multiplicatively — a documented assumption, not a sourced
+// combination rule (the dump doesn't state how these two bonuses stack together).
+// Category intentionally omitted on every proc block: the dump's own Damage Profile
+// text says Glacio Bite "is a distinct proc/status damage type... not tied to a
+// specific button," so none of the standard skillDmg/libDmg/basicDmg %DMG Bonus
+// categories should apply to it.
+//
+// Still NOT modeled (real, sourced, but out of THIS single-character block file's
+// reach): chain.s6's extension of "her own Chafe procs Glacio Bite" to "ANY
+// teammate's Chafe procs Glacio Bite" at 2 Snow Rust stacks (dump line 116) needs
+// real cross-character team-roster data (which teammates are present and what they
+// apply) that a static per-character file can't see — the same category of gap as
+// Aemeath's Between the Stars needed calcTeamStats.js-level `scopedEffects` to
+// close; and chain.s6's own already-documented +25% Glacio Bite DMG TAKEN debuff at
+// 3 stacks, which has no matching stat key anywhere in this engine (see its own
+// note below).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -120,14 +170,85 @@ export const HIYUKI_BLOCKS = [
     effects: [{ stat: 'critDmg', value: 40, source: 'self-kit' }],
     note: 'Inherent Fine Snow: +40% Crit DMG at 1 stack of Snow Rust (self-applied via her own Glacio Chafe) — no single CHARACTER_ROTATIONS step names this specifically, kept passive since she applies Glacio Chafe on most of her own casts.',
   },
+  // Added 2026-09-07 (completeness pass): Minor Fortes and Inherent Skill Ephemeral Realm.
   {
-    id: 'hiyuki.selfbuff.fine-snow-glacio-bite',
+    id: 'hiyuki.buff.minor-fortes',
     source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
-    timing: { duration: 99 }, // sentinel: conditional on Snow Rust stacks (needs teammates applying Glacio Chafe/Havoc Bane), no natural decay sourced
-    target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 60, source: 'self-kit' }],
-    note: 'Inherent Fine Snow: Glacio Bite DMG Amp (distinct multiplier from base Glacio DMG Bonus) +30% at 1 stack of Snow Rust, +30% more at 3 stacks (teammates applying Glacio Chafe/Havoc Bane, e.g. Lucilla/Chisa/Suisui) — modeled at the ceiling (60%) rather than the ramp, kept passive.',
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'cr', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Crit Rate+8%, ATK%+12% (Data dump/Hiyuki/Hiyuki.md line 118-119). Unconditional, always active.',
+  },
+  {
+    id: 'hiyuki.inherent.ephemeral-realm',
+    source: SOURCE, kind: 'utility', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [],
+    note: 'Inherent Skill Ephemeral Realm: after 4s out of combat (post-fight or post-knockout) with <1 Snowforged Blade, restore 1 (Data dump line 100) — pure out-of-combat resource economy, zero DPS component.',
+  },
+
+  // ── Glacio Bite proc blocks — see this file's own header comment for the full derivation.
+  //    combinedPct = 102 * (1 + 0.60 + 4.88) = 660.96 (base 102% x [Fine Snow Amp ceiling 60% +
+  //    chain.s3 Multiplier 488%], summed as one %DMG-Bonus-shaped layer, then applied to the base). ──
+  {
+    id: 'hiyuki.procdmg.glacio-bite-frostedge',
+    source: SOURCE, kind: 'damage', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Frostedge' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
+    note: 'Glacio Bite proc off Frostedge\'s own Glacio Chafe application — see this file\'s header comment for the full derivation/assumptions.',
+  },
+  {
+    id: 'hiyuki.procdmg.glacio-bite-present-self-stage3',
+    source: SOURCE, kind: 'damage', section: 'Buff',
+    trigger: { type: 'cast', on: 'Basic ATK:Present Self Stage 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
+    note: 'Glacio Bite proc off Present Self Stage 3\'s own Glacio Chafe application — see this file\'s header comment.',
+  },
+  {
+    id: 'hiyuki.procdmg.glacio-bite-frost-splinter',
+    source: SOURCE, kind: 'damage', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Frost Splinter: Present Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
+    note: 'Glacio Bite proc off Frost Splinter\'s own Glacio Chafe application (last hit) — see this file\'s header comment.',
+  },
+  {
+    id: 'hiyuki.procdmg.glacio-bite-foreclaiming-inward-vision',
+    source: SOURCE, kind: 'damage', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Foreclaiming: Inward Vision' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
+    note: 'Glacio Bite proc off Foreclaiming: Inward Vision\'s own Glacio Chafe application (modeled as one application event per cast, not stack-granular — it applies 4 stacks in the real kit text) — see this file\'s header comment.',
+  },
+  {
+    id: 'hiyuki.procdmg.glacio-bite-foreclaimed-self-stage1-3',
+    source: SOURCE, kind: 'damage', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Foreclaimed Self Stage 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
+    note: 'Glacio Bite proc off Foreclaimed Self Stage 3\'s own Glacio Chafe application — fires twice, matching the real rotation\'s own repeated cast. See this file\'s header comment.',
+  },
+  {
+    id: 'hiyuki.procdmg.glacio-bite-iai',
+    source: SOURCE, kind: 'damage', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Iai' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
+    note: 'Glacio Bite proc off Iai\'s own Glacio Chafe application (modeled as one application event per cast, not per Frostharden-Iai-use-granular, matching how the base Iai damage block already condenses its up-to-3 real casts into one block) — see this file\'s header comment.',
+  },
+  {
+    id: 'hiyuki.procdmg.glacio-bite-bitterfrost',
+    source: SOURCE, kind: 'damage', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Bitterfrost: Foreclaimed Self' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
+    note: 'Glacio Bite proc off Bitterfrost\'s own Glacio Chafe application — see this file\'s header comment.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's
@@ -154,7 +275,7 @@ export const HIYUKI_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 160, source: 'self-kit' }],
-    note: 'Frost Splinter: Present Self AND Bitterfrost: Foreclaimed Self DMG Multiplier +160% (corrected from heavyDmg -> libDmg per the audit, both are "considered Resonance Liberation DMG" despite the Heavy Attack slot) — kept passive, applies to both blocks above.',
+    note: 'Frost Splinter: Present Self AND Bitterfrost: Foreclaimed Self DMG Multiplier +160% (corrected from heavyDmg -> libDmg per the audit, both are "considered Resonance Liberation DMG" despite the Heavy Attack slot) — kept passive, applies to both blocks above. S3 ALSO carries "+488% Glacio Bite proc DMG Multiplier at 2 Snow Rust stacks" (dump line 113) — that portion is folded directly into the hiyuki.procdmg.glacio-bite-* blocks\' own %ATK value (see this file\'s header comment) rather than as a separate effect here, since it only ever applies to those proc instances, never to this block\'s own libDmg hits.',
   },
   {
     id: 'hiyuki.chain.s4',

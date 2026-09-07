@@ -31,15 +31,31 @@ describe('triggerEngine parity — Hiyuki', () => {
     expect(s4.target.scope).toBe('whole-team');
   });
 
-  it('outro and selfBuffs match CHAR_BUFF_TABLE', () => {
+  it('outro and the Crit DMG selfBuff match CHAR_BUFF_TABLE', () => {
     const legacy = CHAR_BUFF_TABLE['Hiyuki'];
     const outro = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.outro.snowlight-blessing');
     expect(outro.effects[0].value).toBe(legacy.outroBuffs[0].value);
     expect(outro.timing.duration).toBe(legacy.outroBuffs[0].duration);
     const critdmg = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.selfbuff.fine-snow-critdmg');
-    const glacio = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.selfbuff.fine-snow-glacio-bite');
     expect(critdmg.effects[0].value).toBe(legacy.selfBuffs[0].value);
-    expect(glacio.effects[0].value).toBe(legacy.selfBuffs[1].value);
+  });
+
+  // 2026-09-07 (Glacio Bite completeness pass): the old hiyuki.selfbuff.fine-snow-glacio-bite
+  // (elemDmg:60, matching legacy.selfBuffs[1]) was a real correctness bug — elemDmg is Glacio DMG
+  // Bonus, which the dump's own text says does NOT apply to Glacio Bite ("a distinct multiplier from
+  // base Glacio DMG Bonus"), so it was broadly over-buffing Hiyuki's entire kit instead of the
+  // (previously nonexistent) Glacio Bite instances. Replaced by real hiyuki.procdmg.glacio-bite-*
+  // damage blocks with the Amp/Multiplier folded directly into their own %ATK value — see
+  // hiyuki.blocks.js's own header comment for the full derivation.
+  it('Glacio Bite is now modeled as real per-cast proc damage blocks, not the old broad elemDmg buff', () => {
+    expect(HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.selfbuff.fine-snow-glacio-bite')).toBeUndefined();
+    const procBlocks = HIYUKI_BLOCKS.filter(b => b.id.startsWith('hiyuki.procdmg.glacio-bite-'));
+    expect(procBlocks.length).toBe(7);
+    for (const b of procBlocks) {
+      expect(b.kind).toBe('damage');
+      expect(b.damage.category).toBeUndefined();
+      expect(b.damage.hits[0].atkPct).toBeCloseTo(660.96, 2);
+    }
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
@@ -59,6 +75,15 @@ describe('triggerEngine parity — Hiyuki', () => {
       { stat: 'critDmg', value: 500, source: 'self-kit' },
       { stat: 'critDmg', value: 40, source: 'self-kit' },
     ]);
+  });
+
+  it('Minor Fortes (Crit Rate+8%/ATK%+12%) and Ephemeral Realm are both present', () => {
+    const mf = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.buff.minor-fortes');
+    expect(mf.effects).toEqual([
+      { stat: 'cr', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ]);
+    expect(HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.inherent.ephemeral-realm')).toBeDefined();
   });
 
   it('dmgFocus matches the dump Damage-Type Breakdown: Liberation (60.8%) and Skill (6.1%) are the ' +
