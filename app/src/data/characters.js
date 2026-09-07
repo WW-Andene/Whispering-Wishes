@@ -8063,6 +8063,8 @@ const SKILL_ICONS = {
   // Source: the wiki Skill_*.png assets for Qiuyuan, re-hosted on ibb.co (2026-08-17).
   'Qiuyuan': {
     'Inkwash': './characters/_shared/YTdT2Yxf-skill-sword.webp', // Basic ATK — generic Sword icon (the wiki's own File:Skill_Inkwash.png resolves to this same asset)
+    'Stage 1-3': './characters/_shared/YTdT2Yxf-skill-sword.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row (Inkwash's real name), same icon
+    'Standard': './characters/_shared/YTdT2Yxf-skill-sword.webp', // base Heavy Attack/Dodge Counter, no dedicated icon at all previously
     'Thus Spoke the Blade': './characters/_shared/YTdT2Yxf-skill-sword.webp', // Forte-enhanced Basic ATK/Heavy ATK replacements, same generic weapon icon
     'Through the Groves': './characters/qiuyuan/Wpj83CS4-skill-through-the-groves.webp',
     'Undaunted Wayfarer': './characters/qiuyuan/Wpj83CS4-skill-through-the-groves.webp', // held Skill variant, same icon
@@ -8076,6 +8078,7 @@ const SKILL_ICONS = {
     'Drink Away Woes Age-Old': './characters/qiuyuan/357LJjGX-skill-drink-away-woes.webp', // Inherent Skill
     'Attack the Must-Defend': './characters/qiuyuan/DH5PV4Mc-skill-attack-the-must-defend.webp', // Intro Skill
     'Strike Before Ready': './characters/qiuyuan/m5YJ7bBB-skill-strike-before-ready.webp', // Outro Skill
+    'Sheath Fallen, New Shoots Revealed': './characters/qiuyuan/m5YJ7bBB-skill-strike-before-ready.webp', // S3's Outro replacement (counted as Echo Skill DMG per the Data dump), same Outro icon
   },
   // Source: the wiki Skill_*.png assets for Chisa, re-hosted on ibb.co (2026-08-17).
   'Chisa': {
