@@ -7863,6 +7863,7 @@ const SKILL_ICONS = {
     'Heavy Slash:': './characters/zani/0jtmQHtM-skill-therewillbealight.webp',
     'Routine Negotiation': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
     'Standard': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp',
+    'Stage 1-4': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row ("Standard combo string"), same icon as the single-step phrasings below — was NULL before, no key matched this exact phrasing
     'Stage 3': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // rotation-step phrasing for the Basic ATK combo, same icon
     'Heavy Slash': './characters/_shared/dsbWXdtk-Skill-Gauntlets.webp', // Inferno Mode's Basic ATK replacement (bare "Heavy Slash", no colon), same generic weapon icon
     'Restless Watch': './characters/zani/Cpng0BLF-skill-restlesswatch.webp',
