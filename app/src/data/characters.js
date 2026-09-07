@@ -7934,8 +7934,25 @@ const SKILL_ICONS = {
   'Cartethyia': {
     'Sword to Carve My Forms': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
-    'Base Form': './characters/_shared/x86mmjbD-skill-sword.webp', // Fleurdelys/base-form Basic-Heavy-Mid-air variants share the generic icon
+    // SKILL_MULTIPLIERS' Resonance Skill rows are the bare 'Base Form' and 'Fleurdelys 1-2' --
+    // shorter/different phrasing than the real cast names sourced below ('Sword to Bear Their
+    // Names', 'May Tempest Break the Tides'). Both were wrongly matching the generic Basic-ATK
+    // keys ('Base Form 1-4', 'Fleurdelys') since 'Base Form'/'Fleurdelys' are substrings of those
+    // rows too. Narrowed the generic Basic ATK key to the exact 'Base Form 1-4' phrasing (the only
+    // other row using that text) and added explicit aliases for the real Skill row names, declared
+    // before the generic 'Fleurdelys' key so they win.
+    'Base Form 1-4': './characters/_shared/x86mmjbD-skill-sword.webp', // Basic ATK's real combo-stage phrasing
+    'Base Form': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp', // Resonance Skill's base cast ("Resonance Skill - Cartethyia" per the Data dump), same icon as its Fleurdelys variant below
     'Plunging Attack': './characters/_shared/x86mmjbD-skill-sword.webp', // matches "Cartethyia Plunging Attack" rotation step via includes(); Mid-air Basic ATK finisher, no dedicated wiki asset
+    'Fleurdelys 1-2': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp', // Resonance Skill's Fleurdelys-form cast (real name "May Tempest Break the Tides"), same icon
+    // CHARACTER_ROTATIONS' own phrasing splits the same Skill cast into two exact steps "Fleurdelys
+    // 1"/"Fleurdelys 2" — both are themselves substrings of the Basic ATK row "Fleurdelys 1-5", so
+    // relying on substring matching alone would let 'Fleurdelys 1' silently hijack that Basic ATK
+    // row. Giving the Basic ATK row its own EXACT key ('Fleurdelys 1-5') resolves it via the
+    // exact-match-first branch above before the substring scan ever runs.
+    'Fleurdelys 1-5': './characters/_shared/x86mmjbD-skill-sword.webp', // Basic ATK's real combo-stage phrasing (exact)
+    'Fleurdelys 1': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp',
+    'Fleurdelys 2': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp',
     'Fleurdelys': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Sword to Bear Their Names': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp',
     'Sword to Answer Waves': './characters/cartethyia/cX7v4GDm-skill-swordbeartheirnames.webp', // Fleurdelys Resonance Skill replacement, same wiki icon
@@ -8562,6 +8579,12 @@ const isAuxComboMove = (skillName, type) => /mid-air|dodge counter|plunging/i.te
 const getSkillIcon = (name, skillName, type) => {
   const table = SKILL_ICONS[name];
   if (!table) return null;
+  // Exact match takes priority over substring match. Without this, a short, exact row name that
+  // is ALSO a substring of a longer, unrelated row (e.g. Cartethyia's Skill row "Fleurdelys 1" vs
+  // her Basic ATK row "Fleurdelys 1-5") can never get its own distinct key — declaring a specific
+  // key for the short one would incorrectly hijack the longer row too, since substring matching
+  // alone can't tell "this key IS the whole name" from "this key is merely part of a longer name".
+  if (Object.prototype.hasOwnProperty.call(table, skillName)) return table[skillName];
   const key = Object.keys(table).find(k => skillName.includes(k));
   if (key) return table[key];
   if (isAuxComboMove(skillName, type)) {
