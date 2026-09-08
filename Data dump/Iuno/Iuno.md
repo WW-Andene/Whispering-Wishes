@@ -344,3 +344,64 @@ Outro 7,577 · Echo 22,805.
 3. **Jiyan + Iuno + Ciaccona + Rover: Aero + Shorekeeper**.
 4. **Galbrena + Iuno + Shorekeeper + Verina**.
 5. **Zani + Phoebe + Iuno + Rover: Spectro** (Frazzle team).
+
+## Full kit audit (2026-09-08)
+
+Full, independent re-verification of `iuno.blocks.js` against this dump, `characters.js` (CHAR_BUFF_TABLE,
+RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, full CHARACTER_DATA entry), and the
+engine's actual resolver code — per the same rigor applied to Augusta through Hiyuki this session.
+Three real bugs found and fixed (two significant, one scope-completeness gap); everything else
+cross-checked and confirmed correct.
+
+**Bug 1 — `chain.s1`'s "+40% ATK while in Lunar Cycle" was silently unconditional.** Was a bare
+`trigger:{type:'passive'}` — real-active for her ENTIRE kit, including her real pre-Lunar-Cycle Intro
+hit (`CHARACTER_ROTATIONS['Iuno']` casts Intro BEFORE the Liberation cast that starts Lunar Cycle). The
+same "unenforced condition on a real pre-condition period" bug class already found and fixed on
+Camellya/Danjin/Denia/Galbrena this session. Measured directly: removing the block dropped Intro's own
+damage by ~26% (exactly the 1/1.4 ATK-scaling ratio), confirming the leak. Retargeted to a cast-anchored
+window opening on `Liberation:Beneath Lunar Tides` (the real cast that starts Lunar Cycle in her modeled
+rotation), sentinel duration since the rotation stays in Lunar Cycle through to Absolute Fullness.
+
+**Bug 2 — Blessing of the Wan Light delivered only 1/10 of its real value.** The single block was
+anchored to the Liberation cast only, using `stacking:'stacking', maxStacks:10, value:4` — intended to
+model "up to 10 stacks (40%)." But (a) the dump's own Review section (line 164) is explicit: "+4%/stack...
+up to 10 stacks/40% max, **from Intro +5/Ultimate +5**" — BOTH Intro and Liberation independently trigger
+the Derivation Inherent Skill's grant, but only Liberation was wired in; (b) Derivation's own text (line
+102) says casting either move "immediately grants **5 stacks**" — a flat 20%-per-cast grant, not a
+1-stack-per-cast ramp. Since only ONE real cast event (Liberation) ever fired this trigger in the modeled
+rotation, the old `stacking` mechanism could never exceed 1/10 of the stated cap regardless of its
+`maxStacks` setting. Measured directly: the old block contributed only a ~1.5% total-damage uplift.
+Split into 2 real cast-anchored flat-value blocks (Intro: +20%, Liberation: +20%, both whole-team, per
+the already-fixed 2026-09-02 targeting correction) — together summing to exactly the real 40% cap once
+both have fired, matching the dump's own "Intro +5/Ultimate +5" breakdown precisely, and correctly zero
+before Intro casts.
+
+**Bug 3 — `chain.s3`'s scoping was stale, missing a block added after its own fix.** The 2026-09-04 fix
+correctly scoped S3's +65% Amp to exactly the 2 blocks that existed at the time for its 2 (of 3) named
+moves (Moonbow Basic ATK, Arc Beyond the Edge) — Moonbow Dodge Counter had no block yet. The 2026-09-07
+completeness pass then added `iuno.dodgecounter.moonbow-dodge-counter` (a real, sourced block for that
+exact 3rd named move) but never updated S3's scoping list to include it — a silent scope-completeness
+gap (currently zero DPS impact since that block is unused in the modeled rotation, but genuinely
+incomplete against the dump's own explicit 3-move list). Fixed to include all 3.
+
+**Verified, no bug found:**
+- `statScaling`/`basis`: `CHARACTER_DATA['Iuno'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- DOT/dotApplier completeness: Iuno's kit applies no Aero Erosion or other cross-character DOT status
+  anywhere in her real kit text — correctly has no `dotApplier` tags anywhere in the file.
+- `chain.s2` (whole-team +40% conditional on already being at 10 Blessing stacks) and `chain.s5`
+  (unconditional +20% libDmg) re-verified against their own kit text — both correctly modeled as-is,
+  no Lunar-Cycle-gating issue since neither is conditioned on that state.
+- `SKILL_MULTIPLIERS['Iuno']`, `RESONANCE_CHAIN_DATA['Iuno']` (S1-S6, including S4's correct zeroing —
+  a pure defensive Shield with no DPS component), `CHAR_BUFF_TABLE['Iuno']`, `CHARACTER_ROTATIONS['Iuno']`,
+  and the full `CHARACTER_DATA['Iuno']` entry (desc, bestWeapon, weaponAlts, bestEchoes, teams, base
+  stats, DPS tier) all cross-checked against this dump and matched exactly beyond the 3 bugs above.
+
+**Re-measurement:** both DPS-affecting fixes (S1 and Blessing) moved real DPS output substantially.
+`phase3-parityGolden.test.js` fixture updated: `engineDps`/`legacyRawDps` 3234.93/3235 → 4098.75/4099
+(ratio stays ~1.00, no `EXPECTED_DIVERGENCES` entry needed — calcTeamStats routes this converted
+character through the same block data). `phase3-statpanel-golden.json`'s `score` also updated
+(1179 → 1441, effAtk/avgCrit/defMult/resMult unaffected). Both cited inline in
+`phase3-parityGolden.test.js`'s own header comment. Tests added: cast-anchor shape checks and
+positive-verification tests for both S1 and Blessing (pre-trigger hits unaffected, post-trigger hits
+boosted), plus an updated S3 scoping test covering all 3 named moves. Full suite: 1840/1840 passing.

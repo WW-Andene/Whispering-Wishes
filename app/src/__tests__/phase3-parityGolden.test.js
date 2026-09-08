@@ -49,6 +49,19 @@
  * genuinely more accurate, now-windowed value — not a regression. No EXPECTED_DIVERGENCES entry needed
  * (ratio stays ~1.00, matching legacy exactly, since calcTeamStats routes this converted character
  * through the same block data).
+ *
+ * Golden fixtures refreshed again 2026-09-08 (Iuno, full re-audit): two real bugs fixed.
+ * (1) chain.s1 ("ATK +40% while in Lunar Cycle") was `trigger:{type:'passive'}`, unconditionally
+ * active including her real pre-Lunar-Cycle Intro hit — retargeted to a cast-anchored window on the
+ * Liberation cast that starts Lunar Cycle in her modeled rotation (measured: this alone dropped
+ * Intro's own damage by ~26%, confirming the leak). (2) Blessing of the Wan Light was a single
+ * Liberation-anchored `stacking:'stacking', maxStacks:10, value:4` block that could never exceed 1
+ * real trigger event's worth (4%, 1/10 of the real 40% cap) since only 1 cast ever fired it — split
+ * into 2 real cast-anchored flat-value blocks (Intro +20%, Liberation +20%, matching the dump's own
+ * "from Intro +5/Ultimate +5" breakdown) summing to the real 40% cap once both fire. Both
+ * `engineDps`/`legacyRawDps` (3235 -> 4099) and the stat-panel `score` (1179 -> 1441, effAtk/avgCrit
+ * unaffected) moved up together for genuinely more accurate values — not a regression. No
+ * EXPECTED_DIVERGENCES entry needed (ratio stays ~1.00).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';

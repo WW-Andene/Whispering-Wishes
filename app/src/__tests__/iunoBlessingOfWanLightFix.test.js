@@ -29,11 +29,19 @@ describe("Iuno's Blessing of the Wan Light reaches the teammate she's buffing (b
     expect(blessing.target).toBe('team');
   });
 
-  it('live engine: outro block is 14s, Blessing block targets whole-team not self', () => {
+  it('live engine: outro block is 14s, Blessing blocks target whole-team not self', () => {
     const outro = IUNO_BLOCKS.find(b => b.id === 'iuno.outro.gloom-to-gleam-buff');
     expect(outro.timing.duration).toBe(14);
-    const blessing = IUNO_BLOCKS.find(b => b.id === 'iuno.selfbuff.blessing-of-the-wan-light');
-    expect(blessing.target.scope).toBe('whole-team');
+    // Split 2026-09-08 (full-kit re-audit) into 2 real cast-anchored blocks (Intro + Liberation, each
+    // granting 5 stacks/20% per Derivation's own text) — see iuno.blocks.js's own header comment above
+    // the pair for why the old single Liberation-anchored stacking block only ever delivered 1/10 of
+    // the real total. Both still target whole-team, and together sum to the same 40% base-kit total
+    // CHAR_BUFF_TABLE['Iuno'] stores.
+    const introGrant = IUNO_BLOCKS.find(b => b.id === 'iuno.selfbuff.blessing-of-the-wan-light-intro');
+    const libGrant = IUNO_BLOCKS.find(b => b.id === 'iuno.selfbuff.blessing-of-the-wan-light-liberation');
+    expect(introGrant.target.scope).toBe('whole-team');
+    expect(libGrant.target.scope).toBe('whole-team');
+    expect(introGrant.effects[0].value + libGrant.effects[0].value).toBe(CHAR_BUFF_TABLE['Iuno'].selfBuffs[0].value);
   });
 
   it("Iuno now ranks #1 for Augusta, matching the community's \"best by far\" — above Mortefi, Lynae, Rebecca, Shorekeeper", () => {

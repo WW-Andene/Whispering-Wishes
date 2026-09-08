@@ -25,6 +25,34 @@ describe('triggerEngine parity — Iuno', () => {
     expect(IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s6').effects[0].value).toBe(rc.s6.libDmg);
   });
 
+  // Found 2026-09-08 (full-kit re-audit): S1 ("ATK +40% while in Lunar Cycle") was a bare
+  // `trigger:{type:'passive'}`, unconditionally active for her ENTIRE kit including her real
+  // pre-Lunar-Cycle Intro hit (CHARACTER_ROTATIONS['Iuno'] casts Intro BEFORE the Liberation cast that
+  // starts Lunar Cycle) — the same "unenforced condition on a real pre-condition period" bug class
+  // already found on Camellya/Danjin/Denia/Galbrena this session. Measured directly: removing the
+  // block dropped Intro's own damage by exactly the 1/1.4 ATK-scaling ratio (~26%), confirming Intro
+  // was wrongly receiving the Lunar-Cycle-only buff. Retargeted to a cast-anchored window on the real
+  // Liberation cast that starts Lunar Cycle in her modeled rotation.
+  it("S1 is a real cast-anchored window starting on Beneath Lunar Tides, not an unconditional passive that leaked onto the pre-Lunar-Cycle Intro hit", () => {
+    const s1 = IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s1');
+    expect(s1.trigger).toEqual({ type: 'cast', on: 'Liberation:Beneath Lunar Tides' });
+    expect(s1.timing.duration).toBe(99);
+  });
+
+  it("S1's +40% ATK no longer inflates her pre-Lunar-Cycle Intro hit, but boosts hits after Beneath Lunar Tides is cast", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Iuno'], IUNO_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS1 = resolveHitComposedDps(IUNO_BLOCKS, steps, ctx, 3000, 'aero', 'Sub DPS');
+    const withoutS1Blocks = IUNO_BLOCKS.filter(b => b.id !== 'iuno.chain.s1');
+    const withoutS1 = resolveHitComposedDps(withoutS1Blocks, steps, ctx, 3000, 'aero', 'Sub DPS');
+    const introWith = withS1.hitLog.find(h => h.blockId === 'iuno.intro.illuminated-manifestation');
+    const introWithout = withoutS1.hitLog.find(h => h.blockId === 'iuno.intro.illuminated-manifestation');
+    expect(introWith.damage).toBeCloseTo(introWithout.damage, 5);
+    const heavyWith = withS1.hitLog.find(h => h.blockId === 'iuno.heavy.absolute-fullness');
+    const heavyWithout = withoutS1.hitLog.find(h => h.blockId === 'iuno.heavy.absolute-fullness');
+    expect(heavyWith.damage).toBeGreaterThan(heavyWithout.damage);
+  });
+
   // Found 2026-09-02 against a fresh the source dump: Absolute Fullness (both its own damage block and its
   // S6 chain bonus) was wrongly categorized heavyDmg — its own kit text explicitly says "considered as
   // Resonance Liberation DMG" despite the Heavy ATK slot, the same pattern already correctly applied to
@@ -60,8 +88,31 @@ describe('triggerEngine parity — Iuno', () => {
     const outro = IUNO_BLOCKS.find(b => b.id === 'iuno.outro.gloom-to-gleam-buff');
     expect(outro.effects[0].value).toBe(legacy.outroBuffs[0].value);
     expect(outro.timing.duration).toBe(legacy.outroBuffs[0].duration);
-    const self = IUNO_BLOCKS.find(b => b.id === 'iuno.selfbuff.blessing-of-the-wan-light');
-    expect(self.effects[0].value * self.effects[0].maxStacks).toBe(legacy.selfBuffs[0].value);
+    // Split 2026-09-08 (full-kit re-audit) into 2 real cast-anchored flat-value blocks (Intro +
+    // Liberation, each granting the real 5-stack/20% Derivation grant per the dump's own "Intro +5/
+    // Ultimate +5" breakdown) — see iuno.blocks.js's own header comment for why the old single
+    // Liberation-anchored `stacking:'stacking'` block only ever delivered 1/10 of the real total.
+    const introGrant = IUNO_BLOCKS.find(b => b.id === 'iuno.selfbuff.blessing-of-the-wan-light-intro');
+    const libGrant = IUNO_BLOCKS.find(b => b.id === 'iuno.selfbuff.blessing-of-the-wan-light-liberation');
+    expect(introGrant.effects[0].value + libGrant.effects[0].value).toBe(legacy.selfBuffs[0].value);
+  });
+
+  // Found 2026-09-08 (full-kit re-audit): the old single-block Blessing of the Wan Light modeling
+  // (Liberation-anchored, `stacking:'stacking', maxStacks:10, value:4`) could never exceed 1 real
+  // trigger event's worth of stacks (4%, 1/10 of the real 40% cap), since only ONE cast
+  // (Liberation) ever fired in the modeled rotation. Positive-verification test for the fix: proves
+  // the pre-Intro state has none of this buff, and the post-both-casts state carries the full 40%.
+  it("Blessing of the Wan Light reaches the real 40% total only after BOTH Intro and Liberation have cast, not capped at 1/10 of that from a single under-firing anchor", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Iuno'], IUNO_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withBlessing = resolveHitComposedDps(IUNO_BLOCKS, steps, ctx, 3000, 'aero', 'Sub DPS');
+    const blessingIds = new Set(['iuno.selfbuff.blessing-of-the-wan-light-intro', 'iuno.selfbuff.blessing-of-the-wan-light-liberation']);
+    const withoutBlessing = resolveHitComposedDps(IUNO_BLOCKS.filter(b => !blessingIds.has(b.id)), steps, ctx, 3000, 'aero', 'Sub DPS');
+    expect(withBlessing.totalDamage).toBeGreaterThan(withoutBlessing.totalDamage);
+    // allDmg is an amplify-shaped stat (multiplicative on top of dmgBonus) — a real 40% All DMG Amp
+    // should produce a meaningfully larger uplift than the old bug's ~1.5% (1/10-stack) contribution.
+    const ratio = withBlessing.totalDamage / withoutBlessing.totalDamage;
+    expect(ratio).toBeGreaterThan(1.1);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
@@ -96,10 +147,13 @@ describe('triggerEngine parity — Iuno', () => {
   // not being named by S3's text at all. A bare (unscoped) libDmg:65 effect silently amplified those
   // too — the same category-leak shape the critical totalMult fact describes, via the category-stat
   // pool instead of totalMult. Verifies S3 now only touches the 2 blocks its own kit text names.
-  it('S3 (+65% Amp) is scoped to only Moonbow Basic ATK and Arc Beyond the Edge — does not leak onto the Ultimate/Flux/Absolute Fullness', () => {
+  // Found 2026-09-08 (full-kit re-audit): the 2026-09-07 completeness pass added
+  // iuno.dodgecounter.moonbow-dodge-counter (a real block for the 3rd move S3's own kit text names)
+  // but never updated this scoping list — fixed to include all 3 named moves now that all 3 have blocks.
+  it('S3 (+65% Amp) is scoped to all 3 named moves (Moonbow Basic ATK, Arc Beyond the Edge, Moonbow Dodge Counter) — does not leak onto the Ultimate/Flux/Absolute Fullness', () => {
     const s3 = IUNO_BLOCKS.find(b => b.id === 'iuno.chain.s3');
     const scopedIds = s3.effects.map(e => e.scopedToBlockId);
-    expect(scopedIds.sort()).toEqual(['iuno.basic.moonbow', 'iuno.skill.arc-beyond-the-edge'].sort());
+    expect(scopedIds.sort()).toEqual(['iuno.basic.moonbow', 'iuno.dodgecounter.moonbow-dodge-counter', 'iuno.skill.arc-beyond-the-edge'].sort());
     for (const e of s3.effects) expect(e.value).toBe(65);
 
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Iuno'], IUNO_BLOCKS);

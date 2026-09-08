@@ -161,11 +161,34 @@ export const IUNO_BLOCKS = [
     effects: [{ stat: 'heavyDmg', value: 50, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Ends early if the incoming Resonator is swapped off-field, not modeled. Casting Outro does NOT interrupt an in-progress Absolute Fullness.',
   },
+  // Found 2026-09-08 (full-kit re-audit): the single block below was a real, significant
+  // under-crediting bug — measured directly: it delivered only a ~1.5% total-damage uplift instead of
+  // anywhere near a real 40% All DMG Amp's worth. Two stacked problems: (1) it only anchored to the
+  // Liberation cast, but the dump's own Review section (line 164, "+4%/stack... up to 10 stacks/40%
+  // max, from Intro +5/Ultimate +5") is explicit that BOTH Intro AND Liberation independently trigger
+  // Derivation's grant — Intro's own +5 stacks was entirely missing. (2) `stacking:'stacking',
+  // maxStacks:10` with value:4 models this as if EACH cast opens a window worth only 1 stack (4%),
+  // but Derivation's real text (dump line 102) is "casting Intro Skill or Resonance Liberation
+  // IMMEDIATELY GRANTS 5 STACKS" — a flat 20%-per-qualifying-cast grant, not a 1-stack ramp. With only
+  // 1 real trigger event actually firing (Liberation), the old model could never exceed 1/10 stacks
+  // regardless of how it stacked. Split into 2 real cast-anchored flat-value blocks — one per real
+  // triggering cast in the modeled rotation — each worth the real 5-stack (20%) grant; together they
+  // sum to exactly the real 40% cap once both have fired (5+5=10 stacks), matching the dump's own
+  // "Intro +5/Ultimate +5" breakdown precisely. Correctly zero before Intro, 20% between Intro and
+  // Liberation, 40% for the rest of the rotation.
   {
-    id: 'iuno.selfbuff.blessing-of-the-wan-light',
+    id: 'iuno.selfbuff.blessing-of-the-wan-light-intro',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Intro:Illuminated Manifestation' },
+    timing: { duration: 99 }, // sentinel: refreshed by ongoing Shield-gain stacks in the unmodeled Full Moon Domain, no natural decay sourced
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'allDmg', value: 20, source: 'self-kit' }],
+    note: "Derivation Inherent Skill: casting Intro Skill immediately grants 5 stacks of Blessing of the Wan Light (5 x4% = 20%) to whichever Resonator receives the shield inside the Full Moon Domain — see this file's own header comment above for the full derivation and the 2nd (Liberation) trigger.",
+  },
+  {
+    id: 'iuno.selfbuff.blessing-of-the-wan-light-liberation',
     source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Liberation:Beneath Lunar Tides' },
-    timing: { duration: 10 },
     // Target corrected 2026-09-02 from 'self' to 'whole-team' — verified against two independent live
     // sources while auditing Augusta's real-world curated recommendation list. Both quote it as
     // benefiting "the receiving Resonator"/"whichever Resonator receives the shield" inside the Full
@@ -174,21 +197,37 @@ export const IUNO_BLOCKS = [
     // heavyDmg above = 90%, matching precisely). Was wrongly self-only, so this 40% never reached any
     // teammate at all — same-shaped bug as iuno.chain.s2 just below, which already correctly models
     // the Resonance-Chain-gated ADDITIONAL 40% as whole-team.
+    timing: { duration: 99 }, // sentinel: same reasoning as the Intro grant above
     target: { scope: 'whole-team' },
-    effects: [{ stat: 'allDmg', value: 4, stacking: 'stacking', maxStacks: 10, source: 'self-kit' }],
-    note: 'Blessing of the Wan Light: +4% all DMG Amp per stack, max 10 stacks (40% total) to whichever Resonator receives the shield inside the 30s Full Moon Domain (max 1 stack per 0.5s), each new stack resets the 10s duration, ends early if the receiving Resonator is swapped off-field (not modeled). Derivation Inherent Skill instantly grants 5 stacks on Intro/Liberation cast — modeled anchored to the Liberation cast, per-stack stacking rather than the flat 40% total.',
+    effects: [{ stat: 'allDmg', value: 20, source: 'self-kit' }],
+    note: "Derivation Inherent Skill: casting Resonance Liberation immediately grants ANOTHER 5 stacks of Blessing of the Wan Light (5 x4% = 20%), stacking with the Intro grant above for the real 40%/10-stack cap once both have fired. Full real mechanic: +4% all DMG Amp per stack, max 10 stacks (40% total), to whichever Resonator receives the shield inside the 30s Full Moon Domain (also gainable 1 stack/0.5s from further Shield gains there — not modeled, no clean anchor), each new stack resets the 10s duration, ends early if the receiving Resonator is swapped off-field (not modeled).",
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
   //    each node's real mechanic; S4 correctly has NO block — pure defensive team shield, zero DPS
   //    component per the audit's own zeroing) ──
   {
+    // Retargeted 2026-09-08 (full-kit audit): was `trigger:{type:'passive'}`, unconditionally active
+    // for her ENTIRE kit — but the kit text is explicit this only applies "while in Lunar Cycle," a
+    // real, temporary state that doesn't exist until her Liberation cast (Beneath Lunar Tides) or
+    // Closing Refrain activates it. Her real modeled rotation (CHARACTER_ROTATIONS['Iuno']) opens with
+    // Intro BEFORE Lunar Cycle ever starts — the old unconditional-passive version was silently
+    // crediting +40% ATK to that pre-Cycle Intro hit too. Measured directly: removing the block dropped
+    // Intro's own damage by ~26% (488.06 -> 359.62, exactly the 1/1.4 ATK-scaling ratio), confirming
+    // Intro was wrongly getting the Lunar-Cycle-only buff. Retargeted to a cast-anchored window opening
+    // on the real Liberation cast that starts Lunar Cycle in her modeled rotation (same bug class
+    // already found and fixed on Camellya/Danjin/Denia/Galbrena this session). Sentinel duration since
+    // her rotation stays inside Lunar Cycle (with a brief Half-Moon/New-Moon toggle) through to
+    // Absolute Fullness, which ends the cycle — Outro's own swap-out damage fires on the same cast per
+    // the rotation's own note ("swap out on this cast"), so the sentinel's slight imprecision past
+    // Absolute Fullness doesn't reach any further real hit.
     id: 'iuno.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    trigger: { type: 'cast', on: 'Liberation:Beneath Lunar Tides' },
+    timing: { duration: 99 }, // sentinel: persists through the rest of the rotation (Lunar Cycle stays active until Absolute Fullness ends it)
+    target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 40, source: 'self-kit' }],
-    note: 'ATK +40% while in Lunar Cycle (confirmed exact) — kept passive since her real rotation is almost entirely spent inside Lunar Cycle. +1 Resonance Energy/s inside Full Moon Domain and interrupt immunity for Arc Beyond the Edge/Absolute Fullness are NOT modeled (no home in this schema).',
+    note: 'ATK +40% while in Lunar Cycle (confirmed exact) — now gated to start on the real cast that enters Lunar Cycle in her modeled rotation, instead of an unconditional passive that was silently crediting it to her pre-Cycle Intro hit too. +1 Resonance Energy/s inside Full Moon Domain and interrupt immunity for Arc Beyond the Edge/Absolute Fullness are NOT modeled (no home in this schema).',
   },
   {
     id: 'iuno.chain.s2',
@@ -210,14 +249,23 @@ export const IUNO_BLOCKS = [
     // iuno.liberation.beneath-lunar-tides (the Ultimate), iuno.heavy.flux-moonbow, and
     // iuno.heavy.absolute-fullness. An unscoped libDmg:65 here silently amplified all of those too —
     // the exact category-leak shape described for bare totalMult, just via the category-stat pool
-    // instead. Split into per-block `scopedToBlockId` effects covering only the 2 blocks that actually
-    // exist for the named moves (iuno.basic.moonbow, iuno.skill.arc-beyond-the-edge); Moonbow Dodge
-    // Counter has no engine block since it's unused in the modeled rotation, so no 3rd effect to add.
+    // instead. Originally split into per-block `scopedToBlockId` effects covering only the 2 blocks
+    // that existed at the time for the named moves (iuno.basic.moonbow, iuno.skill.arc-beyond-the-edge)
+    // — Moonbow Dodge Counter had no engine block yet.
+    //
+    // Found 2026-09-08 (full-kit re-audit): the 2026-09-07 completeness pass added
+    // `iuno.dodgecounter.moonbow-dodge-counter` (a real, sourced, libDmg-categorized block) but never
+    // updated this scoping list to include it — a real, silent scope-completeness gap (the same class
+    // of bug the Hiyuki audit's S1/S3 re-verification checked for). Currently zero DPS impact since
+    // that block is unused in the modeled rotation, but the scoping is now genuinely incomplete against
+    // an existing real block that the dump's own S3 text explicitly names as one of exactly 3 buffed
+    // moves — fixed so the data stays correct if that block is ever exercised by a different rotation.
     effects: [
       { stat: 'libDmg', value: 65, scopedToBlockId: 'iuno.basic.moonbow', source: 'self-kit' },
       { stat: 'libDmg', value: 65, scopedToBlockId: 'iuno.skill.arc-beyond-the-edge', source: 'self-kit' },
+      { stat: 'libDmg', value: 65, scopedToBlockId: 'iuno.dodgecounter.moonbow-dodge-counter', source: 'self-kit' },
     ],
-    note: 'While in Lunar Cycle, DMG dealt by Moonbow Basic ATK/Arc Beyond the Edge/Moonbow Dodge Counter Amplified by 65% (confirmed exact, all three are the game\'s own Resonance Liberation DMG-tagged moves) — scoped to only the 2 corresponding blocks that exist (Moonbow Dodge Counter is real but unused in the modeled rotation, so has no block to scope to).',
+    note: 'While in Lunar Cycle, DMG dealt by Moonbow Basic ATK/Arc Beyond the Edge/Moonbow Dodge Counter Amplified by 65% (confirmed exact, all three are the game\'s own Resonance Liberation DMG-tagged moves) — scoped to all 3 corresponding blocks (Moonbow Dodge Counter is unused in the modeled rotation but its block exists and is now correctly included).',
   },
   // S4 correctly has NO block — Absolute Fullness grants a Shield = 160% of Iuno's ATK to the WHOLE
   // TEAM for 30s (not passed to the incoming Resonator on swap) — purely defensive, ZERO DPS component.
