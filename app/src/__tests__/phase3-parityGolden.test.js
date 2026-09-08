@@ -140,8 +140,17 @@ const EXPECTED_DIVERGENCES = {
   // Baizhi.md's own Cooldown rows) — her modeled rotation casts both more often than those
   // cooldowns allow, so calcTeamStats()'s cooldownSteadyState gate correctly derates the legacy RAW
   // number (79 -> 69); this test's own standalone engine call doesn't apply that gate, so it stays
-  // at the un-derated value. Measured ratio ~1.139 (engine/legacy) — real, expected, not a regression.
-  Baizhi: { min: 1.05, max: 1.20 },
+  // at the un-derated value.
+  // Band re-measured 2026-09-08 (full re-audit): added her previously-entirely-missing 4-stage Basic
+  // Attack combo block + CHARACTER_ROTATIONS step (a real, sourced, necessary part of her rotation —
+  // see baizhi.blocks.js's own fix comment) and fixed 3 real bugs (Euphonia ATK buff was team-wide
+  // instead of single-recipient; the Euphonia ATK buff and both S2/S6 chain buffs were dead
+  // passive+duration, silently 100%-uptime instead of real 12s/20s windows). Adding a large, real,
+  // cooldown-unaffected Basic ATK damage share dilutes the relative weight of the cooldown-gated
+  // moves in her total, shrinking this same divergence mechanism's ratio from ~1.139 to ~1.040 — same
+  // underlying cause as before, a smaller number because the composition of her modeled damage
+  // genuinely changed, not a new or different divergence.
+  Baizhi: { min: 1.02, max: 1.06 },
   // Added 2026-09-06 (Brant completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi above.
   // To the Horizon (Liberation) got a real, sourced 24s cooldown added (Data dump/Brant/Brant.md's
   // own Cooldown row) — his modeled rotation (~8.2s per the dump's own Damage Profile) recasts it

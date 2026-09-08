@@ -192,3 +192,47 @@ correctly zeroing every pure-healing/utility Resonance Chain node.
 
 No test changes needed (none of the fixes touched RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/SKILL_MULTIPLIERS
 /CHARACTER_ROTATIONS, which the existing test file covers), full suite green (1338/1338).
+
+**Full re-audit (2026-09-08, explicitly requested — not assuming the 2026-09-03/09-06 passes above
+caught everything).** Re-read this dump line by line against `characters.js` and `baizhi.blocks.js`.
+The earlier "already matched this source exactly" claim was wrong — it verified the flat numbers but
+missed structural issues (rotation completeness, buff scope, and a real engine-architecture gap this
+document's own SKILL_MULTIPLIERS-matching comparison couldn't have caught). Real bugs found and fixed:
+
+1. **Missing Basic ATK entirely.** SKILL_MULTIPLIERS['Baizhi'] already stored the "Destined Promise
+   Stage 1-4" row (65.48% / 78.57% / 13.10%×7 / 78.57%), but no CHARACTER_ROTATIONS step and no engine
+   block referenced it — despite this dump's own "Rotation S0R0"/"S0R3" text explicitly using "Basic
+   P1-4"/"Basic P1-3" to build Concentration toward Emergency Plan. Added a real CHARACTER_ROTATIONS
+   step and a matching `baizhi.basic.destined-promise` block; added `'Basic ATK'` to her `dmgFocus`
+   (CHARACTER_DATA) so a teammate's real Basic ATK DMG buff no longer silently rejects her.
+2. **Wrong step order.** CHARACTER_ROTATIONS['Baizhi'] listed Liberation before Skill; this dump's own
+   rotation text casts Skill (Emergency Plan) first, then Liberation. Reordered.
+3. **Euphonia ATK buff was team-wide, not single-recipient.** This dump's own Inherent Skill text is
+   explicit and singular — "the Resonator who picks it up gets ATK+15%" — but both
+   CHAR_BUFF_TABLE['Baizhi'].libBuffs (`target:'team'`) and the `baizhi.libbuff.euphonia-atk` engine
+   block (`target.scope:'whole-team'`) applied it to every teammate. Fixed both to a single-recipient
+   target (`'next'`/`'next-on-field'`). Also found and fixed a related gap this exposed: `calcTeamStats
+   .js`'s own rotation-timeline builder only ever handled `libBuffs.target === 'team'`, so a `'next'`
+   -target libBuff would have silently vanished from the timeline visualization (the real DPS math in
+   `legacyMainDpsStats.js` already handled `'next'` correctly — this was a visualization-only gap).
+4. **Three blocks were silently permanent instead of time-windowed.** `baizhi.libbuff.euphonia-atk`,
+   `baizhi.chain.s2`, and `baizhi.chain.s6` were all `trigger:{type:'passive'}` with a real
+   `timing.duration` set (12s/20s/20s) — but every resolver path treats a passive-trigger block as
+   unconditionally, permanently active, completely ignoring `timing.duration`. This silently made all
+   three 100%-uptime for the whole encounter instead of their real, sourced windows following an
+   Emergency Plan cast — an overstatement bug (the mirror image of the "dead stacking metadata"
+   understatement bug class found and fixed roster-wide via Augusta's own audit). Re-anchored all
+   three to the real `'Skill:Emergency Plan'` cast step, which the newly-added Basic ATK step (#1
+   above) now correctly precedes in the modeled rotation.
+5. Minor: `CHARACTER_DATA['Baizhi'].desc` spelled her companion "You'an" — this dump spells it
+   consistently "You'tan" throughout every section. Fixed.
+6. Added Mid-air Attack/Dodge Counter as present-but-unused blocks (real SKILL_MULTIPLIERS rows,
+   absent from CHARACTER_ROTATIONS), matching this codebase's established completeness convention.
+
+Golden-fixture parity tests (`phase3-parityGolden.test.js`) caught real, expected drift from these
+fixes (adding a real damage source and un-inflating a wrongly-team-wide buff both move real numbers) —
+refreshed both fixtures and re-measured her pre-existing EXPECTED_DIVERGENCES band (was 1.05-1.20 at
+ratio ~1.139, now 1.02-1.06 at ratio ~1.040 — same underlying cause, smaller ratio because the Basic
+ATK addition dilutes the cooldown-gated moves' share of her total). Added positive-verification tests
+proving the S2 buff is now genuinely time-windowed (unaffected before Emergency Plan, active after) —
+not just a value-equality check. Full suite green (1791/1791).

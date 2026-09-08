@@ -280,6 +280,19 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
             if (b.target === 'team') {
               buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t, duration: b.duration || 25, triggerStep: 'Liberation' });
             }
+            // 'next' branch added 2026-09-08 (Baizhi full re-audit): CHAR_BUFF_TABLE['Baizhi'].libBuffs
+            // was just corrected from target:'team' to target:'next' (her Euphonia-pickup ATK buff is a
+            // single-recipient effect, per the source's own "the Resonator who picks it up" text — not
+            // team-wide). This function only ever handled 'team' for libBuffs, so a 'next'-target one
+            // would have silently vanished from the rotation timeline (dropped, not mislabeled) — the
+            // real DPS math in legacyMainDpsStats.js already handles 'next' correctly (line ~269), this
+            // was only a visualization gap. Mirrors the outroBuffs 'next' handling just above (anchored
+            // to swap-out, i.e. when the owner leaves the field) since that's this timeline's own
+            // existing convention for a single-recipient buff, even though Euphonia's real trigger is a
+            // Skill cast followed by a pickup, not a swap — an approximation, not a fabrication.
+            else if (b.target === 'next') {
+              buffs.push({ source: m.name, stat: b.stat, value: b.value, start: t + onField, duration: b.duration || 25, triggerStep: 'Liberation' });
+            }
           });
           // CHAR_BUFF_TABLE uses duration: 99 or 999 as sentinels for "conditional passive, no
           // natural decay" (e.g. a Crit DMG bonus active in a stance, or on a periodic proc) — never

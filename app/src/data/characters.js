@@ -1079,7 +1079,10 @@ const CHARACTER_DATA = {
     // holds — it just named the wrong character.
     teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
-    desc: "Devoted Huaxu Academy researcher accompanied by her companion You'an. Glacio healer who restores HP via Resonance Skill and Liberation, providing consistent team sustain with low field time.",
+    // desc fixed 2026-09-08 (full re-audit): "You'an" -> "You'tan" — Data dump/Baizhi/Baizhi.md spells
+    // her companion's name consistently as "You'tan" throughout (Kit, Resonance Skill, Liberation,
+    // Forte, Intro sections all agree); the prior text was a transcription typo.
+    desc: "Devoted Huaxu Academy researcher accompanied by her companion You'tan. Glacio healer who restores HP via Resonance Skill and Liberation, providing consistent team sustain with low field time.",
     skills: ['Destined Promise', 'Emergency Plan', 'Momentary Union', 'Cycle of Life'],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Howler Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
@@ -1745,7 +1748,12 @@ const CHARACTER_DATA = {
   // has no Damage Profile percentages (a Support, unlike DPS characters' dumps), but both are real,
   // already correctly libDmg/heavyDmg-categorized blocks (Momentary Union, Destined Promise channel)
   // firing in her real CHARACTER_ROTATIONS, were silently rejecting real teammate DMG Bonus buffs.
-  ['Baizhi',        ['Skill', 'Liberation', 'Heavy ATK'], ['Heal'],                            []],
+  // dmgFocus gained 'Basic ATK' 2026-09-08 (full re-audit): her 4-stage Basic Attack combo (Destined
+  // Promise Stage 1-4) previously had no block and no CHARACTER_ROTATIONS step at all despite being a
+  // real, necessary part of her rotation (builds Concentration toward Emergency Plan) — added this
+  // same pass, so same "silently rejecting a real teammate Basic ATK DMG Bonus buff" bug would apply
+  // here too if 'Basic ATK' weren't added alongside it.
+  ['Baizhi',        ['Basic ATK', 'Skill', 'Liberation', 'Heavy ATK'], ['Heal'],                            []],
   // buff tag corrected 2026-08-18: the wiki's Taoqi/Combat Outro Skill "Iron Will" text is "Resonance
   // Skill DMG Amplified by 38%" — matches the 'Skill DMG Amp' convention used for Lumi/Baizhi/Buling's
   // identical Amp-type buffs below, not the "Amplify" wording (which belongs to a different, unsourced
@@ -3284,10 +3292,18 @@ const CHAR_BUFF_TABLE = {
   },
   'Baizhi': {
     outroBuffs: [{ stat: 'amplify', value: 15, target: 'next', duration: 6 }],
-    libBuffs: [{ stat: 'atkPct', value: 15, target: 'team', duration: 20 }],
+    // target fixed 2026-09-08 (full re-audit): was 'team' — Data dump/Baizhi/Baizhi.md's own Inherent
+    // Skill text is explicit and singular: "casting Skill Emergency Plan makes You'tan generate a field
+    // of Euphonia (15s); the Resonator who picks it up gets ATK+15% for 20s" — ONE resonator (the one
+    // who picks up the field, per the rotation notes deliberately her Main DPS), never the whole team.
+    // This was a real, longstanding over-crediting bug: every teammate was getting +15% ATK instead of
+    // just the one who collects Euphonia. 'next' matches the existing convention this table already uses
+    // for a single-recipient buff (see outroBuffs above) and matches the rotation note's own "swap,
+    // collect Euphonia with your DPS" choreography — the DPS swapped into is the real recipient.
+    libBuffs: [{ stat: 'atkPct', value: 15, target: 'next', duration: 20 }],
     selfBuffs: [],
     debuffs: [],
-    note: 'Outro: 15% Amplify (6s per tick, refreshes on heal). Inherent: 15% ATK teamwide (20s on Euphonia pickup). Heal.',
+    note: 'Outro: 15% Amplify (6s per tick, refreshes on heal). Inherent: 15% ATK to the single Resonator who picks up Euphonia (20s), not the whole team — corrected 2026-09-08, see fix comment above. S6 separately upgrades a DIFFERENT effect (Glacio DMG Bonus+12%) to all nearby characters on the same pickup event — that one genuinely is team-wide, see RESONANCE_CHAIN_DATA[\'Baizhi\'].s6. Heal.',
   },
   // corrected 2026-08-18: the wiki's Taoqi/Combat Forte Details table names her Outro Skill "Iron Will":
   // "The incoming Resonator has their Resonance Skill DMG Amplified by 38% for 14s or until they are
@@ -6016,8 +6032,23 @@ const CHARACTER_ROTATIONS = {
   ],
   'Baizhi': [
     { type: 'Intro', skill: 'Overflowing Frost', note: 'plunging attack that also heals the team on entry' },
-    { type: 'Liberation', skill: 'Momentary Union', note: 'team heal, spawns 4 stacks of Remnant Entities for sustained Coordinated-ATK healing' },
+    // Basic ATK step added 2026-09-08 (full re-audit): the dump's own real "Rotation S0R0" text is
+    // explicit — "Intro -> Basic P1-4 -> Skill (swap, collect Euphonia...) -> Liberation..." — the
+    // 4-stage Basic Attack combo is a genuinely used, necessary step (it's what builds Concentration
+    // to 4 right before casting Emergency Plan below), not a skippable filler. It had no
+    // CHARACTER_ROTATIONS step at all before this fix, unlike Verina/Shorekeeper's own Basic ATK
+    // combo steps (both real precedent for a support/healer whose Basic Attack combo is a genuine
+    // rotation step, not omitted just because personal damage investment is otherwise skippable).
+    { type: 'Basic ATK', skill: 'Destined Promise Stage 1-4', note: "Tap Basic Attack 4 times — You'tan performs the 4-stage combo, each hit building 1 Concentration stack toward the 4-stack cap Emergency Plan below consumes. The dump's own S0R3 rotation repeats a partial P1-3 recast later; only this one representative combo is modeled." },
+    // Skill/Liberation order swapped 2026-09-08 (full re-audit): this table previously listed
+    // Liberation BEFORE Skill, but the dump's own real "Rotation S0R0" text is explicit — "Basic P1-4
+    // -> Skill (swap, collect Euphonia with your DPS) -> Liberation (delayed to cancel her slow
+    // swap-in attack) -> Basic P1-3" — Skill genuinely comes first. Step order feeds real
+    // cooldown-gating/buff-window timing in the simulator (deriveStepsFromRotation/resolveHitComposedDps),
+    // so this wasn't cosmetic — it affected the modeled relative timing of her Skill- and
+    // Liberation-anchored effects.
     { type: 'Skill', skill: 'Emergency Plan', note: 'instant team heal plus a Glacio hit, builds Concentration' },
+    { type: 'Liberation', skill: 'Momentary Union', note: 'team heal, spawns 4 stacks of Remnant Entities for sustained Coordinated-ATK healing' },
     { type: 'Heavy ATK', skill: "Destined Promise (channel)", note: 'consumes Concentration for continuous team healing plus Concerto/Resonance Energy regen' },
     { type: 'Outro', skill: 'Rejuvinating Flow', duration: 30, note: 'sustains the incoming Resonator with healing over 30s plus 15% DMG Amp for 6s' },
   ],
