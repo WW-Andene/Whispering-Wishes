@@ -63,16 +63,65 @@ function collectAppliers(blocksByOwner, mechanic, stanceOverrides = null) {
 }
 
 /**
+ * Real per-step-firing applier collection (2026-09-08, direct user instruction: "wire the DOT
+ * calculator to real per-step firing instead"). `collectAppliers()` above only checks whether a
+ * dotApplier-tagged block EXISTS in a character's kit (composition-gated) — it never checks whether
+ * the modeled rotation actually casts that specific move. This instead scans each owner's own real
+ * `CHARACTER_ROTATIONS` step list (same exact real-step-label matching resolveFusionBurstDetonations()
+ * already proved for Fusion Burst — this generalizes that one mechanic's pattern to the other three) and
+ * returns one entry PER REAL OCCURRENCE of a matching cast, not one entry per block regardless of
+ * whether its move is ever actually taken. A character whose kit has a dotApplier block for a move
+ * their own modeled rotation never casts correctly contributes nothing, instead of being silently
+ * credited anyway.
+ * @param {Object<string, import('../../schema/block.schema.js').TriggerBlock[]>} blocksByOwner
+ * @param {Object<string, {type:string, skill?:string}[]>} rotationsByOwner  CHARACTER_ROTATIONS, keyed by owner.
+ * @param {string} mechanic
+ * @param {Object<string,string>|null} [stanceOverrides]
+ * @returns {{owner: string, block: import('../../schema/block.schema.js').TriggerBlock}[]} one entry
+ *   per real cast occurrence (a move cast twice in one rotation loop contributes twice).
+ */
+function collectRealApplications(blocksByOwner, rotationsByOwner, mechanic, stanceOverrides = null) {
+  const allBlocks = Object.values(blocksByOwner).flat();
+  const occurrences = [];
+  Object.entries(blocksByOwner).forEach(([owner, blocks]) => {
+    const rotation = rotationsByOwner?.[owner];
+    if (!rotation) return;
+    const mechanicBlocks = blocks.filter(b => b.dotApplier?.mechanic === mechanic && (b.dotApplier.value || mechanic === 'electroFlare'));
+    if (!mechanicBlocks.length) return;
+    const stance = stanceOverrides && Object.prototype.hasOwnProperty.call(stanceOverrides, owner)
+      ? stanceOverrides[owner] : winningStanceForOwner(allBlocks, owner);
+    // b.trigger.on ?? b.trigger.attemptOn — a `windowed-cast` block's match label lives in `attemptOn`,
+    // not `on` (same distinction resolveFusionBurstDetonations() already documents).
+    const byLabel = new Map(mechanicBlocks.map(b => [b.trigger.on ?? b.trigger.attemptOn, b]));
+    for (const step of rotation) {
+      if (!step.type || !step.skill) continue;
+      const block = byLabel.get(`${step.type}:${step.skill}`);
+      if (!block) continue;
+      const req = block.dotApplier.requiresStance;
+      if (req != null && req !== stance) continue;
+      occurrences.push({ owner, block });
+    }
+  });
+  return occurrences;
+}
+
+/**
  * Frazzle — the engine-merge history (git log) 1.1. `maxStacksRaw` sums every applying BLOCK's own `value` (not
  * just one per character — Rover: Spectro's Forte (2) and Liberation (6) are two real, separate
  * application points, more precise than the legacy table's single pre-summed 8). `numSources` counts
  * unique OWNERS (matches calcFrazzleDmg's own `appliers.length`, an ICD-per-character divisor, not
  * per-application-point).
  */
-export function resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, resMult, hasPhoebe) {
-  const appliers = collectAppliers(blocksByOwner, 'frazzle');
+export function resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, resMult, hasPhoebe, rotationsByOwner = null) {
+  // Real per-step firing (2026-09-08) preferred when a rotation is supplied — see
+  // collectRealApplications()'s own doc for why this replaces composition-only crediting. Falls back
+  // to the old kit-presence behavior when rotationsByOwner isn't supplied (every existing caller
+  // without the new param is byte-identical to before), same fallback contract Fusion Burst already
+  // established.
+  const occurrences = rotationsByOwner ? collectRealApplications(blocksByOwner, rotationsByOwner, 'frazzle') : null;
+  const appliers = occurrences ? occurrences.map(o => o.block) : collectAppliers(blocksByOwner, 'frazzle');
   if (!appliers.length) return { dmg: 0, active: false };
-  const numSources = new Set(appliers.map(b => b.source)).size;
+  const numSources = new Set(occurrences ? occurrences.map(o => o.owner) : appliers.map(b => b.source)).size;
   const effectiveRate = numSources / FRAZZLE_ICD_PER_SOURCE;
   const maxStacksRaw = appliers.reduce((s, b) => s + (b.dotApplier.value || 10), 0);
   const stacks = Math.min(maxStacksRaw, Math.floor(effectiveRate * rotTime));
@@ -96,8 +145,14 @@ export function resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, resMul
  * `value` (the base case) otherwise. Both are real, sourced numbers (characters.js's own "6 stacks
  * with Rover (3 base)") — never a computed ×2 assumption.
  */
-export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMult) {
-  const appliers = collectAppliers(blocksByOwner, 'erosion');
+export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMult, rotationsByOwner = null) {
+  // Real per-step firing (2026-09-08) — see resolveFrazzleFromBlocks's identical comment/
+  // collectRealApplications()'s own doc. Erosion's own MAX-not-sum aggregation is unaffected by a
+  // real occurrence appearing more than once (Math.max is idempotent on repeats), so this only
+  // changes behavior when a dotApplier-tagged move never actually appears in the rotation at all.
+  const appliers = rotationsByOwner
+    ? collectRealApplications(blocksByOwner, rotationsByOwner, 'erosion').map(o => o.block)
+    : collectAppliers(blocksByOwner, 'erosion');
   if (!appliers.length) return { dmg: 0, active: false };
   const baseStacks = appliers.reduce((s, b) => {
     const { requiresTeammate, value, valueWithTeammate } = b.dotApplier;
@@ -139,8 +194,15 @@ export function resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, re
  * seed (10) and halving-on-tick are both unsourced/wiki-approximated per calcElectroFlareDmg's own
  * comment, ported verbatim rather than "fixed" without a real source.
  */
-export function resolveElectroFlareFromBlocks(blocksByOwner, rotTime, defMult, resMult) {
-  const appliers = collectAppliers(blocksByOwner, 'electroFlare');
+export function resolveElectroFlareFromBlocks(blocksByOwner, rotTime, defMult, resMult, rotationsByOwner = null) {
+  // Real per-step firing (2026-09-08) — see resolveFrazzleFromBlocks's identical comment. Electro
+  // Flare's own tick math has no per-applier-count term (a fixed boolean gate + halving sequence), so
+  // the only real difference a rotation check can make here is whether it's active AT ALL: a
+  // dotApplier-tagged move that never actually appears in the modeled rotation no longer activates the
+  // whole reaction just because the block exists in the kit.
+  const appliers = rotationsByOwner
+    ? collectRealApplications(blocksByOwner, rotationsByOwner, 'electroFlare').map(o => o.block)
+    : collectAppliers(blocksByOwner, 'electroFlare');
   if (!appliers.length) return { dmg: 0, active: false };
   const ticks = Math.min(4, Math.floor(rotTime / FLARE_TICK_INTERVAL));
   let total = 0, stacks = 10;

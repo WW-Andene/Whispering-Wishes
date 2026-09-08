@@ -60,9 +60,18 @@ export function rotTimeFromSteps(ownedSteps) {
  * @param {Object|null} [energyCycleFactors]  Unused (see module doc above) — kept for call-site stability.
  * @param {Object<string, import('./triggerBlocks.schema.js').TriggerBlock[]>|null} [blocksByOwner]
  *   the engine-merge history (git log) Phase 2: each team member's own real TriggerBlocks, keyed by name — when
- *   supplied, migrated mechanics (Electro Flare so far) are resolved from real `dotApplier`-tagged
- *   blocks (`dotReactionsFromBlocks.js`) instead of `CHAR_BUFF_TABLE`'s flat fields. Omit only when
+ *   supplied, migrated mechanics are resolved from real `dotApplier`-tagged blocks
+ *   (`dotReactionsFromBlocks.js`) instead of `CHAR_BUFF_TABLE`'s flat fields. Omit only when
  *   blocks genuinely aren't available (falls back to the fully-legacy behavior for every mechanic).
+ * @param {Object<string,string>|null} [stanceOverrides]  Manual/forced Resonance Mode per owner.
+ * @param {Object<string, {type:string, skill?:string}[]>|null} [rotationsByOwner]  CHARACTER_ROTATIONS,
+ *   keyed by owner (2026-09-08, direct user instruction: "wire the DOT calculator to real per-step
+ *   firing instead") — when supplied, ALL FOUR migrated mechanics (Frazzle/Erosion/Fusion Burst/Electro
+ *   Flare) only credit a dotApplier-tagged block for each REAL occurrence of its matching move in that
+ *   owner's own modeled rotation, instead of crediting every dotApplier block that merely exists in a
+ *   team member's kit regardless of whether the modeled rotation ever actually casts it. Omit for the
+ *   old composition-only (kit-presence) behavior — every existing caller without this param is
+ *   byte-identical to before.
  * @returns {{
  *   totalDmg: number,
  *   dps: number,
@@ -88,7 +97,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const allFrazzleMembersHaveBlocks = blocksByOwner && frazzleFlaggedMembers.every(m =>
     (blocksByOwner[m.name] || []).some(b => b.dotApplier?.mechanic === 'frazzle'));
   const frazzle = allFrazzleMembersHaveBlocks
-    ? resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, frazzleResMult, hasPhoebe)
+    ? resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, frazzleResMult, hasPhoebe, rotationsByOwner)
     : calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
   // Erosion (the engine-merge history (git log) Phase 2 — Ciaccona migrated; Cartethyia migrated
   // 2026-09-06 — her real Rover: Aero-doubling condition, characters.js's "6 stacks with Rover (3
@@ -104,7 +113,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   const allErosionMembersHaveBlocks = blocksByOwner && erosionFlaggedMembers.every(m =>
     (blocksByOwner[m.name] || []).some(b => b.dotApplier?.mechanic === 'erosion'));
   const erosion = allErosionMembersHaveBlocks
-    ? resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, erosionResMult)
+    ? resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, erosionResMult, rotationsByOwner)
     : calcErosionDmg(members, rotTime, defMult, erosionResMult);
   // Fusion Burst (the engine-merge history (git log) Phase 2 — Denia/Aemeath migrated): same block-preference
   // pattern as Electro Flare below, with one addition — `dotApplier.requiresStance` (Denia/Aemeath are
@@ -126,7 +135,7 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   // stays only as the fallback for a caller that genuinely can't supply blocksByOwner (this file's own
   // dotReactions.test.js, proving the OLD behavior still works standalone).
   const electroFlare = blocksByOwner
-    ? resolveElectroFlareFromBlocks(blocksByOwner, rotTime, defMult, electroFlareResMult)
+    ? resolveElectroFlareFromBlocks(blocksByOwner, rotTime, defMult, electroFlareResMult, rotationsByOwner)
     : calcElectroFlareDmg(members, rotTime, defMult, electroFlareResMult);
   const totalDmg = frazzle.dmg + erosion.dmg + fusionBurst.dmg + electroFlare.dmg;
 

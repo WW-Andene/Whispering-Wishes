@@ -16,6 +16,7 @@ import { CIACCONA_BLOCKS } from '../engine/characterBlocks/ciaccona.blocks.js';
 import { CARTETHYIA_BLOCKS } from '../engine/characterBlocks/cartethyia.blocks.js';
 import { ROVER_SPECTRO_BLOCKS } from '../engine/characterBlocks/roverspectro.blocks.js';
 import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/resolver/gating/sequenceGating.js';
+import { CHARACTER_ROTATIONS } from '../data/characters.js';
 
 const defMult = calcDefMult(800, 0, 0);
 const resMult = calcResMult(10, 0);
@@ -176,5 +177,49 @@ describe('dotReactionsFromBlocks — Erosion mixed-migration safety (Ciaccona + 
     expect(fromDots.breakdown.erosion.dmg).toBeCloseTo(legacy.dmg, 6);
     const blocksOnlyWouldGive = resolveErosionFromBlocks(blocksByOwner, 20, defMult, resMult);
     expect(blocksOnlyWouldGive.dmg).toBe(0);
+  });
+});
+
+describe('dotReactionsFromBlocks — real per-step firing (2026-09-08, direct user instruction)', () => {
+  const getEnemyRes = () => 10;
+
+  it('Rover: Spectro real-rotation Frazzle matches the dump\'s own explicit stack total (6+2+2=10), not the old composition-only 6+2=8', () => {
+    // Real, sourced confirmation (Data dump/Rover Spectro/Rover Spectro.md line 109): "Applies Frazzle
+    // via Liberation (6 stacks flat) and enhanced Resonance Skill (2 stacks); 2 Skills + 1 Ultimate
+    // caps it at 10 stacks" — her modeled rotation (CHARACTER_ROTATIONS) casts Forte:Resonating Whirl
+    // TWICE, so the real total is 6+2+2=10. The old composition-only resolver credited each BLOCK once
+    // regardless of real repeat casts (6+2=8) — a genuine under-crediting bug the dump's own cap
+    // arithmetic directly contradicts. At a rotation length long enough that the stack ceiling isn't
+    // the binding constraint (25s here — see the math below), real-firing must produce MORE damage
+    // than composition-only, not the same.
+    const blocksByOwner = { 'Rover: Spectro': ROVER_SPECTRO_BLOCKS };
+    const rotationsByOwner = { 'Rover: Spectro': CHARACTER_ROTATIONS['Rover: Spectro'] };
+    const compOnly = resolveFrazzleFromBlocks(blocksByOwner, 25, defMult, resMult, false);
+    const realFiring = resolveFrazzleFromBlocks(blocksByOwner, 25, defMult, resMult, false, rotationsByOwner);
+    expect(realFiring.dmg).toBeGreaterThan(compOnly.dmg);
+  });
+
+  it('a dotApplier-tagged move that never appears in the modeled rotation contributes nothing under real-firing, unlike composition-only', () => {
+    // Synthetic block: exists in the character's kit (dotApplier present) but its trigger.on label
+    // matches no real CHARACTER_ROTATIONS step — composition-only still credits it (kit-presence-only);
+    // real-firing correctly contributes zero.
+    const owner = 'FakeChar';
+    const blocksByOwner = { [owner]: [
+      { id: 'fake.unused-move', source: owner, kind: 'damage', trigger: { type: 'cast', on: 'Skill:Never Cast' }, timing: {}, target: { scope: 'self' }, effects: [], damage: { hits: [{ atkPct: 1 }] }, dotApplier: { mechanic: 'frazzle', value: 10 } },
+    ] };
+    const rotationsByOwner = { [owner]: [{ type: 'Intro', skill: 'Something Else' }] };
+    const compOnly = resolveFrazzleFromBlocks(blocksByOwner, 20, defMult, resMult, false);
+    const realFiring = resolveFrazzleFromBlocks(blocksByOwner, 20, defMult, resMult, false, rotationsByOwner);
+    expect(compOnly.active).toBe(true);
+    expect(realFiring.active).toBe(false);
+  });
+
+  it('resolveDotReactionDps wires rotationsByOwner through to Frazzle/Erosion/Electro Flare, not just Fusion Burst', () => {
+    const blocksByOwner = { 'Rover: Spectro': ROVER_SPECTRO_BLOCKS };
+    const rotationsByOwner = CHARACTER_ROTATIONS;
+    const members = [{ name: 'Rover: Spectro' }];
+    const withRotation = resolveDotReactionDps(members, 25, defMult, 0, getEnemyRes, resMult, null, blocksByOwner, null, rotationsByOwner);
+    const withoutRotation = resolveDotReactionDps(members, 25, defMult, 0, getEnemyRes, resMult, null, blocksByOwner, null, null);
+    expect(withRotation.breakdown.frazzle.dmg).toBeGreaterThan(withoutRotation.breakdown.frazzle.dmg);
   });
 });

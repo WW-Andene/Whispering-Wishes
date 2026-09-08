@@ -50,10 +50,17 @@ export const ROVER_SPECTRO_BLOCKS = [
     note: 'Delayed blast; applies a full 6 stacks of Spectro Frazzle to the target in one hit.',
     // dotApplier added 2026-09-02 (the engine-merge history (git log) Phase 2) — matches this block's own note (6
     // stacks) and CHAR_BUFF_TABLE.debuffs.frazzle's already-sourced condition text exactly.
-    // resolveFrazzleFromBlocks SUMS this with roverspectro.forte.resonating-whirl's own 2 stacks below
-    // (2+6=8), matching the legacy pre-combined value exactly, not double-counted (Frazzle's real
-    // interaction rule per the engine-merge history (git log) 1.1 — two separate real application points genuinely
-    // add together, unlike Erosion's MAX rule).
+    // resolveFrazzleFromBlocks SUMS this with roverspectro.forte.resonating-whirl's own 2 stacks below.
+    // 2026-09-08 correction (DOT-real-firing pass — "wire the DOT calculator to real per-step firing
+    // instead"): the real modeled rotation casts Forte:Resonating Whirl TWICE (2+2=4), not once, so the
+    // real total is 6+2+2=10 — matching the dump's own explicit confirmation verbatim (line 109: "2
+    // Skills + 1 Ultimate caps it at 10 stacks"). The PRIOR comment here ("matching the legacy
+    // pre-combined value... 2+6=8") was itself a real, sourced under-crediting bug: the legacy flat
+    // value (8) never accounted for the Skill firing twice in one rotation loop at all. Fixed at the
+    // engine level (dotReactionsFromBlocks.js's collectRealApplications(), which now counts one
+    // contribution per REAL occurrence in CHARACTER_ROTATIONS instead of one per block regardless of
+    // repeat casts), not by hand-editing either dotApplier value here — the block's own per-cast value
+    // (2, or 6) stays correct at the single-cast level either way.
     dotApplier: { mechanic: 'frazzle', value: 6 },
   },
   {
@@ -76,10 +83,12 @@ export const ROVER_SPECTRO_BLOCKS = [
     // right after it — both rows' hits combined.
     damage: { hits: [...parseSkillMultiplierHits('129.08%×2'), ...parseSkillMultiplierHits('39.77%')], category: 'skillDmg', basis: 'ATK' },
     note: 'At 50+ Diminutive Sound, Skill auto-upgrades into Resonating Spin (2 Spectro Frazzle stacks + Shimmer, which stops decay), immediately chained into the Resonating Whirl Basic ATK follow-up. Fires twice in the real rotation.',
-    // dotApplier added 2026-09-02 — see roverspectro.liberation.echoing-orchestra's own comment (this
-    // block's 2 stacks + that one's 6 = the legacy pre-combined 8, summed correctly by
-    // resolveFrazzleFromBlocks). Value stays 2 regardless of this block firing twice in the modeled
-    // rotation — the SAME "declared kit fact, not per-cast" convention the legacy value already used.
+    // dotApplier added 2026-09-02 — see roverspectro.liberation.echoing-orchestra's own comment.
+    // 2026-09-08 correction: this block DOES fire twice in the modeled rotation, and each real cast
+    // DOES apply its own 2 stacks (dump line 109: "2 Skills + 1 Ultimate caps it at 10 stacks" — 2+2+6,
+    // not 2+6) — resolveFrazzleFromBlocks's real-per-step-firing pass now credits both real
+    // occurrences (4 total from this block) instead of the old composition-only single credit (2),
+    // fixing a real under-crediting bug the previous "declared kit fact, not per-cast" convention had.
     dotApplier: { mechanic: 'frazzle', value: 2 },
   },
   {
