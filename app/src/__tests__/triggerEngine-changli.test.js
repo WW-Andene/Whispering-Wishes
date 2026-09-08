@@ -4,6 +4,8 @@ import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposed
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CHANGLI_BLOCKS } from '../engine/characterBlocks/changli.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
+import { createStats } from '../features/teams/calcEngine.js';
+import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 
 describe('triggerEngine parity — Changli', () => {
   it('every block matches the canonical schema (Layer 4 migration)', () => {
@@ -36,17 +38,42 @@ describe('triggerEngine parity — Changli', () => {
 
   it('outro and selfBuff match CHAR_BUFF_TABLE', () => {
     const legacy = CHAR_BUFF_TABLE['Changli'];
-    const outro = CHANGLI_BLOCKS.find(b => b.id === 'changli.outro.strategy-of-duality');
-    expect(outro.effects.find(e => e.stat === 'elemDmg').value).toBe(legacy.outroBuffs[0].value);
-    expect(outro.effects.find(e => e.stat === 'libDmg').value).toBe(legacy.outroBuffs[1].value);
-    expect(outro.timing.duration).toBe(legacy.outroBuffs[0].duration);
+    const outroFusion = CHANGLI_BLOCKS.find(b => b.id === 'changli.outro.strategy-of-duality-fusion');
+    const outroLib = CHANGLI_BLOCKS.find(b => b.id === 'changli.outro.strategy-of-duality-liberation');
+    expect(outroFusion.effects.find(e => e.stat === 'elemDmg').value).toBe(legacy.outroBuffs[0].value);
+    expect(outroLib.effects.find(e => e.stat === 'libDmg').value).toBe(legacy.outroBuffs[1].value);
+    expect(outroFusion.timing.duration).toBe(legacy.outroBuffs[0].duration);
     const self = CHANGLI_BLOCKS.find(b => b.id === 'changli.selfbuff.fiery-feather');
     expect(self.effects[0].value).toBe(legacy.selfBuffs[0].value);
     expect(self.timing.duration).toBe(legacy.selfBuffs[0].duration);
     // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): now actually clamps to the incoming Resonator's
     // own swap-out instant when shorter than the nominal 10s — see forfeitOnRecipientSwapOut.test.js
     // for the mechanism's own proof.
-    expect(outro.timing.forfeitOnRecipientSwapOut).toBe(true);
+    expect(outroFusion.timing.forfeitOnRecipientSwapOut).toBe(true);
+    expect(outroLib.timing.forfeitOnRecipientSwapOut).toBe(true);
+  });
+
+  // Found 2026-09-08 (full re-audit): the Outro was ONE block with a shared block-level
+  // `condition:{element:'fusion'}` gating BOTH effects — but conditionHolds() gates the whole block,
+  // not per-effect, and CHAR_BUFF_TABLE's own outroBuffs only conditions the elemDmg entry, leaving
+  // libDmg universal. Split into two blocks so a non-Fusion ally (e.g. Xiangli Yao, a real named
+  // Synergy partner per the dump) still receives the real, universal Liberation DMG Amp.
+  it('the Fusion DMG Amp is element-gated but the Liberation DMG Amp is universal (not Fusion-locked)', () => {
+    const outroFusion = CHANGLI_BLOCKS.find(b => b.id === 'changli.outro.strategy-of-duality-fusion');
+    const outroLib = CHANGLI_BLOCKS.find(b => b.id === 'changli.outro.strategy-of-duality-liberation');
+    expect(outroFusion.condition).toEqual({ element: 'fusion' });
+    expect(outroLib.condition).toBeUndefined();
+  });
+
+  // Positive-verification test for the fix above: proves the real numeric effect on a non-Fusion ally.
+  it('a non-Fusion (Havoc) ally still receives the real, universal Liberation DMG Amp from her Outro', () => {
+    const outroLib = CHANGLI_BLOCKS.find(b => b.id === 'changli.outro.strategy-of-duality-liberation');
+    const stats = createStats();
+    resolveTriggerBlocks([outroLib], {
+      firedTriggers: new Set(['swap-out']),
+      targetElementLower: 'havoc', targetRole: 'Main DPS',
+    }, stats);
+    expect(stats.amplify).toBeGreaterThan(0);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {

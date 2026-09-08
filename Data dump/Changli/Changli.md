@@ -352,3 +352,37 @@ found and fixed:
 
 7 new/updated tests, full suite green (1423/1423). `rawDps` (calc build, Blazing Brilliance) moved
 from 4981 → 5999 reflecting the real damage these fixes add.
+
+**Full re-audit (2026-09-08)**: full re-read of this dump, `changli.blocks.js` (already the most
+heavily-audited file in the roster — 5 prior dated passes above), and every relevant `characters.js`
+table (CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, CHARACTER_DATA).
+One real bug found and fixed:
+
+8. **`changli.outro.strategy-of-duality` was ONE block with a single, shared block-level
+   `condition:{element:'fusion'}` gating BOTH of its effects together** (elemDmg +20% AND libDmg +25%).
+   `conditionHolds()` gates the WHOLE block, not per-effect (confirmed against `triggerEngine.js`'s own
+   `conditionHolds()` and `resolveHitComposedTeamDps.js`'s `if (!conditionHolds(...)) continue`, which
+   skips the entire block on a mismatch) — but per the kit text ("Fusion DMG Amplified +20% AND
+   Resonance Liberation DMG Amplified +25%"), only the elemDmg half is actually Fusion-locked.
+   `CHAR_BUFF_TABLE['Changli'].outroBuffs` already modeled this correctly as two separate legacy
+   entries — only the FIRST (elemDmg) carries a `condition: 'Fusion DMG Amp'` string, the second
+   (libDmg) carries none at all — but the modern block's single shared condition silently Fusion-gated
+   the libDmg half too. This directly contradicted this dump's own Synergies section, which names
+   **Xiangli Yao** (a Havoc character) as a real partner specifically BECAUSE "her 25% Liberation Amp
+   buffs his Ultimate nuke" — under the old unsplit block, a Havoc Xiangli Yao would have received
+   ZERO Liberation DMG Amp from this Outro, the exact opposite of the documented synergy. Split into
+   two blocks — `changli.outro.strategy-of-duality-fusion` (elemDmg, Fusion-gated) and `changli.outro.
+   strategy-of-duality-liberation` (libDmg, universal, no condition) — mirroring the same split
+   technique already used for Cantarella's own outro (found earlier this session). Verified via a
+   positive-effect test proving a Havoc-element recipient still receives the real Liberation DMG Amp
+   from the split-off libDmg block.
+
+Everything else re-verified clean against this dump with no changes needed: S1-S6 (including the two
+S5 halves and the already-fixed S1/S6 scoping), Sweeping Force, Secret Strategist's 4 True Sight
+blocks, Mid-air Attack, the two Flaming Sacrifice/Skill duplicate-cast blocks, dmgFocus, base stats
+(10,388/463/1,100/125), DPS tier (T2/T3), bestWeapon (Blazing Brilliance), weaponAlts, bestEchoes, full
+SKILL_MULTIPLIERS (9 rows), and CHARACTER_ROTATIONS (6 steps) all match this dump exactly. Chain.s2's
+own documented "can't OR-trigger on 5 real Enflamement sources" limitation re-confirmed still real (no
+`cast`-trigger array-OR mechanism exists in `triggerEngine.js`'s `triggerKey()`, unlike `ally-action`'s
+`action` array) — correctly left as-is, not a new gap. Full test suite: 1811/1811 passing (3 new/
+updated tests).

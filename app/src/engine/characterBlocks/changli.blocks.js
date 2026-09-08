@@ -189,20 +189,37 @@ export const CHANGLI_BLOCKS = [
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
+  // Split 2026-09-08 (full re-audit): was ONE block with a single block-level `condition:{element:
+  // 'fusion'}` gating BOTH effects together — but conditionHolds() gates the WHOLE block, not per-
+  // effect (see triggerEngine.js's own conditionHolds(), and resolveHitComposedTeamDps.js's
+  // `if (!conditionHolds(pb.condition, ...)) continue` skipping the entire block on a mismatch). Per
+  // the kit text ("Fusion DMG Amplified +20% AND Resonance Liberation DMG Amplified +25%") only the
+  // elemDmg half is actually Fusion-locked — CHAR_BUFF_TABLE['Changli'].outroBuffs already models this
+  // correctly as two separate entries, only the FIRST (elemDmg) carrying a condition, the second
+  // (libDmg) carrying none — but this file's single shared block-level condition was silently
+  // Fusion-gating the libDmg half too. This directly contradicted the dump's own Synergies section,
+  // which names Xiangli Yao (a Havoc character) as a real partner specifically because "her 25%
+  // Liberation Amp buffs his Ultimate nuke" — under the old unsplit block, a Havoc Xiangli Yao would
+  // have received ZERO Liberation DMG Amp from this Outro, the opposite of the documented synergy.
+  // Split into two blocks, same technique already used for Cantarella's own outro split.
   {
-    id: 'changli.outro.strategy-of-duality',
+    id: 'changli.outro.strategy-of-duality-fusion',
     source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 10, forfeitOnRecipientSwapOut: true },
     target: { scope: 'next-on-field' },
     condition: { element: 'fusion' },
-    effects: [
-      { stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' },
-      { stat: 'libDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' },
-    ],
-    // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): forfeitOnRecipientSwapOut now actually clamps
-    // this to the incoming Resonator's own swap-out instant when it's shorter than the full 10s.
-    note: 'Ends early if the incoming Resonator is swapped out before 10s.',
+    effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' }],
+    note: 'Fusion DMG Amp +20%, Fusion-element-locked per CHAR_BUFF_TABLE.outroBuffs[0]\'s own condition. Ends early if the incoming Resonator is swapped out before 10s.',
+  },
+  {
+    id: 'changli.outro.strategy-of-duality-liberation',
+    source: SOURCE, kind: 'buff', section: 'Outro',
+    trigger: { type: 'swap-out' },
+    timing: { duration: 10, forfeitOnRecipientSwapOut: true },
+    target: { scope: 'next-on-field' },
+    effects: [{ stat: 'libDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' }],
+    note: 'Resonance Liberation DMG Amp +25%, universal (NOT element-gated) per CHAR_BUFF_TABLE.outroBuffs[1]\'s own lack of a condition field — matches the dump\'s own Synergies section naming Xiangli Yao (Havoc) as a real partner benefiting from this exact bonus. Ends early if the incoming Resonator is swapped out before 10s.',
   },
   {
     id: 'changli.selfbuff.fiery-feather',
