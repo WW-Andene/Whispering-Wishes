@@ -265,3 +265,53 @@ Profile % breakdown at all — resolved the same way as Youhu/Yuanwu's identical
 every real, already-categorized, always-fired block. Fixed to `['Basic ATK', 'Skill', 'Liberation']`.
 Engine-block parity (dimension 8) and icons (dimension 9) both confirmed already fully clean — see
 REMAINING_WORK.md §1c for the full write-up. 1 new test, full suite green: 1443/1443.
+
+**Full re-audit (2026-09-08, explicitly requested — including cross-interactions and legacy-vs-modern
+engine logic, not just data values).** Traced her S6 chain fix all the way through the legacy engine's
+own `applyResonanceChain()` (calcEngine.js) instead of trusting the modern engine block's own comment
+about it, and found the comment itself was wrong about the failure mode. Also found two more real,
+previously-undocumented completeness gaps. Nothing here duplicates the two prior passes' own findings.
+
+1. **The 2026-09-04 chain.s6 fix comment mischaracterized the legacy engine's real gap.** That comment
+   claimed the legacy RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE path "still stores the absolute 50," implying
+   a double-counting risk (75% total) mirroring the bug already fixed in the modern engine. Traced
+   `applyResonanceChain()` line by line: its non-main-DPS branch (the one that runs for Buling in her
+   real, near-universal role as a Support, since she's essentially never the team's main DPS) never
+   reads `skillDmg` at all for a teammate — and `CHAR_BUFF_TABLE['Buling'].libBuffs` (the actual,
+   correctly-gated mechanism that delivers a support's team buff to a real DPS) is a flat,
+   sequence-unaware 25% with no S6-conditional entry anywhere. So `RESONANCE_CHAIN_DATA['Buling'].s6`'s
+   `skillDmg:50` is genuinely UNREACHABLE in the legacy engine for her actual use case — the real bug is
+   total OMISSION (the team stays stuck at 25% even at S6), not double-counting. This is a real,
+   user-facing gap: the legacy "RAW" DPS tier is directly surfaced (TeamsTab.jsx's share-stats line,
+   DPSComparisonCard.jsx), so an S6 Buling's real, documented buff silently under-delivers there. Not
+   fixed in this pass — there's no existing schema precedent anywhere in the roster for a
+   sequence-conditional `libBuffs` value, so building one would be a roster-wide schema change, out of
+   scope for a single-character audit without explicit sign-off — but the misleading comment (in both
+   `buling.blocks.js` and `RESONANCE_CHAIN_DATA['Buling']`'s own entry) is corrected to accurately
+   describe the real failure mode, and flagged clearly for a future decision.
+2. **Resonance Skill's "Pull-in Effect" continuous DMG (5.84%×10) had no block at all**, despite being
+   a real, sourced SKILL_MULTIPLIERS row for the SAME cast as Thunder Talisman (one kit-text sentence —
+   "Attacks the target, Electro DMG, continuously pulls in nearby targets" — describing both). Unlike
+   every other real gap already documented in this file (Twin Mountains/Twin Thunders' healing-not-
+   damage exclusion), there was no comment at all explaining this one's absence. Folded into the same
+   block's hit list (58.40% + 5.84%×10).
+3. **Basic ATK Stage 3, its Dodge Counter alias, the Thunder Over Mountain Heavy ATK sibling, and the
+   base (non-enhanced) Liberation** all carry real, sourced multiplier rows but had no block anywhere —
+   added as present-but-inert reference blocks (confirmed unused in her canonical modeled "Loop
+   Rotation"; Stage 3/Dodge Counter ARE used in the dump's own alternate "Opener Rotation," but only one
+   canonical rotation is modeled per character, matching every other character's convention).
+4. Minor: added 'Resonance Skill DMG Amplification' to her curated playstyle-tag array — the dump's own
+   Review section frames her Five Thunders Spell Array's team Skill DMG Bonus as her single headline
+   differentiator (S6 explicitly "her single most important node"), more specific than the generic
+   'DMG Amplification' tag already covering her Outro.
+
+Everything else re-verified clean: SKILL_MULTIPLIERS values, CHARACTER_ROTATIONS step order and Trigram
+resource math (Mountain(1)+Thunder(3)=4 by Stage 4, matching the FIFO cap exactly; Mountain Over
+Thunder's real single-fire resource-threshold gate re-verified against its own regression test),
+CHAR_BUFF_TABLE, base stats, weaponAlts, dmgFocus, and the Electro Flare DOT-engine wiring (already
+correctly migrated to the block-based path with the flag-based path kept as an explicit, documented
+fallback).
+
+phase3-parityGolden.test.js caught real, expected drift from the Pull-in Effect addition — refreshed
+the golden fixture; the pre-existing EXPECTED_DIVERGENCES band (1.10-1.30) still holds at the new
+numbers (ratio ~1.194). Full suite green (1796/1796).

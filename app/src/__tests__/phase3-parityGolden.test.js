@@ -173,6 +173,10 @@ const EXPECTED_DIVERGENCES = {
   // gate correctly derates the legacy RAW number (431 -> 358); this test's own standalone engine call
   // doesn't apply that gate, so it stays at the un-derated value. Measured ratio ~1.204
   // (engine/legacy) — real, expected, not a regression.
+  // Band re-measured 2026-09-08 (full re-audit): added her Skill's real "Pull-in Effect" continuous
+  // DMG (5.84%×10), a real sourced multiplier row that previously had no block at all with no comment
+  // explaining the omission. Both numbers moved up together (358->379 legacy, ratio ~1.194) — still
+  // inside the existing band, same underlying cooldown-derating divergence cause as before.
   Buling: { min: 1.10, max: 1.30 },
   // Added 2026-09-06 (Calcharo completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi/Brant/
   // Buling above. Phantom Etching (Liberation) got a real, sourced 20s cooldown added (Data dump/

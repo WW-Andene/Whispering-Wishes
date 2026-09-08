@@ -26,6 +26,36 @@ describe('triggerEngine parity — Buling', () => {
     expect(BULING_BLOCKS.find(b => b.id === 'buling.intro.summon-and-smite').damage.category).toBe('skillDmg');
   });
 
+  // Added 2026-09-08 (full re-audit): SKILL_MULTIPLIERS['Buling'] carries a separate "Pull-in Effect"
+  // row (5.84%×10) for the SAME Resonance Skill cast as Thunder Talisman — one kit-text sentence
+  // ("Attacks the target, Electro DMG, continuously pulls in nearby targets") describing both, but no
+  // block ever referenced the pull-in row, with no comment explaining the omission (unlike every other
+  // real gap in this file). Now folded into the same block's hit list.
+  it('Thunder Talisman includes the real Pull-in Effect continuous DMG (58.40% + 5.84%×10)', () => {
+    const skill = BULING_BLOCKS.find(b => b.id === 'buling.skill.thunder-talisman');
+    const total = skill.damage.hits.reduce((s, h) => s + (h.atkPct || 0), 0);
+    expect(total).toBeCloseTo(58.40 + 5.84 * 10, 2);
+  });
+
+  // Added 2026-09-08 (full re-audit): Basic ATK Stage 3, its Dodge Counter alias, the Thunder Over
+  // Mountain Heavy ATK sibling, and the base (non-enhanced) Liberation are all real, sourced moves
+  // with no block anywhere in this file previously — present and sourced but inert (confirmed unused
+  // in her canonical modeled rotation), matching the established completeness convention elsewhere.
+  it('Stage 3/Dodge Counter/Thunder Over Mountain/base Liberation are present and sourced but inert', () => {
+    const stage3 = BULING_BLOCKS.find(b => b.id === 'buling.basic.stage3');
+    const dodge = BULING_BLOCKS.find(b => b.id === 'buling.dodge.counter');
+    const thunderOverMountain = BULING_BLOCKS.find(b => b.id === 'buling.heavy.thunder-over-mountain');
+    const baseLib = BULING_BLOCKS.find(b => b.id === 'buling.liberation.flashing-thunder-spell-base');
+    expect(stage3.damage.hits).toEqual([{ atkPct: 23.51 }, { atkPct: 23.51 }]);
+    expect(dodge.damage.hits).toEqual([{ atkPct: 23.51 }, { atkPct: 23.51 }]);
+    expect(thunderOverMountain.damage.hits).toEqual([{ atkPct: 89.47 }]);
+    expect(baseLib.damage.hits).toEqual([{ atkPct: 357.86 }]);
+    const rotationLabels = new Set(CHARACTER_ROTATIONS['Buling'].map(s => `${s.type}:${s.skill}`));
+    [stage3, dodge, thunderOverMountain, baseLib].forEach(b => {
+      expect(rotationLabels.has(b.trigger.on)).toBe(false);
+    });
+  });
+
   it('S2-S5 stay correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Buling'];
     ['s2', 's3', 's4', 's5'].forEach(s => expect(rc[s]).toEqual({}));

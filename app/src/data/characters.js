@@ -2651,7 +2651,12 @@ const CHARACTER_DATA = {
   ['Galbrena', ['Main Damage Dealer', 'Heavy Attack Damage', 'Echo Skill Damage']],
   ['Qiuyuan', ['Concerto Efficiency', 'Heavy Attack Damage', 'Echo Skill DMG Amplification']],
   ['Chisa', ['Support and Healer', 'Resonance Liberation Damage', 'Havoc Bane']],
-  ['Buling', ['Support and Healer', 'DMG Amplification', 'Electro Flare']],
+  // tag added 2026-09-08 (full re-audit): 'Resonance Skill DMG Amplification' — the dump's own Review
+  // section frames her Five Thunders Spell Array's team Skill DMG Bonus (25%, 50% at S6) as her single
+  // headline differentiator ("particularly for Skill DMG Main DPS like Carlotta and Phrolova"; S6 is
+  // explicitly "her single most important node... a real buffing-capability leap"), a more specific
+  // and more emphasized mechanic than the generic 'DMG Amplification' tag already covers (her Outro).
+  ['Buling', ['Support and Healer', 'DMG Amplification', 'Resonance Skill DMG Amplification', 'Electro Flare']],
   ['Lynae', ['Concerto Efficiency', 'Basic Attack Damage', 'DMG Amplification', 'Resonance Liberation DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Tune Break Boost']],
   ['Mornye', ['Support and Healer', 'DMG Amplification', 'Tune Rupture Response', 'Tune Strain Response', 'Off-Tune Buildup Efficiency']],
   ['Aemeath', ['Main Damage Dealer', 'Resonance Liberation Damage', 'Tune Rupture Response', 'Fusion Burst', 'DMG Amplification']],
@@ -7536,6 +7541,13 @@ const RESONANCE_CHAIN_DATA = {
   // healing-only stats, S5 is an extra Electro Flare stack application with no flat DMG% conversion.
   // Zeroed all four to {} per this project's hard rule against inventing values. S1/S6 confirmed correct.
   // TODO: needs Phase 2 schema for S3/S4's healing bonuses and S5's stacking-DoT-application mechanic.
+  // s6.skillDmg:50 flagged 2026-09-08 (full re-audit, buling.blocks.js's own chain.s6 has the full
+  // trace): this value is REAL and confirmed-correct as a number, but genuinely unreachable in the
+  // legacy "RAW" DPS tier — applyResonanceChain()'s non-main-DPS branch (calcEngine.js) never reads
+  // skillDmg for a teammate, and CHAR_BUFF_TABLE['Buling'].libBuffs (the actual team-delivery
+  // mechanism) is a flat, sequence-unaware 25% with no S6-conditional entry. A real, user-facing gap
+  // (the RAW tier under-credits an S6 Buling's team, delivering 25% instead of 50%) with no existing
+  // schema mechanism to fix cleanly — not attempted in this pass.
   'Buling':       { s1: { critRate: 20 }, s2: {}, s3: {}, s4: {}, s5: {}, s6: { skillDmg: 50 } },
   // corrected 2026-08-18: prior values (atkPct:8/skillDmg:10/atkPct:8/skillDmg:10/totalMult:10/elemDmg:12) had no basis
   // in Chixia's real chain kit (the wiki Combat page). S1 Boom Boom hits always Crit (utility, no %-stat fits). S2

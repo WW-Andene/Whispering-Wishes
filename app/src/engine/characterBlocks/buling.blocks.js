@@ -90,13 +90,22 @@ export const BULING_BLOCKS = [
     // (a real double-fire bug this exact pattern caused, found and fixed 2026-09-06).
   },
   {
+    // hits fixed 2026-09-08 (full re-audit): was just the base '58.40%' hit — SKILL_MULTIPLIERS
+    // ['Buling'] separately carries a "Pull-in Effect" row ("5.84%×10", Data dump/Buling/Buling.md's
+    // own "Pull-in Effect Continuous DMG" line) for the SAME Resonance Skill cast ("Attacks the
+    // target, Electro DMG, continuously pulls in nearby targets" — one kit-text sentence describing
+    // both effects of one cast, not two separate abilities), but no block anywhere ever referenced it
+    // and — unlike every other omission in this file — there was no comment explaining why it was
+    // left out. Added as additional hits on this same block/cast, matching the established convention
+    // elsewhere in this codebase for a single cast whose kit text describes more than one damage
+    // component (e.g. Augusta's Sword of Eternal Oath combining several %ATK segments into one block).
     id: 'buling.skill.thunder-talisman',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:In Shadow Thunder Stirs: Thunder Talisman' },
     // cooldown added 2026-09-06 (completeness pass): Data dump/Buling/Buling.md's own "Cooldown: 15s"
     // row for Resonance Skill "In Shadow Thunder Stirs".
     timing: { cooldown: 15 }, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('58.40%'), category: 'skillDmg' , basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('58.40% + 5.84%×10'), category: 'skillDmg' , basis: 'ATK' },
     // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Buling/Buling.md's own
     // "Concerto Regen: 23" row for the same Resonance Skill.
     concertoEnergyGain: 23,
@@ -167,6 +176,47 @@ export const BULING_BLOCKS = [
   // damage multiplier at all. CHARACTER_ROTATIONS['Buling'] still casts this step — it now correctly
   // resolves to 0 direct damage, same as her Outro (a real, intentional zero-DMG utility step, not the
   // "silent lookup mismatch" bug class).
+  // Added 2026-09-08 (full re-audit): Basic ATK Stage 3, its Dodge Counter alias, and the
+  // Thunder Over Mountain Heavy ATK variant all carry real, sourced multiplier rows in
+  // SKILL_MULTIPLIERS['Buling'] but had no block anywhere in this file, with no comment explaining
+  // the omission — unlike every other gap in this file (Twin Thunders/Twin Mountains), which are
+  // explicitly documented as intentional. Present and sourced but inert: her canonical modeled
+  // rotation is the dump's own "Loop Rotation" (Intro available), which skips Stage 3/Dodge Counter
+  // entirely and only ever uses Mountain Over Thunder (never its Thunder-first sibling) — the dump's
+  // separate "Opener Rotation" (no Intro) does use Basic 3, but only one canonical rotation is modeled
+  // per character in this codebase, matching every other character's own convention.
+  {
+    id: 'buling.basic.stage3',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Hexagram Calls, Lightning Falls: Stage 3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('23.51%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: "Not in CHARACTER_ROTATIONS — real move, used in the dump's own alternate 'Opener Rotation' (no Intro available), but her canonical modeled rotation (the shorter 'Loop Rotation', used when an Intro is available) skips straight from Stage 2 to Mid-air Attack.",
+  },
+  {
+    id: 'buling.dodge.counter',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('23.51%×2'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Dodge Counter performs Basic Attack Stage 3 directly per her own kit text — same multiplier as buling.basic.stage3. Not in CHARACTER_ROTATIONS — real move, confirmed unused in her canonical modeled rotation.',
+  },
+  {
+    id: 'buling.heavy.thunder-over-mountain',
+    source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Heavy Attack - Thunder Over Mountain' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('89.47%'), category: 'basicDmg', basis: 'ATK' },
+    note: "Consumes Trigram-Thunder then Trigram-Mountain (reverse order from Mountain Over Thunder), also reduces target Vibration Strength (not modeled, no DPS component). Not in CHARACTER_ROTATIONS — the dump's own Review section confirms 'Mountain Over Thunder + Twin Thunders' is her real, faster combo since Thunder Trigrams are generated far more easily than Mountain ones, so this Mountain-first-consuming sibling is never the one actually cast.",
+  },
+  {
+    id: 'buling.liberation.flashing-thunder-spell-base',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Flashing Thunder Spell' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('357.86%'), category: 'libDmg', basis: 'ATK' },
+    note: 'Base-kit Liberation, used only when she lacks both Minor Yin and Minor Yang. Not in CHARACTER_ROTATIONS — her canonical modeled rotation always reaches Yin-Yang Balance first (Mountain Over Thunder grants Minor Yang, Twin Thunders grants Minor Yin, both cast before Liberation), so the enhanced Harmony form always fires instead.',
+  },
   {
     id: 'buling.liberation.flashing-thunder-spell-harmony',
     source: SOURCE, kind: 'damage', section: 'Liberation',
@@ -234,10 +284,27 @@ export const BULING_BLOCKS = [
     // (both fire on the same Liberation cast) — this engine, unlike the legacy flat-table path, has no
     // separate "replace instead of add" step, so the old flat-50 value silently gave 75% total instead
     // of the real 50%. Modeled here as the DELTA on top of the base 25% ramp buff (25+25=50, the real
-    // ceiling) — the RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE legacy path still stores the absolute 50 (its
-    // own separate, still-undocumented-as-fixed additive-double-count limitation, unchanged by this
-    // pass — out of scope for a single-character engine-block audit).
+    // ceiling).
+    //
+    // Correction 2026-09-08 (full re-audit): the note this replaces claimed the legacy
+    // RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE path "still stores the absolute 50," implying a
+    // double-counting risk there too (75% total) — traced through applyResonanceChain() (calcEngine.js)
+    // and this is actually WRONG about the failure mode. `applyResonanceChain`'s own non-main-DPS
+    // branch (the one that runs for Buling in her real, near-universal role as a Support, since she's
+    // basically never the team's own main DPS) never reads `lvl.skillDmg` at all — only atkPct/
+    // critRate/critDmg/allDmg/amplify/defShred/resShred/basicDmg/heavyDmg are applied for a non-main
+    // teammate. And CHAR_BUFF_TABLE['Buling'].libBuffs (the actual, correctly dpsFocus-gated mechanism
+    // that delivers a support's team-wide type-specific buff to a real DPS) is a flat, sequence-
+    // unaware value:25 with no S6-conditional entry at all. So RESONANCE_CHAIN_DATA['Buling'].s6's
+    // skillDmg:50 is REAL, GENUINELY UNREACHABLE data in the legacy engine for her actual use case —
+    // the legacy "RAW" DPS tier (a real, user-facing number — see TeamsTab.jsx's share-stats line and
+    // DPSComparisonCard.jsx) UNDER-credits an S6 Buling's real, documented buff by silently delivering
+    // 25% instead of 50% to her team's main DPS, not 75%. This is a genuine legacy-engine gap with no
+    // existing schema mechanism to fix cleanly (CHAR_BUFF_TABLE has no precedent anywhere in the roster
+    // for a sequence-conditional libBuff value) — flagged here accurately rather than left
+    // mischaracterized, but not fixed in this pass (would need a new, roster-wide schema field, out of
+    // scope for a single-character audit without explicit sign-off on that broader change).
     effects: [{ stat: 'skillDmg', value: 25, source: 'self-kit' }],
-    note: "Real mechanic: upgrades the Five Thunders Spell Array's own Resonance Skill DMG Bonus from 25% to 50% at S6. Modeled as the +25% delta over buling.libbuff.five-thunders-skill-ramp's base 25% (see fix note above) rather than a flat 50%, so the two blocks sum to the correct real ceiling instead of double-counting.",
+    note: "Real mechanic: upgrades the Five Thunders Spell Array's own Resonance Skill DMG Bonus from 25% to 50% at S6. Modeled as the +25% delta over buling.libbuff.five-thunders-skill-ramp's base 25% (see fix note above) rather than a flat 50%, so the two blocks sum to the correct real ceiling instead of double-counting — this (modern) engine is correct. The LEGACY RAW-tier engine has a real, different, unfixed gap here — see the correction comment above.",
   },
 ];
