@@ -13,20 +13,61 @@ describe('triggerEngine parity — Aalto', () => {
     expectValidBlockFile(AALTO_BLOCKS, 'Aalto');
   });
 
-  it('Resonance Chain S2/S4/S5/S6 buffs match RESONANCE_CHAIN_DATA', () => {
+  it('Resonance Chain S2/S4/S6 buffs match RESONANCE_CHAIN_DATA (passive-only comparison)', () => {
+    // S5 excluded from this blanket passive comparison (2026-09-08 full-kit audit): it's now two real
+    // cast-anchored blocks (see its own dedicated test below), not an unconditional passive — the same
+    // "flat legacy comparison only covers genuinely-unconditional nodes" pattern already established
+    // for Hiyuki/Lucilla's own dual-mode/cast-anchored chain nodes.
     const legacyStats = createStats();
     applyResonanceChain(legacyStats, 'Aalto', 6, true);
     const blockStats = createStats();
     // Scoped to chain.* blocks only — resolveTriggerBlocks has no concept of "just the chain", and
     // AALTO_BLOCKS now also carries a real, unrelated passive (aalto.buff.minor-fortes, added in the
     // 2026-09-05 dump completeness pass) that would otherwise leak into this chain-specific comparison.
-    const chainBlocks = AALTO_BLOCKS.filter(b => b.id.startsWith('aalto.chain.'));
+    const chainBlocks = AALTO_BLOCKS.filter(b => b.id.startsWith('aalto.chain.') && b.trigger.type === 'passive');
     resolveTriggerBlocks(chainBlocks, { firedTriggers: new Set(['passive']), targetElementLower: 'aero', targetRole: 'Sub DPS' }, blockStats);
     expect(blockStats.atkPct).toBe(legacyStats.atkPct);
-    expect(blockStats.skillDmg).toBe(legacyStats.skillDmg);
-    expect(blockStats.elemDmg).toBe(legacyStats.elemDmg);
+    // skillDmg no longer compared 1:1 with the legacy flat total: chain.s4 is now scoped
+    // (scopedToBlockId), which the legacy flat stat-panel path (applyResonanceChain/applyBuff) has no
+    // concept of and always applies broadly — the two paths are expected to diverge here by design,
+    // not a bug (same known, documented gap as aalto.liberation.gate-atk-buff's own scoping note).
+    // blockStats.elemDmg intentionally not compared here either — S5's real +25% is excluded from
+    // this passive-only block list (see the dedicated cast-anchored test below).
     expect(blockStats.cr - 5).toBe(legacyStats.cr - 5);
     expect(blockStats.heavyDmg).toBe(legacyStats.heavyDmg);
+  });
+
+  it('chain.s4 (Mist Bullets DMG+30%) is scoped to Shift Trick/Misty Cover only, not Feint Shot (also skillDmg-category, real over-crediting bug fixed 2026-09-08)', () => {
+    const s4 = AALTO_BLOCKS.find(b => b.id === 'aalto.chain.s4');
+    expect(s4.effects[0].scopedToBlockId).toEqual(['aalto.skill.shift-trick', 'aalto.forte.misty-cover']);
+    // Isolate S4 specifically (not S2's ATK%/S6's Crit Rate, which legitimately affect every hit
+    // including Feint Shot) — compare the full chain against the full chain minus only chain.s4.
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Aalto'], AALTO_BLOCKS);
+    const withoutS4 = resolveHitComposedDps(AALTO_BLOCKS.filter(b => b.id !== 'aalto.chain.s4'), steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 1000, 'aero', 'Sub DPS', null, 6);
+    const withChain = resolveHitComposedDps(AALTO_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 1000, 'aero', 'Sub DPS', null, 6);
+    const feintWithoutS4 = withoutS4.hitLog.find(h => h.blockId === 'aalto.intro.feint-shot').damage;
+    const feintWithChain = withChain.hitLog.find(h => h.blockId === 'aalto.intro.feint-shot').damage;
+    // Feint Shot must be UNAFFECTED by S4's scoped Mist Bullets buff (it's not a Mist Bullet move) —
+    // adding/removing chain.s4 specifically must not move Feint Shot's damage at all.
+    expect(feintWithChain).toBeCloseTo(feintWithoutS4, 5);
+    // But Shift Trick (a real Mist Bullet move) MUST be affected by chain.s4 — proving the scope
+    // isn't just silently matching nothing.
+    const shiftWithoutS4 = withoutS4.hitLog.find(h => h.blockId === 'aalto.skill.shift-trick').damage;
+    const shiftWithChain = withChain.hitLog.find(h => h.blockId === 'aalto.skill.shift-trick').damage;
+    expect(shiftWithChain).toBeGreaterThan(shiftWithoutS4);
+  });
+
+  it('chain.s5 (Mistcloak Dash Aero DMG+25%) is a real 6s window anchored to Shift Trick/Misty Cover casts, not a permanent passive (fixed 2026-09-08)', () => {
+    const shiftTrick = AALTO_BLOCKS.find(b => b.id === 'aalto.chain.s5-shift-trick');
+    const mistyCover = AALTO_BLOCKS.find(b => b.id === 'aalto.chain.s5-misty-cover');
+    expect(shiftTrick.trigger).toEqual({ type: 'cast', on: 'Skill:Shift Trick' });
+    expect(mistyCover.trigger).toEqual({ type: 'cast', on: 'Forte:Misty Cover' });
+    expect(shiftTrick.timing.duration).toBe(6);
+    expect(mistyCover.timing.duration).toBe(6);
+    expect(shiftTrick.effects[0]).toEqual({ stat: 'elemDmg', value: 25, source: 'self-kit' });
+    expect(mistyCover.effects[0]).toEqual({ stat: 'elemDmg', value: 25, source: 'self-kit' });
+    // No more unconditional 'passive' S5 block left over from before the fix.
+    expect(AALTO_BLOCKS.find(b => b.id === 'aalto.chain.s5')).toBeUndefined();
   });
 
   it('Dissolving Mist outro buff matches CHAR_BUFF_TABLE.outroBuffs', () => {

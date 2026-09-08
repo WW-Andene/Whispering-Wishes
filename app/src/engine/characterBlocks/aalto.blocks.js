@@ -37,6 +37,30 @@
 // targeting, Gate-of-Quandary Heavy ATK scoping, stage-4 Mist-spread) that have no
 // representable stat/condition/tagging granularity in this schema — not silently
 // dropped, honestly noted as unmodeled.
+//
+// Full-kit cross-interaction audit, 2026-09-08 ("do all we did since start Hiyuki, on
+// Aalto"): 2 real bugs found in the Resonance Chain, the same bug classes already
+// fixed for Hiyuki/Lucilla this session.
+//   chain.s4 ("Mist Bullets DMG+30%") was an unscoped skillDmg-CATEGORY buff — since
+//   aalto.intro.feint-shot is ALSO skillDmg-categorized (a generic row label, not a
+//   named Mist Bullet), it was silently also inflating Feint Shot's Intro damage.
+//   Scoped to aalto.skill.shift-trick/aalto.forte.misty-cover only.
+//   chain.s5 ("In Mistcloak Dash, Aero DMG Bonus+25% for 6s") was modeled as an
+//   unconditional PERMANENT passive — a real, bounded 6s window (entered by casting
+//   Shift Trick or Misty Cover, per Forte Circuit's own "passing through Mist/Gate of
+//   Quandary enters Mistcloak Dash" text) credited for the whole fight instead. Split
+//   into two real cast-anchored blocks (chain.s5-shift-trick/chain.s5-misty-cover),
+//   both of which fire in his real modeled CHARACTER_ROTATIONS — a live fix, not moot.
+// Confirmed correct, no changes: chain.s1/s2/s3/s6 (already correctly flagged as
+// unmodeled-but-sourced or correctly broad in the prior passes), his Minor Fortes,
+// Inherent Skills, and the Gate of Quandary ATK buff's own existing scoping. No
+// self-kit resource-level mechanic (Mist Drops) was added: unlike Hiyuki's Snowforged
+// Blade, there is no sourced real drop-count anywhere in the dump to model a leveled
+// action against — modeling one would mean fabricating a number, which this file's
+// own established convention (see aalto.skill.shift-trick's/aalto.forte.misty-cover's
+// "no fabricated count" notes) already correctly declines to do. No dotApplier/
+// appliesTags additions either: Aalto applies no shared negative status for another
+// character to react to.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -224,8 +248,25 @@ export const AALTO_BLOCKS = [
   // modeling either interpretation without a source confirming which would be a guess. Flagged in
   // REMAINING_WORK.md as a real, sourced, structurally-ambiguous gap, not silently dropped.
   { id: 'aalto.chain.s3', source: SOURCE, kind: 'utility', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [], note: "Hazey Transition — real mechanic (2 bonus bullets at 50% of the triggering Basic/Mid-air Attack's own DMG through the Gate of Quandary) not modeled: ambiguous whether it's per full combo-cast or per individual sub-hit." },
-  { id: 'aalto.chain.s4', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'skillDmg', value: 30, source: 'self-kit' }] },
-  { id: 'aalto.chain.s5', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 25, source: 'self-kit' }] },
+  // scopedToBlockId added 2026-09-08 (full-kit cross-interaction audit, "do all we did since start
+  // Hiyuki, on Aalto" — same bug class already fixed for Hiyuki/Lucilla's chain nodes): real text is
+  // "Mist Bullets DMG+30%," naming the two Mist Bullet/Mist Missile moves specifically (Shift Trick,
+  // Misty Cover — the exact same pair aalto.liberation.gate-atk-buff already scopes its own Gate ATK
+  // buff to). Unscoped, this was a skillDmg-CATEGORY buff — and aalto.intro.feint-shot is ALSO
+  // skillDmg-categorized (a generic "Skill Damage" row label, not a named Mist Bullet) — so it was
+  // silently also inflating Feint Shot's Intro damage by +30%, a real over-crediting bug.
+  { id: 'aalto.chain.s4', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' }, effects: [{ stat: 'skillDmg', value: 30, source: 'self-kit', scopedToBlockId: ['aalto.skill.shift-trick', 'aalto.forte.misty-cover'] }], note: "Mist Bullets DMG+30% — scoped to Shift Trick/Misty Cover only, not Feint Shot (also skillDmg-category but not a named Mist Bullet move)." },
+  // Converted from an unconditional passive to two real cast-anchored blocks 2026-09-08 (same audit):
+  // real text is "In Mistcloak Dash, Aero DMG Bonus+25% for 6s" — a temporary window entered by
+  // "passing through 'Mist' or the 'Gate of Quandary'" (Forte Circuit's own text), i.e. by casting
+  // Shift Trick or Misty Cover (both real, sourced Mistcloak-Dash-entry casts — the same trigger.on
+  // pair used elsewhere in this file). The prior unconditional-passive version credited a permanent
+  // +25% Aero DMG for the WHOLE fight instead of a real, bounded 6s window per entry — a genuine
+  // over-crediting bug, not a documented ceiling-approximation convention (unlike, say, Blade
+  // Liberation's "assume max stacks," which has a real sourced ceiling to assume). Both real casts
+  // fire once each in CHARACTER_ROTATIONS['Aalto'], so this is a live, measurable fix, not moot.
+  { id: 'aalto.chain.s5-shift-trick', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'cast', on: 'Skill:Shift Trick' }, timing: { duration: 6 }, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 25, source: 'self-kit' }], note: "Applause of the Lost (S5) — In Mistcloak Dash, Aero DMG Bonus+25% for 6s; anchored to casting Shift Trick, one of the two real moves that enters Mistcloak Dash (Forte Circuit's own text: 'Passing through Mist or the Gate of Quandary enters Mistcloak Dash')." },
+  { id: 'aalto.chain.s5-misty-cover', source: SOURCE, kind: 'buff', section: 'Chain', trigger: { type: 'cast', on: 'Forte:Misty Cover' }, timing: { duration: 6 }, target: { scope: 'self' }, effects: [{ stat: 'elemDmg', value: 25, source: 'self-kit' }], note: 'Same real mechanic as aalto.chain.s5-shift-trick above, anchored to the other Mistcloak-Dash-entry cast (Misty Cover).' },
   // Note added 2026-09-05 (category-C completeness pass): real S6 text scopes the +50% to "Heavy
   // Attack through the Gate of Quandary" specifically, not every Heavy Attack — but this is
   // currently moot for computed DPS since aalto.heavy.aimed-shot never fires in
