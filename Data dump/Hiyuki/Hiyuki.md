@@ -234,3 +234,65 @@ Rotation time: 10.5s. Build: Frostburn R1, 5pc Wishes of Quiet Snowfall, Reminis
 | S6 | 3,680,972 | 350,568 | 261.11% |
 
 Unlike Augusta/Aemeath, every sequence here produces a DISTINCT DMG/DPS value — no S(n)==S(n+1) flat pair, consistent with every one of her chain nodes (S1-S6) having a real, stated DMG-relevant effect per the Kit tab (no "shield"/"revive"/pure-utility node like Augusta's or Aemeath's S5).
+
+## Full re-audit (2026-09-08)
+
+Full, independent re-verification of `hiyuki.blocks.js`, `hiyuki.kitRules.js` (her real decision-layer
+state machine), and `characters.js` (CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS, full CHARACTER_DATA entry) against this dump and the engine's actual resolver
+code — per the same rigor applied to Augusta through Galbrena this session. This character had already
+received an unusually thorough 2026-09-07 "full-kit audit" (chain.s1/s3/s6 over-crediting bugs already
+found and fixed, Glacio Bite cross-character reactivity already built) — this pass re-verified all of
+that work independently rather than trusting it, and found one additional, smaller bug.
+
+**Bug — `SKILL_MULTIPLIERS['Hiyuki']`'s Blade Liberation note contradicted the engine's own (correct)
+math.** The note read "+795.24% additional per Snowforged Blade stack consumed (up to 3 stacks,
++2385.72% max)" — a 3x-inflated per-stack claim. This dump's own Multipliers table (line 74) is
+explicit that 795.24% is already the TOTAL across all 3 stacks ("(total, across all 3 stacks)"), i.e.
+265.08%/stack — which is exactly what `hiyuki.liberation.foreclaiming-blade-liberation`'s own
+`atkPctPerUnit: 265.08` already correctly implements. The note field is purely descriptive (never
+consumed as calc data — only the numeric multiplier string itself is parsed by
+`parseSkillMultiplierHits`), so this had zero effect on real DPS output, but it was still a real
+internal-consistency bug per this project's due-diligence standard: a future reader trusting that note
+over the engine code would draw the wrong conclusion. Fixed the note text to state the real per-stack
+value and added a regression test guarding against reintroducing the inflated figure.
+
+**Verified, no bug found (re-derived independently, not trusted from the prior pass's own comments):**
+- `hiyuki.kitRules.js`'s entire priority-rule state machine (Dedication/Frostharden Iai/Whiteout
+  Bitterfrost/Snowforged Blade) re-traced step-by-step against this dump's Forte Circuit section and
+  Standard Rotation text — confirmed the resource math produces exactly the real modeled rotation
+  (Intro +200 Dedication, 1 Basic Stage 3 +100 = 300/300 cap → Frost Splinter → Inward Vision grants 3
+  Frostharden Iai → 2 Foreclaimed Basic rounds + Jade Cleave/Petalfall reach Frostheart 100+ → Iai
+  consumes all 3 Frostharden Iai in one aggregated cast (matching `hiyuki.liberation.iai`'s own
+  already-combined %ATK value, avoiding a triple-count) → Bitterfrost grants 1 Snowforged Blade → Blade
+  Liberation correctly reads exactly 1 real banked stack, not a fabricated max). Confirmed
+  `decisionEngine.js`'s rule evaluation is genuine first-match-in-array-order (`rules.find(...)`), so
+  `blade-liberation` (listed last) cannot fire early even though `inForeclaimedSelf` becomes true right
+  after Inward Vision — every earlier rule's condition is checked first.
+- S1/S3/S6's `scopedToBlockId` lists (from the 2026-09-07 fix) re-verified complete: manually
+  enumerated every `libDmg`-categorized block in the file (12 total) against S1's 8-block scope list
+  (correctly excludes Frostedge, Frost Splinter, and both "Foreclaiming:" Ultimates) and S3's 2-block
+  scope list (correctly only Frost Splinter and Bitterfrost) — no block added since that fix was missed
+  from either scope.
+- DOT/dotApplier completeness: confirmed Glacio Chafe/Glacio Bite is a genuinely separate mechanism
+  from the `dotApplier`/`dotReactionsFromBlocks.js` system (Erosion/Frazzle/FusionBurst/ElectroFlare) —
+  grepped `dotReactionsFromBlocks.js` directly, zero Glacio references — correctly modeled instead via
+  the distinct `appliesTags`/`ally-action` mechanism, cross-checked that Lucilla's and Suisui's own
+  block files actually carry the matching `glacio-chafe` `appliesTags` marker they're credited with in
+  this file's header comment (not just claimed).
+- `statScaling`/`basis`: `CHARACTER_DATA['Hiyuki'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- `CHARACTER_DATA['Hiyuki'].rotation` (the older, simpler descriptive field, distinct from
+  `CHARACTER_ROTATIONS`) matches this dump's Standard Rotation text exactly — unlike a stale field
+  found on another character earlier this session, this one was kept current.
+- `dmgFocus` (`['Liberation', 'Skill']`) matches the dump's own Damage-Type Breakdown (Liberation 60.8%,
+  Skill 6.1%, Basic ATK a genuine 0%) exactly.
+- `SKILL_MULTIPLIERS['Hiyuki']`, `RESONANCE_CHAIN_DATA['Hiyuki']` (S1-S6 values), `CHAR_BUFF_TABLE
+  ['Hiyuki']`, `CHARACTER_ROTATIONS['Hiyuki']`, and the full `CHARACTER_DATA['Hiyuki']` entry (desc,
+  bestWeapon, weaponAlts, bestEchoes, teams, base stats, DPS tier) all cross-checked against this dump
+  and matched exactly beyond the one note-text bug above.
+
+**Re-measurement:** the fix only corrected descriptive text never consumed by any calculation — full
+suite re-run to confirm zero DPS impact (confirmed: 1836/1836 passing, unchanged). No golden fixture
+update needed. One new test added guarding the corrected note text against reintroduction of the
+inflated per-stack figure.

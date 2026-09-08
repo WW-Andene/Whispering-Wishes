@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, CHARACTER_DATA, SKILL_MULTIPLIERS } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { HIYUKI_BLOCKS } from '../engine/characterBlocks/hiyuki.blocks.js';
@@ -157,5 +157,22 @@ describe('triggerEngine parity — Hiyuki', () => {
     expect(focus).toContain('Liberation');
     expect(focus).toContain('Skill');
     expect(focus).not.toContain('Basic ATK');
+  });
+
+  // Found 2026-09-08 (full re-audit): SKILL_MULTIPLIERS['Hiyuki']'s own descriptive note for Blade
+  // Liberation said "+795.24% additional per Snowforged Blade stack consumed (up to 3 stacks,
+  // +2385.72% max)" — directly contradicting this dump's own Multipliers table (line 74: "+795.24%
+  // (total, across all 3 stacks)") AND hiyuki.blocks.js's own (already correct) 265.08%/stack
+  // modeling. The note text is purely descriptive (never consumed as calc data — only the numeric
+  // multiplier string is parsed), but a wrong note is still a real internal-consistency bug per this
+  // project's due-diligence standard. Fixed the note text to match the dump and the engine; this test
+  // guards against reintroducing the 3x-inflated per-stack claim.
+  it("SKILL_MULTIPLIERS' Blade Liberation note states the real per-stack math (265.08%/stack, not a 3x-inflated 795.24%/stack), matching the engine's own perStepUnit value", () => {
+    const row = SKILL_MULTIPLIERS['Hiyuki'].find(r => r[1] === 'Foreclaiming: Blade Liberation');
+    expect(row[3]).toContain('265.08%/stack');
+    expect(row[3]).not.toContain('2385.72%');
+    const block = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.liberation.foreclaiming-blade-liberation');
+    const perUnitHit = block.damage.hits.find(h => h.perStepUnit === 'snowforgedBladeConsumed');
+    expect(perUnitHit.atkPctPerUnit).toBeCloseTo(265.08, 2);
   });
 });

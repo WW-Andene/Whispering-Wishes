@@ -3881,7 +3881,14 @@ const SKILL_MULTIPLIERS = {
     ['Skill', 'Frostblight: Petalfall', '64.02%×4+64.02%', 'Mid-air Resonance Skill replacement in Foreclaimed Self; shares a cooldown with Jade Cleave.'],
     ['Liberation', 'Iai', '283.82%+47.31%×4', 'Cast in Iai Stance (100+ Frostheart) at up to 3 uses per entry; each cast consumes 1 Frostharden Iai for 3 Glacio Chafe stacks and grants 1 Whiteout Bitterfrost. Considered Resonance Liberation DMG.'],
     ['Liberation', 'Bitterfrost: Foreclaimed Self', '15.41%×8+493.05%', 'Forte finisher once Whiteout Bitterfrost is full; consumes it for 1 Snowforged Blade. Considered Resonance Liberation DMG despite the Heavy ATK input.'],
-    ['Liberation', 'Foreclaiming: Blade Liberation', '198.81%+795.24%', '2nd Ultimate; base value shown, +795.24% additional per Snowforged Blade stack consumed (up to 3 stacks, +2385.72% max) — ends Foreclaimed Self.'],
+    // note corrected 2026-09-08 (full re-audit): was "+795.24% additional per Snowforged Blade stack
+    // consumed (up to 3 stacks, +2385.72% max)" — the dump's own Multipliers table (line 74) is
+    // explicit that 795.24% is already "(total, across all 3 stacks)", i.e. 265.08% per stack, not
+    // 795.24% per stack. This note-text error contradicted hiyuki.blocks.js's own (already correct)
+    // modeling, which divides 795.24/3 = 265.08%/stack — a real internal-consistency bug in this
+    // purely descriptive field (never consumed as calc data — only the numeric multiplier string is
+    // parsed), fixed to match the dump and the engine.
+    ['Liberation', 'Foreclaiming: Blade Liberation', '198.81%+795.24%', '2nd Ultimate; base value shown, +795.24% additional TOTAL across all 3 Snowforged Blade stacks consumed (265.08%/stack) — ends Foreclaimed Self.'],
     ['Liberation', 'Frostedge', '156.15%', 'Opener hit that applies Glacio Chafe; considered Resonance Liberation DMG despite the Intro Skill input.'],
     ['Outro', 'Snowlight Blessing', 'Team Glacio DMG +20% vs Chafe-affected targets (20s)', 'Buffs team Glacio DMG on Chafe-affected enemies (excludes Hiyuki herself).'],
   ],
