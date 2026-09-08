@@ -29,6 +29,46 @@ describe('triggerEngine parity — Danjin', () => {
     expect(DANJIN_BLOCKS.find(b => b.id === 'danjin.chain.s6').effects[0].value).toBe(rc.s6.atkPct);
   });
 
+  // Found 2026-09-08 (full re-audit): chain.s2 previously used `condition.requiresStance`, which
+  // triggerEngine.js's own conditionHolds() never actually enforces (purely descriptive except via a
+  // separate exclusive-mode mechanism that doesn't apply here) — the same bug class already found on
+  // Camellya's chain.s3/s6. This totalMult:20 effect (uncategorized, reaches every hit) was silently
+  // unconditional across her whole kit instead of only Incinerating-Will-marked-target hits. Retargeted
+  // to a cast-anchored window on the Crimson Erosion cast (the real move that applies the mark), with
+  // a duration matching the mark's own real 12s lifetime.
+  it("S2 is a real cast-anchored 12s window (matching Incinerating Will's own duration), not an unenforced requiresStance condition", () => {
+    const s2 = DANJIN_BLOCKS.find(b => b.id === 'danjin.chain.s2');
+    expect(s2.trigger).toEqual({ type: 'cast', on: 'Skill:Crimson Erosion' });
+    expect(s2.timing.duration).toBe(12);
+    expect(s2.condition).toBeUndefined();
+  });
+
+  // Positive-verification test for the S2 fix: proves her pre-mark Intro hit is no longer boosted.
+  it("S2's +20% no longer inflates her pre-mark Intro hit, but boosts hits after Crimson Erosion is cast", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Danjin'], DANJIN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS2 = resolveHitComposedDps(DANJIN_BLOCKS, steps, ctx, 2500, 'havoc', 'Sub DPS');
+    const withoutS2Blocks = DANJIN_BLOCKS.filter(b => b.id !== 'danjin.chain.s2');
+    const withoutS2 = resolveHitComposedDps(withoutS2Blocks, steps, ctx, 2500, 'havoc', 'Sub DPS');
+    const introWith = withS2.hitLog.find(h => h.blockId === 'danjin.intro.vindication');
+    const introWithout = withoutS2.hitLog.find(h => h.blockId === 'danjin.intro.vindication');
+    expect(introWith.damage).toBeCloseTo(introWithout.damage, 5);
+    const libWith = withS2.hitLog.find(h => h.blockId === 'danjin.liberation.crimson-bloom');
+    const libWithout = withoutS2.hitLog.find(h => h.blockId === 'danjin.liberation.crimson-bloom');
+    expect(libWith.damage).toBeGreaterThan(libWithout.damage);
+  });
+
+  // Found 2026-09-08 (full re-audit): CHARACTER_ROTATIONS['Danjin']'s own step note for this exact
+  // step already says "unleash Chaoscleave...into the Scatterbloom follow-up" — a real, guaranteed
+  // follow-up move with its own SKILL_MULTIPLIERS row (179%) that had no block anywhere. The dump's
+  // own Damage Profile "Heavy 24.4%" bucket is consistent with the combined total, not Chaoscleave
+  // alone.
+  it('Chaoscleave includes the guaranteed Scatterbloom follow-up (179%) in its own hit list', () => {
+    const block = DANJIN_BLOCKS.find(b => b.id === 'danjin.forte.chaoscleave');
+    const sum = block.damage.hits.reduce((s, h) => s + (h.atkPct || 0), 0);
+    expect(sum).toBeCloseTo(59.65 * 7 + 179, 1);
+  });
+
   it('S6 is team-wide with a real 20s window (not a flat passive)', () => {
     const s6 = DANJIN_BLOCKS.find(b => b.id === 'danjin.chain.s6');
     expect(s6.target.scope).toBe('whole-team');

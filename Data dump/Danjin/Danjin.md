@@ -263,3 +263,36 @@ worded Outro in this same audit pass), and `weaponAlts.alt4` all already matched
    the only `heavyDmg` block in her kit (confirmed via a new regression test, no over-crediting risk).
 
 1 test added, full suite green (1336/1336).
+
+**Full re-audit (2026-09-08, direct user request — "do the next one fully," including inner-kit and
+cross-character interactions and explicit DOT-application/basis verification).** Two real bugs found
+and fixed:
+
+1. **`chain.s2` relied on `condition.requiresStance`, which the resolver never actually enforces.**
+   `triggerEngine.js`'s own `conditionHolds()` treats `requiresStance` as purely descriptive except
+   via a separate mutual-exclusion mechanism that doesn't apply here (the same bug class already
+   found and fixed on Camellya's chain.s3/s6, which flagged it as a likely roster-wide pattern worth
+   checking elsewhere). Left as an unscoped passive, this +20% `totalMult` (uncategorized — reaches
+   EVERY hit) was silently applying to her pre-mark hits too (Intro, and the very Crimson Erosion cast
+   that applies the mark), not just genuine Incinerating-Will-target hits. Retargeted to a real
+   cast-anchored window opening on the Crimson Erosion cast, with a duration matching Incinerating
+   Will's own real 12s lifetime — since her whole rotation is only 7.61s, this correctly excludes just
+   her Intro hit while still covering the rest of the rotation once the mark is applied.
+2. **Scatterbloom (179%) had no block anywhere**, despite `CHARACTER_ROTATIONS['Danjin']`'s own step
+   note for the Chaoscleave step already saying "unleash Chaoscleave...into the Scatterbloom
+   follow-up" — a real, guaranteed follow-up move (not optional/skipped), with its own dedicated
+   `SKILL_MULTIPLIERS` row, "considered Heavy Attack DMG" per its own kit text. The dump's own Damage
+   Profile "Heavy 24.4% (46,529)" bucket is consistent with the COMBINED Chaoscleave+Scatterbloom
+   total (596.55% ATK), not Chaoscleave alone (417.55%) — confirming this was always meant to be
+   counted. Folded into `danjin.forte.chaoscleave`'s own hit list (same category, same rotation step).
+
+Golden-parity fixture re-measured for finding 2 (legacy 1424→1565, engine 1637→1778); new ratio ~1.136
+stays inside the existing `EXPECTED_DIVERGENCES` band (1.05–1.20). DOT-application check: confirmed no
+Erosion/Frazzle/Bane anywhere in her kit ("Crimson Erosion" is a move name, not the Aero Erosion status
+mechanic) — correctly no `dotApplier` on any block. `statScaling`/`basis` consistency confirmed (ATK
+throughout, matching `CHARACTER_DATA['Danjin'].statScaling`).
+
+Everything else re-verified clean: `CHAR_BUFF_TABLE`, remaining `RESONANCE_CHAIN_DATA` values,
+`SKILL_MULTIPLIERS`, `CHARACTER_ROTATIONS`' own move order, `dmgFocus`, base stats, `bestWeapon`,
+`weaponAlts`, `bestEchoes`, and cross-character interactions (nothing else in the roster references
+Incinerating Will/Ruby Blossom/Crimson Erosion). Full test suite: 1828/1828 passing (3 new tests).

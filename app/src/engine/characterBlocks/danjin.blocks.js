@@ -84,13 +84,24 @@ export const DANJIN_BLOCKS = [
     concertoEnergyGain: 20,
   },
   {
+    // hits fixed 2026-09-08 (full re-audit): was JUST the base Chaoscleave 7-hit list — but
+    // CHARACTER_ROTATIONS['Danjin']'s own step note for this exact step already says "unleash
+    // Chaoscleave...into the Scatterbloom follow-up" — Scatterbloom (179%, Heavy Attack: Basic Attack
+    // right after Chaoscleave per its own kit text) is a real, guaranteed, always-cast follow-up in
+    // the SAME combined rotation step, not an optional/skipped move. The dump's own Damage Profile
+    // "Heavy 24.4% (46,529)" bucket is consistent with the COMBINED total (Chaoscleave 417.55% +
+    // Scatterbloom 179% = 596.55% ATK), not Chaoscleave alone — confirming Scatterbloom's damage was
+    // always meant to be counted here but had no block anywhere. Folded into this same block's hit
+    // list (same category, heavyDmg, per Scatterbloom's own "considered Heavy Attack DMG" kit text) —
+    // same "one combined rotation step, one combined block" convention already used elsewhere in this
+    // codebase (e.g. Buling's Thunder Talisman + Pull-in Effect).
     id: 'danjin.forte.chaoscleave',
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Serene Vigil: Chaoscleave' },
     // No cooldown: gated by consuming 60+ Ruby Blossom, a resource threshold, not a timer.
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('59.65%×7'), category: 'heavyDmg', basis: 'ATK' },
-    note: 'Counts as Heavy ATK per its own CHARACTER_ROTATIONS note, at 60+ Ruby Blossom. Heals Danjin, not modeled. Scatterbloom follow-up (179%, corrected 2026-09-03 from a stale 178.93%) has no own CHARACTER_ROTATIONS step, not separately modeled. The higher-tier "Full Energy" variants (120+ Ruby Blossom) belong to a different rotation (the source\'s "Damage Dealer Combo") than the one modeled here, not used.',
+    damage: { hits: [...parseSkillMultiplierHits('59.65%×7'), ...parseSkillMultiplierHits('179%')], category: 'heavyDmg', basis: 'ATK' },
+    note: 'Counts as Heavy ATK per its own CHARACTER_ROTATIONS note, at 60+ Ruby Blossom. Heals Danjin, not modeled. Includes the Scatterbloom follow-up (179%, corrected 2026-09-03 from a stale 178.93%, folded into this same block 2026-09-08 — see fix comment above). The higher-tier "Full Energy" variants (120+ Ruby Blossom) belong to a different rotation (the source\'s "Damage Dealer Combo") than the one modeled here, not used.',
     // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Danjin/Danjin.md's own
     // "Chaoscleave Con. Energy Regen 50" row.
     concertoEnergyGain: 50,
@@ -212,13 +223,27 @@ export const DANJIN_BLOCKS = [
     note: 'ATK +5% per stack on Incinerating Will hits, stacking up to 6 times (max 30%), loses 1 stack per hit Danjin takes — now modeled flat at the 30% cap since passive-trigger stacking metadata was dead (see fix comment above). The stack-loss-on-hit-taken mechanic is not modeled (no defensive-proc trigger type in this schema), so this is a ceiling approximation, not a confirmed steady-state average.',
   },
   {
+    // Retargeted 2026-09-08 (full re-audit): was `trigger:{type:'passive'}` +
+    // `condition:{requiresStance:'Incinerating Will target'}` — but `condition.requiresStance` is
+    // PURELY DESCRIPTIVE in this engine (triggerEngine.js's own `conditionHolds()` never checks it
+    // except via the separate `filterExclusiveModeBlocks` mechanism, which only applies to genuinely
+    // rival "Mode A vs Mode B" block pairs, not a solo conditional like this one — see its own code
+    // comment). This is the exact "requiresStance alone, no rival, silently degrades to always-on"
+    // bug class already found and fixed on Camellya's chain.s3/s6 (which flagged this as a likely
+    // roster-wide pattern worth checking elsewhere). Left as a passive, this totalMult:20 (uncategorized,
+    // reaches EVERY hit regardless of category) was silently applying to her pre-mark hits too (Intro,
+    // and the Crimson Erosion cast that itself APPLIES the mark) — not just genuine Incinerating-Will-
+    // target hits. Retargeted to a cast-triggered buff opening on the Crimson Erosion cast (the real,
+    // only move in her modeled rotation that applies Incinerating Will), with a duration matching the
+    // mark's own real 12s lifetime — her whole rotation is only 7.61s, so once applied this covers the
+    // rest of it; only her Intro (which fires BEFORE the mark exists) is now correctly excluded.
     id: 'danjin.chain.s2',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
-    condition: { requiresStance: 'Incinerating Will target' },
+    trigger: { type: 'cast', on: 'Skill:Crimson Erosion' },
+    timing: { duration: 12 },
+    target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 20, source: 'self-kit' }],
-    note: 'DMG dealt to Incinerating Will targets +20% (confirmed exact, kept as totalMult since it\'s not attribute-specific) — conditional on the target carrying Incinerating Will.',
+    note: 'DMG dealt to Incinerating Will targets +20% (confirmed exact, kept as totalMult since it\'s not attribute-specific) — now a real cast-anchored window matching Incinerating Will\'s own 12s duration, opened by the Crimson Erosion cast that applies the mark, instead of an unenforced requiresStance condition that was silently always-on.',
   },
   {
     id: 'danjin.chain.s3',

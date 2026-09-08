@@ -285,6 +285,12 @@ const EXPECTED_DIVERGENCES = {
   // calcTeamStats()'s cooldownSteadyState gate correctly derates the legacy RAW number
   // (1354 -> 1182); this test's own standalone engine call doesn't apply that gate, so it stays at
   // the un-derated value. Measured ratio ~1.145 (engine/legacy) — real, expected, not a regression.
+  // Golden fixture re-measured 2026-09-08 (full re-audit): Scatterbloom (179%, a guaranteed follow-up
+  // to Chaoscleave per CHARACTER_ROTATIONS' own step note) had no block anywhere despite being
+  // reflected in the dump's own "Heavy 24.4%" damage-profile bucket — folded into
+  // danjin.forte.chaoscleave's own hit list. Both legacy (1424->1565) and engine (1637->1778) moved
+  // together. New measured ratio ~1.136 (engine/legacy), still inside this existing band — no change
+  // needed to the band itself.
   Danjin: { min: 1.05, max: 1.20 },
   // Added 2026-09-06 (Denia completeness pass): same class as the prior 15 characters above. Banish
   // Stage 1/2 (Skill/Liberation) and Final Act Breakdown (Liberation) all got real, sourced
