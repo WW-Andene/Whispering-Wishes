@@ -290,21 +290,27 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
   ctx.fillStyle = '#9ca3af'; ctx.font = '16px sans-serif'; ctx.fillText('UID ' + uid, bx + 18, by + 64);
 
   // Character identity plaque — bottom-center of the portrait, sitting in the bottom fade drawn
-  // above. Per user request, element + combat role moved here (stacked below the character's own
-  // name) instead of living under the player's username/UID at the top: they're attributes of the
-  // character being shown, not the player, so they belong with the character's name. All three
-  // rows (name/element/role) were also enlarged from the prior single 26px name-only line. Same
-  // neutral dark mask/border every other block on this card uses (drawBannerPanel's
-  // rgba(10,14,22,0.75) fill + rgba(255,255,255,0.16) border), not a gold treatment.
+  // above. Per user request, element + combat role moved here (element and role sit SIDE BY SIDE on
+  // one row, not stacked) below the character's own name, instead of living under the player's
+  // username/UID at the top: they're attributes of the character being shown, not the player, so
+  // they belong with the character's name. Both rows (name / element+role) were also enlarged from
+  // the prior single 26px name-only line. Same neutral dark mask/border every other block on this
+  // card uses (drawBannerPanel's rgba(10,14,22,0.75) fill + rgba(255,255,255,0.16) border), not a
+  // gold treatment.
   {
     const roleText = d.role || '';
     const elemText = element || '';
     ctx.font = 'bold 34px sans-serif'; const nameW = ctx.measureText(name).width;
-    ctx.font = '600 24px sans-serif'; const elemW = ctx.measureText(elemText).width + (elIcon ? 30 : 0);
+    ctx.font = '600 24px sans-serif'; const elemLabelW = ctx.measureText(elemText).width;
+    const elemBlockW = elemLabelW + (elIcon ? 30 : 0);
     ctx.font = '600 20px sans-serif'; const roleW = ctx.measureText(roleText).width;
-    const padX = 28, rowGapTop = 20, nameRowH = 40, elemRowH = 32, roleRowH = 28;
-    const plaqueW = Math.max(nameW, elemW, roleW) + padX * 2;
-    const plaqueH = rowGapTop + nameRowH + elemRowH + roleRowH;
+    // identityGap: PerfectSuite [16] (§7 primary tier) between the element block and the role text
+    // on their shared row.
+    const identityGap = 16;
+    const identityRowW = elemBlockW + (roleText ? identityGap + roleW : 0);
+    const padX = 28, rowGapTop = 20, nameRowH = 40, identityRowH = 32;
+    const plaqueW = Math.max(nameW, identityRowW) + padX * 2;
+    const plaqueH = rowGapTop + nameRowH + identityRowH;
     const plaqueX = bx + portraitW / 2 - plaqueW / 2, plaqueY = by + bh - 16 - plaqueH;
     ctx.fillStyle = 'rgba(10,14,22,0.8)'; rr(plaqueX, plaqueY, plaqueW, plaqueH, 24); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.16)'; ctx.lineWidth = 1.5; rr(plaqueX, plaqueY, plaqueW, plaqueH, 24); ctx.stroke();
@@ -314,17 +320,19 @@ export async function renderCharacterCard({ member, eq, teamIdx, collectionImage
     ctx.fillText(name, bx + portraitW / 2, py + 27);
     py += nameRowH;
 
+    // Element (icon + text) and role text now share one centered row, element first then role.
+    let ex = bx + portraitW / 2 - identityRowW / 2;
     ctx.font = '600 24px sans-serif';
-    const elemLabelW = ctx.measureText(elemText).width;
-    const elemRowW = elemLabelW + (elIcon ? 30 : 0);
-    let ex = bx + portraitW / 2 - elemRowW / 2;
     if (elIcon) { ctx.drawImage(elIcon, ex, py + 3, 24, 24); ex += 30; }
     ctx.fillStyle = elColor; ctx.textAlign = 'left';
     ctx.fillText(elemText, ex, py + 22);
-    py += elemRowH;
+    ex += elemLabelW;
 
-    ctx.fillStyle = '#9ca3af'; ctx.font = '600 20px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(roleText, bx + portraitW / 2, py + 19);
+    if (roleText) {
+      ex += identityGap;
+      ctx.fillStyle = '#9ca3af'; ctx.font = '600 20px sans-serif';
+      ctx.fillText(roleText, ex, py + 20);
+    }
     ctx.textAlign = 'left';
   }
 
