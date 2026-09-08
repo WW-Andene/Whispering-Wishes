@@ -14,11 +14,30 @@
 //
 // Unlike Augusta's 'partner-outro-return' (cross-character), both windows here
 // belong entirely to Jinhsi's OWN rotation history — but still require real
-// elapsed-time tracking to evaluate ("was the 2nd cast within 5s of the 1st"),
-// which is exactly PHASE2_PLAN.md's still-open design question 2. Added
-// 'windowed-cast' to the schema for this shape; same limitation as
-// 'partner-outro-return' — it names the window, a future rotation simulator has to
-// evaluate it.
+// elapsed-time tracking to evaluate ("was the 2nd cast within 5s of the 1st").
+// 'windowed-cast' was added to the schema for this shape, and rotationSimulator.js's
+// tryWindowedCast() now DOES real elapsed-time evaluation (this comment originally
+// described that as still-open — resolved since).
+//
+// IMPORTANT — verified 2026-09-08 (full-kit audit), NOT assumed from this file's own
+// prior framing: the two `jinhsi.window.*` blocks below are currently PURELY
+// DECORATIVE — they do NOT gate the real damage blocks' output. Proven by direct
+// A/B measurement: removing both blocks from JINHSI_BLOCKS entirely produces a
+// byte-identical total for the real CHARACTER_ROTATIONS['Jinhsi']. Root cause: the
+// real damage blocks (jinhsi.skill.overflowing-radiance, jinhsi.skill.illuminous-
+// epiphany) each have their OWN independent `trigger:{type:'cast', on:...}`, which
+// fires whenever that step's own cast key is present in `firedTriggers` — completely
+// unaffected by whether `tryWindowedCast()` for the sibling `windowed-cast` utility
+// block above them succeeds or fails. And since both `jinhsi.window.*` blocks are
+// `kind:'utility'` with `effects:[]`, even a SUCCESSFUL window-check contributes zero
+// stat effect of its own. Nothing else in the codebase (grepped features/) reads
+// these block ids either — no UI/tooltip consumer. Given this engine's established
+// "assume optimal execution, never model a missed window" convention throughout
+// every other character, and CHARACTER_ROTATIONS['Jinhsi'] already representing the
+// always-in-window ideal case, this has NO effect on the real, correct DPS number —
+// but the blocks themselves currently document the window MECHANIC without actually
+// enforcing it. Kept (real, sourced, useful documentation of a genuine kit mechanic)
+// rather than deleted, but no longer described as functional gating.
 //
 // Sourced directly from characters.js's already-audited CHAR_BUFF_TABLE['Jinhsi'],
 // RESONANCE_CHAIN_DATA['Jinhsi'] (2026-08-31 audit), and CHARACTER_ROTATIONS['Jinhsi'].
@@ -179,6 +198,23 @@ export const JINHSI_BLOCKS = [
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
+  // Found 2026-09-08 (full-kit audit): CHARACTER_ROTATIONS['Jinhsi'] includes a real 'Outro:Temporal
+  // Bender' step, but this file had no block for it at all — a documentation-completeness gap
+  // (correctly zero DPS impact either way: the real effect is "Eras in Unity trigger rate
+  // accelerates from once per 3s to once per 1s, for 20s," a pure resource-generation-RATE modifier
+  // with no team-DMG-buff/stat component, and Incandescence generation isn't separately simulated
+  // per-tick in this engine anyway — see this file's own Eras-in-Unity-related reasoning above).
+  // Added as a documentation-only utility block, same convention as Ephemeral Realm/Sin Feaster.
+  {
+    id: 'jinhsi.outro.temporal-bender',
+    source: SOURCE,
+    kind: 'utility', section: 'Outro',
+    trigger: { type: 'swap-out' },
+    timing: {},
+    target: { scope: 'self' },
+    effects: [],
+    note: "Outro Temporal Bender: Eras in Unity's Incandescence-gain trigger rate accelerates from once per 3s to once per 1s, for 20s. Pure resource-generation-rate utility — no DPS stat exists for this, and Incandescence's downstream DPS effect is already baked into jinhsi.skill.illuminous-epiphany's flat full-Incandescence-spend %ATK value rather than simulated per-tick.",
+  },
   {
     id: 'jinhsi.selfbuff.radiant-surge',
     source: SOURCE,
@@ -223,7 +259,7 @@ export const JINHSI_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    note: 'Window 1 of 2: after landing Basic ATK Stage 4 OR casting Intro Loong\'s Halo (only while not already in Incarnation), a 5s window opens for the Skill button to become Overflowing Radiance — casting it deals Spectro DMG and enters Incarnation for 10s. Missing the window forfeits the alternate cast for a normal Trailing Lights of Eons instead. No direct DMG stat here — the state transition (entering Incarnation) is what this block represents; Overflowing Radiance\'s own hit damage lives in SKILL_MULTIPLIERS.',
+    note: "Window 1 of 2: after landing Basic ATK Stage 4 OR casting Intro Loong's Halo (only while not already in Incarnation), a 5s window opens for the Skill button to become Overflowing Radiance — casting it deals Spectro DMG and enters Incarnation for 10s. Missing the window forfeits the alternate cast for a normal Trailing Lights of Eons instead. No direct DMG stat here — the state transition (entering Incarnation) is what this block represents; Overflowing Radiance's own hit damage lives in SKILL_MULTIPLIERS. Currently non-gating (documentation only) — see this file's own header comment for why: jinhsi.skill.overflowing-radiance fires off its own independent 'cast' trigger regardless of this block's pass/fail state.",
   },
   {
     id: 'jinhsi.window.illuminous-epiphany',
@@ -238,7 +274,7 @@ export const JINHSI_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    note: 'Window 2 of 2: landing Stage 4 of Incarnation-Basic Attack ends Incarnation and opens Ordination Glow — a 5s window in which Resonance Skill becomes Illuminous Epiphany. Missing it loses Ordination Glow entirely, along with the chance to spend Incandescence that rotation. Also grants Unison (once per 25s) on cast: while held, swapping off-field auto-triggers a free Outro/Intro pair instead of requiring full Concerto Energy — not modeled here (resource-economy utility, no DPS stat).',
+    note: "Window 2 of 2: landing Stage 4 of Incarnation-Basic Attack ends Incarnation and opens Ordination Glow — a 5s window in which Resonance Skill becomes Illuminous Epiphany. Missing it loses Ordination Glow entirely, along with the chance to spend Incandescence that rotation. Also grants Unison (once per 25s) on cast: while held, swapping off-field auto-triggers a free Outro/Intro pair instead of requiring full Concerto Energy — not modeled here (resource-economy utility, no DPS stat). Currently non-gating (documentation only) — same reasoning as jinhsi.window.overflowing-radiance above.",
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — re-verified 2026-08-31) ──
@@ -253,16 +289,42 @@ export const JINHSI_BLOCKS = [
     note: 'Each of her 4 Incarnation-Basic Attack stages grants a stack (max 4) — hitting with Illuminous Epiphany consumes them, +20% DMG per stack, up to +80% at 4. Modeled as a flat skillDmg:40 rotation-average since real stack count is execution-dependent.',
   },
   {
+    // Fixed 2026-09-08 (full-kit audit): `effects` was `[{stat:'totalMult', value:5}]` — but this
+    // block's own `kind:'utility'` EXCLUDES it from every effect-processing list in
+    // resolveHitComposedDps.js (`passiveBlocks`/`buffBlocks`/`instantCastBuffBlocks` all require
+    // `kind === 'buff' || 'debuff'`), so that totalMult:5 was silently dead code contributing
+    // exactly zero regardless — verified directly, not assumed. The OLD note claimed it was "kept
+    // as the flat table's own minimal non-zero placeholder," implying it was believed to contribute
+    // something; it never did. Also traced upstream: RESONANCE_CHAIN_DATA['Jinhsi'].s2 itself stored
+    // the same fabricated `totalMult:5` with no cited source or reasoning — the real S2 effect
+    // (out-of-combat Incandescence restore) has zero in-combat DPS component, same class already
+    // fixed for Iuno's S4/Jianxin's S1-S3/S5 ("zero, don't guess" rule for defensive/utility nodes).
+    // Zeroed BOTH the flat table and this block's own effects to match — no functional DPS change
+    // (it was already contributing zero), but removes a confusing fabricated number that implied
+    // otherwise in two places at once.
     id: 'jinhsi.chain.s2-chronofrost-repose',
     source: SOURCE,
     kind: 'utility', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 5 }],
-    note: 'Restores 50 Incandescence after 4s+ out of combat, 1 trigger/4s — pure pre-fight/downtime utility, no in-combat DPS number exists for this; totalMult:5 kept as the flat table\'s own minimal non-zero placeholder.',
+    effects: [],
+    note: 'Restores 50 Incandescence after 4s+ out of combat, 1 trigger/4s — pure pre-fight/downtime utility, ZERO in-combat DPS component (same "zero, don\'t guess" treatment as Iuno\'s S4/Jianxin\'s S1-S3/S5).',
   },
   {
+    // Verified 2026-09-08 (full-kit audit), disclosed explicitly rather than left silent:
+    // `CHARACTER_ROTATIONS['Jinhsi']` (the "Standard Rotation (Opener)" per this dump) never casts
+    // Intro:Loong's Halo at all — confirmed directly (`rotation.some(s => s.type === 'Intro')` is
+    // false) and by measurement (removing this block from the block set produces a byte-identical
+    // total, even at Sequence 6). This is a REAL Resonance Chain node with a real trigger anchor
+    // that is simply never reached by this simplified single-opener rotation model — her full real
+    // gameplay loop (this dump's own "Loop Rotation") DOES cast Intro every cycle after the opener
+    // ("she wants to build 2 Intros + 2 Outros per rotation cycle"), so a real S6 Jinhsi's actual
+    // in-game DPS benefits from this +50% ATK far more than this calculator currently shows. Kept
+    // as-is (correctly coded, real trigger, real value) rather than force-anchored to some other
+    // cast that doesn't represent the real mechanic — the gap is the modeled rotation only covering
+    // the opener, the same class of simplification this engine makes for every character's single-
+    // pass rotation, not a data error specific to this node.
     id: 'jinhsi.chain.s3-celestial-incarnate',
     source: SOURCE,
     kind: 'buff', section: 'Chain',
@@ -270,7 +332,7 @@ export const JINHSI_BLOCKS = [
     timing: { duration: 20 },
     target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 50, stacking: 'stacking', source: 'self-kit' }],
-    note: "Casting Intro Skill Loong's Halo grants 1 stack of Immortal's Descendancy (+25% ATK/stack, max 2 stacks, 20s) = up to +50% ATK at 2 stacks.",
+    note: "Casting Intro Skill Loong's Halo grants 1 stack of Immortal's Descendancy (+25% ATK/stack, max 2 stacks, 20s) = up to +50% ATK at 2 stacks. Currently contributes ZERO to this calculator's output — CHARACTER_ROTATIONS['Jinhsi'] never casts Intro (see this effect's own verification comment above); her real Loop Rotation does.",
   },
   {
     id: 'jinhsi.chain.s4-benevolent-grace',

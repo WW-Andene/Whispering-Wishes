@@ -6648,7 +6648,13 @@ const RESONANCE_CHAIN_DATA = {
   //   wrongly totalMult:30 (no basis). Corrected to skillDmg:45 for the flat Illuminous Epiphany DMG Mult
   //   bonus; the per-Incandescence conversion-rate increase is NOT representable as a flat stat here —
   //   TODO: needs Phase 2 schema to hold both the flat skill-mult bonus and the scaling-rate bonus.
-  'Jinhsi':       { s1: { skillDmg: 40 }, s2: { totalMult: 5 }, s3: { atkPct: 50 }, s4: { allDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
+  // s2 zeroed 2026-09-08 (full-kit audit): was `totalMult: 5`, an unexplained fabricated
+  // placeholder — the real S2 effect ("staying out of combat 4s+ restores 50 Incandescence, once
+  // per 4s") is a pure out-of-combat resource-restore mechanic with ZERO in-combat DPS component,
+  // same reasoning already applied to Iuno's S4 ("ZEROED... a fabricated 'fallback' number with no
+  // basis in this effect — matches the 'zero, don't guess' rule for defensive/utility nodes") and
+  // Jianxin's S1/S2/S3/S5. jinhsi.chain.s2-chronofrost-repose's own `effects` cleared to match.
+  'Jinhsi':       { s1: { skillDmg: 40 }, s2: {}, s3: { atkPct: 50 }, s4: { allDmg: 20 }, s5: { libDmg: 120 }, s6: { skillDmg: 45 } },
   // Calcharo S1-S6 re-verified verbatim 2026-08-31 against the wiki/Calcharo/Combat's
   // "Resonance Chain" section (Chrome/Windows UA + google.com referer + jsRender, load+9s wait; 2nd attempt
   // cleared Cloudflare), cross-checked against the source/wuthering-waves/characters/calcharo (identical

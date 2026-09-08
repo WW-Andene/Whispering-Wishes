@@ -9,8 +9,10 @@
  */
 import { describe, it, expect } from 'vitest';
 import { createStats } from '../features/teams/calcEngine.js';
-import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, CHARACTER_ROTATIONS } from '../data/characters.js';
 import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { JINHSI_BLOCKS } from '../engine/characterBlocks/jinhsi.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
 
@@ -25,15 +27,69 @@ describe('triggerEngine parity — Jinhsi', () => {
     expect(block.effects[0].value).toBe(legacy.value);
   });
 
-  it('Resonance Chain S1-S6 values match RESONANCE_CHAIN_DATA', () => {
+  it('Resonance Chain S1/S3/S4/S5/S6 values match RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Jinhsi'];
     const byId = id => JINHSI_BLOCKS.find(b => b.id === id);
     expect(byId('jinhsi.chain.s1-abyssal-ascension').effects[0].value).toBe(rc.s1.skillDmg);
-    expect(byId('jinhsi.chain.s2-chronofrost-repose').effects[0].value).toBe(rc.s2.totalMult);
     expect(byId('jinhsi.chain.s3-celestial-incarnate').effects[0].value).toBe(rc.s3.atkPct);
     expect(byId('jinhsi.chain.s4-benevolent-grace').effects[0].value).toBe(rc.s4.allDmg);
     expect(byId('jinhsi.chain.s5-frostfire-illumination').effects[0].value).toBe(rc.s5.libDmg);
     expect(byId('jinhsi.chain.s6-thawing-triumph').effects[0].value).toBe(rc.s6.skillDmg);
+  });
+
+  // Found 2026-09-08 (full-kit audit): S2's real effect ("staying out of combat 4s+ restores 50
+  // Incandescence") is pure out-of-combat resource utility with ZERO in-combat DPS component — was
+  // `totalMult: 5`, an unexplained fabricated placeholder (in BOTH RESONANCE_CHAIN_DATA and this
+  // block's own effects), same "zero, don't guess" class already fixed for Iuno's S4/Jianxin's
+  // S1-S3/S5. Also: this block's own `kind:'utility'` already excluded it from every
+  // effect-processing list in resolveHitComposedDps.js, so the old totalMult:5 was silently dead
+  // regardless of its value — zeroing it removes a confusing fabricated number, not a functional change.
+  it('S2 is correctly zeroed (pure resource utility, no fabricated placeholder value)', () => {
+    const rc = RESONANCE_CHAIN_DATA['Jinhsi'];
+    expect(rc.s2).toEqual({});
+    const s2 = JINHSI_BLOCKS.find(b => b.id === 'jinhsi.chain.s2-chronofrost-repose');
+    expect(s2.effects).toEqual([]);
+    expect(s2.kind).toBe('utility');
+  });
+
+  // Found 2026-09-08 (full-kit audit): verified directly, not assumed, that the two `windowed-cast`
+  // utility blocks (jinhsi.window.*) are currently non-gating — the real damage blocks fire off their
+  // own independent 'cast' triggers regardless of these blocks' pass/fail state, and both utility
+  // blocks carry `effects:[]` so even a successful window-check contributes nothing. See this file's
+  // own header comment (in jinhsi.blocks.js) for the full reasoning — kept as real, sourced kit
+  // documentation, not deleted, but no longer described as functional gating.
+  it('the two windowed-cast utility blocks are confirmed non-gating (documentation only) — removing them produces a byte-identical DPS total', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jinhsi'], JINHSI_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withWindows = resolveHitComposedDps(JINHSI_BLOCKS, steps, ctx, 3000, 'spectro', 'Main DPS');
+    const windowIds = new Set(['jinhsi.window.overflowing-radiance', 'jinhsi.window.illuminous-epiphany']);
+    const withoutWindows = resolveHitComposedDps(JINHSI_BLOCKS.filter(b => !windowIds.has(b.id)), steps, ctx, 3000, 'spectro', 'Main DPS');
+    expect(withWindows.totalDamage).toBe(withoutWindows.totalDamage);
+  });
+
+  // Found 2026-09-08 (full-kit audit): CHARACTER_ROTATIONS['Jinhsi'] (the "Standard Rotation
+  // (Opener)") never casts Intro — confirmed directly — so S3's real +50% ATK chain bonus (a real,
+  // sequence-6-gated node) contributes ZERO to this calculator's output even at full Sequence 6. Her
+  // real "Loop Rotation" does cast Intro every cycle; this simplified single-opener model just
+  // doesn't represent that. Documented on the block itself rather than left silent.
+  it("S3's real +50% ATK bonus contributes zero at Sequence 6, since CHARACTER_ROTATIONS['Jinhsi'] never casts Intro (disclosed limitation, not a data bug)", () => {
+    const rotation = CHARACTER_ROTATIONS['Jinhsi'];
+    expect(rotation.some(s => s.type === 'Intro')).toBe(false);
+    const steps = deriveStepsFromRotation(rotation, JINHSI_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS3 = resolveHitComposedDps(JINHSI_BLOCKS, steps, ctx, 3000, 'spectro', 'Main DPS', null, 6);
+    const withoutS3 = resolveHitComposedDps(JINHSI_BLOCKS.filter(b => b.id !== 'jinhsi.chain.s3-celestial-incarnate'), steps, ctx, 3000, 'spectro', 'Main DPS', null, 6);
+    expect(withS3.totalDamage).toBe(withoutS3.totalDamage);
+  });
+
+  // Found 2026-09-08 (full-kit audit): CHARACTER_ROTATIONS['Jinhsi'] includes a real 'Outro:Temporal
+  // Bender' step, but this file previously had no block for it at all.
+  it('Outro Temporal Bender has a documentation-only utility block (real step, zero DPS component — pure resource-generation-rate utility)', () => {
+    const outro = JINHSI_BLOCKS.find(b => b.id === 'jinhsi.outro.temporal-bender');
+    expect(outro).toBeDefined();
+    expect(outro.kind).toBe('utility');
+    expect(outro.effects).toEqual([]);
+    expect(CHAR_BUFF_TABLE['Jinhsi'].outroBuffs).toEqual([]);
   });
 
   it('windowed-cast trigger is keyed by its opensOn triggers, and both windows are distinct', () => {

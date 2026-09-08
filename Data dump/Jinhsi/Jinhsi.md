@@ -313,3 +313,75 @@ top-2-by-% ordering; `RESONANCE_CHAIN_DATA.s1`'s flat `skillDmg: 40` (half of th
 
 Full suite green (1332/1332), no new tests needed (existing `triggerEngine-jinhsi.test.js` and
 `data-integrity.test.js` already cover this).
+
+## Full kit audit (2026-09-08)
+
+Full, independent re-verification of `jinhsi.blocks.js` against this dump, `characters.js`
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, full CHARACTER_DATA
+entry), and the engine's actual resolver code (not comments) — per the same rigor applied to Augusta
+through Jianxin this session. This is one of the most mechanically complex characters in the roster
+(strict cast-order windows, Incarnation/Ordination Glow state, Unison-gated free Outros). Three real
+findings, all verified by direct measurement rather than assumption; no DPS-affecting bug found, but
+real documentation/hygiene gaps fixed.
+
+**Finding 1 — the two `windowed-cast` "forfeit window" blocks are non-gating, contrary to the file's
+own header claim.** The file's header comment described these as "this conversion's whole point," but
+direct A/B measurement (removing both blocks from the block set) produces a byte-identical DPS total.
+Root cause: the real damage blocks (`jinhsi.skill.overflowing-radiance`, `jinhsi.skill.illuminous-
+epiphany`) each fire off their OWN independent `cast` trigger, completely unaffected by whether the
+sibling `windowed-cast` utility block's real elapsed-time check (`tryWindowedCast()`, confirmed to be a
+real, working implementation, not a stub) passes or fails — and even a successful check contributes
+nothing, since both utility blocks carry `effects:[]`. Nothing else in the codebase reads these block
+ids either. Given this engine's established "assume optimal execution, never model a missed window"
+convention (used for every other character), and `CHARACTER_ROTATIONS['Jinhsi']` already representing
+the always-in-window ideal case, this has zero effect on the real, correct DPS number — but the file's
+own claim about what the mechanism accomplishes was wrong. Corrected the header and both blocks' own
+notes to accurately describe them as documentation-only.
+
+**Finding 2 — S2's `totalMult: 5` was a fabricated, unexplained placeholder, doubly dead.** The real S2
+effect ("staying out of combat 4s+ restores 50 Incandescence") is pure out-of-combat resource utility
+with zero in-combat DPS component — the same class of fabricated non-zero value already found and
+zeroed for Iuno's S4 and Jianxin's S1-S3/S5 ("zero, don't guess" rule), but this one was never caught in
+Jinhsi's own pass. Independently confirmed the value was ALSO already dead for an unrelated reason: the
+block's own `kind:'utility'` excludes it from every effect-processing list in
+`resolveHitComposedDps.js` (`passiveBlocks`/`buffBlocks`/`instantCastBuffBlocks` all require
+`kind === 'buff' || 'debuff'`), so the `totalMult:5` never contributed regardless of its value — the old
+note's claim that it was "kept as... a placeholder" implied it did something; it never did. Zeroed both
+`RESONANCE_CHAIN_DATA['Jinhsi'].s2` and the block's own `effects` to remove the confusing fabricated
+number (no functional DPS change, since it was already contributing zero).
+
+**Finding 3 — S3's real Resonance Chain bonus contributes zero, even at Sequence 6, undisclosed on the
+block itself.** `CHARACTER_ROTATIONS['Jinhsi']` (the "Standard Rotation (Opener)" per this dump) never
+casts Intro at all — confirmed directly and by measurement (removing `jinhsi.chain.s3-celestial-
+incarnate` produces a byte-identical total even at Sequence 6). Her real "Loop Rotation" (this dump's
+own text) DOES cast Intro every cycle after the opener, so a real S6 Jinhsi's actual in-game DPS
+benefits from this +50% ATK far more than this calculator currently shows — this is a genuine
+consequence of the engine modeling only her opener, not a data error on this specific node, but it was
+previously undisclosed on chain.s3 itself (only implicitly buried in the file's Intro-related header
+note about the missing damage block). Documented explicitly on the block.
+
+**Also fixed (hygiene):** added a documentation-only `jinhsi.outro.temporal-bender` utility block —
+`CHARACTER_ROTATIONS['Jinhsi']` includes a real `Outro:Temporal Bender` step, but this file previously
+had no block for it at all (the real effect is a pure Incandescence-gain-rate accelerator with zero
+team-DMG-buff/DPS-stat component, matching `CHAR_BUFF_TABLE['Jinhsi'].outroBuffs: []`).
+
+**Verified, no bug found:**
+- `statScaling`/`basis`: `CHARACTER_DATA['Jinhsi'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- DOT/dotApplier completeness: Jinhsi's kit applies no cross-character DOT status anywhere in her real
+  kit text — correctly has no `dotApplier` tags anywhere in the file.
+- `jinhsi.chain.s1-abyssal-ascension`'s flat `skillDmg:40` "rotation-average" (half the real 4-stack
+  max of 80%) re-examined given genuine ambiguity in whether the real per-stack trigger is per
+  Incarnation-Basic-Attack STAGE or per whole-combo CAST — re-confirmed as an already-reviewed,
+  deliberate documented approximation (not silently re-litigated without new evidence, per this
+  project's own change-scope discipline).
+- Eras in Unity's cross-character Incandescence-gain mechanic (from ANY teammate's Attribute DMG or
+  Coordinated Attack) is correctly NOT separately simulated per-trigger — its downstream DPS effect is
+  already baked into `jinhsi.skill.illuminous-epiphany`'s flat full-Incandescence-spend %ATK figure.
+- `SKILL_MULTIPLIERS['Jinhsi']`, `CHAR_BUFF_TABLE['Jinhsi']`, `CHARACTER_ROTATIONS['Jinhsi']`, and the
+  full `CHARACTER_DATA['Jinhsi']` entry (desc, bestWeapon, weaponAlts, bestEchoes, teams, dmgFocus, base
+  stats, DPS tier) all cross-checked against this dump and matched exactly beyond the findings above.
+
+**Re-measurement:** none of the three findings change real DPS output (all three were either already
+dead code or pure documentation gaps) — full suite re-run to confirm (1847/1847 passing, unchanged). No
+golden fixture update needed. Tests added for all three findings plus the new Outro block.
