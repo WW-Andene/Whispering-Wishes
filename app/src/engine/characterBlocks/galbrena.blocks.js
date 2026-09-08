@@ -130,14 +130,62 @@ export const GALBRENA_BLOCKS = [
     effects: [{ stat: 'allDmg', value: 85, source: 'self-kit' }],
     note: "+85% DMG Mult to Demon Hypostasis attacks on Hellfire Absolution cast — CHAR_BUFF_TABLE describes this loosely as 'Liberation cast', but Hellfire Absolution (her Echo-slot ultimate barrage) is the real cast this scales off per SKILL_MULTIPLIERS' own note text, used directly instead.",
   },
+  // Retargeted 2026-09-08 (full re-audit): was ONE block with `trigger:{type:'passive'}` PLUS
+  // `timing:{duration:4}` — a real, previously-unflagged instance of the "duration is dead metadata
+  // on a passive trigger" bug class already found and fixed on Baizhi/Brant/Ciaccona/Denia this
+  // session (`passiveBlocks` in resolveHitComposedDps.js filters ONLY on `trigger.type === 'passive'`
+  // and always applies at multiplier 1, completely ignoring `timing.duration`). Measured directly: with
+  // the old shape, this +20% ATK was unconditionally active for the ENTIRE modeled rotation (removing
+  // the block dropped total damage by ~9.9% in an isolated test) instead of the real, sourced 4s
+  // windows after specific casts — a significant overstatement, not a rounding-level approximation.
+  // The real kit text names 7 different triggering casts (Intro/Hellstride/Basic Stage 4/Seraphic
+  // Execution equivalent/Encroach/Ascent of Malice/Ravage); this schema's `trigger.on` only accepts
+  // ONE cast label per block (no array support for `cast`-type triggers, unlike `ally-action`'s
+  // `action` field), so — since Hellstride/Encroach/Ravage are all independently confirmed unused in
+  // her real modeled rotation (this dump's own "Unused parts of her kit" callout) — split into 4 real
+  // cast-anchored blocks below, one per real trigger cast that DOES occur in CHARACTER_ROTATIONS
+  // (Intro, Basic Stage 4, Ascent of Malice, Seraphic Execution Stage 5), each independently
+  // `stacking:'refresh'` with the same real 4s duration. Verified directly (via
+  // deriveStepsFromRotation's own real step timing) that none of these 4 anchors' windows ever
+  // overlap in the current modeled rotation — the closest gaps are 4.5s (just outside the 4s window),
+  // so no double-counting risk from 2 separate blocks' windows being simultaneously active. This is a
+  // rotation-timing fact, not a schema guarantee — if CHARACTER_ROTATIONS['Galbrena'] is ever edited
+  // to place two of these 4 trigger casts closer than 4s apart, this would need re-verification.
   {
-    id: 'galbrena.selfbuff.burning-drive',
+    id: 'galbrena.selfbuff.burning-drive-intro',
     source: SOURCE, kind: 'buff', section: 'Buff',
-    trigger: { type: 'passive' },
+    trigger: { type: 'cast', on: 'Intro:Hellflare Overload' },
     timing: { duration: 4 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 20, source: 'self-kit' }],
-    note: "Burning Drive: +20% ATK on certain casts — CHAR_BUFF_TABLE's own condition text doesn't name which specific casts trigger it, kept passive rather than guessing an anchor.",
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' }],
+    note: "Burning Drive: +20% ATK for 4s on Intro cast (one of 7 real trigger casts named by the kit text — see retargeting comment above for why only the 4 real-rotation ones each get their own block).",
+  },
+  {
+    id: 'galbrena.selfbuff.burning-drive-basic4',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Echo:Basic Attack Stage 4' },
+    timing: { duration: 4 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Burning Drive: +20% ATK for 4s on Basic Attack Stage 4 cast.',
+  },
+  {
+    id: 'galbrena.selfbuff.burning-drive-ascent',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Heavy ATK:Ascent of Malice' },
+    timing: { duration: 4 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Burning Drive: +20% ATK for 4s on Ascent of Malice cast.',
+  },
+  {
+    id: 'galbrena.selfbuff.burning-drive-seraphic5',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Echo:Seraphic Execution Stage 5' },
+    timing: { duration: 4 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' }],
+    note: "Burning Drive: +20% ATK for 4s on Seraphic Execution Stage 5 cast — the real kit's 'Seraphic Execution equivalent' trigger reference (Stage 5 is her Demon Hypostasis combo finisher, per galbrena.echo.seraphic-execution-stage5's own note).",
   },
   {
     // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`

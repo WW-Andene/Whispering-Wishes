@@ -37,6 +37,18 @@
  * together for a genuinely higher, now-correct value — not a regression. Cantarella's pre-existing
  * EXPECTED_DIVERGENCES band (1.05-1.20) still holds after the refresh (measured ratio ~1.146); the
  * other three stay at ratio ~1.00 as before.
+ *
+ * Golden fixtures refreshed again 2026-09-08 (Galbrena, full re-audit): galbrena.selfbuff.burning-drive
+ * was `trigger:{type:'passive'}` PLUS `timing:{duration:4}` — the "duration is dead metadata on a
+ * passive trigger" bug class (same root cause as the sweep just above, but this instance wasn't caught
+ * by that sweep since it's a selfBuff, not a stacking Resonance Chain node) — her +20% ATK Burning
+ * Drive buff was silently active for her ENTIRE modeled rotation instead of the real 4s windows after
+ * specific casts. Split into 4 real cast-anchored blocks (galbrena.selfbuff.burning-drive-{intro,
+ * basic4,ascent,seraphic5} — see that file's own retargeting comment). Both `engineDps`/`legacyRawDps`
+ * (5301 -> 5220) and the stat-panel `effAtk`/`score` (1512/1900 -> 1455/1828) moved down together for a
+ * genuinely more accurate, now-windowed value — not a regression. No EXPECTED_DIVERGENCES entry needed
+ * (ratio stays ~1.00, matching legacy exactly, since calcTeamStats routes this converted character
+ * through the same block data).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';

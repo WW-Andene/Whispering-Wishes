@@ -82,11 +82,46 @@ describe('triggerEngine parity — Galbrena', () => {
   it('selfBuffs match CHAR_BUFF_TABLE', () => {
     const legacy = CHAR_BUFF_TABLE['Galbrena'];
     const dh = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.selfbuff.demon-hypostasis-amp');
-    const bd = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.selfbuff.burning-drive');
+    const bd = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.selfbuff.burning-drive-intro');
     expect(dh.effects[0].value).toBe(legacy.selfBuffs[0].value);
     expect(dh.timing.duration).toBe(legacy.selfBuffs[0].duration);
     expect(bd.effects[0].value).toBe(legacy.selfBuffs[1].value);
     expect(bd.timing.duration).toBe(legacy.selfBuffs[1].duration);
+  });
+
+  // Found 2026-09-08 (full re-audit): galbrena.selfbuff.burning-drive previously used
+  // `trigger:{type:'passive'}` PLUS `timing:{duration:4}` — a real instance of the "duration is dead
+  // metadata on a passive trigger" bug class already found on Baizhi/Brant/Ciaccona/Denia this
+  // session. `passiveBlocks` in resolveHitComposedDps.js filters only on `trigger.type === 'passive'`
+  // and always applies unconditionally, completely ignoring `timing.duration` — so this +20% ATK was
+  // silently active for her ENTIRE rotation (measured: removing the block dropped total damage ~9.9%)
+  // instead of the real, sourced 4s windows after specific casts. Split into 4 real cast-anchored
+  // blocks (one per real trigger cast that occurs in CHARACTER_ROTATIONS — Intro/Basic Stage 4/Ascent
+  // of Malice/Seraphic Execution Stage 5), verified not to overlap in the current modeled rotation.
+  it('Burning Drive is 4 real cast-anchored 4s windows, not a dead-duration always-on passive', () => {
+    const ids = ['galbrena.selfbuff.burning-drive-intro', 'galbrena.selfbuff.burning-drive-basic4', 'galbrena.selfbuff.burning-drive-ascent', 'galbrena.selfbuff.burning-drive-seraphic5'];
+    expect(GALBRENA_BLOCKS.find(b => b.id === 'galbrena.selfbuff.burning-drive')).toBeUndefined();
+    for (const id of ids) {
+      const b = GALBRENA_BLOCKS.find(x => x.id === id);
+      expect(b, `${id} should exist`).toBeTruthy();
+      expect(b.trigger.type).toBe('cast');
+      expect(b.timing.duration).toBe(4);
+      expect(b.effects[0]).toEqual({ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' });
+    }
+  });
+
+  // Positive-verification test for the Burning Drive fix: proves the buff is NOT active for the whole
+  // rotation (the old bug), by comparing total damage with/without the 4 real blocks and confirming
+  // the uplift is bounded (not the ~9.9% whole-rotation figure the old always-on bug produced).
+  it("Burning Drive's real windowed uptime contributes less than the old always-on bug's ~9.9% uplift", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Galbrena'], GALBRENA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withBD = resolveHitComposedDps(GALBRENA_BLOCKS, steps, ctx, 3000, 'fusion', 'Main DPS');
+    const bdIds = new Set(['galbrena.selfbuff.burning-drive-intro', 'galbrena.selfbuff.burning-drive-basic4', 'galbrena.selfbuff.burning-drive-ascent', 'galbrena.selfbuff.burning-drive-seraphic5']);
+    const withoutBD = resolveHitComposedDps(GALBRENA_BLOCKS.filter(b => !bdIds.has(b.id)), steps, ctx, 3000, 'fusion', 'Main DPS');
+    expect(withBD.totalDamage).toBeGreaterThan(withoutBD.totalDamage);
+    const ratio = withBD.totalDamage / withoutBD.totalDamage;
+    expect(ratio).toBeLessThan(1.099);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {

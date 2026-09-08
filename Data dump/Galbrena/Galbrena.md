@@ -258,3 +258,61 @@ Hellstride is unused in her real rotation, and the flat-unbuffable shape doesn't
 a %ATK hit, not a standalone non-percentage number).
 
 5 new/rewritten tests, full suite green (1311/1311).
+
+## Full re-audit (2026-09-08)
+
+Full, independent re-verification of `galbrena.blocks.js` against this dump, `characters.js`
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, full CHARACTER_DATA
+entry), and the engine's actual resolver code (not comments) — per the same rigor applied to Augusta
+through Encore this session. One real bug found and fixed; everything else re-verified and confirmed
+correct.
+
+**Bug — `galbrena.selfbuff.burning-drive` had a dead `timing.duration`.** The block used
+`trigger:{type:'passive'}` PLUS `timing:{duration:4}` — the exact "duration is dead metadata on a
+passive trigger" bug class already found and fixed this session on Baizhi/Brant/Ciaccona/Denia (and, by
+a related mechanism, on Galbrena's own chain.s1/debuff.afterflame in an earlier pass — but THIS
+selfBuff instance wasn't caught by that earlier sweep, since it targeted stacking Resonance Chain
+nodes specifically, not selfBuffs). `resolveHitComposedDps.js`'s `passiveBlocks` filter checks only
+`trigger.type === 'passive'` and always applies unconditionally at multiplier 1 — the real, sourced 4s
+window was completely ignored. Measured directly: this +20% ATK was silently active for her ENTIRE
+modeled rotation instead of only after specific casts (removing the block dropped total damage ~9.9%
+in an isolated test — a real, significant overstatement, not a rounding-level issue).
+
+The real kit text ("casting Intro/Hellstride/Basic Stage 4/Seraphic Execution equivalent/Encroach/
+Ascent of Malice/Ravage grants... +20% ATK for 4s") names 7 different triggering casts, but this
+schema's `trigger.on` only accepts one cast label per block (no array support for `cast`-type triggers).
+Since this dump's own "Unused parts of her kit" section explicitly confirms Hellstride/Encroach/Ravage
+are unused in her real modeled rotation, split into 4 real cast-anchored blocks (one per real trigger
+cast that DOES occur in `CHARACTER_ROTATIONS['Galbrena']`: Intro, Basic Attack Stage 4, Ascent of
+Malice, Seraphic Execution Stage 5), each independently `stacking:'refresh'` with the real 4s duration.
+Verified directly (via the real step timing `deriveStepsFromRotation` produces) that none of these 4
+anchors' windows ever overlap in the current modeled rotation — closest gaps are 4.5s, just outside the
+4s window — so no double-counting risk from having 4 separate blocks. This is a rotation-timing fact,
+not a schema guarantee: flagged inline that a future edit to `CHARACTER_ROTATIONS['Galbrena']` placing
+two of these trigger casts closer than 4s apart would need re-verification.
+
+**Verified, no bug found (checked directly, not assumed):**
+- `galbrena.selfbuff.ascent-fusion-amp` and `galbrena.chain.s5` both use the `trigger:{type:'cast'}`
+  with no `timing.duration` shape (the `instantCastBuffBlocks` mechanism, added after Changli's S3 fix)
+  — verified by direct measurement that both correctly apply ONLY to their own triggering hit
+  (Ascent of Malice) and do NOT leak into the following step's hit (Hellfire Absolution), since no
+  other damage block shares their triggering step.
+- `statScaling`/`basis`: `CHARACTER_DATA['Galbrena'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- DOT/dotApplier completeness: Galbrena's kit applies no Fusion Burst or other cross-character DOT
+  status anywhere in her real kit text (Afterflame/Sinflame are self-only Forte resources, not
+  cross-character DOT reactions) — correctly has no `dotApplier` tags anywhere in the file.
+- `SKILL_MULTIPLIERS['Galbrena']`, `RESONANCE_CHAIN_DATA['Galbrena']` (S1-S6), `CHAR_BUFF_TABLE
+  ['Galbrena']` (including the exact same value:20/duration:4 for Burning Drive, confirming the fix's
+  numbers match the legacy table), `CHARACTER_ROTATIONS['Galbrena']`, and the full `CHARACTER_DATA
+  ['Galbrena']` entry (desc, bestWeapon, weaponAlts, bestEchoes, teams, dmgFocus, base stats, DPS tier)
+  all cross-checked against this dump and matched exactly — no discrepancies beyond the bug above.
+
+**Re-measurement:** the fix moved real DPS output (fewer pre/inter-cast windows now receive the +20%
+ATK bonus). `phase3-parityGolden.test.js` fixture updated: `engineDps`/`legacyRawDps` 5301.20/5301 →
+5220.10/5220 (both moved together — calcTeamStats routes this converted character through the same
+block data — ratio stays ~1.00, no `EXPECTED_DIVERGENCES` entry needed).
+`phase3-statpanel-golden.json`'s `effAtk`/`score` also updated (1512/1900 → 1455/1828, the only fields
+affected). Both changes cited inline in `phase3-parityGolden.test.js`'s own header comment. Tests
+added: 4-block shape check and a bounded-uplift positive-verification test proving the fix no longer
+produces the old always-on ~9.9% overstatement. Full suite: 1836/1836 passing.
