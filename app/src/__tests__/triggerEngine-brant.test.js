@@ -24,6 +24,36 @@ describe('triggerEngine parity — Brant', () => {
     expect(BRANT_BLOCKS.find(b => b.id === 'brant.chain.s6').effects[0].value).toBe(rc.s6.totalMult);
   });
 
+  // Fixed 2026-09-08 (full re-audit): was `trigger:{type:'passive'}` with `timing.duration:10` set —
+  // every resolver path applies a passive-trigger block unconditionally at multiplier 1, completely
+  // ignoring timing.duration (only a real 'cast'-triggered buff's window history is ever time-limited)
+  // — so this was silently PERMANENTLY active for the whole encounter instead of a real 10s window
+  // following an actual Basic ATK DMG hit. Re-anchored to his real Mid-air combo cast (basicDmg-
+  // categorized, so it genuinely satisfies "Dealing Basic Attack DMG" per the kit text).
+  it("S5's Basic ATK DMG buff is a real cast-anchored window, not dead passive-duration", () => {
+    const s5 = BRANT_BLOCKS.find(b => b.id === 'brant.chain.s5');
+    expect(s5.trigger).toEqual({ type: 'cast', on: 'Mid-air:Charged Combo (Stage 2-3)' });
+    expect(s5.timing.duration).toBe(10);
+  });
+
+  // Positive-verification test for the fix above: proves the real numeric effect, not just that the
+  // trigger field changed. A hit BEFORE the Mid-air combo (his Intro) must be unaffected; a hit AFTER
+  // it (Returned from Ashes, later in the modeled rotation) must be boosted, proving the buff has a
+  // real start time yet still covers the rest of his short (~8.2s) rotation.
+  it("S5's Basic ATK DMG buff has a real start time and covers the rest of the short rotation", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Brant'], BRANT_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS5 = resolveHitComposedDps(BRANT_BLOCKS, steps, ctx, 3500, 'fusion', 'Main DPS', null, 5);
+    const withoutS5Blocks = BRANT_BLOCKS.filter(b => b.id !== 'brant.chain.s5');
+    const withoutS5 = resolveHitComposedDps(withoutS5Blocks, steps, ctx, 3500, 'fusion', 'Main DPS', null, 5);
+    const introWithS5 = withS5.hitLog.find(h => h.blockId === 'brant.intro.applaud-for-me');
+    const introWithoutS5 = withoutS5.hitLog.find(h => h.blockId === 'brant.intro.applaud-for-me');
+    expect(introWithS5.damage).toBeCloseTo(introWithoutS5.damage, 5);
+    const returnedWithS5 = withS5.hitLog.find(h => h.blockId === 'brant.forte.returned-from-ashes');
+    const returnedWithoutS5 = withoutS5.hitLog.find(h => h.blockId === 'brant.forte.returned-from-ashes');
+    expect(returnedWithS5.damage).toBeGreaterThan(returnedWithoutS5.damage);
+  });
+
   // Fixed 2026-09-02 (Augusta S3 over-crediting pattern): S3 and S6 were both single UNSCOPED
   // totalMult effects — totalMult applies unconditionally to every hit regardless of category, so
   // both were silently boosting his whole kit (Intro/Liberation/Mid-air) instead of only their real
@@ -65,6 +95,18 @@ describe('triggerEngine parity — Brant', () => {
   it('Mid-air Attack combo is basicDmg-categorized', () => {
     const midair = BRANT_BLOCKS.find(b => b.id === 'brant.midair.stage-2-3-charged-flip');
     expect(midair.damage.category).toBe('basicDmg');
+  });
+
+  // Fixed 2026-09-08 (full re-audit): the prior hit list summed to 848.4% but didn't correspond to
+  // any real, consecutive Mid-air combo path — a garbled compilation, not the real Stage 2/3 sequence
+  // his own CHARACTER_ROTATIONS step ('Mid-air:Charged Combo (Stage 2-3)') actually fires. Re-derived
+  // directly from Data dump/Brant/Brant.md's raw per-move table: Stage 2 base (169.84%) + Stage 2
+  // Charged Attack (197.22%) + Stage 2 Flip (92.95%) + Stage 3 base (169.02%) + Stage 3 Flip (92.95%)
+  // = 721.98%, a real ~17.5% reduction on his single largest recurring damage block.
+  it('Mid-air Attack combo sums to the real 5-sub-move Stage 2/3 sequence (721.98%), not the old garbled 848.4%', () => {
+    const midair = BRANT_BLOCKS.find(b => b.id === 'brant.midair.stage-2-3-charged-flip');
+    const total = midair.damage.hits.reduce((s, h) => s + (h.atkPct || 0), 0);
+    expect(total).toBeCloseTo(721.98, 1);
   });
 
   it('S4 stays correctly unmodeled (no block) — pure utility per RESONANCE_CHAIN_DATA', () => {

@@ -47,19 +47,26 @@ export const BRANT_BLOCKS = [
     concertoEnergyGain: 20,
   },
   {
+    // Fixed 2026-09-08 (full re-audit): the previous 4-value hit list (332.5/93.0/169.0/253.9,
+    // summing to 848.4%) was a garbled slice of SKILL_MULTIPLIERS' own OLD garbled row — those numbers
+    // didn't actually correspond to "stages 2-5" at all (332.5 was really Stage 1's Charged Attack,
+    // 253.9 was really Stage 4's base, neither part of the real Stage-2/3 combo this block's own label
+    // claims to model). Re-derived directly from Data dump/Brant/Brant.md's raw per-move table against
+    // its explicit "Standard Rotation" text (see SKILL_MULTIPLIERS['Brant']'s own fix comment for the
+    // full derivation) — the real 5-sub-move sequence is Stage 2 base -> Stage 2 Charged Attack ->
+    // Stage 2 Flip -> Stage 3 base -> Stage 3 Flip, totaling 721.98%, a real ~17.5% reduction from the
+    // prior wrong value on his single largest recurring damage block (his main Bravo-filling combo).
     id: 'brant.midair.stage-2-3-charged-flip',
     source: SOURCE, kind: 'damage', section: 'BasicATK',
-    trigger: { type: 'cast', on: 'Mid-air:Stage 2-3 + Charged Attack + Flip' },
+    trigger: { type: 'cast', on: 'Mid-air:Charged Combo (Stage 2-3)' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Row 'Mid-air, Charged Combo' has 5 arrow-separated stages; this step starts from stage 2 (per
-    // its own label) through the end — stages 2-5.
     // Fixed 2026-09-02: had no damage.category at all — his kit text never gives Mid-air Attack a
     // "considered X DMG" override, so per the established Mid-air Attack convention (a Mid-air/Plunging
     // Attack inherits Basic or Heavy ATK DMG per the character's own kit, never its own type — already
     // applied to Ciaccona/Lupa/Cartethyia/Luuk Herssen/Qingxiao), and Brant is a Basic-ATK-focused sword
     // character with no Heavy Attack replacement tied to Mid-air, this resolves to basicDmg.
-    damage: { hits: parseSkillMultiplierHits('332.5% → 93.0% → 169.0% → 253.9%'), category: 'basicDmg' , basis: 'ATK' },
-    note: 'Stages 2-5 of the 5-stage Mid-air Charged Combo (starts from stage 2 per the step\'s own "Stage 2-3" label).',
+    damage: { hits: parseSkillMultiplierHits('169.8% + 197.2% + 93.0% + 169.0% + 93.0%'), category: 'basicDmg' , basis: 'ATK' },
+    note: 'Stage 2 base -> Stage 2 Charged Attack -> Stage 2 Flip -> Stage 3 base -> Stage 3 Flip (real 5-sub-move sequence; Interlude Applause from Intro always skips Stage 1 in the modeled rotation).',
   },
   {
     id: 'brant.forte.returned-from-ashes',
@@ -157,13 +164,26 @@ export const BRANT_BLOCKS = [
   // S4 correctly has NO block — per RESONANCE_CHAIN_DATA's own audit comment, its real effect
   // (Returned from Ashes shield strength +20% + team healing on cast) has zero DPS component.
   {
+    // Fixed 2026-09-08 (full re-audit): `trigger:{type:'passive'}` with a real `timing.duration:10`
+    // set is a dead combination — every resolver path applies a passive-trigger block unconditionally
+    // at multiplier 1, COMPLETELY IGNORING `timing.duration` (only a real 'cast'-triggered buff's
+    // window history via buildBlockWindows() is ever time-limited). This silently made the buff
+    // PERMANENTLY active for the whole encounter instead of a real 10s window following an actual
+    // Basic ATK DMG hit — the same overstatement bug class found on Baizhi's chain.s2/s6 (mirror image
+    // of the understatement "dead stacking" class found via Augusta's roster sweep). The prior note's
+    // reasoning ("no CHARACTER_ROTATIONS step uses a plain 'Basic ATK' cast... kept passive") missed
+    // that his real trigger condition is "Dealing Basic Attack DMG" — ANY basicDmg-CATEGORIZED hit, not
+    // literally a Basic-ATK-typed cast — and his Mid-air combo block (basicDmg-categorized per his own
+    // kit's category convention) already fires as a real step. Anchored to that cast; his whole
+    // rotation is only ~8.2s (Data dump/Brant/Brant.md's own Damage Profile), so this real 10s window
+    // reliably still covers the later Returned from Ashes cast too, without needing a second anchor.
     id: 'brant.chain.s5',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
+    trigger: { type: 'cast', on: 'Mid-air:Charged Combo (Stage 2-3)' },
     timing: { duration: 10 },
     target: { scope: 'self' },
     effects: [{ stat: 'basicDmg', value: 15, source: 'self-kit' }],
-    note: 'Real trigger: a Basic ATK DMG hit grants +15% Basic Attack DMG Bonus for 10s — no CHARACTER_ROTATIONS step uses a plain \'Basic ATK\' cast (his canonical rotation goes straight to Mid-air combat), so kept passive rather than fabricating a trigger anchor.',
+    note: 'Real trigger: a Basic ATK DMG hit grants +15% Basic Attack DMG Bonus for 10s — now a real cast-anchored window (see fix comment above) instead of a silently-permanent passive effect.',
   },
   {
     id: 'brant.chain.s6',

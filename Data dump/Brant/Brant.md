@@ -233,3 +233,49 @@ data only; no engine blocks wired since his real `CHARACTER_ROTATIONS` never use
 Attack or Dodge Counter (goes straight from Intro/Liberation into Mid-air combat).
 
 7 new/rewritten tests, full suite green (1322/1322).
+
+**Full re-audit (2026-09-08, explicitly requested — not assuming the pass above caught everything).**
+Re-read this dump line by line against `characters.js` and `brant.blocks.js`, including re-deriving
+his single biggest recurring damage block's numbers from scratch against the raw per-move table
+instead of trusting the previously-audited-looking SKILL_MULTIPLIERS row. Found 3 more real bugs:
+
+1. **Mid-air combo block was a garbled ~17.5% overstatement.** The SKILL_MULTIPLIERS['Brant'] "Charged
+   Combo" row (`122.9% → 332.5% → 93.0% → 169.0% → 253.9%`) was flagged in an even earlier (2026-08-31)
+   audit comment as representing the "Stage 1" grapple-swing branch, with an explicit TODO noting his
+   real modeled rotation actually uses the DIFFERENT "Stage 2" branch instead — but nobody ever closed
+   that TODO. The engine block (`brant.midair.stage-2-3-charged-flip`) and its own CHARACTER_ROTATIONS
+   step ("Mid-air:Stage 2-3 + Charged Attack + Flip") both claimed to model the Stage 2/3 sequence, yet
+   used the Stage 1-branch numbers anyway — a real mismatch between the branch that actually fires and
+   the branch whose numbers were used. Re-derived directly from this dump's own raw per-move table
+   against its explicit "Standard Rotation" text ("Mid-Air Atk P2 -> P2: Charged Attack -> P2: Flip ->
+   P3 -> P3: Flip -> Forte"): Stage 2 base (84.92%×2=169.84%) + Stage 2 Charged Attack (32.87%×6=
+   197.22%) + Stage 2 Flip (33.80%+59.15%=92.95%) + Stage 3 base (28.17%×6=169.02%) + Stage 3 Flip
+   (92.95%) = 721.98%, vs. the prior (wrong) total of 848.4% — a real ~17.5% overstatement on his
+   single largest recurring damage block (his main Bravo-filling combo, cast every rotation). Kept
+   Stage 1's own base value (122.86%, real but confirmed unused) as a separate reference-only row,
+   matching this table's own convention for the Heavy ATK/Dodge Counter rows just below it. Also
+   renamed the shared skill label (SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/the icon-lookup table all had
+   to agree) from "Stage 2-3 + Charged Attack + Flip" to "Charged Combo (Stage 2-3)" for clarity, and
+   fixed CHARACTER_ROTATIONS['Brant']'s own step note, which only mentioned ONE flip when the dump's
+   "Standard Rotation" text names two (P2:Flip and P3:Flip).
+2. **chain.s5 was dead passive+duration**, silently permanently active for the whole encounter instead
+   of the real 10s window following an actual Basic ATK DMG hit — the same overstatement bug class
+   found via Baizhi's own full re-audit and Augusta's roster sweep (a passive-trigger block's
+   `timing.duration` is inert in every resolver path). Re-anchored to the Mid-air combo cast (a real,
+   basicDmg-categorized hit that genuinely satisfies "Dealing Basic Attack DMG").
+3. **DPS tier table was `['T1','T1']`**, matching neither of this dump's own Review-section DPS Tier
+   figures (T1.5 ToA / T4 WW) — fixed to `['T1.5','T4']`, per the established "DPS Tier not Value/
+   Hybrid Tier" column convention (see the file's own Carlotta/Rover: Spectro fix comments).
+
+Everything else re-verified clean: CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, base stats, weaponAlts (the
+prior pass's own fix), bestEchoes/bestWeapon, dmgFocus (confirmed `['Basic ATK', 'Liberation']` is
+correct — `skillDmg` isn't gated by dmgFocus at all in `TYPE_FOCUS_MAP`, so 'Skill' was never needed
+there), and cross-character interactions (no other character's kit references Bravo/Aflame/Returned
+from Ashes). Minor: `CHARACTER_DATA['Brant'].desc` already matched this dump closely from a prior pass,
+no further correction needed there.
+
+phase3-parityGolden.test.js caught real, expected drift from the Mid-air combo fix (a real damage
+reduction) — refreshed the golden fixture; the pre-existing EXPECTED_DIVERGENCES band (1.05-1.20) still
+holds at the new, smaller absolute numbers (ratio ~1.134). Added positive-verification tests proving
+chain.s5 is now genuinely time-windowed (unaffected on his Intro hit, active by his later Returned from
+Ashes hit) and that the Mid-air combo now sums to the correct 721.98%. Full suite green (1794/1794).

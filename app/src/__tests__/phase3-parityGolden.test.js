@@ -158,6 +158,12 @@ const EXPECTED_DIVERGENCES = {
   // derates the legacy RAW number (3468 -> 3074); this test's own standalone engine call doesn't
   // apply that gate, so it stays at the un-derated value. Measured ratio ~1.128 (engine/legacy) —
   // real, expected, not a regression.
+  // Band re-measured 2026-09-08 (full re-audit): fixed a real ~17.5% overstatement on his Mid-air
+  // combo block (brant.midair.stage-2-3-charged-flip's own hit list was a garbled compilation that
+  // didn't match the real Stage 2/3 sequence his rotation actually fires — see SKILL_MULTIPLIERS
+  // ['Brant']'s own fix comment) and re-anchored chain.s5's dead passive+duration window to a real
+  // cast. Both numbers dropped together (2950/3343.7, ratio ~1.134) — still inside the existing band,
+  // same underlying cooldown-derating divergence cause as before, just smaller absolute numbers.
   Brant: { min: 1.05, max: 1.20 },
   // Added 2026-09-06 (Buling completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi/Brant
   // above. Both Thunder Talisman (Skill, 15s CD) and Flashing Thunder Spell: Harmony (Liberation,

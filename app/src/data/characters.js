@@ -2163,7 +2163,11 @@ const CHARACTER_DATA = {
   // column per the established "DPS Tier not Value Tier" convention, e.g. Rover: Aero/Iuno's fixes).
   ['Carlotta',      'T1',   'T4'],
   ['Zani',          'T1',   'T1.5'],
-  ['Brant',         'T1',   'T1'],
+  // tier corrected 2026-09-08 (full re-audit): was ['T1','T1'] — Data dump/Brant/Brant.md's own Review
+  // section states DPS Tier T1.5 (ToA) / T4 (WW) explicitly (separate Hybrid Tier T1.5/T2 and Value
+  // Tier T3/T4 figures also given, not stored in this column per the established "DPS Tier not Value/
+  // Hybrid Tier" convention — see Carlotta/Rover: Spectro's own fix comments above).
+  ['Brant',         'T1.5', 'T4'],
   // tier corrected 2026-09-03 against a fresh the source dump: was ['T0.5','T1.5'] — the dump's own
   // Ratings section clearly lists T1.5 (ToA) / T2 (WW), Value Tier List separately shows T1.5/T3.
   ['Rover: Spectro', 'T1.5', 'T2'],
@@ -4046,12 +4050,35 @@ const SKILL_MULTIPLIERS = {
   //   which grapple-swing stage is actually chained in a real rotation is a player-input branch this
   //   flat schema can't express — TODO: needs Phase 2 schema (input-dependent combo branch) to model
   //   the Stage-2-charged alternative path.
+  // TODO resolved 2026-09-08 (full re-audit): this Stage-1-branch row was never actually the ambiguous
+  // "which branch" case above — his real CHARACTER_ROTATIONS step ('Mid-air:Charged Combo (Stage 2-3)')
+  // and its own note ("chains Mid-air Attack Stage 2 into a Charged Attack...") are explicit that the
+  // STAGE 2 branch is what his modeled rotation actually uses (Interlude Applause from Intro always
+  // skips Stage 1 first) — but the engine block was built using THESE Stage-1-branch numbers anyway, a
+  // real mismatch between the branch actually fired and the branch whose numbers were used. Replaced
+  // this row below with the correct Stage-2-branch values (Stage 2 base -> Charged Attack -> Flip ->
+  // Stage 3 base -> Flip); Stage 1's own base value kept as a separate reference-only row since it's
+  // real, sourced, and simply unused in the modeled rotation.
   // - Heavy ATK, Skill, Liberation, Forte (Returned from Ashes — confirms the prior 665%→1322.09% fix
   //   still holds), Intro all matched source exactly within rounding, no change.
   // - Outro text amended to include its exact swap-forfeit condition (already in CHARACTER_ROTATIONS).
   'Brant': [
     ['Basic ATK', 'Stage 1-4', '50.5% → 101.4% → 132.3% → 140.1%'],
-    ['Mid-air', 'Charged Combo', '122.9% → 332.5% → 93.0% → 169.0% → 253.9%'],
+    // Mid-air row fully corrected 2026-09-08 (full re-audit): the prior '122.9% → 332.5% → 93.0% →
+    // 169.0% → 253.9%' was a garbled compilation — its own values didn't correspond to ANY real,
+    // consecutive combo path, not even the sequence its own name/the engine block's trigger.on label
+    // ("Stage 2-3 + Charged Attack + Flip") claimed to represent. Re-derived directly from Data dump/
+    // Brant/Brant.md's own raw per-move table against its explicit "Standard Rotation" text ("Mid-Air
+    // Atk P2 -> P2: Charged Attack -> P2: Flip -> P3 -> P3: Flip -> Forte"), which names 5 real,
+    // individually-sourced sub-moves: Stage 2 base (84.92%+84.92%=169.84%), Stage 2 Charged Attack
+    // (32.87%×6=197.22%), Stage 2 Flip (33.80%+59.15%=92.95%), Stage 3 base (28.17%×6=169.02%), Stage 3
+    // Flip (33.80%+59.15%=92.95%) — total 721.98%, vs. the prior (wrong) block total of 848.4%, a real
+    // ~17.5% overstatement on his single largest recurring damage block (his main Bravo-filling combo).
+    // Stage 1 (122.86%, real but confirmed unused — Interlude Applause from Intro always skips it in
+    // the modeled rotation) kept as its own separate reference-only row below, matching this table's
+    // own established convention for real-but-unused moves (Heavy ATK/Dodge Counter rows just below).
+    ['Mid-air', 'Charged Combo (Stage 2-3)', '169.8% + 197.2% + 93.0% + 169.0% + 93.0%', 'Stage 2 base -> Stage 2 Charged Attack -> Stage 2 Flip -> Stage 3 base -> Stage 3 Flip — the real 5-sub-move sequence CHARACTER_ROTATIONS["Brant"]\'s "Stage 2-3 + Charged Attack + Flip" step actually fires (Interlude Applause from Intro skips Stage 1).'],
+    ['Mid-air', 'Attack Stage 1', '122.9%', 'Confirmed unused in his real rotation — Interlude Applause from Intro always starts his Mid-air combo at Stage 2 instead.'],
     // Added 2026-09-02, sourced from a real browser snapshot's own Basic Attack Multipliers
     // table — previously missing entirely. Confirmed unused in his real CHARACTER_ROTATIONS (which
     // goes straight from Intro/Liberation into Mid-air combat, never a grounded Heavy Attack/Plunging
@@ -5250,7 +5277,12 @@ const CHARACTER_ROTATIONS = {
   'Brant': [
     { type: 'Intro', skill: 'Applaud for Me!', note: 'Swap into him — fires automatically. Fills a quarter of his Forte gauge ("Bravo") and grants Interlude Applause: his next Mid-air Attack starts at Stage 2 instead of Stage 1. Interlude Applause is FORFEITED (removed with no effect) if he lands early or is swapped out before that next Mid-air Attack.' },
     { type: 'Liberation', skill: 'To the Horizon', note: 'Cast Liberation right after Intro — heals the team, instantly puts Brant airborne (skipping the slow jump-up), and enters Aflame for 12s: Bravo gain from Basic ATK and Resonance Skill hits is doubled (Intro Skill\'s Bravo gain is NOT boosted), and his passive ATK-from-ER conversion is upgraded from Theatrical Moment to the stronger "My" Moment for the duration.' },
-    { type: 'Mid-air', skill: 'Stage 2-3 + Charged Attack + Flip', note: 'While airborne, HOLD Basic Attack and keep holding — he automatically chains Mid-air Attack Stage 2 into a Charged Attack, backflips, then continues into Stage 3. This is his main way to fill the rest of Bravo; just keep holding until the gauge is full.' },
+    // note corrected 2026-09-08 (full re-audit): only mentioned ONE flip (after the Stage 2 Charged
+    // Attack), but the dump's own explicit "Standard Rotation" text names TWO — "...P2: Flip -> P3 ->
+    // P3: Flip -> Forte" — a second flip after Stage 3 too, before the Forte finisher. Also see
+    // SKILL_MULTIPLIERS['Brant']'s own fix comment: this step's real 5-sub-move total was
+    // miscalculated (848.4% instead of the correct 721.98%) partly because of this same missing step.
+    { type: 'Mid-air', skill: 'Charged Combo (Stage 2-3)', note: 'While airborne, HOLD Basic Attack and keep holding — he automatically chains Mid-air Attack Stage 2 into a Charged Attack, backflips, continues into Stage 3, then backflips again. This is his main way to fill the rest of Bravo; just keep holding until the gauge is full.' },
     { type: 'Forte', skill: 'Returned from Ashes', note: 'Once Bravo hits 100, his Skill button becomes this automatically — press Skill to consume all 100 Bravo for a massive hit (counted as Basic ATK DMG) that also grants the team a shield lasting 30s. If cast while Aflame is still active, Aflame ends once this cast finishes.' },
     { type: 'Outro', skill: 'The Course is Set!', duration: 14, note: 'Swap out right after Returned from Ashes to trigger this automatically. Grants the incoming Resonator +20% Fusion DMG and +25% Resonance Skill DMG for 14s, or until that Resonator is swapped out, whichever comes first.' },
   ],
@@ -7927,7 +7959,11 @@ const SKILL_ICONS = {
     'Stage 1-4': './characters/_shared/x86mmjbD-skill-sword.webp', // SKILL_MULTIPLIERS' combined Basic ATK combo row, same generic weapon icon — was NULL, which also cascaded into the Mid-air/Heavy-ATK aux-move fallback (both derive from this row)
     'Standard': './characters/_shared/x86mmjbD-skill-sword.webp',
     'Rhapsodic Riff': './characters/_shared/x86mmjbD-skill-sword.webp', // Basic ATK-chained Heavy ATK, same generic weapon icon
-    'Stage 2-3 + Charged Attack + Flip': './characters/_shared/x86mmjbD-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same generic weapon icon
+    // key renamed 2026-09-08 (full re-audit) from 'Stage 2-3 + Charged Attack + Flip' to
+    // 'Charged Combo (Stage 2-3)' to match CHARACTER_ROTATIONS['Brant']/SKILL_MULTIPLIERS['Brant']'s
+    // own renamed skill label (see SKILL_MULTIPLIERS['Brant']'s own fix comment) — an unrenamed key
+    // here would have silently missed this icon lookup.
+    'Charged Combo (Stage 2-3)': './characters/_shared/x86mmjbD-skill-sword.webp', // rotation-step phrasing for the Basic ATK combo, same generic weapon icon
     'Anchors Aweigh': './characters/brant/Kp8DPNdC-skill-anchorsaweigh.webp',
     'Ocean Odyssey': './characters/brant/VWJhTfT2-skill-oceanodyssey.webp',
     'Returned from Ashes': './characters/brant/VWJhTfT2-skill-oceanodyssey.webp', // Forte Circuit's own upgraded Skill, same icon
