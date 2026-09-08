@@ -19,7 +19,7 @@ describe('triggerEngine parity — Cartethyia', () => {
   it('S1 models the real per-stack mechanic (25 x4 stacks = 100 max)', () => {
     const rc = RESONANCE_CHAIN_DATA['Cartethyia'];
     const s1 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.chain.s1');
-    expect(s1.effects[0].value * s1.effects[0].maxStacks).toBe(rc.s1.critDmg);
+    expect(s1.effects[0].value).toBe(rc.s1.critDmg);
   });
 
   it('S2/S3/S4/S6 match RESONANCE_CHAIN_DATA exactly', () => {

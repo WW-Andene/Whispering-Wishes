@@ -311,13 +311,18 @@ export const CARTETHYIA_BLOCKS = [
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
   //    each node's real mechanic; S5 correctly has NO block — purely defensive, zero DPS component) ──
   {
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (only a real
+    // duration-based buff window ever reads it — see resolveHitComposedDps.js's `passiveBlocks` loop,
+    // always `applyEffects(block, 1, ...)`). Was silently delivering only 25% (1 stack) instead of the
+    // 100% (4-stack) total this note already documented. Root-caused by writing that total directly;
+    // the `timing.duration: 15` was likewise inert for a passive-trigger block, so dropped.
     id: 'cartethyia.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
-    timing: { duration: 15 },
-    target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 25, stacking: 'stacking', maxStacks: 4, source: 'self-kit' }],
-    note: "When Fleurdelys's Conviction hits 30/60/90/120, Crit DMG +25% for 15s, up to 4 stacks (100% at full stack, duration doesn't reset on a new stack) — modeled as per-stack stacking, matching the real mechanic rather than a flat 100%. Also grants a separate, unmodeled Zeal proc (10s window on an Erosion-inflicted kill that maxes Erosion stacks on the next kill's targets), not modeled.",
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'critDmg', value: 100, source: 'self-kit' }],
+    note: "When Fleurdelys's Conviction hits 30/60/90/120, Crit DMG +25% for 15s, up to 4 stacks (100% at full stack, duration doesn't reset on a new stack) — now modeled flat at the 4-stack total since passive-trigger stacking metadata was dead (see fix comment above). Also grants a separate, unmodeled Zeal proc (10s window on an Erosion-inflicted kill that maxes Erosion stacks on the next kill's targets), not modeled.",
   },
   {
     id: 'cartethyia.chain.s2',

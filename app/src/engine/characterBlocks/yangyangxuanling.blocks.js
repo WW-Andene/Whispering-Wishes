@@ -124,13 +124,19 @@ export const YANGYANG_XUANLING_BLOCKS = [
     note: "Havoc Bane appliers only, via As the Wind Wills — the 'only appliers benefit' gating isn't modeled (applied team-wide).",
   },
   {
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (only a real
+    // duration-based buff window — a `trigger.type` other than 'passive' with `timing.duration` set —
+    // ever reads it; see resolveHitComposedDps.js's `passiveBlocks` loop, always `applyEffects(block,
+    // 1, ...)`). Was silently delivering only 25% (1 stack) instead of the 150% (6 stacks) this note
+    // already documented as the intended modeled value. Root-caused by writing the full 6-stack total
+    // directly; the `timing.duration: 4` was likewise inert for a passive-trigger block, so dropped.
     id: 'yangyangxuanling.selfbuff.feathered-oath',
     source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
-    timing: { duration: 4 },
-    target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 25, stacking: 'stacking', maxStacks: 6, source: 'self-kit' }],
-    note: 'Feathered Oath, up to 6 stacks (150% max) — modeled as per-stack 25% x6 cap, matching the real stacking mechanic rather than a flat 150%.',
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'critDmg', value: 150, source: 'self-kit' }],
+    note: 'Feathered Oath, up to 6 stacks (150% max) — now modeled flat since passive-trigger stacking metadata (and its duration) was dead (see fix comment above).',
   },
   {
     id: 'yangyangxuanling.selfbuff.bated-breath',

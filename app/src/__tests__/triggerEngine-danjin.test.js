@@ -10,11 +10,14 @@ describe('triggerEngine parity — Danjin', () => {
     expectValidBlockFile(DANJIN_BLOCKS, 'Danjin');
   });
 
-  it('S1 models the real per-stack mechanic (5 x6 stacks = 30 max), not just the flat max-stacks total', () => {
+  // Fixed 2026-09-08: `stacking`/`maxStacks` on a `trigger.type: 'passive'` block is dead metadata in
+  // every resolver path (only a real duration-based buff window ever reads it), so this block was
+  // silently delivering only 5% (1 stack) instead of the 30% (6-stack) cap. Now modeled as a flat value
+  // at the confirmed cap instead of (inert) per-stack metadata — see danjin.blocks.js's own fix comment.
+  it('S1 models the real 6-stack cap total (5 x6 = 30 max), not the old dead per-stack metadata', () => {
     const rc = RESONANCE_CHAIN_DATA['Danjin'];
     const s1 = DANJIN_BLOCKS.find(b => b.id === 'danjin.chain.s1');
-    expect(s1.effects[0].value * s1.effects[0].maxStacks).toBe(rc.s1.atkPct);
-    expect(s1.effects[0].stacking).toBe('stacking');
+    expect(s1.effects[0].value).toBe(rc.s1.atkPct);
   });
 
   it('S2/S3/S4/S5/S6 match RESONANCE_CHAIN_DATA exactly', () => {

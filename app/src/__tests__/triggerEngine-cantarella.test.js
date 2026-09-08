@@ -58,7 +58,7 @@ describe('triggerEngine parity — Cantarella', () => {
     expect(outro.effects.find(e => e.stat === 'skillDmg').value).toBe(legacy.outroBuffs[1].value);
     expect(outro.timing.duration).toBe(legacy.outroBuffs[0].duration);
     const self = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.selfbuff.inherent-skill-poison');
-    expect(self.effects[0].value * self.effects[0].maxStacks).toBe(legacy.selfBuffs[0].value);
+    expect(self.effects[0].value).toBe(legacy.selfBuffs[0].value);
     // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): now actually clamps to the buffed Resonator's
     // own swap-out instant when shorter than the nominal 14s — see forfeitOnRecipientSwapOut.test.js
     // for the mechanism's own proof.

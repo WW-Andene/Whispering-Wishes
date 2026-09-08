@@ -194,13 +194,22 @@ export const DANJIN_BLOCKS = [
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-18 audit comment for
   //    each node's real mechanic) ──
   {
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (only a real
+    // duration-based buff window ever reads it, via buildBlockWindows() — see resolveHitComposedDps.js's
+    // `passiveBlocks` loop, always `applyEffects(block, 1, ...)`). Brant's own S1 (cited below as "same
+    // convention") is NOT actually the same shape — it's `trigger:{type:'cast', on:'Intro:...'}` with a
+    // real duration, which correctly goes through the live stacking-window path; this block's `passive`
+    // trigger meant its stacking/maxStacks never applied at all, delivering only 5% (1 stack) instead of
+    // the 30% (6 stacks) cap. Root-caused by writing the cap directly — no sourced steady-state average
+    // exists (stacks both gain on hits dealt and lose on hits taken), so the max is used as the same
+    // kind of ceiling-approximation this codebase already accepts elsewhere absent better data.
     id: 'danjin.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
-    timing: { duration: 99 }, // sentinel: real mechanic loses 1 stack per hit TAKEN, no natural-decay duration sourced
-    target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 5, stacking: 'stacking', maxStacks: 6, source: 'self-kit' }],
-    note: 'ATK +5% per stack on Incinerating Will hits, stacking up to 6 times (max 30%), loses 1 stack per hit Danjin takes — modeled as per-stack 5% x6 cap (matching the real stacking mechanic) rather than a flat 30%, same convention as Brant\'s S1. The stack-loss-on-hit-taken mechanic is not modeled (no defensive-proc trigger type in this schema).',
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 30, source: 'self-kit' }],
+    note: 'ATK +5% per stack on Incinerating Will hits, stacking up to 6 times (max 30%), loses 1 stack per hit Danjin takes — now modeled flat at the 30% cap since passive-trigger stacking metadata was dead (see fix comment above). The stack-loss-on-hit-taken mechanic is not modeled (no defensive-proc trigger type in this schema), so this is a ceiling approximation, not a confirmed steady-state average.',
   },
   {
     id: 'danjin.chain.s2',

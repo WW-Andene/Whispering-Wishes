@@ -140,12 +140,22 @@ export const GALBRENA_BLOCKS = [
     note: "Burning Drive: +20% ATK on certain casts — CHAR_BUFF_TABLE's own condition text doesn't name which specific casts trigger it, kept passive rather than guessing an anchor.",
   },
   {
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (only a real
+    // duration-based buff window ever reads it — see resolveHitComposedDps.js's `passiveBlocks` loop,
+    // always `applyEffects(block, 1, ...)`). Was silently delivering only 1.5% (1 stack) instead of the
+    // 60% (40-stack) cap CHAR_BUFF_TABLE['Galbrena'].debuffs[0] already stores for this exact mechanic —
+    // kept at that same cap value for consistency with the established table (and with every other
+    // block fixed in this same sweep, all of which use their own documented stacking cap), rather than
+    // substituting the source's separately-noted realistic-average figure (~36-48%, "rarely maxed") in
+    // its place — that estimate is real context for interpreting this number, not a different modeled
+    // value the table itself ever adopted.
     id: 'galbrena.debuff.afterflame',
     source: SOURCE, kind: 'debuff', section: 'Buff',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'all-enemies' },
-    effects: [{ stat: 'amplify', value: 1.5, stacking: 'stacking', maxStacks: 40 }],
-    note: 'Afterflame: DMG Taken +1.5% per stack (up to 40 stacks, 60% cap) while Galbrena is in Demon Hypostasis, cleared when she exits — gained from ANY team Resonator\'s Echo Skill cast (capped once per Echo name), not her own casts, so no CHARACTER_ROTATIONS step of hers anchors the stacking trigger; modeled passive as an approximation. Realistically ~36% without Phrolova, ~48% with her, per the source note (rarely maxed at 60%).',
+    effects: [{ stat: 'amplify', value: 60, source: 'self-kit' }],
+    note: 'Afterflame: DMG Taken +1.5% per stack (up to 40 stacks, 60% cap) while Galbrena is in Demon Hypostasis, cleared when she exits — gained from ANY team Resonator\'s Echo Skill cast (capped once per Echo name), not her own casts, so no CHARACTER_ROTATIONS step of hers anchors the stacking trigger; now modeled flat at the 60% cap since passive-trigger stacking metadata was dead (see fix comment above). Realistically ~36% without Phrolova, ~48% with her, per the source note (rarely maxed at 60%) — a known overstatement caveat, not corrected here for consistency with the table\'s own stored cap value.',
   },
   // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit DMG+16%, ATK%+12%" — a permanent,
   // always-on passive stat bonus, previously had no block anywhere in this file.
@@ -178,12 +188,18 @@ export const GALBRENA_BLOCKS = [
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for
   //    each node's real mechanic) ──
   {
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (see the fix comment
+    // on galbrena.debuff.afterflame above for the full explanation — same underlying engine limitation
+    // and same Afterflame stack source, and same "kept at the table's own cap value for consistency"
+    // reasoning). Was silently delivering only 2% (1 stack) instead of the 80% (40-stack) cap
+    // RESONANCE_CHAIN_DATA['Galbrena'].s1.critDmg already stores.
     id: 'galbrena.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 2, stacking: 'stacking', maxStacks: 40, source: 'self-kit' }],
-    note: '+2% Crit DMG per Afterflame stack, up to 80% at 40 stacks — same Afterflame stacking mechanic as galbrena.debuff.afterflame above (gained from any teammate\'s Echo Skill cast, not modeled per-cast, kept passive as an approximation).',
+    effects: [{ stat: 'critDmg', value: 80, source: 'self-kit' }],
+    note: '+2% Crit DMG per Afterflame stack, up to 80% at 40 stacks — same Afterflame stacking mechanic as galbrena.debuff.afterflame above (gained from any teammate\'s Echo Skill cast, not anchored to a real cast step). Now modeled flat at the 80% cap since passive-trigger stacking metadata was dead — see fix comment above and afterflame\'s own note for the same realistic-average caveat (~36-48% real Afterflame stack range, not corrected here for consistency with the table\'s own stored cap).',
   },
   {
     id: 'galbrena.chain.s2',

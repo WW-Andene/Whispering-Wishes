@@ -29,7 +29,7 @@ describe('triggerEngine parity — Lupa', () => {
   it('S2/S3 model the real per-stack/scoped mechanics, matching the max/scoped RESONANCE_CHAIN_DATA values', () => {
     const rc = RESONANCE_CHAIN_DATA['Lupa'];
     const s2 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s2');
-    expect(s2.effects[0].value * s2.effects[0].maxStacks).toBe(rc.s2.elemDmg);
+    expect(s2.effects[0].value).toBe(rc.s2.elemDmg);
     expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
   });
 

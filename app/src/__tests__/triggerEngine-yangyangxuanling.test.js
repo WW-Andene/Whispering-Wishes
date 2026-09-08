@@ -51,7 +51,7 @@ describe('triggerEngine parity — Yangyang: Xuanling', () => {
     const feathered = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.selfbuff.feathered-oath');
     const bated = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.selfbuff.bated-breath');
     const unbroken = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.selfbuff.unbroken-vow');
-    expect(feathered.effects[0].value * feathered.effects[0].maxStacks).toBe(legacy.selfBuffs[0].value);
+    expect(feathered.effects[0].value).toBe(legacy.selfBuffs[0].value);
     expect(bated.effects[0].value).toBe(legacy.selfBuffs[1].value);
     expect(unbroken.effects[0].value).toBe(legacy.selfBuffs[2].value);
   });

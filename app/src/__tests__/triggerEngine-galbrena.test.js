@@ -13,7 +13,7 @@ describe('triggerEngine parity — Galbrena', () => {
   it('S1 models the real per-stack mechanic (2 x40 stacks = 80 max)', () => {
     const rc = RESONANCE_CHAIN_DATA['Galbrena'];
     const s1 = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.chain.s1');
-    expect(s1.effects[0].value * s1.effects[0].maxStacks).toBe(rc.s1.critDmg);
+    expect(s1.effects[0].value).toBe(rc.s1.critDmg);
   });
 
   it('S2-S6 match RESONANCE_CHAIN_DATA exactly', () => {
@@ -75,7 +75,7 @@ describe('triggerEngine parity — Galbrena', () => {
   it('Afterflame debuff matches CHAR_BUFF_TABLE with the real per-stack mechanic (1.5 x40 = 60 max)', () => {
     const legacy = CHAR_BUFF_TABLE['Galbrena'];
     const af = GALBRENA_BLOCKS.find(b => b.id === 'galbrena.debuff.afterflame');
-    expect(af.effects[0].value * af.effects[0].maxStacks).toBe(legacy.debuffs[0].value);
+    expect(af.effects[0].value).toBe(legacy.debuffs[0].value);
     expect(af.kind).toBe('debuff');
   });
 

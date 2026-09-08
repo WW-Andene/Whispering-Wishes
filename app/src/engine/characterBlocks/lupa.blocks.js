@@ -157,13 +157,18 @@ export const LUPA_BLOCKS = [
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'elemDmg', value: 20, stacking: 'stacking', maxStacks: 2, source: 'self-kit' }],
+    effects: [{ stat: 'elemDmg', value: 40, source: 'self-kit' }],
     // Fixed 2026-09-04: target scope was 'self' but the dump's own text is explicit — "grants the WHOLE
     // TEAM +20% Fusion DMG Bonus" — matching this file's own lupa.libbuff.pack-hunt (Pack Hunt is
     // likewise dump-confirmed whole-team and already correctly scoped that way). A self-only scope
     // silently dropped this buff for every teammate in any team-wide calc while Lupa herself saw no
     // functional difference (self is already inside whole-team), which is exactly how this stayed hidden.
-    note: 'Fusion DMG Bonus +20%/stack, stacking up to 2 stacks (40% max, corrected from allDmg to elemDmg per the re-audit — Fusion DMG Bonus is element-specific, not all-element) — modeled as per-stack stacking rather than a flat 40%. Applies to the whole team per the dump\'s own wording.',
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (only a real
+    // duration-based buff window ever reads it — see resolveHitComposedDps.js's `passiveBlocks` loop,
+    // always `applyEffects(block, 1, ...)`). Was silently delivering only 20% (1 stack), team-wide,
+    // instead of the 40% (2-stack) total already documented below. Root-caused by writing that total.
+    note: 'Fusion DMG Bonus +20%/stack, stacking up to 2 stacks (40% max, corrected from allDmg to elemDmg per the re-audit — Fusion DMG Bonus is element-specific, not all-element) — now modeled flat at the 2-stack total since passive-trigger stacking metadata was dead (see fix comment above). Applies to the whole team per the dump\'s own wording.',
   },
   {
     id: 'lupa.chain.s3',

@@ -239,7 +239,14 @@ export const LUUK_HERSSEN_BLOCKS = [
     // its target block (the Liberation cast) is now correctly category:'basicDmg', so this must scope
     // to 'basicDmg' too (with scopedToBlockId, matching Lucy's chain.s3 fix pattern) or it's a silent
     // no-op against every hit in the rotation.
-    effects: [{ stat: 'basicDmg', value: 40, stacking: 'stacking', maxStacks: 3, scopedToBlockId: "luukherssen.liberation.rewritten-in-winters-margins", source: 'self-kit' }],
-    note: 'Endnotes stacking grants Liberation DMG +40%/stack up to +120% (3 stacks) — modeled as per-stack 40% x3 cap, matching the real stacking mechanic (Endnotes stacks are gained on each Aureole of Execution cast above, consumed/read at Liberation cast time) rather than a flat 120%.',
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (see
+    // resolveHitComposedDps.js's `passiveBlocks` loop — always `applyEffects(block, 1, ...)`, never
+    // reading stackingMode/maxStacks, which only a real duration-based window ever does). Was silently
+    // delivering only 40% (1 stack) instead of the 120% (3 stacks, banked by the time Liberation is cast
+    // per this note's own "consumed/read at Liberation cast time" sequencing) already documented as the
+    // intended value. Root-caused by writing the full 3-stack total directly.
+    effects: [{ stat: 'basicDmg', value: 120, scopedToBlockId: "luukherssen.liberation.rewritten-in-winters-margins", source: 'self-kit' }],
+    note: 'Endnotes stacking grants Liberation DMG +40%/stack up to +120% (3 stacks, now modeled flat since passive-trigger stacking metadata was dead — see fix comment above; Endnotes stacks are gained on each Aureole of Execution cast above and consumed/read at Liberation cast time, reliably at 3 stacks by then in the modeled rotation).',
   },
 ];

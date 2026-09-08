@@ -144,13 +144,18 @@ export const PHROLOVA_BLOCKS = [
     note: 'Ends immediately if the incoming Resonator is swapped out, not modeled. Grants Hecate 2 bonus off-field attacks if cast during Maestro, not modeled (no DPS component representable here).',
   },
   {
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (only a real
+    // duration-based buff window ever reads it — see resolveHitComposedDps.js's `passiveBlocks` loop,
+    // always `applyEffects(block, 1, ...)`). Was silently delivering only 2.5% (1 stack) instead of the
+    // 60% (24-stack) cap this note already documented as the intended base-cap value. Root-caused by
+    // writing that cap directly; the `timing.duration: 99` sentinel was likewise inert here, so dropped.
     id: 'phrolova.selfbuff.aftersound',
     source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
-    timing: { duration: 99 }, // sentinel: stacking condition, no natural decay sourced
-    target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 2.5, stacking: 'stacking', maxStacks: 24, source: 'self-kit' }],
-    note: 'Aftersound: +2.5% Crit DMG per stack up to 24 stacks (60%) — modeled as per-stack stacking. Beyond 24 stacks it instead grants +1%/stack up to a 100% total cap, not modeled (documented, base 60% cap used).',
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'critDmg', value: 60, source: 'self-kit' }],
+    note: 'Aftersound: +2.5% Crit DMG per stack up to 24 stacks (60%) — now modeled flat since passive-trigger stacking metadata was dead (see fix comment above). Beyond 24 stacks it instead grants +1%/stack up to a 100% total cap, not modeled (documented, base 60% cap used).',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's

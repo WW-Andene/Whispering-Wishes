@@ -252,13 +252,20 @@ export const CANTARELLA_BLOCKS = [
     note: 'Forfeited early if the buffed Resonator is swapped out before 14s expires.',
   },
   {
+    // Fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks` on a
+    // `trigger.type: 'passive'` block is dead metadata in every resolver path (resolveHitComposedDps.js's/
+    // resolveHitComposedTeamDps.js's `passiveBlocks` loop and resolveSimulatedRotation.js's/
+    // resolveSimulatedTeamRotation.js's own passive branch all call `applyEffects(block, 1, ...)`
+    // unconditionally — only a real duration-based buff block's window history via buildBlockWindows()
+    // ever reads `stackingMode`/`maxStacks`). This was silently delivering only 6% (1 "stack") instead
+    // of the 12% (2 stacks) this block's own note already documented as the intended modeled value.
+    // Root-caused by writing the already-stated 2-stack total directly.
     id: 'cantarella.selfbuff.inherent-skill-poison',
     source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'passive' },
-    timing: { duration: 10 },
-    target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 6, stacking: 'stacking', maxStacks: 2, source: 'self-kit' }],
-    note: 'Inherent Skill Poison: +6% Havoc DMG Bonus per Echo Skill cast, stacks up to 2x (12% cap) — modeled as per-stack 6% x2, matching the real stacking mechanic rather than a flat 12%. No Echo Skill cast step exists in CHARACTER_ROTATIONS to anchor the trigger precisely, kept passive per the source table\'s own condition text.',
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 12, source: 'self-kit' }],
+    note: 'Inherent Skill Poison: +6% Havoc DMG Bonus per Echo Skill cast, stacks up to 2x (12% cap, now modeled flat since passive-trigger stacking metadata was dead — see fix comment above). No Echo Skill cast step exists in CHARACTER_ROTATIONS to anchor a real cast-based window instead.',
   },
   // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
   // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere

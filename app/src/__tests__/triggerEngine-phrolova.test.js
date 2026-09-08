@@ -42,7 +42,7 @@ describe('triggerEngine parity — Phrolova', () => {
     expect(outro.effects.find(e => e.stat === 'elemDmg').value).toBe(legacy.outroBuffs[0].value);
     expect(outro.effects.find(e => e.stat === 'heavyDmg').value).toBe(legacy.outroBuffs[1].value);
     const self = PHROLOVA_BLOCKS.find(b => b.id === 'phrolova.selfbuff.aftersound');
-    expect(self.effects[0].value * self.effects[0].maxStacks).toBe(legacy.selfBuffs[0].value);
+    expect(self.effects[0].value).toBe(legacy.selfBuffs[0].value);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {

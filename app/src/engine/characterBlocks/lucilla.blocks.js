@@ -323,12 +323,18 @@ export const LUCILLA_BLOCKS = [
     note: "Letting It Go's own DMG Multiplier +100% (recategorized from libDmg to {basicDmg, echoDmg} per the re-audit — its own move text makes damage type mode-dependent, never Liberation-type despite being part of the Liberation combo). Each key scoped to its own mode's block (2026-09-07 mode-rivalry fix: previously both keys pointed at the same Chafe-mode block id, which meant the echoDmg key scoped to a basicDmg-category block and could never actually match any hit — a real dead-effect bug, not just an over-crediting one). Kept passive so it applies whenever the matching block fires, without leaking to the rest of the kit.",
   },
   {
+    // value fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks`
+    // on a `trigger.type: 'passive'` block is dead metadata in every resolver path (only a real
+    // duration-based buff window ever reads it — see resolveHitComposedDps.js's `passiveBlocks` loop,
+    // which always calls `applyEffects(block, 1, ...)`). Was silently delivering only 10% (1 stack)
+    // instead of the "confirmed exact" 30% (3 stacks) this note already documented. Root-caused by
+    // writing the confirmed 3-stack total directly.
     id: 'lucilla.chain.s4',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 10, stacking: 'stacking', maxStacks: 3, source: 'self-kit' }],
-    note: 'ATK +10%/stack up to 3 stacks (+30% max, confirmed exact) — modeled as per-stack 10% x3 cap, matching the real stacking mechanic.',
+    effects: [{ stat: 'atkPct', value: 30, source: 'self-kit' }],
+    note: 'ATK +10%/stack up to 3 stacks (+30% max, confirmed exact) — now modeled flat since passive-trigger stacking metadata was dead (see fix comment above).',
   },
   {
     id: 'lucilla.chain.s5',

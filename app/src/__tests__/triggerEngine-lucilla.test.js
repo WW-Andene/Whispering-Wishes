@@ -17,7 +17,7 @@ describe('triggerEngine parity — Lucilla', () => {
     expect(LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s1').effects[0].value).toBe(rc.s1.critRate);
     expect(LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s2').effects[0].value).toBe(rc.s2.echoDmg);
     const s4 = LUCILLA_BLOCKS.find(b => b.id === 'lucilla.chain.s4');
-    expect(s4.effects[0].value * s4.effects[0].maxStacks).toBe(rc.s4.atkPct);
+    expect(s4.effects[0].value).toBe(rc.s4.atkPct);
   });
 
   it('S3/S5/S6 carry both real dual-mode categories, matching RESONANCE_CHAIN_DATA exactly', () => {

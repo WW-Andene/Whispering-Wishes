@@ -60,7 +60,7 @@
     "avgCrit": 1.1586,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 998
+    "score": 1033
   },
   "Carlotta": {
     "effAtk": 1194,
@@ -239,10 +239,10 @@
   },
   "Phrolova": {
     "effAtk": 1148,
-    "avgCrit": 1.2588249999999999,
+    "avgCrit": 1.5423,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1363
+    "score": 1670
   },
   "Qingxiao": {
     "effAtk": 1079,
@@ -358,10 +358,10 @@
   },
   "Yangyang: Xuanling": {
     "effAtk": 1265,
-    "avgCrit": 1.513168181818182,
+    "avgCrit": 2.129418181818182,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 1788
+    "score": 2516
   },
   "Yinlin": {
     "effAtk": 1140,

@@ -22,6 +22,21 @@
  * NONE of the divergences below are treated as bugs to fix here — they are pre-existing, already
  * present before this Stage 2 pass touched anything (confirmed: the golden snapshot was captured before
  * any Stage 3 deletion, so these are Phase A's open items, not something this refactor introduced).
+ *
+ * Golden fixtures refreshed 2026-09-08 (Cantarella, Galbrena, Phrolova, Yangyang: Xuanling) after a
+ * roster-wide bug fix: `stacking`/`maxStacks` on a `trigger.type: 'passive'` character block is dead
+ * metadata in every resolver path (only a real duration-based buff window ever reads it — see each
+ * fixed block's own comment in its .blocks.js file, e.g. cantarella.selfbuff.inherent-skill-poison,
+ * galbrena.debuff.afterflame/chain.s1, phrolova.selfbuff.aftersound,
+ * yangyangxuanling.selfbuff.feathered-oath), first found and fixed on Augusta's chain.s1/s2. Each was
+ * corrected to the same stacking-cap total the character's own CHAR_BUFF_TABLE/RESONANCE_CHAIN_DATA
+ * entry already stores (Galbrena's Afterflame mechanic included, despite its own note separately
+ * flagging a lower ~36-48% realistic average — kept at the table's 60%/80% cap for consistency with
+ * every other block fixed in this sweep, not silently substituted). Both `legacyRawDps` (calcTeamStats
+ * routes solo "converted" characters through the same BLOCKS_BY_CHARACTER data) and `engineDps` moved
+ * together for a genuinely higher, now-correct value — not a regression. Cantarella's pre-existing
+ * EXPECTED_DIVERGENCES band (1.05-1.20) still holds after the refresh (measured ratio ~1.146); the
+ * other three stay at ratio ~1.00 as before.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';

@@ -79,7 +79,7 @@ describe('triggerEngine parity — Luuk Herssen', () => {
   it('S6 models the real per-stack Endnotes mechanic (40 x3 stacks = 120 max)', () => {
     const rc = RESONANCE_CHAIN_DATA['Luuk Herssen'];
     const s6 = LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s6');
-    expect(s6.effects[0].value * s6.effects[0].maxStacks).toBe(rc.s6.libDmg);
+    expect(s6.effects[0].value).toBe(rc.s6.libDmg);
   });
 
   it('S4 is team-wide, matching RESONANCE_CHAIN_DATA', () => {
