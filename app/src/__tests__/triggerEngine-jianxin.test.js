@@ -64,4 +64,42 @@ describe('triggerEngine parity — Jianxin', () => {
   it("dmgFocus gains 'Liberation'/'Basic ATK'/'Heavy ATK' (her real 36.1%/30.9%/12.1% shares, now correctly categorized) — Echo (7.9%, generic equipped-Echo damage) and Intro (~5%) both stay excluded per this project's own precedent", () => {
     expect(CHARACTER_DATA['Jianxin'].dmgFocus).toEqual(['Skill', 'Liberation', 'Basic ATK', 'Heavy ATK']);
   });
+
+  it('Inherent Skill Formless Release (+20% Purification Force Field DMG) is present and correctly scoped to only that move', () => {
+    const fr = JIANXIN_BLOCKS.find(b => b.id === 'jianxin.inherent.formless-release');
+    expect(fr).toBeDefined();
+    expect(fr.effects[0]).toEqual({ stat: 'libDmg', value: 20, scopedToBlockId: 'jianxin.liberation.purification-force-field', source: 'self-kit' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jianxin'], JIANXIN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withFR = resolveHitComposedDps(JIANXIN_BLOCKS, steps, ctx, 2500, 'aero', 'Support');
+    const withoutFR = resolveHitComposedDps(JIANXIN_BLOCKS.filter(b => b.id !== 'jianxin.inherent.formless-release'), steps, ctx, 2500, 'aero', 'Support');
+    const pffWith = withFR.hitLog.find(h => h.blockId === 'jianxin.liberation.purification-force-field');
+    const pffWithout = withoutFR.hitLog.find(h => h.blockId === 'jianxin.liberation.purification-force-field');
+    expect(pffWith.damage).toBeGreaterThan(pffWithout.damage);
+    // Should NOT leak onto a different libDmg-adjacent hit — Jianxin has no other libDmg-categorized
+    // damage block, so this is really just confirming the scoping key is honored, not a leak check
+    // against a real 2nd libDmg block (none exists in her kit).
+    const introWith = withFR.hitLog.find(h => h.blockId === 'jianxin.intro.essence-of-tao');
+    const introWithout = withoutFR.hitLog.find(h => h.blockId === 'jianxin.intro.essence-of-tao');
+    expect(introWith.damage).toBeCloseTo(introWithout.damage, 6);
+  });
+
+  it('Minor Fortes (Crit Rate+8%/ATK%+12%) are present', () => {
+    const mf = JIANXIN_BLOCKS.find(b => b.id === 'jianxin.buff.minor-fortes');
+    expect(mf.effects).toEqual([
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ]);
+  });
+
+  // Found 2026-09-08 (full-kit audit): CHARACTER_DATA['Jianxin'].desc still said "holds Basic Attack
+  // to cast Primordial Chi Spiral" — the exact same mistranscription already found and fixed in
+  // SKILL_MULTIPLIERS's own row note and CHARACTER_ROTATIONS' own step note (2026-09-03 pass), but
+  // missed in this separate free-text field. The dump's own kit text (line 55) is explicit: "hold
+  // Heavy Attack to cast Primordial Chi Spiral."
+  it('desc says "holds Heavy Attack" for Primordial Chi Spiral, not the stale "holds Basic Attack" mistranscription', () => {
+    expect(CHARACTER_DATA['Jianxin'].desc).toContain('holds Heavy Attack to cast Primordial Chi Spiral');
+    expect(CHARACTER_DATA['Jianxin'].desc).not.toContain('holds Basic Attack to cast Primordial Chi Spiral');
+  });
 });

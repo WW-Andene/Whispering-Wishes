@@ -197,3 +197,42 @@ zeroed approximation). This character was already very thoroughly audited from a
 found.
 
 No changes made, no test changes needed, full suite green (1339/1339).
+
+## Full kit audit (2026-09-08)
+
+Full, independent re-verification of `jianxin.blocks.js` against this dump, `characters.js`
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, full CHARACTER_DATA
+entry), and the engine's actual resolver code — per the same rigor applied to Augusta through Iuno this
+session. One real bug found and fixed (a leftover from an earlier pass); everything else re-verified
+and confirmed correct.
+
+**Bug — `CHARACTER_DATA['Jianxin'].desc` had a leftover mistranscription.** Said "holds Basic Attack to
+cast Primordial Chi Spiral" — the exact same Basic-ATK/Heavy-ATK mixup already found and fixed in
+`SKILL_MULTIPLIERS['Jianxin']`'s own row note and `CHARACTER_ROTATIONS['Jianxin']`'s own step note back
+in the 2026-09-03 pass (this dump's own kit text, line 55, is explicit: "hold Heavy Attack to cast
+Primordial Chi Spiral"), but that earlier fix never touched this separate free-text `desc` field. Purely
+descriptive text (never consumed by any calculation), so zero DPS impact, but a real leftover
+inconsistency against an already-established, cited correction. Fixed.
+
+**Verified, no bug found (checked directly, not assumed):**
+- `jianxin.chain.s6-chi-counter`'s sequence gating: confirmed the block-id regex
+  (`/\.chain\.s([1-6])(?:[-.]|$)/` in `sequenceGating.js`) correctly matches the `-chi-counter` suffix
+  and extracts sequence 6 — not silently ungated.
+- `jianxin.chain.s4`'s cast-anchored 14s window: confirmed `Liberation:Purification Force Field` is
+  cast in the SAME modeled rotation, shortly after the `Forte:Primordial Chi Spiral` cast that opens
+  the window, so the real "+80% while performing the Forte" bonus does reach the Liberation hit it's
+  meant to boost.
+- `statScaling`/`basis`: `CHARACTER_DATA['Jianxin'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- DOT/dotApplier completeness: Jianxin's kit applies no cross-character DOT status anywhere in her real
+  kit text — correctly has no `dotApplier` tags anywhere in the file.
+- `SKILL_MULTIPLIERS['Jianxin']`, `RESONANCE_CHAIN_DATA['Jianxin']` (S1-S6, all 4 pure-utility nodes
+  correctly zeroed with cited TODOs, S4/S6 real values matched), `CHAR_BUFF_TABLE['Jianxin']`,
+  `CHARACTER_ROTATIONS['Jianxin']`, and the rest of the full `CHARACTER_DATA['Jianxin']` entry
+  (bestWeapon, weaponAlts, bestEchoes, teams, dmgFocus, base stats, DPS tier) all cross-checked against
+  this dump and matched exactly beyond the one desc-text bug above.
+
+**Re-measurement:** the fix only corrected descriptive text never consumed by any calculation — full
+suite re-run to confirm zero DPS impact (confirmed: 1843/1843 passing, unchanged). No golden fixture
+update needed. Tests added for the previously-uncovered Formless Release/Minor Fortes blocks and a
+regression guard on the corrected desc text.
