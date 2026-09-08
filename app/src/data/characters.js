@@ -3541,10 +3541,17 @@ const CHAR_BUFF_TABLE = {
   // baseline regardless of which weapon is actually equipped, double-counting with the equipped weapon's
   // own pv, or phantom-applying it otherwise. Verdant Summit's real passive (re-verified against
   // the source) is also no longer a flat "+20%" Heavy ATK bonus, so the stale note was corrected too.
+  // selfBuffs added 2026-09-08 (full-kit audit): both Inherent Skills — Heavenly Balance and Tempest
+  // Taming — were entirely missing from this table (and from jiyan.blocks.js, which had zero
+  // Inherent Skill or Minor Fortes coverage at all, unlike every other character audited this
+  // session). Sourced from Data dump/Jiyan/Jiyan.md lines 72-74.
   'Jiyan': {
     outroBuffs: [],
     libBuffs: [],
-    selfBuffs: [],
+    selfBuffs: [
+      { stat: 'atkPct', value: 10, target: 'self', duration: 15, condition: 'Inherent Skill Heavenly Balance: after Intro Skill cast, +10% ATK for 15s.' },
+      { stat: 'critDmg', value: 12, target: 'self', duration: 8, condition: 'Inherent Skill Tempest Taming: on hit, +12% Crit DMG for 8s.' },
+    ],
     debuffs: [],
     note: 'Heavy ATK DPS in Qingloong form. Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',
   },

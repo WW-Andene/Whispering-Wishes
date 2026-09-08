@@ -31,7 +31,27 @@ describe('triggerEngine parity — Jiyan', () => {
     const mult = JIYAN_BLOCKS.find(b => b.id === 'jiyan.chain.s5-outro-mult');
     const stack = JIYAN_BLOCKS.find(b => b.id === 'jiyan.chain.s5-atk-stack');
     expect(mult.effects[0].value).toBe(rc.s5.totalMult);
-    expect(stack.effects[0].value * stack.effects[0].maxStacks).toBe(rc.s5.atkPct);
+    expect(stack.effects[0].value).toBe(rc.s5.atkPct);
+  });
+
+  // Found 2026-09-08 (full-kit audit): the ATK stack was `value:3, stacking:'stacking', maxStacks:15`
+  // anchored to the Intro cast, which fires only ONCE in the modeled rotation — `activeCountAt()`
+  // could never see more than 1 concurrent window, capping at 1/15 stacks (3% ATK) instead of the
+  // real 45% the block's own OLD note already said was "instantly maxed after casting Tactical
+  // Strike." Retargeted to a flat 45% (same fix pattern as Encore's chain.s1/s6).
+  it("S5's ATK stack is a flat 45% (the real instant-max value), not the old under-firing 1/15-stack shape", () => {
+    const stack = JIYAN_BLOCKS.find(b => b.id === 'jiyan.chain.s5-atk-stack');
+    expect(stack.effects[0].stacking).toBeUndefined();
+    expect(stack.effects[0].maxStacks).toBeUndefined();
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jiyan'], JIYAN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withStack = resolveHitComposedDps(JIYAN_BLOCKS, steps, ctx, 3000, 'aero', 'Main DPS', null, 5);
+    const withoutStackBlocks = JIYAN_BLOCKS.filter(b => b.id !== 'jiyan.chain.s5-atk-stack');
+    const withoutStack = resolveHitComposedDps(withoutStackBlocks, steps, ctx, 3000, 'aero', 'Main DPS', null, 5);
+    // A real 45% ATK bonus should move total damage meaningfully more than the old bug's ~1.5%.
+    const ratio = withStack.totalDamage / withoutStack.totalDamage;
+    expect(ratio).toBeGreaterThan(1.1);
   });
 
   it('S4 is team-wide with a real 30s window', () => {
@@ -155,5 +175,60 @@ describe('triggerEngine parity — Jiyan', () => {
     const introHit = withS6.hitLog.find(h => h.blockId === 'jiyan.intro.tactical-strike');
     const introHitNoS6 = withoutS6.hitLog.find(h => h.blockId === 'jiyan.intro.tactical-strike');
     expect(introHit.damage).toBeCloseTo(introHitNoS6.damage, 5);
+  });
+
+  // Found 2026-09-08 (full-kit audit): BOTH Inherent Skills (Heavenly Balance, Tempest Taming) and
+  // Minor Fortes were entirely missing from this file AND from CHAR_BUFF_TABLE['Jiyan'].selfBuffs
+  // (previously empty) — a real, previously-missed completeness gap, unlike every other character
+  // audited this session (Encore/Galbrena/Hiyuki/Iuno/Jianxin/Jinhsi all have a Minor Fortes block).
+  it('Minor Fortes and both Inherent Skills (Heavenly Balance, Tempest Taming) are now present', () => {
+    const legacy = CHAR_BUFF_TABLE['Jiyan'];
+    expect(legacy.selfBuffs).toHaveLength(2);
+
+    const mf = JIYAN_BLOCKS.find(b => b.id === 'jiyan.buff.minor-fortes');
+    expect(mf.effects).toEqual([
+      { stat: 'critRate', value: 8, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ]);
+
+    const heavenlyBalance = JIYAN_BLOCKS.find(b => b.id === 'jiyan.inherent.heavenly-balance');
+    expect(heavenlyBalance.trigger).toEqual({ type: 'cast', on: 'Intro:Tactical Strike' });
+    expect(heavenlyBalance.timing.duration).toBe(15);
+    expect(heavenlyBalance.effects[0]).toEqual({ stat: 'atkPct', value: 10, source: 'self-kit' });
+
+    const tempestTaming = JIYAN_BLOCKS.find(b => b.id === 'jiyan.inherent.tempest-taming');
+    expect(tempestTaming.effects[0]).toEqual({ stat: 'critDmg', value: 12, source: 'self-kit' });
+  });
+
+  it('Heavenly Balance and Tempest Taming both contribute real damage in the modeled rotation', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jiyan'], JIYAN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withBoth = resolveHitComposedDps(JIYAN_BLOCKS, steps, ctx, 3000, 'aero', 'Main DPS');
+    const inherentIds = new Set(['jiyan.inherent.heavenly-balance', 'jiyan.inherent.tempest-taming']);
+    const withoutBoth = resolveHitComposedDps(JIYAN_BLOCKS.filter(b => !inherentIds.has(b.id)), steps, ctx, 3000, 'aero', 'Main DPS');
+    expect(withBoth.totalDamage).toBeGreaterThan(withoutBoth.totalDamage);
+  });
+
+  // Found 2026-09-08 (full-kit completeness pass): 5 real, sourced SKILL_MULTIPLIERS rows (base Basic
+  // ATK, standard Heavy ATK/Windborne Strike/Abyssal Slash, both Mid-air moves, Dodge Counter) had no
+  // block anywhere in this file, unlike every other character's own completeness pass this session.
+  it('the 5 previously-missing unused base-kit blocks are now present with correct categories', () => {
+    const basic = JIYAN_BLOCKS.find(b => b.id === 'jiyan.basic.lone-lance');
+    const heavy = JIYAN_BLOCKS.find(b => b.id === 'jiyan.heavy.standard');
+    const midair1 = JIYAN_BLOCKS.find(b => b.id === 'jiyan.midair.plunging-attack');
+    const midair2 = JIYAN_BLOCKS.find(b => b.id === 'jiyan.midair.banner-of-triumph');
+    const dodge = JIYAN_BLOCKS.find(b => b.id === 'jiyan.dodgecounter.standard');
+    expect(basic.damage.category).toBe('basicDmg');
+    expect(heavy.damage.category).toBe('heavyDmg');
+    expect(midair1).toBeDefined();
+    expect(midair2).toBeDefined();
+    expect(dodge).toBeDefined();
+    // None of these should appear in the real modeled rotation's hit log.
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Jiyan'], JIYAN_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(JIYAN_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'aero', 'Main DPS');
+    const fired = new Set(hitLog.map(h => h.blockId));
+    for (const id of [basic.id, heavy.id, midair1.id, midair2.id, dodge.id]) {
+      expect(fired.has(id)).toBe(false);
+    }
   });
 });

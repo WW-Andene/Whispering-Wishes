@@ -62,6 +62,18 @@
  * `engineDps`/`legacyRawDps` (3235 -> 4099) and the stat-panel `score` (1179 -> 1441, effAtk/avgCrit
  * unaffected) moved up together for genuinely more accurate values — not a regression. No
  * EXPECTED_DIVERGENCES entry needed (ratio stays ~1.00).
+ *
+ * Golden fixtures refreshed again 2026-09-08 (Jiyan, full kit audit): three real bugs fixed.
+ * (1) BOTH Inherent Skills (Heavenly Balance +10% ATK/15s after Intro, Tempest Taming +12% Crit
+ * DMG/8s on hit) and Minor Fortes (Crit Rate+8%/ATK%+12%) were entirely missing from this file AND
+ * from CHAR_BUFF_TABLE['Jiyan'].selfBuffs (previously empty) — a real completeness gap unlike every
+ * other character audited this session. Added all three. (2) chain.s5's ATK-stack effect was
+ * `value:3, stacking:'stacking', maxStacks:15` anchored to a cast that only fires once in the modeled
+ * rotation, capping at 1/15 stacks (3%) instead of the real 45% the block's own note already called
+ * "instantly maxed" — retargeted to a flat 45% (same fix pattern as Encore's chain.s1/s6). Both
+ * `engineDps`/`legacyRawDps` (4661 -> 6213) and the stat-panel `effAtk`/`avgCrit`/`score`
+ * (1025/1.1479/1062 -> 1228/1.2482/1383) moved up together for genuinely more complete/accurate
+ * values — not a regression. No EXPECTED_DIVERGENCES entry needed (ratio stays ~1.00).
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';

@@ -210,3 +210,67 @@ this fresh source word-for-word). `bestWeapon`/`bestEchoes`/`weaponAlts` also al
    `CHARACTER_ROTATIONS`).
 
 3 new/rewritten tests, full suite green (1325/1325).
+
+## Full kit audit (2026-09-08)
+
+Full, independent re-verification of `jiyan.blocks.js` against this dump, `characters.js`
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, full CHARACTER_DATA
+entry), and the engine's actual resolver code — per the same rigor applied to Augusta through Jinhsi
+this session. Three real bugs found and fixed (one a significant completeness gap, one a real
+under-crediting bug, one a re-documented known limitation); everything else re-verified and confirmed
+correct.
+
+**Bug 1 — BOTH Inherent Skills and Minor Fortes were entirely missing.** Heavenly Balance ("after Intro
+cast, +10% ATK for 15s") and Tempest Taming ("on hit, +12% Crit DMG for 8s") had no block anywhere in
+this file, and Minor Fortes (Crit Rate+8%/ATK%+12%) — present for every other character audited this
+session (Encore/Galbrena/Hiyuki/Iuno/Jianxin/Jinhsi) — was also absent. Traced upstream: `CHAR_BUFF_TABLE
+['Jiyan'].selfBuffs` was empty (`[]`), confirming this was missed in BOTH the legacy and modern engine
+paths, not just this one file. Added all three: Minor Fortes as a real passive block, Heavenly Balance
+cast-anchored to Intro:Tactical Strike (the same real cast `jiyan.chain.s2`/`jiyan.chain.s5-atk-stack`
+already anchor to), and Tempest Taming anchored to the same Intro cast with a sentinel duration (the
+real "on hit" trigger is continuously refreshed by the dense ongoing hit rate that follows, same
+reasoning as Encore's chain.s1/s6 near-instant-saturation fixes).
+
+**Bug 2 — `chain.s5`'s ATK-stack effect delivered only 1/15 of its real value.** Same under-firing-
+anchor bug class already found on Encore's chain.s1/s6 and Iuno's Blessing of the Wan Light this
+session: `stacking:'stacking', maxStacks:15, value:3` was anchored to the Intro cast, which fires only
+ONCE in the modeled rotation — `activeCountAt()` could never see more than 1 concurrent window, capping
+at 1/15 stacks (3% ATK) instead of the real 45%. The block's own OLD note already said this was
+"instantly maxed after casting Tactical Strike" — the real mechanic IS a flat 45% from that cast, not a
+per-cast ramp. Measured directly: removing the block only moved total damage by ~1.5%, confirming the
+under-crediting. Retargeted to a flat 45% (the real, documented instant-max value).
+
+**Also fixed (completeness):** 5 real, sourced SKILL_MULTIPLIERS rows (base Basic ATK combo, standard
+Heavy ATK/Windborne Strike/Abyssal Slash, both Mid-air moves, Dodge Counter) had no block anywhere in
+this file — every other character audited this session received this "unused base kit for
+completeness" pass, but Jiyan was missed. Added all 5 (correctly unused in the modeled rotation, which
+enters Qingloong Mode immediately and never lands a base-form input).
+
+**Disclosed, not fixed (real engine limitation):** `chain.s3`'s real trigger is ANY of 4 casts
+(Windqueller, Prelude, Finale, OR Intro), but this schema only accepts one cast label per block.
+Checked whether a 2nd anchor (Intro) could safely be added, since Intro fires BEFORE the first
+Windqueller cast in the modeled rotation (Intro@~1.5s, Windqueller@~6s) — concluded NO: Intro's own 8s
+window would still be active when Windqueller's separate block opens its own window, and two
+independent blocks would double-apply this crit buff during the overlap (32%/64% instead of the real
+single-instance 16%/32%). Kept anchored to Windqueller alone; the real, disclosed consequence (now
+documented inline, previously undisclosed) is that Intro's own hit and the first interrupted Lance of
+Qingloong cast do not receive this real buff in this model.
+
+**Verified, no bug found:**
+- `statScaling`/`basis`: `CHARACTER_DATA['Jiyan'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- DOT/dotApplier completeness: Jiyan's kit applies no Aero Erosion or other cross-character DOT status
+  (Erosion is applied by teammates like Ciaccona/Rover: Aero, not by his own kit) — correctly has no
+  `dotApplier` tags anywhere in the file.
+- `SKILL_MULTIPLIERS['Jiyan']`, `RESONANCE_CHAIN_DATA['Jiyan']` (S1-S6, all previously-audited zeroing/
+  splitting decisions re-confirmed correct), `CHARACTER_ROTATIONS['Jiyan']` (including the exact 3x
+  Lance of Qingloong / 2x Windqueller cast counts), and the full `CHARACTER_DATA['Jiyan']` entry (desc,
+  bestWeapon, weaponAlts, bestEchoes, teams, dmgFocus, base stats, DPS tier) all cross-checked against
+  this dump and matched exactly beyond the bugs above.
+
+**Re-measurement:** all DPS-affecting fixes (Minor Fortes, both Inherent Skills, the S5 flat-value fix)
+moved real DPS output substantially. `phase3-parityGolden.test.js` fixture updated: `engineDps`/
+`legacyRawDps` 4660.65/4661 → 6213.43/6213 (ratio stays ~1.00, no `EXPECTED_DIVERGENCES` entry needed).
+`phase3-statpanel-golden.json`'s `effAtk`/`avgCrit`/`score` also updated (1025/1.1479/1062 →
+1228/1.2482/1383). Both cited inline in `phase3-parityGolden.test.js`'s own header comment. Tests added
+for all three bugs plus the 5 new completeness blocks. Full suite: 1851/1851 passing.
