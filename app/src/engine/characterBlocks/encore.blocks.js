@@ -207,7 +207,19 @@ export const ENCORE_BLOCKS = [
     target: { scope: 'self' },
     condition: { requiresStance: 'HP above 70%' },
     effects: [{ stat: 'allDmg', value: 10, source: 'self-kit' }],
-    note: "Inherent Skill Angry Cosmos: +10% DMG dealt during Resonance Liberation Cosmos Rave while Encore's HP is above 70% — duration approximated to Cosmos Rave's own 10s window since the source gives no separate timer (same approximation already flagged in CHAR_BUFF_TABLE's own condition text).",
+    // Verified 2026-09-08 (full re-audit): checked whether the real, enforced `condition.casterHpPct`
+    // schema field (triggerEngine.js's conditionHolds(), added 2026-09-05) should replace this
+    // unenforced `requiresStance` string. It should NOT — resolveHitComposedDps.js (the resolver this
+    // block actually runs through for real DPS output) calls conditionHolds() with only 3 args,
+    // never supplying `casterHpPctAssumed`, so any block using `casterHpPct` unconditionally FAILS
+    // (`casterHpPctAssumed == null` short-circuits to false) in this resolver path — using it here
+    // would silently zero this buff out entirely, which is strictly worse than the current always-on
+    // approximation for a solo DPS calc that assumes no incoming damage (Encore realistically stays
+    // above 70% HP for a full burst rotation). Kept as `requiresStance` (unenforced, i.e. flat
+    // always-on for the window) — this is the SAME simplification CHAR_BUFF_TABLE['Encore'] itself
+    // already discloses in its own selfBuffs entry ("TODO: needs Phase 2 schema... not a flat
+    // always-on buff"), now cross-confirmed rather than assumed correct.
+    note: "Inherent Skill Angry Cosmos: +10% DMG dealt during Resonance Liberation Cosmos Rave while Encore's HP is above 70% — duration approximated to Cosmos Rave's own 10s window since the source gives no separate timer (same approximation already flagged in CHAR_BUFF_TABLE's own condition text). HP-gating not enforced (see verification comment above for why casterHpPct would make this worse, not better, in the resolver actually used).",
   },
   // Added 2026-09-07 (completeness pass): "Minor Fortes: Fusion DMG+12%, ATK%+12%" — a permanent,
   // always-on passive stat bonus, previously had no block anywhere in this file.
@@ -227,13 +239,31 @@ export const ENCORE_BLOCKS = [
   //    each node's real mechanic; S2 correctly has NO block — pure Energy-economy utility, zero DPS
   //    component per the audit's own zeroing) ──
   {
+    // Retargeted 2026-09-08 (full re-audit): was `trigger:{type:'cast', on:'Basic ATK:Cosmos:
+    // Frolicking 1-4'}` with `stacking:'stacking', maxStacks:4` — the same under-counting bug class
+    // just found and fixed on chain.s6 above. `activeCountAt()` counts concurrently-active 6s windows
+    // opened by real firings of THIS exact cast trigger, but Cosmos: Frolicking (the whole 4-stage
+    // combo) only casts twice in the real modeled rotation (CHARACTER_ROTATIONS['Encore']) — measured
+    // directly: the 2nd cast's window opens ~3 simulator-steps (4.5s) after the 1st, well inside the
+    // 1st's own 6s window, so `activeCountAt()` never sees more than 2 concurrent windows — capping at
+    // 2/4 stacks (6% Fusion DMG), never the real 12% max. The real trigger is "Basic Attack hit" (any
+    // sub-hit, not the whole-combo cast) — a single Cosmos: Frolicking cast lands 12 real sub-hits
+    // (2+3+4+3), so the real 4-stack cap is reached within the first few sub-hits of the FIRST
+    // Frolicking cast, well under a second in — then continuously refreshed by the dense hit rate
+    // through both combos and into Cosmos Rupture. No "any Basic-ATK sub-hit" trigger type exists in
+    // this engine (same limitation as chain.s6's "any damage instance"), so — same fix pattern —
+    // modeled as a flat value at the real cap from the first real Basic-ATK-hit event onward, rather
+    // than a stacking mechanic tied to an under-firing whole-combo-cast anchor. Sentinel duration
+    // since stacks keep getting refreshed by ongoing Basic-ATK-adjacent activity through the rest of
+    // the modeled rotation (correctly stays at 0% for the 3 real pre-Frolicking steps: Echo/Intro/
+    // Liberation Cosmos Rave, none of which land a Basic ATK hit).
     id: 'encore.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'cast', on: 'Basic ATK:Cosmos: Frolicking 1-4' },
-    timing: { duration: 6 },
+    timing: { duration: 99 }, // sentinel: persists (continuously refreshed by dense Basic-ATK sub-hits) through the rest of the rotation
     target: { scope: 'self' },
-    effects: [{ stat: 'elemDmg', value: 3, stacking: 'stacking', maxStacks: 4, source: 'self-kit' }],
-    note: 'Fusion DMG Bonus +3%, stacking up to 4 times for 6s, on Basic ATK hit — modeled as per-stack 3% x4 cap (matching the real stacking mechanic) rather than a flat 12%, same convention as Brant\'s S1.',
+    effects: [{ stat: 'elemDmg', value: 12, source: 'self-kit' }],
+    note: 'Fusion DMG Bonus +3%, stacking up to 4 times for 6s, on Basic ATK hit — modeled as a flat 12% (real cap) from the first Cosmos: Frolicking cast onward rather than a per-whole-combo-cast ramp, since the real per-sub-hit mechanic saturates within the first few hits of that first cast (see retargeting comment above).',
   },
   // S2 correctly has NO block — real effect is "additionally restores 10 Resonance Energy when
   // casting Basic Attack Wooly Attack or Resonance Skill Energetic Welcome, once every 10s", pure
@@ -270,12 +300,30 @@ export const ENCORE_BLOCKS = [
     note: 'Resonance Skill DMG Bonus +35% (confirmed exact, no specific scoping/timer given beyond the flat value) — kept passive.',
   },
   {
+    // Retargeted 2026-09-08 (full re-audit): was `trigger:{type:'cast', on:'Skill:Cosmos: Rampage'}`
+    // with `stacking:'stacking', maxStacks:5` — the engine's `activeCountAt()` counts CONCURRENTLY
+    // ACTIVE 10s windows opened by real firings of this exact trigger, and Cosmos: Rampage only casts
+    // 3 times in the real modeled rotation (CHARACTER_ROTATIONS['Encore']), so this was capping at
+    // 3/5 stacks (15% ATK) — never reaching the real 25% max. The real mechanic is "1 stack per
+    // damage instance" (every landed hit, not just Skill casts) during Cosmos Rave: her modeled
+    // rotation lands 3 Cosmos: Rampage hits (4 sub-hits each) PLUS 2 full Cosmos: Frolicking combos
+    // (2+3+4+3 = 12 sub-hits each) PLUS Cosmos Rupture's own hits, all within the single 10s Cosmos
+    // Rave window — well over 30 distinct damage instances, the first dozen or so landing within
+    // roughly the first second. Since each stack independently lasts 10s and Encore keeps landing
+    // hits continuously (refreshing) for the rest of the window, she is realistically at the 5-stack
+    // cap for virtually the entire Cosmos Rave duration, not slowly ramping through it. The engine
+    // has no "any damage instance" trigger type to model the real per-hit ramp directly (same
+    // limitation class as Danjin's S1 dead-stacking-metadata fix), so — same established pattern as
+    // that fix — modeled as a flat value at the real, sourced cap instead of a stacking mechanic tied
+    // to an under-firing anchor. Anchored to the Liberation:Cosmos Rave cast itself (the window's own
+    // opening event) with a duration matching Cosmos Rave's real 10s window, since that's the single
+    // real cast that actually marks the start of the "any hit stacks this" period.
     id: 'encore.chain.s6',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'cast', on: 'Skill:Cosmos: Rampage' },
+    trigger: { type: 'cast', on: 'Liberation:Cosmos Rave' },
     timing: { duration: 10 },
     target: { scope: 'self' },
-    effects: [{ stat: 'atkPct', value: 5, stacking: 'stacking', maxStacks: 5, source: 'self-kit' }],
-    note: 'Gains 1 stack of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK for 10s, stacking up to 5 times (25% max) — per the two-source majority (two independent sources both say 5 stacks/25%, vs. a third source\'s outlier "6 stacks", flagged in the source audit rather than silently resolved). Modeled as per-stack 5% x5 cap, anchored to the Cosmos: Rampage cast as a representative damage-instance trigger.',
+    effects: [{ stat: 'atkPct', value: 25, source: 'self-kit' }],
+    note: 'Gains 1 stack of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK for 10s, stacking up to 5 times (25% max) — per the two-source majority (two independent sources both say 5 stacks/25%, vs. a third source\'s outlier "6 stacks", flagged in the source audit rather than silently resolved). Modeled as a flat 25% (real cap) for the whole Cosmos Rave window rather than a slow per-Rampage-cast ramp — see the retargeting comment above for why the real per-hit mechanic saturates near-instantly.',
   },
 ];

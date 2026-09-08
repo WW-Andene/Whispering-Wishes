@@ -259,3 +259,71 @@ flagging the reconfirmation for whoever revisits this discrepancy.
 
 2 new tests added (S3 category-match regression + existing test updated for the renamed field), full
 suite green (1332/1332).
+
+## Full re-audit (2026-09-08)
+
+Full, independent re-verification of `encore.blocks.js` against this dump, `characters.js` (CHAR_BUFF_TABLE,
+RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, full CHARACTER_DATA entry), and the
+engine's actual resolver code (not comments) — per the same rigor applied to Augusta through Denia this
+session. Two real precision bugs found and fixed (both the same under-counting class, verified by
+direct measurement, not assumption); everything else re-verified and confirmed correct.
+
+**Bug 1 — `encore.chain.s1` under-counted its own real cap.** The real mechanic is "+3% Fusion DMG per
+Basic Attack HIT, stacking up to 4 times (12% max) for 6s". The block was anchored to the whole-combo
+CAST of Cosmos: Frolicking (`stacking:'stacking', maxStacks:4`), but that whole-combo cast only fires
+twice in the real modeled rotation — the engine's `activeCountAt()` counts concurrently-active 6s
+windows opened by real firings of the exact cast trigger, and with only 2 real cast events (their
+windows overlapping), it never sees more than 2 concurrent windows: capped at 2/4 stacks (6%), never
+the real 12%. The real per-sub-hit trigger (a single Frolicking cast lands 12 real sub-hits) reaches
+the cap within the first few hits of the very first cast. No "any Basic-ATK sub-hit" trigger type
+exists in this engine, so — same established pattern as Danjin's S1 dead-stacking-metadata fix —
+retargeted to a flat value (12%, the real cap) from the first Frolicking cast onward (sentinel
+duration, since dense ongoing Basic-ATK activity keeps refreshing the real stacks through the rest of
+the rotation), instead of a stacking mechanic tied to an under-firing anchor.
+
+**Bug 2 — `encore.chain.s6` under-counted its own real cap, same class.** The real mechanic is "1 stack
+of Lost Lamb per damage instance during Cosmos Rave, each +5% ATK, stacking up to 5 times (25% max) for
+10s". The block was anchored to the Cosmos: Rampage CAST specifically (3 real casts in the modeled
+rotation), capping at 3/5 stacks (15%), never the real 25% — dozens of real sub-hits (Rampage + both
+Frolicking combos + Cosmos Rupture) land within the single 10s Cosmos Rave window, saturating the real
+5-stack cap almost instantly. Retargeted to a flat value (25%, the real cap) anchored to the
+Liberation:Cosmos Rave cast itself (the window's own real opening event, correctly zero before it),
+sentinel duration matching the same "persists through dense ongoing activity" reasoning as Bug 1.
+
+Both bugs verified via direct measurement (not assumption): confirmed the old anchor's real firing
+count in the modeled rotation (2 Frolicking casts, 3 Rampage casts) against the stack durations/spacing
+before concluding the cap was never reached, then added positive-verification tests proving both fixes
+correctly zero-out pre-trigger hits (Intro) while boosting post-trigger hits (Cosmos Rupture).
+
+**Verified, no bug found (re-confirmed by fresh independent test, not by trusting the prior comment):**
+- The prior 2026-09-06 decision to omit `timing.cooldown` on `encore.skill.cosmos-rampage` despite a
+  real sourced 4s cooldown value — re-tested independently this pass (added cooldown:4 back in an
+  isolated diagnostic run): confirmed it drops only 8/12 real Cosmos: Rampage sub-hits instead of 12/12
+  (2 of 3 real casts survive the engine's coarse per-step cooldown gate instead of all 3), reproducing
+  the same real engine limitation the existing comment already described. Correctly left unmodeled.
+- `statScaling`/`basis`: `CHARACTER_DATA['Encore'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- DOT/dotApplier completeness: Encore's kit applies no Fusion Burst or other cross-character DOT status
+  anywhere in her real kit text (Fusion DMG only, no "inflicts Fusion Burst" language anywhere in this
+  dump) — correctly has no `dotApplier` tags anywhere in the file.
+- `encore.selfbuff.angry-cosmos`'s `condition.requiresStance: 'HP above 70%'` — checked whether the
+  real, ENFORCED `condition.casterHpPct` schema field (added 2026-09-05) should replace it. It should
+  NOT: `resolveHitComposedDps.js` (the resolver this block actually runs through) never supplies
+  `casterHpPctAssumed` to `conditionHolds()`, so a `casterHpPct`-gated block unconditionally FAILS in
+  this resolver path — using it would silently zero the whole buff out, strictly worse than the current
+  always-on approximation for a solo burst-DPS calc. Kept as-is; now documented inline with the full
+  reasoning rather than left as an unexplained choice. This is the same simplification
+  `CHAR_BUFF_TABLE['Encore']`'s own selfBuffs entry already discloses ("TODO: needs Phase 2 schema...
+  not a flat always-on buff") — cross-confirmed, not newly assumed correct.
+- `SKILL_MULTIPLIERS['Encore']`, `RESONANCE_CHAIN_DATA['Encore']` (S1-S6 flat values), `CHAR_BUFF_TABLE
+  ['Encore']`, `CHARACTER_ROTATIONS['Encore']`, and the full `CHARACTER_DATA['Encore']` entry (desc,
+  bestWeapon, weaponAlts, bestEchoes, teams, dmgFocus, base stats, DPS tier) all cross-checked against
+  this dump and matched exactly — no discrepancies beyond the two already-fixed bugs above.
+
+**Re-measurement:** both fixes only affect Resonance Chain nodes (`chain.s1`/`chain.s6`), which are
+sequence-gated (S1/S6 respectively) and therefore correctly do NOT fire in `phase3-parityGolden.test.js`'s
+Sequence-0 baseline measurement — confirmed directly (byte-identical `engineDps`/`legacyRawDps` before
+and after the fix, verified via `git stash` A/B comparison, not assumed from the sequence-gating code
+alone). No golden fixture update needed. New tests added: cast-anchor/flat-value shape checks and
+positive-verification tests for both S1 and S6, plus a casterHpPct-non-usage documentation test for
+Angry Cosmos. Full suite: 1834/1834 passing.
