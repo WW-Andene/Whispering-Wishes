@@ -62,6 +62,21 @@
 // verify both conditions genuinely hold at that exact cast in this rotation. Built the same
 // partial-but-real way as Resonance Rate: real sourced contributors tracked via resourceGain,
 // the genuinely-unsourced Basic/Mid-air/Dodge/Sync-Strike contribution left honestly unmodeled.
+//
+// Full-kit audit, 2026-09-08 ("do full Aemeath work"): 10 real, sourced base-kit rows had no block
+// (Mid-air Attack/Dodge Counter both forms, Aemeath-form Charged I/II, Mech Charged I, both Sync
+// Strikes, the Aemeath-form Intro) — Mid-air/Dodge Counter were missing from SKILL_MULTIPLIERS
+// entirely, not just unmodeled as blocks. All confirmed real but unused in her practical
+// (non-quickswap) rotation per the dump's own line 165, same convention as every other character's
+// unused-base-kit completeness pass. Sync Strikes/the new Intro carry the same real Fusion Burst/
+// Tune Rupture-Shifting tags her other Basic Stage 3/4 blocks already do, per the dump's own trigger
+// list, for consistency even though unused in the modeled rotation. Cross-checked for the two other
+// classes of bug found elsewhere this session: no chain-node scoping bugs found (every node was
+// already correctly scoped in prior passes); no character anywhere in the roster converts/negates
+// Fusion Burst or Tune Rupture-Shifting the way Zani converts Frazzle (checked directly). One real,
+// sourced self-kit mechanic (Seraphic Duet's Rupturous/Fusion Trail stack-consumption DMG bonus) is
+// flagged, not modeled — see aemeath.skill.seraphic-duet-encore's own comment for why a real stack
+// count can't be derived without fabricating one.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -180,6 +195,19 @@ export const AEMEATH_BLOCKS = [
     // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
     appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
   },
+  // Real, sourced mechanic NOT modeled (2026-09-08 full-kit audit, flagged rather than silently
+  // omitted): Forte Circuit's own "Seraphic Duet mode-based enhancement" text says both Duet casts
+  // consume her Rupturous Trail (Tune Rupture mode) or Fusion Trail (Fusion Burst mode) stacks for a
+  // real per-stack DMG bonus ("+4% DMG Mult per stack removed" / "+10% DMG Mult... per stack
+  // removed"), on top of extra hit instances. This is the same class of self-kit resource-scaling
+  // interaction as Hiyuki's Blade Liberation (stack count -> real %DMG scaling) — but unlike
+  // Snowforged Blade, there's no way to derive a REAL banked stack count without fabricating one:
+  // Rupturous/Fusion Trail stacks come from the WHOLE TEAM'S Tune Rupture-Interfered/Fusion Burst
+  // application history over the rotation (not a self-contained resource Aemeath's own casts alone
+  // build, the way Snowforged Blade or Lucilla's Photos are), which this engine has no per-instant
+  // team-composition-independent way to track. Modeling a specific stack count here would be
+  // guessing, not reading a sourced number — left honestly unmodeled, same discipline as chain.s5's
+  // utility-only S5.
   {
     id: 'aemeath.skill.seraphic-duet-encore',
     source: SOURCE, kind: 'damage', section: 'Skill',
@@ -256,6 +284,88 @@ export const AEMEATH_BLOCKS = [
     timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('1663.83%'), category: 'libDmg', basis: 'ATK' },
     concertoEnergyGain: 20,
+  },
+
+  // Added 2026-09-08 (full-kit audit, "do full Aemeath work"): 10 real, sourced SKILL_MULTIPLIERS
+  // rows with no block anywhere in this file — Mid-air Attack/Dodge Counter (both forms), Aemeath-form
+  // Charged I/II, Mech Charged I, both Sync Strikes, and the Aemeath-form Intro. Her own dump text
+  // (line 165) confirms these are real but unused in her practical (non-quickswap) rotation: "Mid-air
+  // Attack, plain Heavy Attacks (outside the one Sync-Rate-refill cast), and Sync Strikes aren't used
+  // in her practical rotation" — same "add for completeness, no new engine block wired into the
+  // curated rotation" precedent as Aalto/Lucilla's own unused-base-kit rows.
+  {
+    id: 'aemeath.midair.aemeath-form', source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Attack (Aemeath)' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('86.29%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Plunging attack, chains into Basic Stage 2. Unused in the modeled rotation.',
+  },
+  {
+    id: 'aemeath.midair.mech-form', source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Mid-air:Attack (Mech)' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('73.35%+4.32%×3'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Mech-form plunging attack. Unused in the modeled rotation.',
+  },
+  {
+    id: 'aemeath.dodgecounter.aemeath-form', source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard (Aemeath)' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('26.02%×3+52.03%+130.06%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Chains into Basic Stage 4. Unused in the modeled rotation.',
+  },
+  {
+    id: 'aemeath.dodgecounter.mech-form', source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Dodge Counter:Standard (Mech)' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('9.45%×6+198.44%+28.35%'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Mech-form Dodge Counter variant. Unused in the modeled rotation.',
+  },
+  {
+    id: 'aemeath.heavy.aemeath-charged-i', source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Charged I' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('18.57%+74.26%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Aemeath-form charged strike, chains into Charged II. Charged I has no "counted as Liberation DMG" override in its own kit text (unlike Charged II), so kept as plain Heavy ATK DMG. Unused in the modeled rotation (which only ever casts Mech-form Charged II).',
+  },
+  {
+    id: 'aemeath.heavy.aemeath-charged-ii', source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Charged II' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('11.60%×4+185.60%'), category: 'libDmg', basis: 'ATK' },
+    note: '"Casting Charged II (either form)... This move\'s DMG is counted as Resonance Liberation DMG" — same override as aemeath.heavy.mech-charged-ii, Aemeath-form variant. Unused in the modeled rotation (which only ever casts the Mech-form version).',
+  },
+  {
+    id: 'aemeath.heavy.mech-charged-i', source: SOURCE, kind: 'damage', section: 'HeavyATK',
+    trigger: { type: 'cast', on: 'Heavy ATK:Mech Charged I' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('92.83%'), category: 'heavyDmg', basis: 'ATK' },
+    note: 'Mech-form charged strike, chains into Charged II. Unused in the modeled rotation.',
+  },
+  {
+    id: 'aemeath.skill.sync-strike-armament-merge', source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Sync Strike: Armament Merge' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('26.92%+40.38%+67.29%'), category: 'skillDmg', basis: 'ATK' },
+    // dotApplier/appliesTags added per the dump's own line 84 text ("Both modes: Basic Stage 3/4,
+    // Sync Strikes, and both Intro skills inflict Tune Rupture-Shifting/Fusion Burst on hit") — same
+    // real trigger her other tagged blocks already carry, kept even though this specific move is
+    // unused in the modeled rotation, for consistency with the sourced mechanic.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
+    appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
+    note: 'Switches into Mech form. Unused in the modeled rotation.',
+  },
+  {
+    id: 'aemeath.skill.sync-strike-call-of-dawn', source: SOURCE, kind: 'damage', section: 'Skill',
+    trigger: { type: 'cast', on: 'Skill:Sync Strike: Call of Dawn' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('16.33%×3+114.28%'), category: 'skillDmg', basis: 'ATK' },
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
+    appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
+    note: 'Switches back to Aemeath form, can be cast mid-air. Unused in the modeled rotation.',
+  },
+  {
+    id: 'aemeath.intro.songs-across-the-universe', source: SOURCE, kind: 'damage', section: 'Intro',
+    trigger: { type: 'cast', on: 'Intro:Songs Across the Universe' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('13.46%×2+107.66%'), basis: 'ATK' },
+    // Same real "either Intro skill" tags/gains as aemeath.intro.debut-of-meteoric-radiance's own —
+    // see that block's own comment for the full sourcing.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 1 },
+    appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
+    concertoEnergyGain: 10,
+    resourceGain: [{ resource: 'Synchronization Rate', value: 40 }],
+    note: 'Aemeath-form Intro (used when swapping in from human form) — unused in the modeled rotation, which always swaps in via Mech form (aemeath.intro.debut-of-meteoric-radiance).',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──

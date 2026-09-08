@@ -144,4 +144,26 @@ describe('triggerEngine parity — Aemeath', () => {
     // Aemeath's real gauge ever exceeds 200 in play.
     expect(total).toBe(270);
   });
+
+  it('2026-09-08 full-kit audit: 10 previously-missing real base-kit blocks exist (Mid-air/Dodge Counter both forms, Aemeath-form Charged I/II, Mech Charged I, both Sync Strikes, Aemeath-form Intro)', () => {
+    const ids = [
+      'aemeath.midair.aemeath-form', 'aemeath.midair.mech-form',
+      'aemeath.dodgecounter.aemeath-form', 'aemeath.dodgecounter.mech-form',
+      'aemeath.heavy.aemeath-charged-i', 'aemeath.heavy.aemeath-charged-ii', 'aemeath.heavy.mech-charged-i',
+      'aemeath.skill.sync-strike-armament-merge', 'aemeath.skill.sync-strike-call-of-dawn',
+      'aemeath.intro.songs-across-the-universe',
+    ];
+    for (const id of ids) expect(AEMEATH_BLOCKS.find(b => b.id === id)).toBeTruthy();
+    // Charged II (either form) is "counted as Resonance Liberation DMG" per the dump's own text —
+    // the newly-added Aemeath-form variant must carry the same libDmg category as the existing
+    // Mech-form one, not the default heavyDmg Charged I gets.
+    expect(AEMEATH_BLOCKS.find(b => b.id === 'aemeath.heavy.aemeath-charged-ii').damage.category).toBe('libDmg');
+    expect(AEMEATH_BLOCKS.find(b => b.id === 'aemeath.heavy.aemeath-charged-i').damage.category).toBe('heavyDmg');
+    // Sync Strikes carry the same real Fusion Burst/Tune Rupture-Shifting tags her other Basic
+    // Stage 3/4 and Intro blocks already do, per the dump's own "Sync Strikes... inflict Tune
+    // Rupture-Shifting/Fusion Burst on hit" text.
+    const armamentMerge = AEMEATH_BLOCKS.find(b => b.id === 'aemeath.skill.sync-strike-armament-merge');
+    expect(armamentMerge.dotApplier.mechanic).toBe('fusionBurst');
+    expect(armamentMerge.appliesTags[0].tag).toBe('tune-rupture-shifting');
+  });
 });

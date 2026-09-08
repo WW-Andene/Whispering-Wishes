@@ -3986,6 +3986,16 @@ const SKILL_MULTIPLIERS = {
   'Aemeath': [
     ['Basic ATK', 'Aemeath Form Stage 1-4', '46.35% → 13.89%+20.84%+34.73% → 9.32%×3+18.63%+46.56% → 6.73%×5+100.94%', 'Standard human-form combo string, weaker but faster than Mech Form.'],
     ['Basic ATK', 'Mech Form Stage 1-4', '23.20%×3 → 18.57%+74.26% → 3.89%×6+81.54%+11.65% → 40.38%+94.21%', 'Heavier Mech-form combo with bigger hits, entered via her Forte.'],
+    // Mid-air Attack/Dodge Counter (both forms) added 2026-09-08 (full-kit audit, "do full Aemeath
+    // work") — real, sourced rows (Data dump/Aemeath/Aemeath.md line 28-29/54-55) that were missing
+    // from this table entirely, not just unmodeled as blocks. Her own dump text confirms them real
+    // but unused in her practical rotation (line 165: "Mid-air Attack... aren't used in her practical
+    // (non-quickswap) rotation"), same "add for completeness, no new engine block wired for the
+    // modeled rotation" precedent as Aalto/Lucilla's own unused-base-kit rows.
+    ['Mid-air', 'Attack (Aemeath)', '86.29%', 'Plunging attack; consumed by human-form combo, chains into Basic Stage 2.'],
+    ['Mid-air', 'Attack (Mech)', '73.35%+4.32%×3', 'Mech-form plunging attack variant.'],
+    ['Dodge Counter', 'Standard (Aemeath)', '26.02%×3+52.03%+130.06%', 'Post-Dodge Normal Attack; chains into Basic Stage 4.'],
+    ['Dodge Counter', 'Standard (Mech)', '9.45%×6+198.44%+28.35%', 'Mech-form Dodge Counter variant.'],
     ['Charged ATK', 'Aemeath Charged I / II', '18.57%+74.26% / 11.60%×4+185.60%', 'Human-form charged strike, second stage hits much harder.'],
     ['Charged ATK', 'Mech Charged I / II', '92.83% / 232.00%', 'Mech-form charged strike, very high single hits.'],
     ['Skill', 'Sync Strikes', 'Armament Merge 26.92%+40.38%+67.29% / Call of Dawn 16.33%×3+114.28%', 'Skill triggers different follow-ups depending on which form she is in.'],
