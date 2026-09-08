@@ -293,3 +293,37 @@ Notes on real-game rotation mechanics:
 **Example Teams**:
 1. **Best Team**: Augusta + Iuno/Lynae/Rebecca/Mortefi + Shorekeeper/Verina/Mornye — Mornye is niche, only
    worth considering with Rebecca or Lynae on the team (for their respective Hack/Tune Rupture synergies).
+
+## Full redo re-audit (2026-09-08, direct user request: "Redo everything... take the time for all
+details, logic, condition, inner kit cross interactions, cross character interaction")
+
+Full ground-up re-read of this dump, `augusta.blocks.js`, and every relevant `characters.js` table
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, CHARACTER_DATA),
+including explicit DOT-application verification (confirmed: her kit text has no Erosion/Frazzle/
+Bane/Burn mention anywhere — correctly has no `dotApplier` on any block, not a gap). Two real,
+if minor, completeness gaps found and fixed:
+
+1. **`chain.s3`'s scopedToBlockId list was missing 2 of the 7 real moves its own kit text names.**
+   "Dodge Counter-Thunderoar: Backstep" and "Thunderoar: Uppercut" are both explicitly listed in the
+   dump's own S3 text and both have real, existing blocks in this file — but neither was in S3's
+   scope (the block's own note even wrongly claimed "Uppercut has no block," which was false). Added
+   both. Same gap existed on `chain.s6-thunder-rage`: the kit text says Thunder Rage triggers on
+   "Thunderoar: Spinslash OR Thunderoar: Uppercut," but no Thunder Rage proc block existed for the
+   Uppercut trigger — added `chain.s6-thunder-rage-uppercut`. Both fixes are inert in the CURRENT
+   modeled rotation (Uppercut and its Dodge Counter variant are deliberately never cast, per the
+   dump's own "NEVER Uppercut" Review note) — no live DPS number changes — but correctness/
+   completeness against the kit text is fixed regardless, matching the standard already applied to
+   every other character's own inert-but-sourced blocks.
+2. **"Sublime is the Sun" (the hold-Liberation state-transition cast itself, distinct from
+   "Sword of Eternal Oath") had no block at all**, despite being a real, always-cast
+   `CHARACTER_ROTATIONS` step with a real, sourced 25s cooldown. Added
+   `augusta.liberation.sublime-is-the-sun` as a `kind:'utility'` block purely to carry that cooldown
+   — same pattern already established for Cartethyia's own `A Knight's Heartfelt Prayers`.
+
+Everything else re-verified clean against this dump with no changes needed: all 11 real damage
+blocks' Lv.10 multipliers (already fixed for the halving bug in a prior pass), S1/S2/S4/S5/S6's
+own values and scoping, both Inherent Skills, Minor Fortes, the Outro/`partner-outro-return`
+mechanic, Crown of Wills' base self-buff, base stats (10,300/463/1,112/125), tier (T1/T1),
+bestWeapon (Thunderflare Dominion), weaponAlts, bestEchoes, dmgFocus, full SKILL_MULTIPLIERS (16
+rows), and CHARACTER_ROTATIONS (14 steps) all match this dump exactly. Full test suite: 1824/1824
+passing (3 new tests).

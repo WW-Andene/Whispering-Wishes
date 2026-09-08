@@ -58,6 +58,48 @@ describe('triggerEngine parity — Augusta', () => {
     expect(s2.effects[0].value).toBe(rc.s2.critRate);
   });
 
+  // Found 2026-09-08 (full redo re-audit, "redo everything" request): the kit text explicitly names
+  // "Dodge Counter-Thunderoar: Backstep" and "Thunderoar: Uppercut" among S3's 7 real scoped moves,
+  // and both have real blocks in this file — but were missing from S3's own scopedToBlockId list
+  // (the note even wrongly claimed "Uppercut has no block"). Both are inert in the current modeled
+  // rotation, but the scope is corrected for completeness/consistency with kit text.
+  it("S3's scope includes ALL 7 real moves the kit text names, including the 2 currently-unused ones", () => {
+    const s3 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s3');
+    const scopedIds = s3.effects.map(e => e.scopedToBlockId).sort();
+    expect(scopedIds).toEqual([
+      'augusta.heavy.dodge-counter-thunderoar-backstep',
+      'augusta.heavy.thunderoar-backstep',
+      'augusta.heavy.thunderoar-backstep-spinslash-repeat',
+      'augusta.heavy.thunderoar-spinslash',
+      'augusta.heavy.thunderoar-uppercut',
+      'augusta.liberation.everbright-protector',
+      'augusta.liberation.sunborne',
+      'augusta.skill.undying-sunlight-plunge',
+    ].sort());
+  });
+
+  // Found 2026-09-08: the kit text says Thunder Rage triggers on "Thunderoar: Spinslash OR Thunderoar:
+  // Uppercut" — Uppercut has its own real block but no matching Thunder Rage proc existed.
+  it('Thunder Rage also has a real proc block for the Uppercut trigger (inert in the current rotation, but sourced)', () => {
+    const b = AUGUSTA_BLOCKS.find(x => x.id === 'augusta.chain.s6-thunder-rage-uppercut');
+    expect(b).toBeDefined();
+    expect(b.trigger).toEqual({ type: 'cast', on: 'Heavy ATK:Thunderoar: Uppercut' });
+    expect(b.damage.hits).toEqual([{ atkPct: 100 }, { atkPct: 100 }]);
+  });
+
+  // Found 2026-09-08: "Sublime is the Sun" (the state-transition cast, distinct from "Sword of Eternal
+  // Oath") is a real, always-cast CHARACTER_ROTATIONS step with a real sourced 25s cooldown and no
+  // block anywhere to hold it.
+  it('Sublime is the Sun has a utility block carrying its real 25s cooldown', () => {
+    const b = AUGUSTA_BLOCKS.find(x => x.id === 'augusta.liberation.sublime-is-the-sun');
+    expect(b).toBeDefined();
+    expect(b.kind).toBe('utility');
+    expect(b.timing.cooldown).toBe(25);
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Augusta'], AUGUSTA_BLOCKS);
+    const castLabels = new Set(steps.map(s => s.type && s.skill ? `cast:${s.type}:${s.skill}` : null));
+    expect(castLabels.has(`cast:${b.trigger.on}`)).toBe(true);
+  });
+
   it('S3/S4 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Augusta'];
     expect(AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s3').effects[0].value).toBe(rc.s3.totalMult);

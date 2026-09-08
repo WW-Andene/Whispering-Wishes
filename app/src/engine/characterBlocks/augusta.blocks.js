@@ -113,6 +113,20 @@ export const AUGUSTA_BLOCKS = [
     // concertoEnergyGain added 2026-09-06: dump's own "Concerto Regen: 20" row for Sword of Eternal Oath.
     concertoEnergyGain: 20,
   },
+  // Added 2026-09-08 (full redo re-audit): "Sublime is the Sun" (the hold-Liberation state-transition
+  // cast that enters Sworn Allegiance, distinct from the press-and-release "Sword of Eternal Oath")
+  // is a real, always-cast CHARACTER_ROTATIONS step ('Liberation:Sublime is the Sun') with a real,
+  // sourced "cooldown 25s" row and no published direct-damage value of its own (only its sub-
+  // components Sunborne/Everbright Protector have multipliers) — had NO block anywhere to hold that
+  // cooldown, the exact same "utility-only transform cast" gap already fixed for Cartethyia's own
+  // A Knight's Heartfelt Prayers.
+  {
+    id: 'augusta.liberation.sublime-is-the-sun',
+    source: SOURCE, kind: 'utility', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Sublime is the Sun' },
+    timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
+    note: 'Generates Ruler\'s Realm (30s) and enters Sworn Allegiance (7s time-stop) — costs 2 Majesty stacks instead of Resonance Energy, no direct-damage value of its own (see augusta.liberation.sunborne/augusta.liberation.everbright-protector for the real damage this state produces). This block exists only to carry the real, sourced cooldown.',
+  },
   {
     id: 'augusta.skill.undying-sunlight-strike',
     source: SOURCE, kind: 'damage', section: 'Skill',
@@ -374,11 +388,22 @@ export const AUGUSTA_BLOCKS = [
       { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.thunderoar-backstep', source: 'self-kit' },
       { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.thunderoar-spinslash', source: 'self-kit' },
       { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.thunderoar-backstep-spinslash-repeat', source: 'self-kit' },
+      // Added 2026-09-08 (full redo re-audit): the kit text explicitly names "Dodge Counter-
+      // Thunderoar: Backstep" and "Thunderoar: Uppercut" as 2 of the 7 real moves this node covers —
+      // both are real, existing blocks in this file (augusta.heavy.dodge-counter-thunderoar-backstep,
+      // augusta.heavy.thunderoar-uppercut, both added 2026-09-06), but were missing from this scope
+      // list entirely (this note previously and wrongly claimed "Uppercut has no block"). Neither
+      // fires in the CURRENT modeled rotation (both are real-but-unused per their own notes, so this
+      // doesn't move any live DPS number), but the scoping is still corrected for completeness/
+      // correctness — matching kit text exhaustively is the standard already applied to every other
+      // character's own inert-but-sourced blocks.
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.dodge-counter-thunderoar-backstep', source: 'self-kit' },
+      { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.heavy.thunderoar-uppercut', source: 'self-kit' },
       { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.skill.undying-sunlight-plunge', source: 'self-kit' },
       { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.liberation.sunborne', source: 'self-kit' },
       { stat: 'totalMult', value: 25, scopedToBlockId: 'augusta.liberation.everbright-protector', source: 'self-kit' },
     ],
-    note: '+25% DMG Multiplier specifically on Thunderoar: Backstep/Spinslash/Uppercut (+ Dodge Counter equivalents), Undying Sunlight: Plunge, and Sublime is the Sun: Sunborne/Everbright Protector — NOT a generic Heavy ATK buff (Undying Sunlight: Strike/Leap are excluded despite also being heavyDmg... actually skillDmg-categorized, and correctly excluded either way per the kit text\'s own explicit move list).',
+    note: '+25% DMG Multiplier specifically on Thunderoar: Backstep/Spinslash/Uppercut (+ Dodge Counter-Thunderoar: Backstep), Undying Sunlight: Plunge, and Sublime is the Sun: Sunborne/Everbright Protector — NOT a generic Heavy ATK buff (Undying Sunlight: Strike/Leap and Dodge Counter-Steelclash are excluded, correctly, per the kit text\'s own explicit 7-move list). Fixed 2026-09-08: Dodge Counter-Thunderoar: Backstep and Thunderoar: Uppercut were both missing from this scope despite being real, existing blocks and named explicitly in the kit text.',
   },
   {
     id: 'augusta.chain.s4-ascent-in-sun-and-glory',
@@ -431,5 +456,19 @@ export const AUGUSTA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: [{ atkPct: 100 }, { atkPct: 100 }], category: 'heavyDmg', basis: 'ATK' },
     note: 'Same Thunder Rage proc as augusta.chain.s6-thunder-rage, firing for the SECOND (repeat combo) Spinslash cast in her real modeled rotation instead of being silently dropped.',
+  },
+  // Added 2026-09-08 (full redo re-audit): the kit text is explicit "Casting Thunderoar: Spinslash OR
+  // Thunderoar: Uppercut" triggers Thunder Rage — Uppercut has its own real block
+  // (augusta.heavy.thunderoar-uppercut), but no matching Thunder Rage proc existed for it. Added for
+  // completeness matching the kit text exhaustively (same standard already applied to S3's totalMult
+  // scoping above); inert in the current modeled rotation since Uppercut is deliberately never cast
+  // there (the dump's own Review: "NEVER Uppercut, which launches her airborne, undesirable").
+  {
+    id: 'augusta.chain.s6-thunder-rage-uppercut',
+    source: SOURCE, kind: 'damage', section: 'Chain',
+    trigger: { type: 'cast', on: 'Heavy ATK:Thunderoar: Uppercut' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: [{ atkPct: 100 }, { atkPct: 100 }], category: 'heavyDmg', basis: 'ATK' },
+    note: 'Same Thunder Rage proc as augusta.chain.s6-thunder-rage, for the Uppercut trigger named alongside Spinslash in the kit text. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real rotation per the dump.',
   },
 ];
