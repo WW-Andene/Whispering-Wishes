@@ -40,13 +40,25 @@ export const EROSION_DURATION = 15;        // Erosion debuff duration (seconds)
 // 1.25078 × Stack Mult). These are non-linear, not a flat per-stack multiplier — index = stack count.
 export const FRAZZLE_STACK_TABLE = [0, 0.240, 0.4355, 0.6298, 0.8251, 1.020, 1.216, 1.409, 1.605, 1.800, 1.995];
 export const EROSION_STACK_TABLE = [0, 0.360, 0.899, 1.799, 2.698, 3.597, 4.497]; // stacks >3 need Aero Rover Outro
-// Linear extrapolation beyond the wiki's tabulated stack range, using the slope of the last two entries.
-function lookupStackMult(table, stacks) {
+// Real, sourced hard caps (2026-09-08, "fix all maximum dot and stack" — direct user instruction):
+// both tables' own real, published ranges ARE the real game maximum — Rover: Spectro's own dump text
+// confirms it explicitly ("Spectro Frazzle... caps at 10 stacks"; "2 Skills + 1 Ultimate caps it at 10
+// stacks"). FRAZZLE_STACK_TABLE.length-1 = 10, matching that citation exactly. EROSION_STACK_TABLE has
+// no equally explicit "caps at N" quote in hand, but its own 7 entries (0-6) are the full real range
+// the wiki source publishes — treating anything past it as guessable via extrapolation would be
+// inventing a number no source states, not reading one.
+export const FRAZZLE_MAX_STACKS = FRAZZLE_STACK_TABLE.length - 1; // 10
+export const EROSION_MAX_STACKS = EROSION_STACK_TABLE.length - 1; // 6
+// Clamps at the table's own real, sourced max entry instead of guessing beyond it (2026-09-08 fix —
+// this used to linearly EXTRAPOLATE past the wiki's own published range using the slope of the last two
+// entries, silently producing a bigger number than the real, stated 10-stack Frazzle cap allows for any
+// stack count that exceeded it. There is no real stack 11+ for Frazzle, or stack 7+ for Erosion, to
+// extrapolate a value for — the table's last real entry IS the real ceiling, not a fallback baseline).
+// Exported (2026-09-08) so dotReactionsFromBlocks.js's real per-step-firing resolvers use this EXACT
+// same clamped lookup instead of maintaining a second, easily-drifting copy of the same logic.
+export function lookupStackMult(table, stacks) {
   if (stacks <= 0) return 0;
-  if (stacks < table.length) return table[stacks];
-  const last = table[table.length - 1];
-  const slope = last - table[table.length - 2];
-  return last + (stacks - (table.length - 1)) * slope;
+  return table[Math.min(Math.round(stacks), table.length - 1)];
 }
 export const FUSION_BURST_THRESHOLD = 10;  // Stacks needed to detonate
 export const FUSION_BURST_APP_ICD = 1;     // Application ICD (seconds)
@@ -64,7 +76,13 @@ export function calcFrazzleDmg(members, rotTime, defMult, resMult) {
     const fd = CHAR_BUFF_TABLE[m.name]?.debuffs?.find(db => db.stat === 'frazzle');
     return s + (fd?.value || 10);
   }, 0);
-  const stacks = Math.min(maxStacksRaw, Math.floor(effectiveRate * rotTime));
+  // FRAZZLE_MAX_STACKS clamp (2026-09-08, "fix all maximum dot and stack"): a real, sourced hard cap
+  // (Rover: Spectro's own dump: "caps at 10 stacks") — without it, a raw applier sum above 10 (a real
+  // possibility once more than one real Frazzle applier is on a team) let BOTH the per-tick value (via
+  // lookupStackMult's own extrapolation, now removed) AND the tick COUNT itself (numTicks was derived
+  // from the uncapped `stacks`, letting more ticks fire than the real 10-stack cap could ever bank)
+  // exceed what the real game allows.
+  const stacks = Math.min(maxStacksRaw, Math.floor(effectiveRate * rotTime), FRAZZLE_MAX_STACKS);
   const numTicks = Math.min(Math.floor(rotTime / FRAZZLE_TICK_INTERVAL), stacks);
   let total = 0;
   for (let s = stacks; s > stacks - numTicks && s > 0; s--) {
@@ -77,10 +95,13 @@ export function calcFrazzleDmg(members, rotTime, defMult, resMult) {
 export function calcErosionDmg(members, rotTime, defMult, resMult) {
   const appliers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'erosion'));
   if (!appliers.length) return { dmg: 0, active: false };
-  const baseStacks = appliers.reduce((s, m) => {
+  // EROSION_MAX_STACKS clamp (2026-09-08) — see calcFrazzleDmg's identical comment above. baseStacks
+  // uses MAX not sum (erosion's own real "doesn't stack additively across appliers" rule), so this
+  // mainly guards a future applier whose sourced value exceeds the wiki's own published 0-6 range.
+  const baseStacks = Math.min(appliers.reduce((s, m) => {
     const ed = CHAR_BUFF_TABLE[m.name]?.debuffs?.find(db => db.stat === 'erosion');
     return Math.max(s, ed?.value || 3);
-  }, 3);
+  }, 3), EROSION_MAX_STACKS);
   const uptime = Math.min(1, EROSION_DURATION / rotTime);
   const ticks = Math.floor(EROSION_DURATION / EROSION_TICK_INTERVAL);
   let total = 0;

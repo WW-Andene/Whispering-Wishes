@@ -19,18 +19,14 @@
 
 import {
   DOT_LEVEL_MULT, DOT_BASE_FACTOR,
-  FRAZZLE_TICK_INTERVAL, FRAZZLE_ICD_PER_SOURCE, FRAZZLE_STACK_TABLE,
-  EROSION_TICK_INTERVAL, EROSION_DURATION, EROSION_STACK_TABLE,
+  FRAZZLE_TICK_INTERVAL, FRAZZLE_ICD_PER_SOURCE, FRAZZLE_STACK_TABLE, FRAZZLE_MAX_STACKS,
+  EROSION_TICK_INTERVAL, EROSION_DURATION, EROSION_STACK_TABLE, EROSION_MAX_STACKS,
   FUSION_BURST_THRESHOLD, FUSION_TRAIL_MULT,
   FLARE_TICK_INTERVAL, FLARE_STACK_MULT,
+  lookupStackMult,
 } from './dotFormulas.js';
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
 import { resolveFusionBurstDetonations } from './resolveFusionBurstStacks.js';
-
-function lookupStackMult(table, stacks) {
-  const idx = Math.max(0, Math.min(table.length - 1, Math.round(stacks)));
-  return table[idx];
-}
 
 /**
  * Every dotApplier-tagged block across the whole team, keyed by mechanic — filtered by mode where the
@@ -124,7 +120,11 @@ export function resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, resMul
   const numSources = new Set(occurrences ? occurrences.map(o => o.owner) : appliers.map(b => b.source)).size;
   const effectiveRate = numSources / FRAZZLE_ICD_PER_SOURCE;
   const maxStacksRaw = appliers.reduce((s, b) => s + (b.dotApplier.value || 10), 0);
-  const stacks = Math.min(maxStacksRaw, Math.floor(effectiveRate * rotTime));
+  // FRAZZLE_MAX_STACKS clamp (2026-09-08, "fix all maximum dot and stack") — see calcFrazzleDmg's
+  // identical comment in dotFormulas.js. Especially relevant here now that real per-step firing (this
+  // same pass) counts every real occurrence rather than one credit per block — a team with more than
+  // one real Frazzle applier can genuinely push maxStacksRaw past the real 10-stack cap.
+  const stacks = Math.min(maxStacksRaw, Math.floor(effectiveRate * rotTime), FRAZZLE_MAX_STACKS);
   const numTicks = Math.min(Math.floor(rotTime / FRAZZLE_TICK_INTERVAL), stacks);
   let total = 0;
   for (let s = stacks; s > stacks - numTicks && s > 0; s--) {
@@ -154,12 +154,13 @@ export function resolveErosionFromBlocks(blocksByOwner, rotTime, defMult, resMul
     ? collectRealApplications(blocksByOwner, rotationsByOwner, 'erosion').map(o => o.block)
     : collectAppliers(blocksByOwner, 'erosion');
   if (!appliers.length) return { dmg: 0, active: false };
-  const baseStacks = appliers.reduce((s, b) => {
+  // EROSION_MAX_STACKS clamp (2026-09-08) — see calcErosionDmg's identical comment in dotFormulas.js.
+  const baseStacks = Math.min(appliers.reduce((s, b) => {
     const { requiresTeammate, value, valueWithTeammate } = b.dotApplier;
     const hasTeammate = requiresTeammate && Object.prototype.hasOwnProperty.call(blocksByOwner, requiresTeammate);
     const applierValue = (hasTeammate && valueWithTeammate != null) ? valueWithTeammate : (value || 3);
     return Math.max(s, applierValue);
-  }, 3);
+  }, 3), EROSION_MAX_STACKS);
   const uptime = Math.min(1, EROSION_DURATION / rotTime);
   const ticks = Math.floor(EROSION_DURATION / EROSION_TICK_INTERVAL);
   let total = 0;

@@ -17,6 +17,7 @@ import { CARTETHYIA_BLOCKS } from '../engine/characterBlocks/cartethyia.blocks.j
 import { ROVER_SPECTRO_BLOCKS } from '../engine/characterBlocks/roverspectro.blocks.js';
 import { filterExclusiveModeBlocks, gateBlocksBySequence } from '../engine/resolver/gating/sequenceGating.js';
 import { CHARACTER_ROTATIONS } from '../data/characters.js';
+import { lookupStackMult, FRAZZLE_STACK_TABLE, EROSION_STACK_TABLE } from '../engine/resolver/dot/dotFormulas.js';
 
 const defMult = calcDefMult(800, 0, 0);
 const resMult = calcResMult(10, 0);
@@ -221,5 +222,32 @@ describe('dotReactionsFromBlocks — real per-step firing (2026-09-08, direct us
     const withRotation = resolveDotReactionDps(members, 25, defMult, 0, getEnemyRes, resMult, null, blocksByOwner, null, rotationsByOwner);
     const withoutRotation = resolveDotReactionDps(members, 25, defMult, 0, getEnemyRes, resMult, null, blocksByOwner, null, null);
     expect(withRotation.breakdown.frazzle.dmg).toBeGreaterThan(withoutRotation.breakdown.frazzle.dmg);
+  });
+});
+
+describe('dotReactionsFromBlocks — real, sourced stack caps enforced (2026-09-08, "fix all maximum dot and stack")', () => {
+  it('Frazzle clamps at the real 10-stack cap instead of extrapolating past FRAZZLE_STACK_TABLE for a hypothetical 2-applier team', () => {
+    // Synthetic second real Frazzle applier — a real scenario the current single-applier roster
+    // (Rover: Spectro alone) doesn't happen to exercise, but the engine must handle correctly the
+    // moment a second one exists. 10 (Rover's real total) + 10 (synthetic) = 20 raw, must clamp to 10.
+    const owner2 = 'SecondFrazzleApplier';
+    const blocksByOwner = {
+      'Rover: Spectro': ROVER_SPECTRO_BLOCKS,
+      [owner2]: [{ id: 'synthetic.frazzle', source: owner2, kind: 'damage', trigger: { type: 'cast', on: 'Skill:Synthetic' }, timing: {}, target: { scope: 'self' }, effects: [], damage: { hits: [{ atkPct: 1 }] }, dotApplier: { mechanic: 'frazzle', value: 10 } }],
+    };
+    const rotationsByOwner = { 'Rover: Spectro': CHARACTER_ROTATIONS['Rover: Spectro'], [owner2]: [{ type: 'Skill', skill: 'Synthetic' }] };
+    const capped = resolveFrazzleFromBlocks(blocksByOwner, 25, defMult, resMult, false, rotationsByOwner);
+    // Uncapped (pre-fix) math for comparison: 20 raw stacks, 8 ticks in 25s (floor(25/3)), each tick's
+    // value would have been the EXTRAPOLATED (wrong, too-high) figure past table[10]=1.995. The capped
+    // result must equal exactly what 10 real (never-exceeding) stacks over 8 ticks produces.
+    const singleApplierAt10 = resolveFrazzleFromBlocks({ 'Rover: Spectro': ROVER_SPECTRO_BLOCKS }, 25, defMult, resMult, false, { 'Rover: Spectro': CHARACTER_ROTATIONS['Rover: Spectro'] });
+    // The 2-applier (20 raw) and 1-applier (10 raw, already at the cap) cases must be IDENTICAL —
+    // proof the clamp actually engaged rather than merely not crashing.
+    expect(capped.dmg).toBeCloseTo(singleApplierAt10.dmg, 6);
+  });
+
+  it('lookupStackMult never returns a value beyond the real sourced table range, for any input', () => {
+    expect(lookupStackMult(FRAZZLE_STACK_TABLE, 999)).toBe(FRAZZLE_STACK_TABLE[FRAZZLE_STACK_TABLE.length - 1]);
+    expect(lookupStackMult(EROSION_STACK_TABLE, 999)).toBe(EROSION_STACK_TABLE[EROSION_STACK_TABLE.length - 1]);
   });
 });
