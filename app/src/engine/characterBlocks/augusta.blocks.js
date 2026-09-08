@@ -325,20 +325,34 @@ export const AUGUSTA_BLOCKS = [
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-08-31 audit comment for
   //    each node's real mechanic) ──
   {
+    // Fixed 2026-09-08 (Augusta completeness re-audit): `stacking`/`maxStacks` on a
+    // `trigger.type: 'passive'` block is dead metadata in every resolver path (resolveHitComposedDps.js's
+    // and resolveHitComposedTeamDps.js's `passiveBlocks` loop always calls `applyEffects(pb, 1, ...)`;
+    // resolveSimulatedRotation.js's and resolveSimulatedTeamRotation.js's own `trigger.type === 'passive'`
+    // branch is the same single-shot `applyEffects(block, 1, ...)`, never touching windows/
+    // timeWeightedAverageConcurrency) — only duration-based buff/debuff blocks ever read `stackingMode`/
+    // `maxStacks` via buildBlockWindows(). So this block was silently delivering the flat per-stack value
+    // (15) instead of the 2-stack total (30) its own note already claimed as "confirmed exact." Both stack
+    // sources (base kit's Outro-cast stack, S1's own added Intro-cast stack) are live for effectively the
+    // whole modeled rotation (Intro opens every rotation; Everbright Protector, which clears all stacks,
+    // fires near the very end) — same "reliably active nearly the whole rotation" justification the rest
+    // of this codebase already uses to model a resource as a flat passive value. Root-caused by writing
+    // the real 2-stack total directly instead of leaving inert stacking/maxStacks fields that read as
+    // modeled but were never applied.
     id: 'augusta.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 15, stacking: 'stacking', maxStacks: 2, source: 'self-kit' }],
-    note: 'Crown of Wills +15% Crit DMG per stack (max stack raised 1->2) = 30% at 2 stacks (confirmed exact) — modeled as per-stack stacking rather than a flat 30%.',
+    effects: [{ stat: 'critDmg', value: 30, source: 'self-kit' }],
+    note: 'Crown of Wills +15% Crit DMG per stack (max stack raised 1->2) = 30% at 2 stacks (confirmed exact, both stacks reliably up for nearly the whole rotation — see the fix comment above for why this is now a flat value instead of dead stacking metadata).',
   },
   {
     id: 'augusta.chain.s2',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critRate', value: 20, stacking: 'stacking', maxStacks: 2, source: 'self-kit' }],
-    note: 'Crown of Wills +20% Crit Rate per stack (2 stacks = 40%) — modeled as per-stack stacking. Also converts excess Crit Rate over 100% into Crit DMG (up to +100% more at 150%+ CR), not modeled — flat critRate is the safe partial model per the audit\'s own reasoning.',
+    effects: [{ stat: 'critRate', value: 40, source: 'self-kit' }],
+    note: 'Crown of Wills +20% Crit Rate per stack (2 stacks = 40%, confirmed exact — same passive-stacking-is-dead-metadata fix as augusta.chain.s1 above, flat value replacing an inert stacking/maxStacks pair). Also converts excess Crit Rate over 100% into Crit DMG (up to +100% more at 150%+ CR), not modeled — flat critRate is the safe partial model per the audit\'s own reasoning.',
   },
   {
     id: 'augusta.chain.s3',

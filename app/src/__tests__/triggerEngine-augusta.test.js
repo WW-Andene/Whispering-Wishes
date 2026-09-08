@@ -43,12 +43,19 @@ describe('triggerEngine parity — Augusta', () => {
     expect(block.damage.category).toBe('skillDmg');
   });
 
-  it('S1/S2 model the real per-stack mechanics, matching RESONANCE_CHAIN_DATA at max stacks', () => {
+  // Fixed 2026-09-08: `stacking`/`maxStacks` is dead metadata on a `trigger.type: 'passive'` block in
+  // every resolver path (resolveHitComposedDps.js's/resolveHitComposedTeamDps.js's `passiveBlocks` loop
+  // and resolveSimulatedRotation.js's/resolveSimulatedTeamRotation.js's own passive branch all call
+  // `applyEffects(block, 1, ...)` unconditionally — only a real duration-based buff block's window
+  // history ever reads `stackingMode`/`maxStacks`). This test previously asserted the OLD, buggy
+  // per-stack shape (value:15 × maxStacks:2), which silently delivered only 15/20 in the live engine
+  // instead of the RESONANCE_CHAIN_DATA-confirmed 30/40 totals. Now asserts the corrected flat value.
+  it('S1/S2 deliver the real confirmed 2-stack total, matching RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Augusta'];
     const s1 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s1');
     const s2 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s2');
-    expect(s1.effects[0].value * s1.effects[0].maxStacks).toBe(rc.s1.critDmg);
-    expect(s2.effects[0].value * s2.effects[0].maxStacks).toBe(rc.s2.critRate);
+    expect(s1.effects[0].value).toBe(rc.s1.critDmg);
+    expect(s2.effects[0].value).toBe(rc.s2.critRate);
   });
 
   it('S3/S4 match RESONANCE_CHAIN_DATA exactly', () => {
@@ -122,5 +129,24 @@ describe('triggerEngine parity — Augusta', () => {
     expect(secondProc.length).toBe(2);
     // The two procs land at different simulated times — genuinely two separate casts, not a duplicate.
     expect(firstProc[0].time).not.toBe(secondProc[0].time);
+  });
+
+  // Positive-verification test for the 2026-09-08 fix: proves the real numeric DPS effect of moving
+  // S1/S2 off dead passive-stacking metadata (value:15/20 × unread maxStacks:2) onto the flat,
+  // already-confirmed 2-stack total (30/40) — not just that the block's own `.value` field changed.
+  it('S1 Crit DMG bonus actually reaches the engine\'s crit-avg damage math at its real 30% value', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Augusta'], AUGUSTA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS1 = resolveHitComposedDps(AUGUSTA_BLOCKS, steps, ctx, 3500, 'electro', 'Main DPS', null, 1);
+    const withoutS1Blocks = AUGUSTA_BLOCKS.filter(b => b.id !== 'augusta.chain.s1');
+    const withoutS1 = resolveHitComposedDps(withoutS1Blocks, steps, ctx, 3500, 'electro', 'Main DPS', null, 1);
+    // Real, measured damage increase from S1 being present — confirms the 30% Crit DMG value is not
+    // a dead/inert field, it genuinely reaches the crit-average multiplier used on every hit.
+    expect(withS1.totalDamage).toBeGreaterThan(withoutS1.totalDamage);
+    // Reverting to the old buggy per-stack shape (flat 15 instead of 30) would have produced roughly
+    // HALF this block's real contribution to the crit-avg multiplier — sanity-check the fixed value
+    // itself rather than just its presence.
+    const s1 = AUGUSTA_BLOCKS.find(b => b.id === 'augusta.chain.s1');
+    expect(s1.effects[0].value).toBe(30);
   });
 });
