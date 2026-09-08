@@ -1434,13 +1434,15 @@ const CHARACTER_DATA = {
   // Twilight Tango moves are explicitly "considered Resonance Skill DMG" per kit text, already
   // correctly `skillDmg`-categorized in carlotta.blocks.js, none `libDmg`), and the dump's own
   // Substats priority list names only "Resonance Skill DMG" (no Liberation DMG substat at all) — same
-  // shape as Jiyan's earlier dmgFocus fix. 'Skill' (83.5%, dominant, real) stays. Basic ATK (8.3%,
-  // real per Damage Profile) has no wired basicDmg block in carlotta.blocks.js at all (no
-  // CHARACTER_ROTATIONS step casts plain Basic Attack — her rotation's Necessary Measures/Basic ATK
-  // contribution is unattributed to any specific modeled step, same "flagged not guessed" precedent as
-  // Lumi's unmodeled Skill bucket) and isn't named in the dump's own Substats priority either, so left
-  // out rather than added on an unsourced guess.
-  ['Carlotta',      ['Skill'],                       [],                                      []],
+  // shape as Jiyan's earlier dmgFocus fix. 'Skill' (83.5%, dominant, real) stays.
+  // 'Basic ATK' added 2026-09-08 (full re-audit): the comment this replaces said Basic ATK "has no
+  // wired basicDmg block in carlotta.blocks.js at all" — true when written, but stale: the 2026-09-07
+  // completeness pass added carlotta.midair.plunging-attack (basicDmg-categorized), a real block that
+  // DOES fire every rotation cycle (CHARACTER_ROTATIONS['Carlotta'] genuinely casts
+  // 'Mid-air:Plunging Attack', matching the dump's own real "Basic 8.3%" damage share) — dmgFocus was
+  // simply never updated to match once that gap closed, silently rejecting a real teammate Basic ATK
+  // DMG Bonus buff on a hit that now genuinely fires.
+  ['Carlotta',      ['Basic ATK', 'Skill'],           [],                                      []],
   // dmgFocus corrected 2026-09-04 (Phase A REDO, REMAINING_WORK.md 1c): 'Skill' was WRONG — a genuine
   // 0% real share per his own dump's Damage Profile. His Skill button (Anchors Aweigh!) is never cast
   // for damage in the real rotation (only Plunging Attack optionally, immediately Ultimate-cancelled,
@@ -3247,6 +3249,13 @@ const CHAR_BUFF_TABLE = {
     outroBuffs: [],
     libBuffs: [],
     selfBuffs: [{ stat: 'libDmg', value: 80, target: 'self', duration: 99, condition: 'Forte Circuit Final Bow: at full Substance, Liberation DMG Multiplier (Era of New Wave/Death Knell/Fatal Finale) +80%; ends if swapped out during Twilight Tango or when Twilight Tango ends' }],
+    // Noted 2026-09-08 (full re-audit): legacyMainDpsStats.js's own debuffs-handling applies db.value
+    // unconditionally (ignoring `duration` entirely — no uptime-scaling mechanism exists for this
+    // array), so this was already effectively 100%-uptime in the legacy engine, matching this dump's
+    // own "with the Inherent Skill active it should be near-permanently up" claim by accident rather
+    // than by design. The modern engine's own carlotta.debuff.deconstruction block is now fixed to the
+    // same effectively-unconditional behavior (was a narrower single-cast 4s window there) — both
+    // engines now agree, and both match the sourced claim.
     debuffs: [{ stat: 'defIgnore', value: 18, target: 'enemy', duration: 4, condition: 'Deconstruction: applied by Liberation, plus Intro/Chromatic Splendor/Death Knell/Forte Heavy via Ars Gratia Artis' }],
     note: 'Burst Glacio Main DPS. Final Bow: +80% Liberation DMG Multiplier at full Substance. Deconstruction: -18% target DEF (4s).',
   },
@@ -4242,10 +4251,14 @@ const SKILL_MULTIPLIERS = {
     ['Heavy ATK', 'Standard', '22.82%×4 + 60.84%'], // was '153.0%' (real total 152.12%)
     ['Heavy ATK', 'Containment Tactics', '34.23%×4 + 91.26%'], // was '229.6%' (real total 228.18%)
     // Added 2026-09-02, sourced from the pasted the source text's own Skills tab — was previously
-    // entirely missing (not a rounding fix, a real gap). None of these 3 rows are wired into a
-    // CHARACTER_ROTATIONS step (her burst rotation uses Mid-air Atk purely to reposition, per the
-    // kit text's own "no damage focus" framing), so this only fills the data table, no engine block
-    // added for them.
+    // entirely missing (not a rounding fix, a real gap).
+    // Comment corrected 2026-09-08 (full re-audit): this used to say "none of these 3 rows are wired
+    // into a CHARACTER_ROTATIONS step" — stale as of the 2026-09-07 completeness pass, which found
+    // 'Mid-air, Attack' DOES substring-match a genuine CHARACTER_ROTATIONS['Carlotta'] step
+    // ('Mid-air:Plunging Attack', used for real repositioning but still landing its real 104.78% hit
+    // every rotation cycle) and added carlotta.midair.plunging-attack to close that real DPS gap —
+    // dmgFocus (CHARACTER_DATA['Carlotta']) was updated to include 'Basic ATK' in the same pass this
+    // comment was corrected. Customary Greetings/Dodge Counter Riposte remain genuinely unused.
     ['Mid-air', 'Attack', '104.78%'],
     ['Mid-air', 'Customary Greetings', '107.99% + 131.99%'],
     ['Dodge Counter', 'Riposte', '103.77% + 137.55%'],

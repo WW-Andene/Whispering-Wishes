@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { CHAR_BUFF_TABLE, CHARACTER_DATA, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CARLOTTA_BLOCKS } from '../engine/characterBlocks/carlotta.blocks.js';
@@ -65,6 +65,46 @@ describe('triggerEngine parity — Carlotta (Phase A audit, 2026-09-04)', () => 
     // libDmg-categorized block exists (the same basis as the selfbuff.final-bow test above) rather than
     // re-importing the raw table here.
     expect(CARLOTTA_BLOCKS.every(b => b.kind !== 'damage' || b.damage?.category !== 'libDmg')).toBe(true);
+  });
+
+  // Fixed 2026-09-08 (full re-audit): the comment justifying 'Basic ATK''s exclusion said Basic ATK
+  // "has no wired basicDmg block in carlotta.blocks.js at all" — true when written, but stale after
+  // the 2026-09-07 completeness pass added carlotta.midair.plunging-attack (a real, basicDmg-
+  // categorized block that DOES fire every rotation cycle) — dmgFocus was never updated to match,
+  // silently rejecting a real teammate Basic ATK DMG Bonus buff on a hit that now genuinely fires.
+  it("dmgFocus now includes 'Basic ATK', matching carlotta.midair.plunging-attack's real per-rotation fire", () => {
+    expect(CHARACTER_DATA['Carlotta'].dmgFocus).toEqual(['Basic ATK', 'Skill']);
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Carlotta'], CARLOTTA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(CARLOTTA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3500, 'glacio', 'Main DPS');
+    expect(hitLog.some(h => h.blockId === 'carlotta.midair.plunging-attack')).toBe(true);
+  });
+
+  // Fixed 2026-09-08 (full re-audit, for consistency with chain.s1's own already-accepted fix): the
+  // Deconstruction debuff (defIgnore+18%) was a single-cast 4s window anchored only to Era of New
+  // Wave, silently dropping to 0% for the rest of her rotation — but the dump's own Review section is
+  // explicit and directly about this exact effect ("with the Inherent Skill active it should be
+  // near-permanently up"), the SAME sourced justification already used to make chain.s1's Crit Rate
+  // bonus (on the identical Deconstruction-uptime dependency) an unconditional passive.
+  it('Deconstruction (defIgnore) is now unconditional, matching the same sourced uptime claim as chain.s1', () => {
+    const debuff = CARLOTTA_BLOCKS.find(b => b.id === 'carlotta.debuff.deconstruction');
+    expect(debuff.trigger).toEqual({ type: 'passive' });
+    expect(debuff.effects[0].value).toBe(18);
+    expect(debuff.target.scope).toBe('all-enemies');
+  });
+
+  // Positive-verification test for the Deconstruction fix: proves a hit occurring BEFORE Era of New
+  // Wave (Intro) is now also correctly covered by DEF Ignore, since the real mechanic is near-
+  // permanent (also applied by Intro/Chromatic Splendor/Death Knell/Forte Heavy via the always-on
+  // Inherent Skill), not just active for 4s after one specific cast.
+  it("Deconstruction's DEF Ignore now applies even to her opening Intro hit, not just the 4s after Era of New Wave", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Carlotta'], CARLOTTA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withDeconstruction = resolveHitComposedDps(CARLOTTA_BLOCKS, steps, ctx, 3500, 'glacio', 'Main DPS');
+    const withoutBlocks = CARLOTTA_BLOCKS.filter(b => b.id !== 'carlotta.debuff.deconstruction');
+    const withoutDeconstruction = resolveHitComposedDps(withoutBlocks, steps, ctx, 3500, 'glacio', 'Main DPS');
+    const introWith = withDeconstruction.hitLog.find(h => h.blockId === 'carlotta.intro.wintertime-aria');
+    const introWithout = withoutDeconstruction.hitLog.find(h => h.blockId === 'carlotta.intro.wintertime-aria');
+    expect(introWith.damage).toBeGreaterThan(introWithout.damage);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total, firing every real damage block', () => {

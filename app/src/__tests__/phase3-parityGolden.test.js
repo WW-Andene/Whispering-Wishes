@@ -213,6 +213,11 @@ const EXPECTED_DIVERGENCES = {
   // legacy RAW number (4877 -> 4692); this test's own standalone engine call doesn't apply that
   // gate, so it stays at the un-derated value. Measured ratio ~1.039 (engine/legacy) — real,
   // expected, not a regression.
+  // Golden fixture re-measured 2026-09-08 (full re-audit): carlotta.debuff.deconstruction (defIgnore
+  // +18%) converted from a single-cast 4s window to an unconditional passive (see carlotta.blocks.js's
+  // own comment on that block) — both legacy (5721->5983, via CHAR_BUFF_TABLE's debuffs entry being
+  // effectively 100%-uptime already) and modern engine (5945->6207) moved together. New measured ratio
+  // ~1.037 (engine/legacy), still inside this existing band — no change needed to the band itself.
   Carlotta: { min: 1.02, max: 1.10 },
   // Added 2026-09-06 (Cartethyia completeness pass): same class as the prior 9 characters above.
   // Base Form Skill, Fleurdelys 1, and Blade of Howling Squall all got real, sourced cooldowns added

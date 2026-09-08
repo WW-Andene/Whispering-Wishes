@@ -252,13 +252,23 @@ export const CARLOTTA_BLOCKS = [
     note: 'Forte Circuit Final Bow: at full (120/120) Substance, DMG Multiplier +80% on Era of New Wave/Death Knell/Fatal Finale specifically — ends early if swapped out during Twilight Tango or when Twilight Tango ends, not modeled (no early-consumption trigger in this schema).',
   },
   {
+    // Fixed 2026-09-08 (full re-audit, for consistency with chain.s1's own already-accepted fix): was
+    // a single-cast 4s window anchored only to Era of New Wave, silently dropping to 0% DEF Ignore for
+    // the REST of her ~13.3s rotation (Intro, both Skill combos, Forte, Outro) despite Deconstruction
+    // being real-applied by 4 OTHER moves too (Intro Wintertime Aria, Chromatic Splendor, Death Knell,
+    // Forte Imminent Oblivion, all via the always-on Inherent Skill Ars Gratia Artis). This dump's own
+    // Review section is explicit and directly about THIS exact effect: "Deconstruction (-18% target
+    // DEF ignored)... with the Inherent Skill active it should be near-permanently up" — the SAME
+    // sourced justification already used to fix carlotta.chain.s1's own +12.5% Crit Rate (which shares
+    // this identical Deconstruction-uptime dependency) to an unconditional passive, just never applied
+    // here too. Converted to match: unconditional passive, same as chain.s1.
     id: 'carlotta.debuff.deconstruction',
     source: SOURCE, kind: 'debuff', section: 'Liberation',
-    trigger: { type: 'cast', on: 'Liberation:Era of New Wave' },
-    timing: { duration: 4 },
+    trigger: { type: 'passive' },
+    timing: {},
     target: { scope: 'all-enemies' },
-    effects: [{ stat: 'defIgnore', value: 18, stacking: 'refresh' }],
-    note: 'Also applied by Intro/Chromatic Splendor/Death Knell/Forte Heavy via Ars Gratia Artis — only the Liberation:Era of New Wave application is wired to a real CHARACTER_ROTATIONS step, the others not separately modeled.',
+    effects: [{ stat: 'defIgnore', value: 18, source: 'self-kit' }],
+    note: 'Deconstruction: -18% target DEF ignored, sourced as effectively unconditional/near-permanent per the kit text\'s own claim (with Inherent Skill Ars Gratia Artis active, real-applied by 5 different moves across her rotation — Era of New Wave, Intro Wintertime Aria, Chromatic Splendor, Death Knell, Forte Imminent Oblivion), same reasoning already applied to carlotta.chain.s1\'s own Crit Rate bonus on the identical condition.',
   },
   // Added 2026-09-07 (completeness pass): "Minor Fortes: Crit Rate+8%, ATK%+12%" — a permanent,
   // always-on passive stat bonus unlocked via Forte-tree ascension, previously had no block anywhere

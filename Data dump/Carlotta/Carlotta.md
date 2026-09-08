@@ -231,3 +231,42 @@ multiplier numbers now live in the data table rather than being omitted. `data-i
 `Carlotta[3] "Mid-air: Plunging Attack"` step correctly stays in the KNOWN_UNRESOLVED_BASELINE list
 (its own skill string "Plunging Attack" doesn't name-match either new Mid-air row, by design — it's a
 repositioning-only step).
+
+## Full re-audit (2026-09-08)
+
+Full re-read of this dump, `carlotta.blocks.js` (382 lines), and every relevant `characters.js` table
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, CHARACTER_DATA), plus
+inner-kit and cross-character interaction checks. Three real findings, all fixed:
+
+1. **`carlotta.debuff.deconstruction` (defIgnore +18%) was still a single-cast 4s window anchored to
+   Era of New Wave**, silently dropping to 0% DEF Ignore for the rest of her ~13.3s rotation. This is
+   the exact same underlying condition already fixed on `carlotta.chain.s1` (2026-09-02, above) using
+   this dump's own Review quote — "with the Inherent Skill active it should be near-permanently up" —
+   but that fix was never propagated to this sibling block sharing the identical dependency, a genuine
+   within-kit inconsistency only visible by cross-referencing the reasoning across blocks, not just
+   reading each block's diff in isolation. Fixed by converting to `trigger:{type:'passive'}`,
+   unconditional, matching `chain.s1`'s already-accepted treatment. Cross-checked against the legacy
+   engine: `legacyMainDpsStats.js`'s own debuffs-handling applies `db.value` unconditionally regardless
+   of the stored `duration` field, so legacy was already effectively 100%-uptime by accident — the
+   modern engine now matches it by design, and both engines agree with the sourced claim. Verified via
+   a positive-effect test proving the Intro hit (which occurs *before* Era of New Wave in the rotation)
+   is now correctly boosted, confirming real rotation-wide coverage rather than just the old narrow
+   window. Golden-parity fixture re-measured: legacy RAW 5721→5983, engine 5945→6207 (ratio ~1.037,
+   still inside the existing `EXPECTED_DIVERGENCES['Carlotta']` band of 1.02–1.10 — no band change
+   needed).
+2. **`dmgFocus` for Carlotta was stale**: `['Skill']` only, excluding Basic ATK on the premise (stated
+   in an old comment) that "Basic ATK has no wired basicDmg block in carlotta.blocks.js at all." True
+   when written, but the 2026-09-07 completeness pass added `carlotta.midair.plunging-attack`
+   (basicDmg-categorized, fires every rotation cycle) without updating `dmgFocus` to match — silently
+   rejecting a real teammate Basic ATK DMG Bonus buff on a hit that now genuinely fires. Fixed to
+   `['Basic ATK', 'Skill']`. Verified via a test confirming the block fires in the modeled rotation.
+3. **Two stale code comments** (dmgFocus table and the SKILL_MULTIPLIERS 'Mid-air, Attack' row) still
+   described the pre-2026-09-07 state as current — corrected to reflect that `carlotta.midair.plunging-
+   attack` is now a real, wired, firing block (Customary Greetings/Dodge Counter Riposte remain
+   genuinely unused, unchanged from the 2026-09-02 finding above).
+
+Everything else re-verified clean against this dump with no changes needed: all of chain.s1–s6, Final
+Bow, both Inherent Skills, both Minor Fortes, S3 Kaleidoscope Sparks, base stats (12,450/463/1,198/125),
+DPS tier (T1/T4), bestWeapon (The Last Dance), weaponAlts, bestEchoes, full SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS, and RESONANCE_CHAIN_DATA all match this dump exactly. No further cross-character
+interaction issues found. Full test suite: 1805/1805 passing after these fixes.
