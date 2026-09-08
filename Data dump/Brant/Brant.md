@@ -279,3 +279,18 @@ reduction) — refreshed the golden fixture; the pre-existing EXPECTED_DIVERGENC
 holds at the new, smaller absolute numbers (ratio ~1.134). Added positive-verification tests proving
 chain.s5 is now genuinely time-windowed (unaffected on his Intro hit, active by his later Returned from
 Ashes hit) and that the Mid-air combo now sums to the correct 721.98%. Full suite green (1794/1794).
+
+**Full REDO re-audit (2026-09-08, direct user request: "Redo everything... don't assume anything
+already done").** Re-verified `statScaling`/`basis` consistency explicitly (ATK, matches every
+damage block — no Baizhi-style mismatch here) and DOT application explicitly (no Erosion/Frazzle/
+Bane anywhere in his kit, correctly no `dotApplier` on any block). One stale comment corrected: S2's
+own audit comment said its Outro-enhancement mechanic (within 20s of Outro, a teammate's Skill hit
+triggers a Brant-dealt 440%-ATK Fusion blast, max 2) "needs Phase 2 schema" — but Phase 2 (the modern
+TriggerBlocks engine's `windowed-proc`/`crossCharacterHit` mechanism, used for e.g. Cantarella's
+Diffusion) already exists. Checked whether it could now model this: `rotationSimulator.js`'s own
+`opensOnProc` window-opening only matches a named `cast:${type}:${skill}` step label, never a
+`swap-out` event — and this mechanic's real anchor IS Brant's own Outro (a swap-out). This is a
+genuine, still-open ENGINE gap (the window-opening mechanism has no hook for anchoring to a
+swap-out), not a data gap this pass could close — corrected the comment to say so accurately rather
+than leave the stale "needs Phase 2 schema" framing standing. No behavior change; full suite still
+green (1825/1825, unaffected by this comment-only correction).

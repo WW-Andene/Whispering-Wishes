@@ -6875,8 +6875,16 @@ const RESONANCE_CHAIN_DATA = {
   //   and category confirmed correct, kept. The stored totalMult:25 had NO basis in this node's text at
   //   all (fabricated): the node's actual second effect is a conditional Outro enhancement — within 20s
   //   of Outro, the incoming/nearby Resonator's Skill hits trigger a Brant-dealt Fusion explosion worth
-  //   440% ATK (Basic ATK DMG type), max 1/sec, max 2 explosions total — removed the fabricated 25 and
-  //   left a TODO: needs Phase 2 schema (partner-action-triggered, capped-count, off-field damage).
+  //   440% ATK (Basic ATK DMG type), max 1/sec, max 2 explosions total — removed the fabricated 25.
+  //   Re-checked 2026-09-08 (full redo re-audit): the modern TriggerBlocks engine's 'windowed-proc'
+  //   mechanism (used for e.g. Cantarella's Diffusion) CAN model a cross-character-triggered proc, but
+  //   only when anchored to a specific named `cast` event — rotationSimulator.js's own opensOnProc
+  //   matching only checks against `cast:${type}:${skill}` step labels (see its own comment at the
+  //   procBlocks loop), never against a 'swap-out' event. This mechanic's real anchor IS a swap-out
+  //   (Brant's own Outro cast), which the window-opening mechanism has no hook for — a genuine,
+  //   still-open engine gap (opensOnProc would need to accept 'swap-out' as a valid entry), not a data
+  //   gap this pass can close. Left unmodeled with this corrected, non-stale note rather than force-
+  //   fitting a broken implementation.
   // s3 "Through Storms I Sail": Returned from Ashes' DMG Multiplier is increased by 42% — was stored as
   //   totalMult:15, a magnitude bug (should be 42, not 15); corrected.
   // s4 "To Freedom I Sing": +20% Returned from Ashes Shield strength, plus team healing on cast (6.60 HP
