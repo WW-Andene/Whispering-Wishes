@@ -5,6 +5,8 @@ import { resolveHitComposedTeamDps } from '../engine/resolver/dps/resolveHitComp
 import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CANTARELLA_BLOCKS } from '../engine/characterBlocks/cantarella.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
+import { createStats } from '../features/teams/calcEngine.js';
+import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 
 describe('triggerEngine parity — Cantarella', () => {
   it('every block matches the canonical schema (Layer 4 migration)', () => {
@@ -51,18 +53,43 @@ describe('triggerEngine parity — Cantarella', () => {
     expect(CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.chain.s6')).toBeUndefined();
   });
 
-  it('outro and selfBuff match CHAR_BUFF_TABLE', () => {
+  // Fixed 2026-09-08 (full re-audit): the Outro was ONE block with a shared `condition:{element:
+  // 'havoc'}` gating BOTH effects — but CHAR_BUFF_TABLE stores them as two SEPARATE outroBuffs
+  // entries, only the elemDmg one naming Havoc; the skillDmg one is unconditioned (universal per this
+  // project's own elemBuffApplies convention, and per the dump's own Review naming non-Havoc
+  // Skill-DMG carries like Carlotta/Jinhsi as real, if outclassed, partners for exactly this buff).
+  // Split into two blocks so a non-Havoc ally still receives the real, universal Skill DMG Amp.
+  it('outro and selfBuff match CHAR_BUFF_TABLE, with the Skill DMG Amp universal (not Havoc-locked)', () => {
     const legacy = CHAR_BUFF_TABLE['Cantarella'];
-    const outro = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.outro.gentle-tentacles');
-    expect(outro.effects.find(e => e.stat === 'elemDmg').value).toBe(legacy.outroBuffs[0].value);
-    expect(outro.effects.find(e => e.stat === 'skillDmg').value).toBe(legacy.outroBuffs[1].value);
-    expect(outro.timing.duration).toBe(legacy.outroBuffs[0].duration);
+    const havocOutro = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.outro.gentle-tentacles-havoc');
+    const skillOutro = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.outro.gentle-tentacles-skill');
+    expect(havocOutro.effects.find(e => e.stat === 'elemDmg').value).toBe(legacy.outroBuffs[0].value);
+    expect(havocOutro.condition).toEqual({ element: 'havoc' });
+    expect(skillOutro.effects.find(e => e.stat === 'skillDmg').value).toBe(legacy.outroBuffs[1].value);
+    expect(skillOutro.condition).toBeUndefined();
+    expect(havocOutro.timing.duration).toBe(legacy.outroBuffs[0].duration);
+    expect(skillOutro.timing.duration).toBe(legacy.outroBuffs[1].duration);
     const self = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.selfbuff.inherent-skill-poison');
     expect(self.effects[0].value).toBe(legacy.selfBuffs[0].value);
     // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): now actually clamps to the buffed Resonator's
     // own swap-out instant when shorter than the nominal 14s — see forfeitOnRecipientSwapOut.test.js
     // for the mechanism's own proof.
-    expect(outro.timing.forfeitOnRecipientSwapOut).toBe(true);
+    expect(havocOutro.timing.forfeitOnRecipientSwapOut).toBe(true);
+    expect(skillOutro.timing.forfeitOnRecipientSwapOut).toBe(true);
+  });
+
+  // Positive-verification test for the fix above: proves the real numeric effect on a non-Havoc ally,
+  // not just that the block fields changed.
+  it("a non-Havoc ally still receives the real, universal Skill DMG Amp from her Outro", () => {
+    const skillOutro = CANTARELLA_BLOCKS.find(b => b.id === 'cantarella.outro.gentle-tentacles-skill');
+    const stats = createStats();
+    resolveTriggerBlocks([skillOutro], {
+      firedTriggers: new Set(['swap-out']),
+      targetElementLower: 'spectro', targetRole: 'Main DPS',
+    }, stats);
+    // Every real Outro buff routes into stats.amplify regardless of its own stat name (WuWa's own
+    // Outro buffs are always DMG Amplification — see resolveTriggerBlocks' own isAmplify handling).
+    expect(stats.amplify).toBeGreaterThan(0);
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
@@ -100,6 +127,15 @@ describe('triggerEngine parity — Cantarella', () => {
   it('Flowing Suffocation is basicDmg, not libDmg — "considered Basic Attack DMG" per kit text (Phase A audit, 2026-09-04)', () => {
     const b = CANTARELLA_BLOCKS.find(x => x.id === 'cantarella.liberation.flowing-suffocation');
     expect(b.damage.category).toBe('basicDmg');
+  });
+
+  // Fixed 2026-09-08 (full re-audit): had no category at all, silently rejecting every real teammate
+  // Heavy ATK DMG Bonus buff — the dump's own Damage Profile shows a real, non-zero "Heavy 7.2%"
+  // bucket, and dmgFocus already correctly included 'Heavy ATK' (this was the one block that should
+  // have satisfied it).
+  it('Delusive Dive is heavyDmg-categorized, matching dmgFocus and the dump\'s real 7.2% Heavy ATK damage share', () => {
+    const b = CANTARELLA_BLOCKS.find(x => x.id === 'cantarella.heavy.delusive-dive');
+    expect(b.damage.category).toBe('heavyDmg');
   });
 
   it('fires from her own solo rotation (own hits qualify too, no move-type filter)', () => {

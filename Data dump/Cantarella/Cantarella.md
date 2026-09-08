@@ -281,3 +281,38 @@ currently-inert Jolt multiplier) that this pass reconfirmed as correct, not bugs
 
 No test changes needed — existing `triggerEngine-cantarella.test.js` and `data-integrity.test.js`
 already cover the unaffected areas. Full suite green (1335/1335).
+
+**Full re-audit (2026-09-08, explicitly requested — including inner-kit and cross-character
+interactions, not just re-checking what the extensively-documented prior passes already touched).**
+Found 2 real bugs, both cross-character-interaction-relevant.
+
+1. **Her Outro's universal Skill DMG Amp was silently Havoc-gated.** `cantarella.outro.gentle-tentacles`
+   was ONE block with `condition: { element: 'havoc' }` applied at the block level, gating BOTH its
+   effects — but the kit text describes two independent buffs: "+20% Havoc DMG" (genuinely
+   element-specific) and "+25% Resonance Skill DMG" (no element restriction at all).
+   `CHAR_BUFF_TABLE['Cantarella'].outroBuffs` already stores these as two SEPARATE entries, only the
+   elemDmg one naming Havoc — confirming the skillDmg half should be universal, per this project's own
+   `elemBuffApplies` convention (a condition that doesn't name a specific element stays universal).
+   This dump's own Review section directly names Carlotta and Jinhsi (both non-Havoc) as real, if
+   outclassed, partners for her specifically via this Skill DMG buff — impossible if it were secretly
+   Havoc-locked. This was a real, live bug: any non-Havoc Skill-DMG carry was silently getting ZERO
+   benefit from her Outro at all. Split into two blocks
+   (`cantarella.outro.gentle-tentacles-havoc`/`-skill`) so only the Havoc-specific half stays
+   conditioned.
+2. **Delusive Dive had no damage category at all**, silently rejecting every real teammate Heavy ATK
+   DMG Bonus buff — despite this dump's own Damage Profile showing a real, non-trivial "Heavy 7.2%"
+   damage bucket, and `CHARACTER_DATA['Cantarella'].dmgFocus` already correctly including 'Heavy ATK'
+   (this was the one block that should have satisfied it but didn't). Fixed to `category: 'heavyDmg'`
+   — her kit text gives it no "considered X DMG" override.
+
+Both fixes are cross-character-interaction-relevant (a teammate's buff correctly reaching her, or her
+own buff correctly reaching a teammate) but don't change her own solo-calc numbers at all (no golden
+drift, confirmed — a solo context has no teammate to receive her Outro's Skill DMG Amp, and no
+teammate buffing her own Heavy ATK). Everything else re-verified clean: the extensive existing Resonance
+Chain scoping (S1/S2/S3/S6, all already correctly scoped from prior passes), SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS, CHAR_BUFF_TABLE, base stats, and the Diffusion cross-character summon-chain
+mechanism (re-verified its own `crossCharacterHit`/`minProcInterval` design directly, not just trusted
+its own comment).
+
+Added positive-verification tests proving the Outro fix's real numeric effect on a non-Havoc ally.
+Full suite green (1802/1802).

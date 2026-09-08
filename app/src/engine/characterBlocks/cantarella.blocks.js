@@ -131,11 +131,18 @@ export const CANTARELLA_BLOCKS = [
     note: 'Diffusion: for 30s after Flowing Suffocation (or until 21 Dreamweavers are summoned, whichever first), every hit landed by her or the team can summon a Coordinated ATK (considered Basic Attack DMG per kit text), up to 1/second, 14.54% ATK Havoc DMG each, 21 max (S5 raises this cap to 26 — not modeled here, see the Resonance Chain section\'s own "S4/S5 correctly have NO block" comment below).',
   },
   {
+    // category fixed 2026-09-08 (full re-audit): had no `category` at all, silently rejecting every
+    // real teammate Heavy ATK DMG Bonus buff on a genuinely real, non-trivial damage share — the
+    // dump's own Damage Profile shows "Heavy 7.2% (4,884)" as a real, non-zero bucket, and
+    // CHARACTER_DATA['Cantarella'].dmgFocus already correctly includes 'Heavy ATK' (this was the one
+    // block that should have satisfied it but didn't). Her kit text gives Delusive Dive no "considered
+    // X DMG" override ("Heavy Attack becomes Delusive Dive, Havoc DMG"), so it stays its natural
+    // Heavy-ATK-slot category.
     id: 'cantarella.heavy.delusive-dive',
     source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Delusive Dive' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('53.05%×2'), basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('53.05%×2'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Consumes all 5 Trance and enters 8s Mirage state.',
   },
   {
@@ -237,19 +244,37 @@ export const CANTARELLA_BLOCKS = [
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
-    id: 'cantarella.outro.gentle-tentacles',
+    // Fixed 2026-09-08 (full re-audit): `condition: { element: 'havoc' }` was applied at the BLOCK
+    // level, gating BOTH effects — but the kit text describes two independent buffs: "+20% Havoc DMG"
+    // (genuinely element-specific) AND "+25% Resonance Skill DMG" (no element restriction stated at
+    // all). CHAR_BUFF_TABLE['Cantarella'].outroBuffs already stores these as two SEPARATE entries with
+    // their own string conditions — the elemDmg one explicitly names Havoc, the skillDmg one doesn't —
+    // and this project's own elemBuffApplies() convention treats a condition that doesn't name a
+    // specific element as universal. The dump's own Review section directly confirms this reading,
+    // naming Carlotta/Jinhsi (both non-Havoc) as real (if outclassed) partners for her specifically
+    // via this Skill DMG buff — which would be impossible if it were secretly Havoc-gated. This was a
+    // real, live bug: any non-Havoc Skill-DMG carry (Carlotta, Jinhsi, Zhezhi, etc.) was silently
+    // getting ZERO benefit from her Outro at all instead of the real, universal +25% Skill DMG Amp.
+    // Split into two blocks so only the Havoc-specific half stays conditioned.
+    id: 'cantarella.outro.gentle-tentacles-havoc',
     source: SOURCE, kind: 'buff', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: { duration: 14, forfeitOnRecipientSwapOut: true },
     target: { scope: 'next-on-field' },
     condition: { element: 'havoc' },
-    effects: [
-      { stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' },
-      { stat: 'skillDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' },
-    ],
+    effects: [{ stat: 'elemDmg', value: 20, stacking: 'refresh', source: 'teammate-ally-action' }],
     // Retrofitted 2026-09-03 (REMAINING_WORK.md 1a): forfeitOnRecipientSwapOut now actually clamps
     // this to the buffed Resonator's own swap-out instant when it's shorter than the full 14s.
-    note: 'Forfeited early if the buffed Resonator is swapped out before 14s expires.',
+    note: '+20% Havoc DMG Amp, Havoc-element-locked per its own kit text. Forfeited early if the buffed Resonator is swapped out before 14s expires. See cantarella.outro.gentle-tentacles-skill for the universal (non-element-locked) Resonance Skill DMG Amp half.',
+  },
+  {
+    id: 'cantarella.outro.gentle-tentacles-skill',
+    source: SOURCE, kind: 'buff', section: 'Outro',
+    trigger: { type: 'swap-out' },
+    timing: { duration: 14, forfeitOnRecipientSwapOut: true },
+    target: { scope: 'next-on-field' },
+    effects: [{ stat: 'skillDmg', value: 25, stacking: 'refresh', source: 'teammate-ally-action' }],
+    note: '+25% Resonance Skill DMG Amp, universal (no element restriction per kit text or CHAR_BUFF_TABLE\'s own unconditioned string) — see fix comment on cantarella.outro.gentle-tentacles-havoc above. Forfeited early if the buffed Resonator is swapped out before 14s expires.',
   },
   {
     // Fixed 2026-09-08 (roster-wide sweep for the Augusta S1/S2 bug class): `stacking`/`maxStacks` on a
