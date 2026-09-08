@@ -37,6 +37,18 @@
 //      matching the same fix applied to CHAR_BUFF_TABLE['Baizhi'].libBuffs (was also 'team') and
 //      calcTeamStats.js's rotation-timeline builder (didn't handle a 'next'-target libBuff at all).
 //      chain.s6 stays whole-team — its own text explicitly broadens to "all nearby characters."
+//
+// Full REDO re-audit 2026-09-08 (direct user request: "Redo everything... don't assume anything
+// already done"): found ONE major, previously-completely-missed bug spanning the whole file.
+// CHARACTER_DATA['Baizhi'].statScaling is 'HP' — cross-checked against this dump directly: her
+// bestWeapon (Stellar Symphony) is Shorekeeper's own signature (a confirmed HP-scaler sharing the
+// exact same weapon), her Substat priority never mentions ATK at all (only "HP% > Flat HP"), and her
+// base ATK (213) is even LOWER than Shorekeeper's own 288 "dump stat" ATK — all consistent with a
+// genuinely HP%-scaling kit, matching calcTeamStats.js's own `baseStat = scaling==='HP' ? d.baseHp :
+// ...` RAW-tier formula. But EVERY damage block in this file used `basis: 'ATK'` — the wrong scaling
+// stat entirely, on every single hit, missed across every prior pass on this file (including the
+// "full re-audit 2026-09-08" pass immediately above this one). Fixed to `basis: 'HP'` throughout,
+// same class of fix already applied to Cartethyia's own HP-scaling kit.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -54,7 +66,7 @@ export const BAIZHI_BLOCKS = [
     // category fixed 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): was uncategorized, silently
     // rejecting Resonance Skill DMG Bonus. The dump's own multiplier table labels this row generically
     // "Skill Damage", same convention as Calcharo/Encore/Jianxin/Lingyang/Aalto.
-    damage: { hits: parseSkillMultiplierHits('79.53%'), category: 'skillDmg' , basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('79.53%'), category: 'skillDmg' , basis: 'HP' },
     note: 'Row also lists "+ heal", not modeled (no fabricated non-DPS number).',
     // concertoEnergyGain added 2026-09-06 (completeness pass, same "consider energy regen" direction
     // as Aalto's): Data dump/Baizhi/Baizhi.md's own "Con. Energy Regen: 10" row for Intro:Overflowing Frost.
@@ -66,7 +78,7 @@ export const BAIZHI_BLOCKS = [
     trigger: { type: 'cast', on: 'Liberation:Momentary Union' },
     // cooldown added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own "Cooldown: 25s" row.
     timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('4.07%×4'), category: 'libDmg' , basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('4.07%×4'), category: 'libDmg' , basis: 'HP' },
     note: "Spawns 4 Remnant Entities (4.07% each) that auto-attack and heal every 2.5s afterward — this block models one representative hit-set (the initial cast), not the sustained repeated-tick damage over the entities' full lifetime (a DOT-like mechanic beyond this schema's single-cast hit-list model). Team heal component not modeled.",
     // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own
     // "Con. Energy Regen: 20" row for Momentary Union. Its "Res. Energy Cost: 175" row is a
@@ -79,7 +91,7 @@ export const BAIZHI_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Emergency Plan' },
     // cooldown added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own "Cooldown: 16s" row.
     timing: { cooldown: 16 }, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('15.94%'), category: 'skillDmg' , basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('15.94%'), category: 'skillDmg' , basis: 'HP' },
     note: 'Row also lists "+ healing", not modeled.',
     // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Baizhi/Baizhi.md's own
     // "Con. Energy Regen: 10" row for Emergency Plan.
@@ -90,7 +102,7 @@ export const BAIZHI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Destined Promise (channel)' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('48.86%'), category: 'heavyDmg' , basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('48.86%'), category: 'heavyDmg' , basis: 'HP' },
     note: 'Source value is 48.86%/s (a continuous channel, not a discrete hit) — modeled as one representative 1-second tick; real total scales with channel duration, not captured by this schema\'s single-cast hit-list model.',
   },
   // Added 2026-09-08 (full re-audit): the dump's own real "Rotation S0R0" text explicitly uses her
@@ -103,7 +115,7 @@ export const BAIZHI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: "Basic ATK:Destined Promise Stage 1-4" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('65.48% + 78.57% + 13.10%×7 + 78.57%'), category: 'basicDmg', basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('65.48% + 78.57% + 13.10%×7 + 78.57%'), category: 'basicDmg', basis: 'HP' },
     note: "Standard 4-stage combo, builds 1 Concentration/hit toward the 4-stack cap Emergency Plan consumes. Now fires in the modeled rotation (CHARACTER_ROTATIONS['Baizhi'] gained a matching Basic ATK step this same pass).",
   },
   // Added 2026-09-08 (full re-audit): Mid-air Attack and Dodge Counter both carry real, sourced
@@ -116,7 +128,7 @@ export const BAIZHI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Mid-air:Attack' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('78.89%'), category: 'basicDmg', basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('78.89%'), category: 'basicDmg', basis: 'HP' },
     note: "Plunging attack, consumes Stamina. Not in CHARACTER_ROTATIONS — real move, but her real optimal rotation's Basic Attack combo doesn't use it.",
   },
   {
@@ -124,7 +136,7 @@ export const BAIZHI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Dodge Counter:Standard' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('178.65%'), category: 'basicDmg', basis: 'ATK' },
+    damage: { hits: parseSkillMultiplierHits('178.65%'), category: 'basicDmg', basis: 'HP' },
     note: "Post-Dodge Basic Attack. Not in CHARACTER_ROTATIONS — real move, but confirmed unused in her real modeled rotation per the dump.",
   },
 

@@ -236,3 +236,29 @@ ratio ~1.139, now 1.02-1.06 at ratio ~1.040 — same underlying cause, smaller r
 ATK addition dilutes the cooldown-gated moves' share of her total). Added positive-verification tests
 proving the S2 buff is now genuinely time-windowed (unaffected before Emergency Plan, active after) —
 not just a value-equality check. Full suite green (1791/1791).
+
+**Full REDO re-audit (2026-09-08, direct user request: "Redo everything... don't assume anything
+already done").** Despite the thorough pass immediately above, one major bug had been missed across
+every prior pass on this file:
+
+1. **Every damage block in `baizhi.blocks.js` used `basis: 'ATK'`, but she is genuinely HP%-scaling.**
+   `CHARACTER_DATA['Baizhi'].statScaling` is `'HP'` — this pre-existing table entry was never actually
+   cross-checked against the engine blocks before. Corroborated independently against this exact
+   dump: her `bestWeapon` (Stellar Symphony) is **Shorekeeper's own signature weapon** — a confirmed
+   HP-scaler sharing the identical weapon; her Substat priority list never mentions ATK at all, only
+   "HP% > Flat HP"; and her base ATK (213) is even LOWER than Shorekeeper's own 288 "dump stat" ATK.
+   All of this independently confirms a genuinely HP%-scaling kit, matching `calcTeamStats.js`'s own
+   `baseStat = scaling === 'HP' ? d.baseHp : ...` RAW-tier formula — but the modern TriggerBlocks
+   engine was computing her damage off her tiny ATK stat instead of her much larger HP stat this
+   whole time. Fixed `basis: 'ATK'` → `basis: 'HP'` on all 7 real damage blocks, same class of fix
+   already applied to Cartethyia's own HP-scaling kit. Also added `Rectifier#25` to `weaponAlts.alt4`
+   — a real, dump-named 4★ alternative that was missing entirely (3 of the dump's 4 named
+   alternatives were present, this 4th wasn't).
+
+Golden-parity fixture re-measured: legacy 168→3012, engine 175→3127 (both moved by the same large
+factor — the ratio between her HP base ~12,800 and her ATK base ~213 — confirming this was a pure
+scaling-basis correction, not a logic change). New ratio ~1.038 stays inside the existing
+`EXPECTED_DIVERGENCES` band (1.02–1.06) — a basis fix preserves the engine/legacy ratio while
+correcting both numbers' absolute magnitude together. Full test suite: 1825/1825 passing (1 new
+test). DOT-application check: confirmed her kit has no Erosion/Frazzle/Bane mention anywhere —
+correctly has no `dotApplier` on any block, not a gap.

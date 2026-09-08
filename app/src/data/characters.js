@@ -1108,7 +1108,14 @@ const CHARACTER_DATA = {
     // a worse option... remains a good choice if you don't have a good Fallacy to use") — Bell-Borne
     // Geochelone is the fallback, not the top pick.
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stellar Symphony',
-    weaponAlts: { alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Voyager'] },
+    // weaponAlts.alt4 fixed 2026-09-08 (full redo re-audit): the dump names FOUR real non-signature
+    // alternatives (Variation, Call of the Abyss, Rectifier of Voyager, Rectifier#25) with no numeric
+    // ranking to pick a "top 2" from (this source explicitly has no calc/damage data for Baizhi at
+    // all) — Rectifier#25 was missing entirely. Added; this codebase's own established convention
+    // (see e.g. Aemeath's/Iuno's own weaponAlts) already treats 'Rectifier#25' as a 4★ (alt4) entry
+    // and 'Rectifier of Voyager'/'Rectifier of Night' as 3★ (alt3), consistent with the existing alt3
+    // pick here.
+    weaponAlts: { alt4: ['Variation', 'Call of the Abyss', 'Rectifier#25'], alt3: ['Rectifier of Voyager'] },
     teams: ['Yangyang + Jiyan + Baizhi', 'Lingyang + Sanhua + Baizhi', 'Encore + Sanhua + Baizhi'] },
   'Chixia': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Energetic patroller who blazes through Jinzhou with dual pistols. On-field Fusion DPS who deals Fusion DMG through rapid-fire Resonance Skill shots and Basic Attack combos.',

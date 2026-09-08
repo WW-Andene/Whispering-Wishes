@@ -59,9 +59,22 @@ describe('triggerEngine parity — Baizhi', () => {
     expect(libBlock.trigger).toEqual({ type: 'cast', on: 'Skill:Emergency Plan' });
   });
 
+  // Found 2026-09-08 (full redo re-audit, direct user request): CHARACTER_DATA['Baizhi'].statScaling
+  // is 'HP' (cross-checked against her own dump: her bestWeapon, Stellar Symphony, is Shorekeeper's
+  // signature — another confirmed HP-scaler; her Substat priority never mentions ATK at all, only
+  // HP%; and her base ATK, 213, is even lower than Shorekeeper's own 288 "dump stat" ATK) — but EVERY
+  // damage block in baizhi.blocks.js used basis:'ATK'. Fixed to basis:'HP' throughout (same class of
+  // fix already applied to Cartethyia's own HP-scaling kit). baseStats below updated from a plain
+  // ATK number to {hp: ...} to match.
+  it('every real damage block uses basis:HP, matching her real HP-scaling kit (statScaling: HP)', () => {
+    const damageBlocks = BAIZHI_BLOCKS.filter(b => b.kind === 'damage');
+    expect(damageBlocks.length).toBeGreaterThan(0);
+    damageBlocks.forEach(b => expect(b.damage.basis).toBe('HP'));
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total, including her Basic ATK combo', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Baizhi'], BAIZHI_BLOCKS);
-    const { totalDamage, hitLog } = resolveHitComposedDps(BAIZHI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2000, 'glacio', 'Healer');
+    const { totalDamage, hitLog } = resolveHitComposedDps(BAIZHI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { hp: 20000 }, 'glacio', 'Healer');
     expect(totalDamage).toBeGreaterThan(0);
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('baizhi.intro.overflowing-frost')).toBe(true);
@@ -80,9 +93,9 @@ describe('triggerEngine parity — Baizhi', () => {
   // bounded stretch following the Emergency Plan cast, not the entire simulated timeline.
   it("S2's Glacio DMG buff is genuinely time-windowed, not silently permanent", () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Baizhi'], BAIZHI_BLOCKS);
-    const withS2 = resolveHitComposedDps(BAIZHI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2000, 'glacio', 'Healer', null, 2);
+    const withS2 = resolveHitComposedDps(BAIZHI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { hp: 20000 }, 'glacio', 'Healer', null, 2);
     const withoutS2Blocks = BAIZHI_BLOCKS.filter(b => b.id !== 'baizhi.chain.s2');
-    const withoutS2 = resolveHitComposedDps(withoutS2Blocks, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2000, 'glacio', 'Healer', null, 2);
+    const withoutS2 = resolveHitComposedDps(withoutS2Blocks, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, { hp: 20000 }, 'glacio', 'Healer', null, 2);
     // A hit that happens BEFORE Emergency Plan is ever cast (her Intro) must be unaffected by S2 —
     // proof the buff has a real start time, not just an eventual end time.
     const introWithS2 = withS2.hitLog.find(h => h.blockId === 'baizhi.intro.overflowing-frost');

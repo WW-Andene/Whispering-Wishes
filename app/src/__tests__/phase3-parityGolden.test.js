@@ -157,6 +157,14 @@ const EXPECTED_DIVERGENCES = {
   // moves in her total, shrinking this same divergence mechanism's ratio from ~1.139 to ~1.040 — same
   // underlying cause as before, a smaller number because the composition of her modeled damage
   // genuinely changed, not a new or different divergence.
+  // Golden fixture re-measured 2026-09-08 (full redo re-audit): baizhi.blocks.js used basis:'ATK' on
+  // EVERY damage block despite CHARACTER_DATA['Baizhi'].statScaling being 'HP' (she shares
+  // Shorekeeper's own signature weapon and Substat priority never mentions ATK — a genuinely
+  // HP-scaling kit, same class as Cartethyia's). Fixed to basis:'HP' throughout. Both legacy
+  // (168->3012, since RAW tier shares the block-based resolver) and engine (175->3127) moved together
+  // by the same large factor (her HP base, ~12800+, vs her tiny ATK base, ~213). New measured ratio
+  // ~1.038 (engine/legacy), still inside this existing band — a pure scaling-basis fix preserves the
+  // engine/legacy ratio, it just corrects both numbers' absolute magnitude together.
   Baizhi: { min: 1.02, max: 1.06 },
   // Added 2026-09-06 (Brant completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi above.
   // To the Horizon (Liberation) got a real, sourced 24s cooldown added (Data dump/Brant/Brant.md's
