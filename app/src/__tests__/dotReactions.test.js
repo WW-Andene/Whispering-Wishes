@@ -55,6 +55,14 @@ describe('resolveDotReactionDps', () => {
     expect(result.breakdown.erosion.active).toBe(false);
   });
 
+  it('Zani on the team suppresses the aggregate Frazzle DOT total entirely (2026-09-08, direct user-verified sourcing: Zani converts 100% of teammate Frazzle into her own Heliacal Ember, never lets it tick as real DOT damage)', () => {
+    const withoutZani = resolveDotReactionDps([{ name: 'Phoebe' }], rotTime, defMult, resShred, getEnemyRes, mainResMult, null);
+    expect(withoutZani.breakdown.frazzle.dmg).toBeGreaterThan(0); // real Frazzle DOT damage normally happens
+    const withZani = resolveDotReactionDps([{ name: 'Phoebe' }, { name: 'Zani' }], rotTime, defMult, resShred, getEnemyRes, mainResMult, null);
+    expect(withZani.breakdown.frazzle.dmg).toBe(0);
+    expect(withZani.breakdown.frazzle.active).toBe(false);
+  });
+
   it('a team with no DOT-applying members produces zero DOT damage', () => {
     const members = [{ name: 'Aalto' }];
     const result = resolveDotReactionDps(members, rotTime, defMult, resShred, getEnemyRes, mainResMult, null);

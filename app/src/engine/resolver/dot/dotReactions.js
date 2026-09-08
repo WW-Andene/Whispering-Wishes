@@ -93,12 +93,27 @@ export function resolveDotReactionDps(members, rotTime, defMult, resShred, getEn
   // kit text — has no sourced aggregate total anywhere yet). Same mixed-migration safety check as
   // Erosion: only prefer blocks when every frazzle-flagged member present has a dotApplier block.
   const hasPhoebe = members.some(m => m.name === 'Phoebe');
+  // Zani suppression (2026-09-08, direct user correction with real, verified community sourcing —
+  // three independent Reddit threads confirming "Frazzle caps at 10, period... If Zani is in your
+  // team, you NEVER are stacking Frazzle. You instead stack Heliacal Embers"): this file's own prior
+  // comments (characters.js line 611-613/637-640, CHAR_BUFF_TABLE['Zani'].note) already documented
+  // this exact mechanic in prose — Zani instantly converts 100% of any teammate's real Frazzle
+  // application into her own separate Heliacal Ember/Blaze resource, consumed by her own Outro hit
+  // (zani.blocks.js's own damage block) — but nothing anywhere actually zeroed the aggregate Frazzle
+  // DOT reaction when she's on the team. Real bug found: a Zani + Frazzle-applier team (her only real
+  // synergy, Confession Phoebe) was computing BOTH the full phantom Frazzle DOT tick total (damage
+  // that, per the real mechanic, never actually happens once she's present) AND Zani's own converted
+  // Heliacal Ember hit — double-crediting the same underlying Frazzle applications as two unrelated
+  // damage sources instead of the one real one.
+  const hasZani = members.some(m => m.name === 'Zani');
   const frazzleFlaggedMembers = members.filter(m => CHAR_BUFF_TABLE[m.name]?.debuffs?.some(db => db.stat === 'frazzle'));
   const allFrazzleMembersHaveBlocks = blocksByOwner && frazzleFlaggedMembers.every(m =>
     (blocksByOwner[m.name] || []).some(b => b.dotApplier?.mechanic === 'frazzle'));
-  const frazzle = allFrazzleMembersHaveBlocks
-    ? resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, frazzleResMult, hasPhoebe, rotationsByOwner)
-    : calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
+  const frazzle = hasZani
+    ? { dmg: 0, active: false }
+    : allFrazzleMembersHaveBlocks
+      ? resolveFrazzleFromBlocks(blocksByOwner, rotTime, defMult, frazzleResMult, hasPhoebe, rotationsByOwner)
+      : calcFrazzleDmg(members, rotTime, defMult, frazzleResMult);
   // Erosion (the engine-merge history (git log) Phase 2 — Ciaccona migrated; Cartethyia migrated
   // 2026-09-06 — her real Rover: Aero-doubling condition, characters.js's "6 stacks with Rover (3
   // base)", is now modeled via dotApplier.requiresTeammate/valueWithTeammate on her 3 erosion blocks
