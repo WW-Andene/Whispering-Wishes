@@ -106,11 +106,39 @@ export const CHISA_BLOCKS = [
     // row.
     timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('954.29%'), category: 'libDmg' , basis: 'ATK' },
-    note: 'Also heals the team for 117.60% ATK and enters Woven Myriad - Convergence, neither modeled (no DPS component).',
+    note: 'Also heals the team for 117.60% ATK and enters Woven Myriad - Convergence (a real, sourced DMG-Multiplier buff — see chisa.selfbuff.woven-myriad-convergence below, added 2026-09-08 after this note previously wrongly claimed it had "no DPS component").',
     // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen: 20". Its
     // "Resonance Energy cost: 125" row is a Liberation-gauge cost, not a gain — no matching schema
     // field, not modeled, same treatment as every other character's own Liberation resource cost.
     concertoEnergyGain: 20,
+  },
+  // Added 2026-09-08 (full re-audit): Woven Myriad - Convergence is Liberation's own BASE-KIT effect
+  // (unconditional, active at every sequence level — NOT resonance-chain-gated) that this file's own
+  // prior note on chisa.liberation.moment-of-nihility incorrectly dismissed as "no DPS component."
+  // Per the dump's own Liberation section: "+120% DMG Multiplier to Sawring - Blitz, Chainsaw Mode -
+  // Dodge Counter, and Sawring - Eradication; the Ring-of-Chainsaw-consumption bonus DMG Multiplier
+  // for Sawring - Eradication [...] gets a further +120%." This is a SEPARATE, always-active source
+  // from chain.s3's own DUPLICATE copy of the same two bonuses (chain.s3's own note already confirms
+  // it "stacks with Woven Myriad - Convergence's own +120%") — chain.s3 was the ONLY one of the two
+  // ever modeled, meaning every sequence level was silently missing this entire base-kit multiplier on
+  // her single largest damage category (Liberation is 84.5% of her real rotation per the dump's own
+  // damage-type breakdown). Scoped to the 2 real, modeled moves it covers (Chainsaw Mode - Dodge
+  // Counter has no block, never cast in the modeled rotation, so correctly omitted from scope).
+  // Duration: kit text says Convergence "ends when Sawring - Eradication is cast" rather than on a
+  // fixed timer — modeled as a 15s sentinel (matches the dump's own "enters Woven Myriad - Convergence
+  // for 15s" line), which safely covers the real modeled rotation's Blitz 2-3 -> Eradication sequence
+  // (all cast well within 15s of Liberation).
+  {
+    id: 'chisa.selfbuff.woven-myriad-convergence',
+    source: SOURCE, kind: 'buff', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Moment of Nihility' },
+    timing: { duration: 15 },
+    target: { scope: 'self' },
+    effects: [
+      { stat: 'libDmg', value: 120, scopedToBlockId: ['chisa.forte.sawring-blitz-2-3', 'chisa.forte.sawring-eradication'], source: 'self-kit' },
+      { stat: 'totalMult', value: 120, scopedToBlockId: 'chisa.forte.sawring-eradication-ring-scalar', source: 'self-kit' },
+    ],
+    note: 'Woven Myriad - Convergence (base kit, unconditional post-Liberation): +120% DMG Multiplier to Sawring - Blitz/Chainsaw Mode - Dodge Counter/Sawring - Eradication, PLUS a further +120% to the Ring-of-Chainsaw-consumption bonus specifically (the ring-scalar hit) — see chisa.chain.s3 for the separate, additional Resonance Chain copy of the same two bonuses.',
   },
   {
     id: 'chisa.skill.serrated-loop',
@@ -276,12 +304,29 @@ export const CHISA_BLOCKS = [
     note: "Havoc RES ignore +10% — the smaller of S2's two real effects, per the audit comment ('real 10% Havoc RES ignore is the smaller of two S2 effects'). RESONANCE_CHAIN_DATA['Chisa'].s2 only stores the larger allDmg:50 value; this second real, sourced number is used directly rather than left out, same pattern as Calcharo's S6.",
   },
   {
+    // Rescoped 2026-09-08 (full re-audit): was an UNSCOPED passive libDmg:120 — libDmg IS category-
+    // gated, but that only means it reaches every libDmg-CATEGORIZED block, not just the 3 moves S3's
+    // own kit text actually names (Sawring-Blitz/Chainsaw Mode Dodge Counter/Sawring-Eradication). Left
+    // unscoped, it was ALSO silently boosting chisa.basic.death-snip and chisa.liberation.moment-of-
+    // nihility itself (both real libDmg-categorized blocks with no kit-text basis for receiving this
+    // bonus) — the same "category-gated stat still needs scopedToBlockId when the kit text names a
+    // SUBSET of that category" bug class already found and fixed on several other characters this
+    // session (e.g. Carlotta's Final Bow, Camellya's chain nodes). Rescoped to the exact 2 real,
+    // modeled moves the kit text names (Chainsaw Mode - Dodge Counter has no block, never cast in the
+    // modeled rotation). Also added the 2nd real effect this node grants — "a further +120% to the
+    // Ring-of-Chainsaw consumption bonus specifically" — previously left unmodeled with no note
+    // explaining WHY beyond "same as S2's own split," even though a real block
+    // (chisa.forte.sawring-eradication-ring-scalar) exists to scope it to, mirroring
+    // chisa.selfbuff.woven-myriad-convergence's own identical 2nd effect (added this same pass).
     id: 'chisa.chain.s3',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'libDmg', value: 120, source: 'self-kit' }],
-    note: "Corrected 2026-09-02 against a fresh the source dump (RESONANCE_CHAIN_DATA.Chisa.s3 fixed the same way): real effect is Sawring-Blitz/Chainsaw Mode Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd copy of Woven Myriad-Convergence's own +120%). Those 3 moves are explicitly 'considered Resonance Liberation DMG' per her own kit text, so modeled as libDmg. The smaller secondary effect (a further +120% to just the Ring-of-Chainsaw consumption bonus) is left unmodeled, same as S2's own resShred/allDmg split above.",
+    effects: [
+      { stat: 'libDmg', value: 120, scopedToBlockId: ['chisa.forte.sawring-blitz-2-3', 'chisa.forte.sawring-eradication'], source: 'self-kit' },
+      { stat: 'totalMult', value: 120, scopedToBlockId: 'chisa.forte.sawring-eradication-ring-scalar', source: 'self-kit' },
+    ],
+    note: "Real effect: Sawring-Blitz/Chainsaw Mode Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd, separate copy of Woven Myriad-Convergence's own +120% — see chisa.selfbuff.woven-myriad-convergence above, which stacks additively with this), PLUS a further +120% to the Ring-of-Chainsaw consumption bonus specifically — both now scoped to the exact real blocks via scopedToBlockId rather than an unscoped category-wide passive. Vibration Strength Reduction Rate +50% for those 3 moves, not modeled (no DPS component).",
   },
   // S4 correctly has NO block — per its own audit comment ('improves Havoc Bane trigger rate
   // (utility)'), S4's real effect is a proc-rate utility bonus with zero DPS component, despite
@@ -301,9 +346,20 @@ export const CHISA_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Serrated Loop' },
     timing: { duration: 99 }, // sentinel: conditional on Unseen Snare-Finality state, no natural decay sourced
     target: { scope: 'all-enemies' },
-    effects: [{ stat: 'amplify', value: 30 }],
+    // 2nd effect (elemDmg:40) added 2026-09-08 (full re-audit): the dump's own kit text names TWO
+    // separate real effects in the same sentence — "+30% Amplified DMG from Negative Statuses" (team-
+    // wide, the existing amplify effect) AND "+40% increased DMG from Chisa specifically" — only the
+    // first was ever modeled (RESONANCE_CHAIN_DATA['Chisa'].s6's own audit comment likewise only ever
+    // named the amplify half). Modeled unscoped: this file only contains Chisa's own kit, so an
+    // unscoped elemDmg effect here already means "every hit Chisa herself lands," exactly matching
+    // "from Chisa specifically" with no carve-out needed (unlike Cartethyia's own chain.s6 fix this
+    // session, which needed scoping to exclude a DIFFERENT FORM's hits within the same character).
+    effects: [
+      { stat: 'amplify', value: 30 },
+      { stat: 'elemDmg', value: 40, source: 'self-kit' },
+    ],
     // trigger retargeted Phase A audit 2026-09-04 (bug class c) — see chisa.debuff.thread-of-bane's
     // note for why 'Skill:Eye of Unraveling' never fired in the modeled Loop Rotation.
-    note: 'Unseen Snare-Finality: targets take 30% more Negative Status DMG (was amplify:15, wrong value, corrected) — an enemy-side debuff, modeled as triggered by the Unseen Snare-applying cast.',
+    note: 'Unseen Snare-Finality: targets take 30% more Negative Status DMG (was amplify:15, wrong value, corrected) AND take +40% increased DMG from Chisa specifically (added 2026-09-08 — previously entirely missing) — an enemy-side debuff, modeled as triggered by the Unseen Snare-applying cast.',
   },
 ];

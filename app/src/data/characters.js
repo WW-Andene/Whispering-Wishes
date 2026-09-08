@@ -7311,15 +7311,22 @@ const RESONANCE_CHAIN_DATA = {
   // Dodge Counter/Sawring-Eradication DMG Multiplier +120% (a 2nd, separate copy of Woven Myriad-Convergence's
   // own +120%, which is what her Liberation already grants). Since those 3 moves are explicitly "considered
   // Resonance Liberation DMG" per her own kit text (confirmed by the source's own damage-type breakdown: Liberation
-  // is 84.5% of her real rotation damage), modeled as libDmg — the smaller secondary effect (a further +120% to
-  // just the Ring-of-Chainsaw consumption bonus specifically) is left unmodeled, same "larger effect only"
-  // precedent already used for S2 above. S4: improves Havoc Bane trigger rate (utility) — was left at a
+  // is 84.5% of her real rotation damage), modeled as libDmg. The smaller secondary effect (a further +120% to
+  // just the Ring-of-Chainsaw consumption bonus specifically) was left unmodeled here originally — added
+  // 2026-09-08 (full re-audit) as totalMult:120 once chisa.blocks.js gained a dedicated block
+  // (chisa.forte.sawring-eradication-ring-scalar) to scope it to; this flat table now stores both of
+  // S3's real values, same 2-value convention as S2's own allDmg/resShred split above. S4: improves Havoc Bane trigger rate (utility) — was left at a
   // stale totalMult:10 placeholder despite this comment already describing it as pure utility; zeroed
   // 2026-09-03 (found via a systematic block-coverage audit) to actually match this comment's own
   // description, same "no real DPS component" pattern as Lynae's S6/Shorekeeper's S1/S3/S4/S5. S5:
   // Moment of Nihility Liberation DMG Mult+100% (was totalMult:10, no basis). S6: Unseen Snare-Finality:
   // targets take 30% more Negative Status DMG (was amplify:15, wrong value)
-  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { libDmg: 120 }, s4: {}, s5: { libDmg: 100 }, s6: { amplify: 30 } },
+  // s6 amended 2026-09-08 (full re-audit): the audit comment above only ever named "targets take 30%
+  // more Negative Status DMG" — but the SAME kit-text sentence this table sources from also grants a
+  // 2nd real effect right next to it, "+40% increased DMG from Chisa specifically," never sourced into
+  // this table at all. Added as elemDmg:40 (a personal DMG bonus, same "from [Character] specifically"
+  // pattern already fixed on Carlotta's/Cartethyia's own chain-S6-style personal bonuses this session).
+  'Chisa':        { s1: { atkPct: 30 }, s2: { allDmg: 50 }, s3: { libDmg: 120, totalMult: 120 }, s4: {}, s5: { libDmg: 100 }, s6: { amplify: 30, elemDmg: 40 } },
   // Ciaccona S1: ATK+35% after Basic ATK (conditional)
   // Full re-audit 2026-09-01 against the wiki/Ciaccona/Combat, cross-checked
   // against the source/character/1407 (both agree on every node's exact wording):

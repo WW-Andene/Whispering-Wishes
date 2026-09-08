@@ -13,9 +13,57 @@ describe('triggerEngine parity — Chisa', () => {
   it('S1/S3/S5/S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Chisa'];
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s1').effects[0].value).toBe(rc.s1.atkPct);
-    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s3').effects[0].value).toBe(rc.s3.libDmg);
+    const s3 = CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s3');
+    expect(s3.effects.find(e => e.stat === 'libDmg').value).toBe(rc.s3.libDmg);
+    expect(s3.effects.find(e => e.stat === 'totalMult').value).toBe(rc.s3.totalMult);
     expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
-    expect(CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s6').effects[0].value).toBe(rc.s6.amplify);
+    const s6 = CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s6');
+    expect(s6.effects.find(e => e.stat === 'amplify').value).toBe(rc.s6.amplify);
+    expect(s6.effects.find(e => e.stat === 'elemDmg').value).toBe(rc.s6.elemDmg);
+  });
+
+  // Found 2026-09-08 (full re-audit): chain.s3's libDmg:120 was UNSCOPED — libDmg is category-gated,
+  // but that only means it reaches every libDmg-categorized block, not just the 3 moves S3's own kit
+  // text names. It was silently also boosting Death Snip and the base Liberation ultimate hit itself,
+  // neither of which S3's kit text mentions. Rescoped to the 2 real modeled moves, and added the 2nd
+  // real effect (a further +120% to the Ring-of-Chainsaw consumption bonus specifically) that was
+  // previously left entirely unmodeled.
+  it("chain.s3's libDmg is scoped to only Sawring-Blitz/Eradication, not Death Snip or the base Liberation hit", () => {
+    const s3 = CHISA_BLOCKS.find(b => b.id === 'chisa.chain.s3');
+    const libDmgEffect = s3.effects.find(e => e.stat === 'libDmg');
+    expect(libDmgEffect.scopedToBlockId.sort()).toEqual(['chisa.forte.sawring-blitz-2-3', 'chisa.forte.sawring-eradication']);
+    const totalMultEffect = s3.effects.find(e => e.stat === 'totalMult');
+    expect(totalMultEffect.scopedToBlockId).toBe('chisa.forte.sawring-eradication-ring-scalar');
+  });
+
+  // Found 2026-09-08 (full re-audit): Woven Myriad - Convergence — Liberation's own BASE-KIT (not
+  // chain-gated) +120% DMG Multiplier to Sawring-Blitz/Eradication, plus a further +120% to the
+  // Ring-of-Chainsaw consumption bonus — was entirely unmodeled, with chisa.liberation.moment-of-
+  // nihility's own note wrongly claiming Convergence had "no DPS component." This meant every
+  // sequence level (not just S3+) was missing a real +120% multiplier on her single largest damage
+  // category (Liberation, 84.5% of her rotation per the dump).
+  it("Woven Myriad - Convergence (base kit) grants its own +120%/further-120% to the same 2 real moves, stacking additively with chain.s3's own copy", () => {
+    const convergence = CHISA_BLOCKS.find(b => b.id === 'chisa.selfbuff.woven-myriad-convergence');
+    expect(convergence.trigger).toEqual({ type: 'cast', on: 'Liberation:Moment of Nihility' });
+    const libDmgEffect = convergence.effects.find(e => e.stat === 'libDmg');
+    expect(libDmgEffect.value).toBe(120);
+    expect(libDmgEffect.scopedToBlockId.sort()).toEqual(['chisa.forte.sawring-blitz-2-3', 'chisa.forte.sawring-eradication']);
+    const totalMultEffect = convergence.effects.find(e => e.stat === 'totalMult');
+    expect(totalMultEffect.value).toBe(120);
+    expect(totalMultEffect.scopedToBlockId).toBe('chisa.forte.sawring-eradication-ring-scalar');
+  });
+
+  // Positive-verification test for the Convergence fix: proves Sawring-Eradication's real damage is
+  // now higher even at S0 (no chain), since Convergence is base-kit and unconditional.
+  it("Sawring-Eradication's real damage is higher with Woven Myriad - Convergence present, even at S0", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Chisa'], CHISA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withConvergence = resolveHitComposedDps(CHISA_BLOCKS, steps, ctx, 3000, 'havoc', 'Healer');
+    const withoutConvergenceBlocks = CHISA_BLOCKS.filter(b => b.id !== 'chisa.selfbuff.woven-myriad-convergence' && b.id !== 'chisa.chain.s3');
+    const withoutConvergence = resolveHitComposedDps(withoutConvergenceBlocks, steps, ctx, 3000, 'havoc', 'Healer');
+    const eradWith = withConvergence.hitLog.find(h => h.blockId === 'chisa.forte.sawring-eradication');
+    const eradWithout = withoutConvergence.hitLog.find(h => h.blockId === 'chisa.forte.sawring-eradication');
+    expect(eradWith.damage).toBeGreaterThan(eradWithout.damage);
   });
 
   it('S2 is split into its two real effects — allDmg matches RESONANCE_CHAIN_DATA, resShred is sourced beyond it', () => {

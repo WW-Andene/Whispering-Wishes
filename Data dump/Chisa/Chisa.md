@@ -261,3 +261,50 @@ Rotation time: 7.21s. Build: Kumokiri R1, 3pc Thread of Severed Fate + 2pc Endle
 | S6 | 642,753 | 89,147 | 280.11% |
 
 Note S3 and S4 produce byte-identical DMG/DPS — same "zeroed" pattern already seen on other characters whose S4 node has no real DPS component (here, S4's Unseen Snare Havoc Bane proc-rate change from 2s→1s doesn't register in a fixed-length solo calc rotation).
+
+## Full re-audit (2026-09-08)
+
+Full re-read of this dump, `chisa.blocks.js` (already through a Phase A audit and 2 completeness
+passes), and every relevant `characters.js` table (CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
+SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, CHARACTER_DATA). Three real findings, the first a major gap:
+
+1. **Woven Myriad - Convergence — Liberation's own BASE-KIT effect (unconditional, active at every
+   sequence level, NOT chain-gated) — was entirely unmodeled.** `chisa.liberation.moment-of-nihility`'s
+   own note previously said Convergence had "no DPS component," but the dump's own Liberation section
+   is explicit: "+120% DMG Multiplier to Sawring - Blitz, Chainsaw Mode - Dodge Counter, and
+   Sawring - Eradication; the Ring-of-Chainsaw-consumption bonus DMG Multiplier for Sawring -
+   Eradication [...] gets a further +120%." Only `chain.s3` (a SEPARATE, chain-gated DUPLICATE of the
+   exact same two bonuses — its own note already confirmed it "stacks with Woven Myriad -
+   Convergence's own +120%") was ever modeled — meaning every sequence level, not just below S3, was
+   silently missing this entire base-kit multiplier on her single largest damage category (Liberation
+   is 84.5% of her real rotation per the dump's own damage-type breakdown). Added a new block,
+   `chisa.selfbuff.woven-myriad-convergence`, scoped to the 2 real modeled moves it covers.
+2. **`chain.s3`'s own libDmg:120 was UNSCOPED.** libDmg is category-gated, but that only means it
+   reaches every libDmg-categorized block — not just the 3 moves S3's kit text actually names. Left
+   unscoped, it was ALSO silently boosting `chisa.basic.death-snip` and the base
+   `chisa.liberation.moment-of-nihility` hit itself, neither of which S3's kit text covers. Rescoped to
+   the 2 real modeled moves via `scopedToBlockId`.
+3. **`chain.s3`'s own 2nd effect (a further +120% to the Ring-of-Chainsaw consumption bonus
+   specifically) was left entirely unmodeled**, with the file's prior note only explaining it was
+   "left unmodeled, same as S2's own split" — but by the time of this pass, a real block
+   (`chisa.forte.sawring-eradication-ring-scalar`) already existed specifically to scope this onto.
+   Added as a scoped `totalMult` effect, mirroring Convergence's own identical 2nd effect above.
+4. **`chain.s6`'s own "+40% increased DMG from Chisa specifically" was entirely missing** — the audit
+   comment backing `RESONANCE_CHAIN_DATA['Chisa'].s6` only ever named the +30% team-wide amplify half
+   of the same kit-text sentence. Added as an unscoped `elemDmg:40` effect (unscoped is correct here,
+   unlike Cartethyia's own analogous chain.s6 fix earlier this session — this file only contains
+   Chisa's own kit, with no "different form" carve-out needed).
+
+`RESONANCE_CHAIN_DATA['Chisa']` updated to store both of S3's real values (`libDmg:120,
+totalMult:120`) and both of S6's (`amplify:30, elemDmg:40`), matching the existing 2-value convention
+already used for S2's own allDmg/resShred split. Golden-parity fixture re-measured (legacy
+3264→4953, engine 4084→5773, both driven by the Convergence fix since RAW tier shares the modern
+block-based resolver); new ratio ~1.166 stays inside the existing `EXPECTED_DIVERGENCES` band
+(1.15–1.35), documented with a dated comment.
+
+Everything else re-verified clean against this dump with no changes needed: S1/S2/S4/S5 (S4 correctly
+zeroed as pure utility), Thread of Bane/Havoc Bane, Minor Fortes, both Inherent Skills, the Intro/
+Liberation self-buff split, Death Snip/Rending Lunge/Sawring-Blitz's own categorization, base stats
+(10,775/438/1,137/125), DPS tier (T0/T0), bestWeapon (Kumokiri), weaponAlts, bestEchoes, full
+SKILL_MULTIPLIERS, and CHARACTER_ROTATIONS all match this dump exactly. Full test suite: 1814/1814
+passing (5 new/updated tests).

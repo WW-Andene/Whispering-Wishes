@@ -240,6 +240,14 @@ const EXPECTED_DIVERGENCES = {
   // calcTeamStats()'s cooldownSteadyState gate correctly derates the legacy RAW number
   // (3314 -> 2657); this test's own standalone engine call doesn't apply that gate, so it stays at
   // the un-derated value. Measured ratio ~1.247 (engine/legacy) — real, expected, not a regression.
+  // Golden fixture re-measured 2026-09-08 (full re-audit): Woven Myriad - Convergence (Liberation's
+  // own base-kit, unconditional +120% DMG Multiplier to Sawring-Blitz/Eradication, plus a further
+  // +120% to the Ring-of-Chainsaw consumption bonus) was entirely unmodeled — a prior note wrongly
+  // called it "no DPS component." Both legacy (3264->4953, since this shares the modern engine's
+  // block-based RAW-tier path) and engine (4084->5773) moved together. Also fixed chain.s3's own
+  // unscoped libDmg (was leaking onto Death Snip/the base Liberation hit) and added its missing
+  // ring-scalar-specific +120%. New measured ratio ~1.166 (engine/legacy), still inside this existing
+  // band — no change needed to the band itself.
   Chisa: { min: 1.15, max: 1.35 },
   // Added 2026-09-06 (Chixia completeness pass): same class as the prior 12 characters above.
   // Whizzing Fight Spirit (Skill) and Blazing Flames (Liberation) both got real, sourced cooldowns
