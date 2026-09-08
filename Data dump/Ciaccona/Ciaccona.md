@@ -313,3 +313,19 @@ Concert/Outro buffs, Erosion dotApplier consistency across her 4 real applying m
 (12,238/375/1,198/125), tier (T0.5 ToA/T1 WW), bestWeapon (Woodland Aria), weaponAlts, bestEchoes,
 dmgFocus, full SKILL_MULTIPLIERS, and CHARACTER_ROTATIONS all match this dump exactly. Full test
 suite: 1820/1820 passing (4 new/updated tests).
+
+**Follow-up (2026-09-08, same day): dot-application gap found on direct user question.** Asked
+"did you verify dot application?" prompted a closer look — the answer was no, not thoroughly. Found
+one real, significant gap: `ciaccona.liberation.symphonic-poem-tonic` (the Symphonic Poem: Tonic
+pulse) had **no `dotApplier` at all**, despite being her SIGNATURE, defining off-field DOT-
+application mechanic. This dump's own Review section lists "Aero Erosion/Spectro Frazzle from her
+Ultimate apply repeatedly off-field, even across multiple waves" as a top Pro, and her two best
+Synergies (Cartethyia, Phoebe) are explicitly built around this exact repeating pulse, not her other
+4 (already-tagged) Erosion moves. `dotReactionsFromBlocks.js` is purely `dotApplier`-tag-driven with
+no fallback, so this block was entirely invisible to any cross-character Erosion/Frazzle reactivity.
+Tagged with `{ mechanic: 'erosion', value: 3 }`, matching Green Tonic (the default per
+`CHARACTER_ROTATIONS`' own step note, "otherwise she stays on Aero Erosion by default") and her
+other 4 real Erosion-applying moves' own value. Yellow Tonic (Spectro Frazzle) is a real, switchable
+alternative this dump gives no explicit stack-count for and isn't the modeled rotation's default —
+left unmodeled rather than fabricating a number, documented as a disclosed gap in the block's own
+comment. Full test suite: 1821/1821 passing (1 new test).

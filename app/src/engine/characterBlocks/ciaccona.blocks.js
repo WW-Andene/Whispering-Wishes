@@ -144,6 +144,23 @@ export const CIACCONA_BLOCKS = [
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('6.12%×20'), category: 'libDmg' , basis: 'ATK' },
     note: 'Periodic pulse during Recital over the field duration, triggered by successful prompt interaction. Modeled as one representative full-duration hit-set, not the real per-pulse timing.',
+    // dotApplier added 2026-09-08 (full re-audit, direct user question "did you verify dot
+    // application?"): this block had NO dotApplier at all despite being her SIGNATURE, defining
+    // off-field DOT-application mechanic — the dump's own Review section lists "Aero Erosion/Spectro
+    // Frazzle from her Ultimate apply repeatedly off-field, even across multiple waves" as a top Pro,
+    // and her best Synergies (Cartethyia, Phoebe) are explicitly built around this exact repeating
+    // Tonic-pulse application, not her other 4 (already-tagged) Erosion moves. dotReactionsFromBlocks.js
+    // is purely dotApplier-tag-driven (mechanicBlocks/appliers filters both require the field) — with
+    // no tag, this block was entirely invisible to any cross-character Erosion/Frazzle reactivity
+    // (e.g. a hypothetical ally-action node reacting to "any team member inflicts Erosion", the same
+    // shape as Cartethyia's own chain.s4) despite being a real applier. Green Tonic (Aero Erosion) is
+    // the default per CHARACTER_ROTATIONS['Ciaccona']'s own step note ("otherwise she stays on Aero
+    // Erosion by default") and matches her other 4 real Erosion-applying moves' own value:3 — tagged
+    // here to match. Yellow Tonic (Spectro Frazzle) is a real, switchable alternative this dump does
+    // NOT give an explicit stack-count value for, and isn't the modeled rotation's default state —
+    // left unmodeled rather than fabricating a Frazzle stack number with no source, per this project's
+    // never-fabricate rule. Flagging this as a genuine, disclosed gap rather than a silent omission.
+    dotApplier: { mechanic: 'erosion', value: 3 },
     // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Ciaccona/Ciaccona.md's own
     // "Successful Interaction Concerto Regen 10 (each)" row — since this block already represents
     // all 20 real pulses combined into one hit-list (per its own note), the total is 10×20 = 200,

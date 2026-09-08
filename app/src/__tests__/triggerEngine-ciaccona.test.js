@@ -93,6 +93,25 @@ describe('triggerEngine parity — Ciaccona', () => {
     expect(tonicWith.damage).toBeGreaterThan(tonicWithout.damage);
   });
 
+  // Found 2026-09-08 (direct user question "did you verify dot application?"): the Symphonic Poem:
+  // Tonic block — her SIGNATURE, defining off-field DOT-application mechanic (the dump's own Review
+  // lists it as a top Pro, and her best Synergies with Cartethyia/Phoebe are built around exactly
+  // this repeating pulse) — had NO dotApplier at all, making it invisible to the whole
+  // dotReactionsFromBlocks.js system (purely tag-driven, no fallback).
+  it('all 4 base Erosion-applying moves AND the Symphonic Poem: Tonic pulse carry a matching dotApplier (MAX-not-sum aggregation, no double-count risk)', () => {
+    const ids = [
+      'ciaccona.intro.roaming-with-the-wind',
+      'ciaccona.basic.stage4',
+      'ciaccona.skill.harmonic-allegro',
+      'ciaccona.forte.quadruple-downbeat',
+      'ciaccona.liberation.symphonic-poem-tonic',
+    ];
+    for (const id of ids) {
+      const b = CIACCONA_BLOCKS.find(x => x.id === id);
+      expect(b.dotApplier, `${id} missing dotApplier`).toEqual({ mechanic: 'erosion', value: 3 });
+    }
+  });
+
   it('outro and libBuff match CHAR_BUFF_TABLE, with the outro correctly scoped to Aero only', () => {
     const legacy = CHAR_BUFF_TABLE['Ciaccona'];
     const outro = CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.outro.windcalling-tune');
