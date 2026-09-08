@@ -136,16 +136,81 @@ describe('triggerEngine parity — Cartethyia', () => {
   // Attack. Now scoped via scopedToBlockId to both of her real Mid-air Attack blocks.
   it('S2\'s Mid-air Attack totalMult is scoped to only her 2 real Mid-air Attack blocks, not her whole kit', () => {
     const s2 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.chain.s2');
-    const totalMultEffects = s2.effects.filter(e => e.stat === 'totalMult');
-    expect(totalMultEffects.length).toBe(2);
-    for (const e of totalMultEffects) {
+    const midairEffects = s2.effects.filter(e => e.stat === 'totalMult' && e.value === 200);
+    expect(midairEffects.length).toBe(2);
+    for (const e of midairEffects) {
       expect(e.value).toBe(200);
       expect(e.scopedToBlockId).toBeDefined();
     }
-    const scopedIds = totalMultEffects.map(e => e.scopedToBlockId).sort();
+    const scopedIds = midairEffects.map(e => e.scopedToBlockId).sort();
     expect(scopedIds).toEqual([
       'cartethyia.midair.cartethyia-plunging-attack',
       'cartethyia.midair.fleurdelys-stage-3',
     ]);
+  });
+
+  // Found 2026-09-08 (full re-audit): S2's kit text groups "Basic ATK/Heavy ATK/Dodge Counter/Intro
+  // Skill" under ONE +50% multiplier, but the pre-existing `basicDmg` effect only reaches
+  // Basic/Heavy/Dodge-Counter (Intro is category:'introDmg', a category applyBuff() has no case for
+  // yet) — Intro's own share of that +50% was silently missing entirely. Delivered via the same
+  // scoped-totalMult technique as the Mid-air Attack bonus above.
+  it("S2's Intro Skill share of the +50% multiplier is delivered via a scoped totalMult (introDmg stat isn't wired in the engine yet)", () => {
+    const s2 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.chain.s2');
+    const introEffect = s2.effects.find(e => e.stat === 'totalMult' && e.scopedToBlockId === 'cartethyia.intro.sword-to-mark-tides-trace');
+    expect(introEffect).toBeDefined();
+    expect(introEffect.value).toBe(50);
+  });
+
+  // Found 2026-09-08 (full re-audit): both her Intro blocks had no `damage.category` at all — the
+  // same class of gap already fixed on Sigrika's/Suisui's own Intro blocks (categories.js registers
+  // 'introDmg' for exactly this move type).
+  it("both Intro blocks are category:'introDmg'", () => {
+    expect(CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.intro.sword-to-mark-tides-trace').damage.category).toBe('introDmg');
+    expect(CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.intro.sword-to-call-for-freedom').damage.category).toBe('introDmg');
+  });
+
+  // Found 2026-09-08 (full re-audit): chain.s1 (Fleurdelys's own Crit DMG) and chain.s6 (targets take
+  // +40% more DMG "from Fleurdelys specifically") were both unscoped passives — silently applying to
+  // her pre-Manifest, base-Cartethyia-form hits too (Intro/Basic1-4/Skill-base-form/Mid-air Cartethyia
+  // Plunging Attack), which fire BEFORE she ever transforms into Fleurdelys and before any Conviction
+  // exists. Both are now scoped to only her real Fleurdelys-form damage blocks.
+  it('chain.s1 and chain.s6 are scoped to Fleurdelys-form blocks only, excluding her pre-Manifest base-Cartethyia-form hits', () => {
+    const fleurdelysBlockIds = [
+      'cartethyia.skill.fleurdelys-1',
+      'cartethyia.basic.fleurdelys-1-5',
+      'cartethyia.skill.fleurdelys-2',
+      'cartethyia.midair.fleurdelys-stage-3',
+      'cartethyia.liberation.blade-of-howling-squall',
+      'cartethyia.heavy.fleurdelys-enhanced',
+      'cartethyia.intro.sword-to-call-for-freedom',
+      'cartethyia.basic.dodge-counter-fleurdelys',
+      'cartethyia.basic.upward-cut-fleurdelys',
+    ];
+    const s1 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.chain.s1');
+    const s6 = CARTETHYIA_BLOCKS.find(b => b.id === 'cartethyia.chain.s6');
+    expect(s1.effects[0].scopedToBlockId.sort()).toEqual([...fleurdelysBlockIds].sort());
+    expect(s6.effects[0].scopedToBlockId.sort()).toEqual([...fleurdelysBlockIds].sort());
+    // Cartethyia-form-only blocks must NOT be in the scope list.
+    for (const id of ['cartethyia.intro.sword-to-mark-tides-trace', 'cartethyia.basic.base-form-1-4', 'cartethyia.skill.base-form', 'cartethyia.midair.cartethyia-plunging-attack']) {
+      expect(s1.effects[0].scopedToBlockId).not.toContain(id);
+      expect(s6.effects[0].scopedToBlockId).not.toContain(id);
+    }
+  });
+
+  // Positive-verification test for the chain.s1/s6 scoping fix: proves the pre-Manifest Intro hit's
+  // real damage is now UNCHANGED by S1/S6's presence (since they no longer reach it), while a real
+  // Fleurdelys-form hit still receives S6's +40% elemDmg debuff.
+  it("chain.s6's +40% no longer inflates her pre-Manifest Intro hit, but still boosts a real Fleurdelys-form hit", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Cartethyia'], CARTETHYIA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS6 = resolveHitComposedDps(CARTETHYIA_BLOCKS, steps, ctx, { hp: 40000 }, 'aero', 'Main DPS');
+    const withoutS6Blocks = CARTETHYIA_BLOCKS.filter(b => b.id !== 'cartethyia.chain.s6');
+    const withoutS6 = resolveHitComposedDps(withoutS6Blocks, steps, ctx, { hp: 40000 }, 'aero', 'Main DPS');
+    const introWith = withS6.hitLog.find(h => h.blockId === 'cartethyia.intro.sword-to-mark-tides-trace');
+    const introWithout = withoutS6.hitLog.find(h => h.blockId === 'cartethyia.intro.sword-to-mark-tides-trace');
+    expect(introWith.damage).toBeCloseTo(introWithout.damage, 5);
+    const bladeWith = withS6.hitLog.find(h => h.blockId === 'cartethyia.liberation.blade-of-howling-squall');
+    const bladeWithout = withoutS6.hitLog.find(h => h.blockId === 'cartethyia.liberation.blade-of-howling-squall');
+    expect(bladeWith.damage).toBeGreaterThan(bladeWithout.damage);
   });
 });

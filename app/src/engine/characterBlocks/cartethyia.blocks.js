@@ -56,7 +56,15 @@ export const CARTETHYIA_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: "Intro:Sword to Mark Tide's Trace" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('2.08%×3 + 6.24%'), basis: 'HP' },
+    // category:'introDmg' added 2026-09-08 (full re-audit): this block had NO category at all, the
+    // same class of gap already fixed on Sigrika's/Suisui's own Intro blocks (categories.js registers
+    // 'introDmg' precisely for this move type). Note the engine's own applyBuff() switch
+    // (calcEngine.js) has no `case 'introDmg'` yet — an introDmg-targeted stat buff is still a no-op
+    // engine-wide (affects Sigrika/Suisui identically, a separate, cross-cutting architecture gap out
+    // of scope for a single-character fix) — but the categorization itself is still correct now
+    // instead of silently uncategorized, and is what any future introDmg-stat wiring or hitLog-based
+    // damage-profile consumer will read.
+    damage: { hits: parseSkillMultiplierHits('2.08%×3 + 6.24%'), basis: 'HP', category: 'introDmg' },
     note: "Inflicts 2 Aero Erosion stacks, summons Sword of Discord's Shadow (max 1, 20s).",
     // Added 2026-09-03: this character had NO dotApplier anywhere despite being a real Erosion
     // applier — value:3 matches her own CHAR_BUFF_TABLE.debuffs.erosion base value ("3 base", 6 with
@@ -224,7 +232,9 @@ export const CARTETHYIA_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Sword to Call for Freedom' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('4.28% + 9.97%'), basis: 'HP' },
+    // category:'introDmg' added 2026-09-08, same fix/reasoning as cartethyia.intro.sword-to-mark-
+    // tides-trace above.
+    damage: { hits: parseSkillMultiplierHits('4.28% + 9.97%'), basis: 'HP', category: 'introDmg' },
     concertoEnergyGain: 10,
     note: "Fleurdelys-form Intro (swapping in while already Manifest) — restores Conviction on hit. Not in CHARACTER_ROTATIONS — her real rotation always opens from base Cartethyia form via Sword to Mark Tide's Trace instead.",
   },
@@ -317,12 +327,35 @@ export const CARTETHYIA_BLOCKS = [
     // always `applyEffects(block, 1, ...)`). Was silently delivering only 25% (1 stack) instead of the
     // 100% (4-stack) total this note already documented. Root-caused by writing that total directly;
     // the `timing.duration: 15` was likewise inert for a passive-trigger block, so dropped.
+    //
+    // scopedToBlockId added 2026-09-08 (full re-audit): the kit text is explicit this is "Fleurdelys's
+    // Crit DMG" — a bonus that only exists once Conviction has been built (30/60/90/120), i.e. only
+    // DURING Manifest, on Fleurdelys's own hits. Left unscoped, this passive's Crit DMG applied to
+    // EVERY hit in her kit including the pre-Manifest, base-Cartethyia-form combo (Intro/Basic1-4/
+    // Skill-base-form/Mid-air Cartethyia Plunging Attack) that fires BEFORE she ever transforms and
+    // BEFORE any Conviction exists to build this stack from — a real overcount on her entire opener.
+    // Rescoped via scopedToBlockId to her real Fleurdelys-form damage blocks only (mirrors the same
+    // fix already applied to chain.s2's totalMult, and the same class of bug just found on chain.s6
+    // below — see that block's own comment).
     id: 'cartethyia.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'critDmg', value: 100, source: 'self-kit' }],
-    note: "When Fleurdelys's Conviction hits 30/60/90/120, Crit DMG +25% for 15s, up to 4 stacks (100% at full stack, duration doesn't reset on a new stack) — now modeled flat at the 4-stack total since passive-trigger stacking metadata was dead (see fix comment above). Also grants a separate, unmodeled Zeal proc (10s window on an Erosion-inflicted kill that maxes Erosion stacks on the next kill's targets), not modeled.",
+    effects: [{
+      stat: 'critDmg', value: 100, source: 'self-kit',
+      scopedToBlockId: [
+        'cartethyia.skill.fleurdelys-1',
+        'cartethyia.basic.fleurdelys-1-5',
+        'cartethyia.skill.fleurdelys-2',
+        'cartethyia.midair.fleurdelys-stage-3',
+        'cartethyia.liberation.blade-of-howling-squall',
+        'cartethyia.heavy.fleurdelys-enhanced',
+        'cartethyia.intro.sword-to-call-for-freedom',
+        'cartethyia.basic.dodge-counter-fleurdelys',
+        'cartethyia.basic.upward-cut-fleurdelys',
+      ],
+    }],
+    note: "When Fleurdelys's Conviction hits 30/60/90/120, Crit DMG +25% for 15s, up to 4 stacks (100% at full stack, duration doesn't reset on a new stack) — now modeled flat at the 4-stack total since passive-trigger stacking metadata was dead (see fix comment above), and scoped (2026-09-08) to only her real Fleurdelys-form damage blocks since the bonus is explicitly Fleurdelys's own Crit DMG, not Cartethyia's. Also grants a separate, unmodeled Zeal proc (10s window on an Erosion-inflicted kill that maxes Erosion stacks on the next kill's targets), not modeled.",
   },
   {
     id: 'cartethyia.chain.s2',
@@ -340,8 +373,21 @@ export const CARTETHYIA_BLOCKS = [
       // gets the scope too, since it's a real Mid-air Attack the +200% genuinely applies to.
       { stat: 'totalMult', value: 200, scopedToBlockId: 'cartethyia.midair.cartethyia-plunging-attack', source: 'self-kit' },
       { stat: 'totalMult', value: 200, scopedToBlockId: 'cartethyia.midair.fleurdelys-stage-3', source: 'self-kit' },
+      // Added 2026-09-08 (full re-audit): the kit text groups "Basic ATK/Heavy ATK/Dodge Counter/Intro
+      // Skill" under the SAME +50% multiplier, but the bare `basicDmg` effect above only reaches
+      // Basic/Heavy/Dodge-Counter — Intro is category:'introDmg' (fixed this same pass, see
+      // cartethyia.intro.sword-to-mark-tides-trace's own comment), a category the engine's own
+      // applyBuff() switch has no case for yet, so a plain `introDmg`-stat effect would silently no-op.
+      // Delivered via the same scoped-totalMult technique already used for Mid-air Attack's own +200%
+      // two lines above — the established workaround in this exact block for "a per-move-type
+      // multiplier the category system can't natively reach" — scoped to her one real, rotation-firing
+      // Intro block. Documented as an approximation: totalMult is a separate multiplicative layer from
+      // the additive basicDmg dmgBonus pool, so this isn't numerically identical to how the other 3
+      // move types receive their +50%, but it's the closest available modeling given the introDmg-stat
+      // gap, and strictly better than the prior silent omission.
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'cartethyia.intro.sword-to-mark-tides-trace', source: 'self-kit' },
     ],
-    note: "DMG Multiplier of Basic ATK/Heavy ATK/Dodge Counter/Intro Skill +50% (basicDmg) AND DMG Multiplier of Mid-air Attack +200% specifically (totalMult, scoped via scopedToBlockId to her 2 real Mid-air Attack blocks — fixed 2026-09-04, was unscoped). Also raises Erosion's max-stack cap +3 within range on Liberation1 cast, and reduces Skill cooldown per Sword Shadow type recalled via Mid-air Attack (up to -3s at 3 distinct types) — neither modeled. A third real effect (confirmed 2026-09-02 against a fresh dump, previously not captured in this note at all): the NEXT direct-damage hit after Liberation1 cast inflicts 3 Erosion stacks on all nearby targets AND immediately triggers their Erosion DMG once without consuming stacks — a real proc-shaped mechanic, not modeled (no home in this schema for a one-shot conditional proc tied to a resource-cap-raise cast).",
+    note: "DMG Multiplier of Basic ATK/Heavy ATK/Dodge Counter/Intro Skill +50% (basicDmg for the first 3, which share the basicDmg category; a separate scoped totalMult approximation for Intro Skill specifically, since Intro is introDmg-categorized and that stat isn't wired in the engine yet — see the effect's own comment) AND DMG Multiplier of Mid-air Attack +200% specifically (totalMult, scoped via scopedToBlockId to her 2 real Mid-air Attack blocks — fixed 2026-09-04, was unscoped). Also raises Erosion's max-stack cap +3 within range on Liberation1 cast, and reduces Skill cooldown per Sword Shadow type recalled via Mid-air Attack (up to -3s at 3 distinct types) — neither modeled. A third real effect (confirmed 2026-09-02 against a fresh dump, previously not captured in this note at all): the NEXT direct-damage hit after Liberation1 cast inflicts 3 Erosion stacks on all nearby targets AND immediately triggers their Erosion DMG once without consuming stacks — a real proc-shaped mechanic, not modeled (no home in this schema for a one-shot conditional proc tied to a resource-cap-raise cast).",
   },
   {
     id: 'cartethyia.chain.s3',
@@ -374,11 +420,33 @@ export const CARTETHYIA_BLOCKS = [
   // Shield = 20% of Max HP for 10s, (b) Liberation1 HP cost reduced from 50% to 25% of Max HP — both
   // purely defensive, zero DPS component, neither has a DPS-stat equivalent.
   {
+    // scopedToBlockId added 2026-09-08 (full re-audit): the kit text says "Fleurdelys specifically" —
+    // this file's own prior note already said "applies broadly to her Fleurdelys-form blocks above,"
+    // but the block itself was left unscoped, an enemy-side elemDmg debuff on `all-enemies` that
+    // (per applyEffects()'s hitBlockId-scoped matching — same mechanism used for buffs) was silently
+    // amplifying EVERY Aero hit landed on that enemy, including her own pre-Manifest base-Cartethyia-
+    // form hits (Intro/Basic1-4/Skill-base-form/Mid-air Cartethyia Plunging Attack) and any other Aero
+    // teammate's hits — not just Fleurdelys's own, as the kit text and this file's own note both
+    // already said it should be. Same underlying bug class as chain.s1 above (see that block's own
+    // fix comment) — rescoped to the identical list of real Fleurdelys-form damage blocks.
     id: 'cartethyia.chain.s6',
     source: SOURCE, kind: 'debuff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'all-enemies' },
-    effects: [{ stat: 'elemDmg', value: 40 }],
-    note: 'Targets take +40% more DMG from Fleurdelys specifically (confirmed exact, matches the "targets take X% more DMG" enemy-side debuff convention used elsewhere in this file) — kept passive, applies broadly to her Fleurdelys-form blocks above. Also makes Blade of Howling Squall max (instead of remove) target Erosion stacks on cast, and within 30s of any Intro/Liberation cast, any team member inflicting Erosion on an already-max-stack target immediately procs Erosion DMG once — neither modeled.',
+    effects: [{
+      stat: 'elemDmg', value: 40,
+      scopedToBlockId: [
+        'cartethyia.skill.fleurdelys-1',
+        'cartethyia.basic.fleurdelys-1-5',
+        'cartethyia.skill.fleurdelys-2',
+        'cartethyia.midair.fleurdelys-stage-3',
+        'cartethyia.liberation.blade-of-howling-squall',
+        'cartethyia.heavy.fleurdelys-enhanced',
+        'cartethyia.intro.sword-to-call-for-freedom',
+        'cartethyia.basic.dodge-counter-fleurdelys',
+        'cartethyia.basic.upward-cut-fleurdelys',
+      ],
+    }],
+    note: 'Targets take +40% more DMG from Fleurdelys specifically (confirmed exact, matches the "targets take X% more DMG" enemy-side debuff convention used elsewhere in this file) — now actually scoped (2026-09-08) to only her real Fleurdelys-form blocks, not applied broadly as before. Also makes Blade of Howling Squall max (instead of remove) target Erosion stacks on cast, and within 30s of any Intro/Liberation cast, any team member inflicting Erosion on an already-max-stack target immediately procs Erosion DMG once — neither modeled.',
   },
 ];

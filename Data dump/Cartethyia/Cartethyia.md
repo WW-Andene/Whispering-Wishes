@@ -332,3 +332,54 @@ chart: Basic 225,945 · Debuff 29,099 · Skill 54,679 · Liberation 103,156 · I
    Chisa/Shorekeeper on the team, but opens the rotation FIRST when paired with Sanhua instead. Use
    Skyfall Severance (Rover: Aero's own Utility) to convert Havoc Bane into Erosion when running with
    Chisa specifically.
+
+## Full re-audit (2026-09-08)
+
+Full re-read of this dump, `cartethyia.blocks.js` (already the most heavily-audited file in the
+roster, having been through 4 prior passes — 2026-08-31, -09-02, -09-03, -09-04, -09-06, -09-07), and
+every relevant `characters.js` table (CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS,
+CHARACTER_ROTATIONS, CHARACTER_DATA). Three real findings, all fixed:
+
+1. **`chain.s1` (Fleurdelys's own Crit DMG, +25%/stack up to +100%) and `chain.s6` ("targets take +40%
+   more DMG from Fleurdelys specifically") were both unscoped passives.** Both kit-text quotes are
+   explicit that these are *Fleurdelys's* bonuses, but left unscoped they applied to EVERY hit in her
+   kit via `applyEffects()`'s per-hit `hitBlockId` matching — including her pre-Manifest, base-
+   Cartethyia-form combo (Intro/Basic Stage 1-4/Skill-base-form/Mid-air Cartethyia Plunging Attack),
+   which fires entirely BEFORE she ever transforms into Fleurdelys and before any Conviction exists to
+   build chain.s1's stacks from. This is the same underlying bug CLASS already fixed on chain.s2's
+   totalMult (2026-09-04, unscoped +200% Mid-air-only bonus leaking to her whole kit) but was never
+   checked on these two sibling nodes. Both rescoped via `scopedToBlockId` (now confirmed to accept an
+   array) to the same list of 9 real Fleurdelys-form damage blocks. Verified via a positive-effect test
+   proving her Intro hit's damage is now byte-identical with/without chain.s6 present, while Blade of
+   Howling Squall (a real Fleurdelys-form hit) still receives the bonus. Does not affect the
+   phase3-parityGolden fixture (that benchmark runs at Sequence 0, where neither node is active).
+2. **Both Intro blocks (`cartethyia.intro.sword-to-mark-tides-trace`, the real rotation-firing one, and
+   `cartethyia.intro.sword-to-call-for-freedom`, the unused Fleurdelys-form one) had no `damage.category`
+   at all** — the same gap already fixed on Sigrika's/Suisui's own Intro blocks (`categories.js`
+   registers `introDmg` for exactly this move type). Fixed to `category: 'introDmg'`. Noted: the
+   engine's own `applyBuff()` switch (`calcEngine.js`) has no `case 'introDmg'` yet, so an
+   introDmg-targeted stat buff is still a no-op engine-wide — a separate, cross-cutting architecture
+   gap affecting Sigrika/Suisui identically, correctly left out of scope for this character-specific fix
+   (flagging it here rather than silently working around it or expanding this change to rewire the
+   whole engine's introDmg pipeline).
+3. **`chain.s2`'s real kit text groups "Basic ATK/Heavy ATK/Dodge Counter/Intro Skill" under ONE +50%
+   multiplier**, but the existing `basicDmg` effect only reaches Basic/Heavy/Dodge-Counter (all
+   basicDmg-categorized) — Intro's own share of that +50% was silently missing entirely, precisely
+   because of finding 2's introDmg-stat gap. Delivered via the same scoped-`totalMult` technique already
+   used two lines below it in the same chain node for the Mid-air Attack +200% bonus (the established
+   workaround in this exact block for "a per-move-type multiplier the category system can't natively
+   reach") — scoped to her one real, rotation-firing Intro block, documented as an approximation since
+   totalMult is a separate multiplicative layer from the additive basicDmg dmgBonus pool the other 3
+   move types use.
+
+Everything else re-verified clean against this dump with no changes needed: chain.s3/s4 (s4's
+ally-action retrofit and s3's cast-scoped Blade-of-Howling-Squall-only bonus both still correct), S5
+(correctly unmodeled, purely defensive), Minor Fortes, both Inherent Skills, Mandate of Divinity, the
+Erosion dotApplier's Rover: Aero-doubling condition, the Outro, base stats (14,800 HP / 313 ATK / 611
+DEF / 125 Energy), DPS tier (T0.5/T1.5), bestWeapon (Defier's Thorn), weaponAlts, bestEchoes (main echo
+Reminiscence: Fleurdelys + Windward Pilgrimage 5pc set, correct main/set ordering), full
+SKILL_MULTIPLIERS (all 16 rows), full CHARACTER_ROTATIONS (14 steps), and RESONANCE_CHAIN_DATA all match
+this dump exactly. dmgFocus (`['Basic ATK', 'Liberation']`) already correctly matches her real 51.6%/
+23.6% damage-profile split. No further cross-character interaction issues found beyond the
+already-modeled Rover: Aero Erosion-cap-doubling. Full test suite: 1809/1809 passing after these fixes
+(4 new tests added).
