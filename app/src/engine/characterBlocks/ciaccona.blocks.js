@@ -220,23 +220,58 @@ export const CIACCONA_BLOCKS = [
     note: 'ATK +35% after Basic ATK (conditional) — kept passive rather than fabricating a specific per-stage trigger anchor, since the source condition text doesn\'t name one particular Basic ATK stage.',
   },
   {
+    // Retargeted 2026-09-08 (full re-audit): was `trigger:{type:'passive'}`, unconditionally active
+    // the WHOLE rotation — but the kit text is explicit this is conditional: "DURING Singer's Triple
+    // Cadenza (Liberation/Recital), the whole team gains +40% Aero DMG Bonus," not an always-on team
+    // buff. Her real modeled rotation casts Liberation near the very END (Intro -> Basic P3/P4 ->
+    // Jump-cancel loop -> Skill -> Forte Heavy -> Liberation -> Tonic -> Outro per the dump's own
+    // Basic Rotation), meaning the OLD unconditional-passive version was silently crediting +40% Aero
+    // DMG to her entire pre-Liberation combo (Basic/Heavy/Skill/Intro — the large majority of her real
+    // damage) which per the kit text shouldn't receive it at all — unlike S1's own similarly-
+    // unconditional treatment (justified there because that window opens on an EARLY Basic ATK cast
+    // and easily covers her whole short rotation; S2's real window opens LATE, near rotation's end, so
+    // the same "always on" shortcut doesn't hold). Retargeted to a cast-triggered buff on the
+    // Liberation cast itself, sentinel duration (Recital has no natural decay sourced — ends on
+    // pressing Liberation again or swapping back onto field, matching the same open-ended-state
+    // convention already used for ciaccona.libbuff.solo-concert above).
     id: 'ciaccona.chain.s2',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'whole-team' },
+    trigger: { type: 'cast', on: "Liberation:Singer's Triple Cadenza" },
+    timing: { duration: 99 }, // sentinel: Recital persists until manually ended, no natural decay sourced
+    target: { scope: 'whole-team' },
     condition: { element: 'aero' },
     effects: [{ stat: 'elemDmg', value: 40, source: 'self-kit' }],
-    note: 'Team +40% Aero DMG Bonus (corrected from allDmg to elemDmg per the 2026-09-01 re-audit — was granting a phantom all-element buff) — no specific cast trigger sourced, kept passive.',
+    note: "Team +40% Aero DMG Bonus DURING Singer's Triple Cadenza/Recital (corrected from allDmg to elemDmg per the 2026-09-01 re-audit — was granting a phantom all-element buff), now correctly gated to only apply from her Liberation cast onward (fixed 2026-09-08 — was unconditionally passive, over-crediting her entire pre-Liberation combo).",
   },
   // S3 correctly has NO block — real effect ("+1 Musical Essence segment on Basic Attack Stage 4" +
   // "+1 charge on Resonance Skill Harmonic Allegro") is pure resource/utility, zero DPS component.
   {
+    // Rescoped 2026-09-08 (full re-audit): was an UNSCOPED passive defIgnore:45 — defIgnore is NOT
+    // category-gated in resolveHitComposedDps.js (calcDefMult(enemyDef, stats.defShred,
+    // stats.defIgnore) is computed once per instant and applied to EVERY hit at that instant,
+    // regardless of category), so this was silently boosting ALL of her damage (Basic ATK, Skill,
+    // Intro too) — but the dump's own kit text is explicit and names only TWO move types: "Ignores 45%
+    // target DEF when dealing Heavy Attack (Quadruple Downbeat) DMG. Ignores 45% target DEF when
+    // dealing Resonance Liberation DMG." Same "category-agnostic stat still needs scopedToBlockId when
+    // the kit text names a SUBSET of moves" bug class already found and fixed on several other
+    // characters this session (e.g. Changli's Sweeping Force, Cartethyia's chain.s1/s6). Scoped to the
+    // 4 real blocks the kit text actually covers: Quadruple Downbeat (Heavy ATK) plus all 3
+    // libDmg-categorized Liberation blocks (the initial cast, the Tonic pulses, and S6's own
+    // "considered Resonance Liberation DMG" proc).
     id: 'ciaccona.chain.s4',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'defIgnore', value: 45, source: 'self-kit' }],
-    note: 'DEF Ignore +45% (confirmed exact value/category per the re-audit) — no specific cast trigger or scope sourced beyond the flat value, kept passive/self.',
+    effects: [{
+      stat: 'defIgnore', value: 45, source: 'self-kit',
+      scopedToBlockId: [
+        'ciaccona.forte.quadruple-downbeat',
+        'ciaccona.liberation.singers-triple-cadenza',
+        'ciaccona.liberation.symphonic-poem-tonic',
+        'ciaccona.chain.s6',
+      ],
+    }],
+    note: 'DEF Ignore +45% to Heavy Attack (Quadruple Downbeat) DMG AND to Resonance Liberation DMG specifically (confirmed exact value, now correctly scoped via scopedToBlockId to the 4 real blocks those 2 move types cover, rather than an unscoped passive leaking onto her whole kit).',
   },
   {
     id: 'ciaccona.chain.s5',

@@ -272,3 +272,44 @@ Notes on real-game rotation mechanics:
 5. **Spectro Frazzle Teams**: Phoebe + Zani + Ciaccona + Rover: Aero/Shorekeeper — Shorekeeper mainly
    useful on DPS Phoebe's Whimpering Wastes team specifically.
 6. **Main DPS Ciaccona**: Ciaccona + Lynae + Sanhua/Mornye/Chisa/Shorekeeper.
+
+## Full re-audit (2026-09-08)
+
+Full re-read of this dump, `ciaccona.blocks.js` (already through a Phase A audit and 2 completeness
+passes), and every relevant `characters.js` table (CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA,
+SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, CHARACTER_DATA). Two real bugs found and fixed, both in her
+Resonance Chain nodes:
+
+1. **`chain.s4`'s DEF Ignore +45% was UNSCOPED.** The kit text names exactly 2 move types — "Ignores
+   45% target DEF when dealing Heavy Attack (Quadruple Downbeat) DMG. Ignores 45% target DEF when
+   dealing Resonance Liberation DMG" — but `defIgnore` is NOT category-gated in
+   `resolveHitComposedDps.js` (`calcDefMult()` applies it to every hit at an instant regardless of
+   category), so an unscoped effect was silently boosting her ENTIRE kit (Basic ATK, Skill, Intro
+   too), not just the 2 named move types. Rescoped via `scopedToBlockId` to the 4 real blocks those 2
+   categories cover (Quadruple Downbeat, plus all 3 libDmg-categorized Liberation blocks including
+   chain.s6's own "considered Resonance Liberation DMG" proc). Same bug class already found and fixed
+   on Changli's Sweeping Force and Cartethyia's chain.s1/s6 earlier this session.
+2. **`chain.s2` was an unconditional passive**, but the kit text is explicit this is conditional:
+   "DURING Singer's Triple Cadenza (Liberation/Recital), the whole team gains +40% Aero DMG Bonus" —
+   not an always-on team buff. Her real modeled rotation (per this dump's own Basic Rotation) casts
+   Liberation near the very END of a short combo (Intro → Basic → Jump-cancel loop → Skill → Forte
+   Heavy → **Liberation** → Tonic → Outro), meaning the old unconditional-passive version was silently
+   crediting +40% Aero DMG Bonus to her entire PRE-Liberation combo — the large majority of her real
+   damage — which the kit text says shouldn't receive it at all. (This differs from S1's own similarly
+   "kept passive" treatment, which is safe there specifically because that window opens on an EARLY
+   Basic ATK cast and comfortably covers her whole ~4.5s rotation; S2's real window opens LATE, so the
+   same shortcut doesn't hold.) Retargeted to a cast-triggered buff opening on the Liberation cast
+   itself, with a sentinel duration (Recital has no natural decay sourced — it persists until manually
+   ended). Verified via a positive-effect test proving her pre-Liberation Basic ATK Stage 3 hit is now
+   byte-identical with/without S2 present, while her post-Liberation Tonic pulses still correctly
+   receive the buff.
+
+Neither fix touches the phase3-parityGolden fixture (that benchmark runs at Sequence 0, where no
+chain node is active in either engine).
+
+Everything else re-verified clean against this dump with no changes needed: chain.s1/s5/s6, S3
+(correctly unmodeled, pure resource-grant), Minor Fortes, both Inherent Skills, the Solo
+Concert/Outro buffs, Erosion dotApplier consistency across her 4 real applying moves, base stats
+(12,238/375/1,198/125), tier (T0.5 ToA/T1 WW), bestWeapon (Woodland Aria), weaponAlts, bestEchoes,
+dmgFocus, full SKILL_MULTIPLIERS, and CHARACTER_ROTATIONS all match this dump exactly. Full test
+suite: 1820/1820 passing (4 new/updated tests).

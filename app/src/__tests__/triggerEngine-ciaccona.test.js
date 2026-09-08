@@ -50,6 +50,49 @@ describe('triggerEngine parity — Ciaccona', () => {
     expect(CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
   });
 
+  // Found 2026-09-08 (full re-audit): chain.s4's defIgnore:45 was UNSCOPED — defIgnore is NOT
+  // category-gated in resolveHitComposedDps.js's calcDefMult() (applied to every hit at an instant
+  // regardless of category), so this was silently boosting her ENTIRE kit, but the kit text names
+  // only 2 move types: Heavy Attack (Quadruple Downbeat) and Resonance Liberation DMG.
+  it("chain.s4's DEF Ignore is scoped to only Quadruple Downbeat and the 3 real Liberation-categorized blocks", () => {
+    const s4 = CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.chain.s4');
+    expect(s4.effects[0].scopedToBlockId.sort()).toEqual([
+      'ciaccona.chain.s6',
+      'ciaccona.forte.quadruple-downbeat',
+      'ciaccona.liberation.singers-triple-cadenza',
+      'ciaccona.liberation.symphonic-poem-tonic',
+    ]);
+  });
+
+  // Found 2026-09-08 (full re-audit): chain.s2 was an unconditional passive team buff, but the kit
+  // text says it's conditional — "DURING Singer's Triple Cadenza (Liberation/Recital)". Her real
+  // modeled rotation casts Liberation near the very end, so the old unconditional version was
+  // silently crediting +40% Aero DMG to her entire pre-Liberation combo (the large majority of her
+  // real damage), which per the kit text shouldn't receive it. Retargeted to a cast-triggered buff
+  // opening on the Liberation cast itself.
+  it("chain.s2 is gated to only apply from her Liberation cast onward, not her whole rotation", () => {
+    const s2 = CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.chain.s2');
+    expect(s2.trigger).toEqual({ type: 'cast', on: "Liberation:Singer's Triple Cadenza" });
+    expect(s2.timing.duration).toBeGreaterThan(0);
+  });
+
+  // Positive-verification test for the chain.s2 fix: proves her pre-Liberation Basic ATK Stage 3 hit
+  // is now UNAFFECTED by S2's presence (no longer over-credited), while her post-Liberation Tonic
+  // pulses still correctly receive it.
+  it("chain.s2's Aero DMG Bonus no longer inflates her pre-Liberation Basic ATK, but still boosts her post-Liberation Tonic pulses", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Ciaccona'], CIACCONA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS2 = resolveHitComposedDps(CIACCONA_BLOCKS, steps, ctx, 3500, 'aero', 'Sub DPS');
+    const withoutS2Blocks = CIACCONA_BLOCKS.filter(b => b.id !== 'ciaccona.chain.s2');
+    const withoutS2 = resolveHitComposedDps(withoutS2Blocks, steps, ctx, 3500, 'aero', 'Sub DPS');
+    const basic3With = withS2.hitLog.find(h => h.blockId === 'ciaccona.basic.stage3');
+    const basic3Without = withoutS2.hitLog.find(h => h.blockId === 'ciaccona.basic.stage3');
+    expect(basic3With.damage).toBeCloseTo(basic3Without.damage, 5);
+    const tonicWith = withS2.hitLog.find(h => h.blockId === 'ciaccona.liberation.symphonic-poem-tonic');
+    const tonicWithout = withoutS2.hitLog.find(h => h.blockId === 'ciaccona.liberation.symphonic-poem-tonic');
+    expect(tonicWith.damage).toBeGreaterThan(tonicWithout.damage);
+  });
+
   it('outro and libBuff match CHAR_BUFF_TABLE, with the outro correctly scoped to Aero only', () => {
     const legacy = CHAR_BUFF_TABLE['Ciaccona'];
     const outro = CIACCONA_BLOCKS.find(b => b.id === 'ciaccona.outro.windcalling-tune');
