@@ -82,6 +82,13 @@ const EXPECTED_DIVERGENCES = {
   // confirmed dead for every real team except a still-unreleased Jingran (see
   // CALC_TEAM_STATS_DEPENDENCY_MAP.md) — not attempted here; the cost doesn't fit the payoff for a
   // path already headed for deletion. Left as a documented divergence, not a "fixed" one.
+  // Golden fixture re-measured 2026-09-08 (full re-audit): fixed a real, live bug where
+  // `condition.requiresStance` (Budding Mode) was never actually enforced (purely descriptive per
+  // conditionHolds()'s own comment) — S3's ATK+58% and S6's Sweet Dream +150% were silently permanent
+  // for her WHOLE rotation instead of the real ~15s post-Ephemeral window; also added the base kit's
+  // own Sweet Dream +50% multiplier, which had no block at all at any sequence. Net effect: real
+  // damage increased (4113->4576 legacy) since the previously-missing base Sweet Dream block outweighs
+  // the S3/S6 duration restriction — still inside the existing band (ratio ~1.252).
   Camellya: { min: 1.10, max: 1.35 },
   // §5#5: Opener-vs-Loop rotation modeling gap, called out BY NAME for Jinhsi — her Loop casts Intro
   // every cycle (a real ~3.12% S0-total damage source per the investigation), which the engine's

@@ -3221,6 +3221,17 @@ const CHAR_BUFF_TABLE = {
       { stat: 'basicDmg', value: 15, target: 'self', duration: 99, condition: 'Epiphyte: +15% Basic DMG' },
     ],
     debuffs: [],
+    // Flagged 2026-09-08 (full re-audit): base Forte Circuit "Sweet Dream" (Budding Mode grants a
+    // guaranteed +50% DMG Multiplier, up to +100% with Crimson Buds consumed, to Normal Attack/Vining
+    // Waltz/Blazing Waltz/Vining Ronde/Atonement/Crimson Blossom/Floral Ravage) has NO entry here —
+    // the same real gap found and fixed in the modern engine (camellya.blocks.js's own new
+    // camellya.selfbuff.sweet-dream block). Not added here: unlike Seedbed/Epiphyte (genuinely
+    // unconditional, correctly modeled as flat duration:99 selfBuffs), Sweet Dream is a real ~15s-
+    // per-rotation conditional window — this legacy selfBuffs array has no real time-windowing
+    // mechanism the way the modern engine's buffWindows does, so adding it here as a flat/always-on
+    // entry would silently OVERSTATE it (100% uptime instead of ~15s of a much longer rotation), a
+    // worse bug than the current omission. Left undocumented-as-data but flagged here for visibility;
+    // not fixed, since the correct fix needs the modern engine's own real windowing, not this table.
     note: 'Self-buffing Main DPS. Seedbed: +15% Havoc DMG. Epiphyte: +15% Basic DMG.',
   },
   // Corrected 2026-08-17 against the source's live build page: selfBuffs previously described a specific
@@ -6495,10 +6506,19 @@ const RESONANCE_CHAIN_DATA = {
   //   once every 25s; also grants interruption immunity while casting Ephemeral (not modeled — no immunity field).
   // S2 Calling Upon the Silent Rose: Ephemeral's DMG Multiplier +120% (was wrongly 40 — corrected).
   // S3 A Bud Adorned by Thorns: Fervor Efflorescent's DMG Multiplier +50% (was wrongly 15 — corrected);
-  //   ATK+58% while in Budding Mode only (conditional/stateful — kept as flat atkPct, TODO: verify calc engine
-  //   gates this on Budding Mode state rather than applying it unconditionally).
+  //   ATK+58% while in Budding Mode only (conditional/stateful — kept as flat atkPct in this flat table).
+  //   TODO resolved 2026-09-08 (full re-audit): the modern engine block (camellya.blocks.js's
+  //   chain.s3-a-bud-adorned-by-thorns) was NOT actually gating this on Budding Mode state — its
+  //   `condition.requiresStance` field is purely descriptive in triggerEngine.js's conditionHolds()
+  //   (no state machine tracks stance; only mutually-exclusive mode-block PAIRS get real enforcement,
+  //   via a separate upstream filter, and this block had no such rival), so it was silently
+  //   unconditional. Fixed there by re-anchoring to a real resource-threshold + 15s duration window
+  //   matching Budding Mode's own real timing.
   // S4 Roots Set Deep In Eternity: casting Everblooming grants the WHOLE TEAM +25% Basic ATK DMG Bonus for 30s
-  //   (team-wide buff, not a Camellya-only self buff — TODO: verify calc engine applies this to teammates).
+  //   (team-wide buff, not a Camellya-only self buff). TODO resolved 2026-09-08: confirmed correct —
+  //   the modern engine block (camellya.chain.s4-roots-set-deep-in-eternity) is genuinely
+  //   `target.scope: 'whole-team'`, cast-triggered on the real Intro:Everblooming step, with a real
+  //   30s window via buildBlockWindows() (not requiresStance-gated, so no enforcement gap here).
   // S5 Infinity Held in Your Palm: Everblooming's DMG Multiplier +303% AND Twining's DMG Multiplier +68%
   //   (two separate multipliers on two different skills — schema only has one totalMult slot, so previous
   //   single value of 40 was not representable correctly either way; TODO: needs Phase 2 schema to hold both).

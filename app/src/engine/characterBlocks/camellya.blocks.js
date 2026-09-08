@@ -384,15 +384,26 @@ export const CAMELLYA_BLOCKS = [
     note: "Fervor Efflorescent's DMG Multiplier +50%, unconditional (not gated on Budding Mode) — scoped to camellya.liberation.fervor-efflorescent only.",
   },
   {
+    // Fixed 2026-09-08 (full re-audit): `condition.requiresStance` is PURELY DESCRIPTIVE in this
+    // engine — triggerEngine.js's own `conditionHolds()` comment says so explicitly ("no state
+    // machine tracks which stance is active"), and only the SEPARATE `filterExclusiveModeBlocks`
+    // mutual-exclusion pre-filter (for genuinely rival "Mode A vs Mode B" block pairs) ever acts on
+    // it. This block had no rival stance-tagged sibling to be excluded against, so it was silently
+    // UNCONDITIONAL — the real "while in Budding Mode only" gate never applied, inflating ATK by +58%
+    // for her ENTIRE rotation instead of just the ~15s Budding Mode window. (A prior session already
+    // suspected this — see characters.js's own RESONANCE_CHAIN_DATA['Camellya'] comment: "TODO: verify
+    // calc engine gates this on Budding Mode state rather than applying it unconditionally" — now
+    // confirmed and fixed.) Re-anchored to the same real trigger that opens the 15s Budding Mode
+    // window (the Ephemeral cast, per CHARACTER_ROTATIONS['Camellya']'s own `duration: 15` on that
+    // step), the same resource-threshold pattern camellya.forte.ephemeral itself already uses.
     id: 'camellya.chain.s3-a-bud-adorned-by-thorns',
     source: SOURCE,
     kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    condition: { requiresStance: 'Budding Mode' },
-    timing: {},
+    trigger: { type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' },
+    timing: { duration: 15 },
     target: { scope: 'self' },
     effects: [{ stat: 'atkPct', value: 58, source: 'self-kit' }],
-    note: 'ATK +58% while in Budding Mode only (atkPct is not category- or move-gated, so this correctly stays a general stat boost rather than needing scopedToBlockId).',
+    note: 'ATK +58% while in Budding Mode only (atkPct is not category- or move-gated, so this correctly stays a general stat boost rather than needing scopedToBlockId) — now a real 15s window anchored to the Ephemeral cast that opens Budding Mode, see fix comment above.',
   },
   {
     id: 'camellya.chain.s4-roots-set-deep-in-eternity',
@@ -437,12 +448,21 @@ export const CAMELLYA_BLOCKS = [
     note: "S5 Infinity Held in Your Palm, Twining half: Twining's DMG Multiplier +68%, scoped to both of Twining's own damage blocks. Previously unrepresentable in the flat table — RESONANCE_CHAIN_DATA['Camellya'].s5 only had room for one totalMult value (303, the Everblooming half) and dropped this one entirely. The block model fixes this for free: same node, second block, no schema change needed.",
   },
   {
+    // Fixed 2026-09-08 (full re-audit): SAME dead-`requiresStance` bug as chain.s3-a-bud above (see
+    // its own fix comment for the full trace through triggerEngine.js's `conditionHolds()`) — this was
+    // ALSO silently unconditional, meaning the +150% totalMult applied to BOTH real occurrences of
+    // camellya.skill.vining-waltz-combo (the block's own comment already documents that this exact
+    // block id fires TWICE — once BEFORE Ephemeral/outside Budding Mode, once after/inside it), not
+    // just the real in-Budding-Mode one. A genuine S6 overstatement bug: her 1st Vining Waltz combo
+    // (pre-Ephemeral) was getting Sweet Dream's bonus it should never see. Re-anchored to the same
+    // Ephemeral-cast resource-threshold trigger as chain.s3-a-bud, with the real 15s duration — a real
+    // buff window now correctly starts AFTER Ephemeral, so the 1st (pre-Ephemeral) vining-waltz-combo
+    // hit falls outside the window and the 2nd (post-Ephemeral) one falls inside it.
     id: 'camellya.chain.s6-bloom-for-you-thousand-times-over',
     source: SOURCE,
     kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    condition: { requiresStance: 'Budding Mode' },
-    timing: {},
+    trigger: { type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' },
+    timing: { duration: 15 },
     target: { scope: 'self' },
     // Fixed 2026-09-04 (Phase A audit): was unscoped totalMult — even gated by the Budding Mode
     // condition, an unscoped totalMult would still over-credit ANY block that happens to fire while
@@ -454,6 +474,35 @@ export const CAMELLYA_BLOCKS = [
       { stat: 'totalMult', value: 150, scopedToBlockId: 'camellya.skill.vining-waltz-combo', source: 'self-kit' },
       { stat: 'totalMult', value: 150, scopedToBlockId: 'camellya.skill.floral-ravage', source: 'self-kit' },
     ],
-    note: "Sweet Dream's (Budding Mode's) DMG Multiplier +150% additional, scoped to Budding Mode's real affected moves. Also unlocks Forte Circuit: Perennial — modeled as a separate real damage block, camellya.chain.s6-perennial above.",
+    note: "Sweet Dream's (Budding Mode's) DMG Multiplier +150% additional, scoped to Budding Mode's real affected moves, now inside a real 15s post-Ephemeral window (see fix comment above) instead of an unenforced condition. Also unlocks Forte Circuit: Perennial — modeled as a separate real damage block, camellya.chain.s6-perennial above.",
+  },
+
+  // Added 2026-09-08 (full re-audit): the BASE (non-Sequence-gated) Sweet Dream mechanic itself —
+  // "+50% DMG Multiplier to Normal Attack/Vining Waltz/Blazing Waltz/Vining Ronde/Atonement/Crimson
+  // Blossom/Floral Ravage" while in Budding Mode, per Data dump/Camellya/Camellya.md's own Forte
+  // Circuit text — had NO block anywhere in this file at ANY sequence level, despite being extensively
+  // documented in prose (CHARACTER_DATA['Camellya'].desc, CHARACTER_ROTATIONS['Camellya']'s own step
+  // notes both describe it in detail) and despite covering her single biggest damage share (67.1%
+  // Basic ATK per the dump's own Damage Profile — the 2nd Vining Waltz/Blazing Waltz combo and Floral
+  // Ravage, both fired during Budding Mode in the modeled rotation, were missing this multiplier
+  // entirely at every sequence, not just below S6). The real bonus scales with Crimson Buds consumed
+  // on the Ephemeral cast (+5%/bud, up to +50% more at 10 stacks — a resource-dependent number this
+  // schema can't precisely derive without simulating the full Pistil/Bud economy), so this uses the
+  // guaranteed, unconditional floor (+50%, true regardless of bud count) rather than fabricating a
+  // specific bud count — same "use the sourced guaranteed minimum, not an assumed maximum" principle
+  // already applied elsewhere in this codebase. Same real 15s post-Ephemeral window and scoping as
+  // chain.s6-bloom above (the S6 node's own +150% stacks additively on top of this base +50%).
+  {
+    id: 'camellya.selfbuff.sweet-dream',
+    source: SOURCE,
+    kind: 'buff', section: 'Buff',
+    trigger: { type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' },
+    timing: { duration: 15 },
+    target: { scope: 'self' },
+    effects: [
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'camellya.skill.vining-waltz-combo', source: 'self-kit' },
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'camellya.skill.floral-ravage', source: 'self-kit' },
+    ],
+    note: 'Base Forte Circuit "Sweet Dream": Budding Mode grants a guaranteed +50% DMG Multiplier to Normal Attack/Vining Waltz/Blazing Waltz/Vining Ronde/Atonement/Crimson Blossom/Floral Ravage (up to +100% total with Crimson Buds consumed on Ephemeral cast — the variable +0-50% bud bonus is not modeled, no sourced way to derive the real bud count without a full Pistil-economy simulation this schema does not have). Scoped to the 2 real damage blocks that fire during Budding Mode in the modeled rotation.',
   },
 ];

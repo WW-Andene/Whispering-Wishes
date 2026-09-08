@@ -9,6 +9,8 @@ import { CAMELLYA_BLOCKS } from '../engine/characterBlocks/camellya.blocks.js';
 import { parseSkillMultiplierHits } from '../engine/math/hitParser.js';
 import { requiredSequenceOf } from '../engine/resolver/gating/sequenceGating.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
+import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
+import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 
 describe('triggerEngine parity — Camellya', () => {
   it('every block matches the canonical schema (Layer 4 migration)', () => {
@@ -31,10 +33,56 @@ describe('triggerEngine parity — Camellya', () => {
     expect(byId('camellya.chain.s3-fervor-mult').effects[0].value).toBe(rc.s3.totalMult);
     const s3 = byId('camellya.chain.s3-a-bud-adorned-by-thorns');
     expect(s3.effects.find(e => e.stat === 'atkPct').value).toBe(rc.s3.atkPct);
-    expect(s3.condition).toEqual({ requiresStance: 'Budding Mode' });
+    // Fixed 2026-09-08 (full re-audit): `condition.requiresStance` is purely descriptive in
+    // triggerEngine.js's own conditionHolds() (no real state machine backs it, confirmed by that
+    // function's own comment) — this block was silently unconditional, ATK+58% for the WHOLE
+    // rotation instead of just the real ~15s Budding Mode window. Re-anchored to a real
+    // resource-threshold + duration:15 window matching Budding Mode's own real timing.
+    expect(s3.trigger).toEqual({ type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' });
+    expect(s3.timing.duration).toBe(15);
     expect(byId('camellya.chain.s4-roots-set-deep-in-eternity').effects[0].value).toBe(rc.s4.basicDmg);
     const s6 = byId('camellya.chain.s6-bloom-for-you-thousand-times-over');
     expect(s6.effects.every(e => e.stat === 'totalMult' && e.value === rc.s6.totalMult)).toBe(true);
+    // Fixed 2026-09-08 (full re-audit): same dead-requiresStance bug as s3-a-bud above — this block
+    // fires on camellya.skill.vining-waltz-combo, which itself fires TWICE (once before Ephemeral,
+    // once after), so an unenforced condition meant the +150% wrongly applied to BOTH occurrences.
+    expect(s6.trigger).toEqual({ type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' });
+    expect(s6.timing.duration).toBe(15);
+  });
+
+  // Added 2026-09-08 (full re-audit): the base (non-Sequence-gated) Forte Circuit "Sweet Dream"
+  // mechanic — a guaranteed +50% DMG Multiplier in Budding Mode — had no block at all anywhere in
+  // this file at ANY sequence, despite being extensively documented in prose (CHARACTER_DATA's own
+  // desc, CHARACTER_ROTATIONS' own step notes) and covering her single biggest damage share.
+  it('Base Sweet Dream (+50% guaranteed floor, Budding Mode) is modeled as a real 15s post-Ephemeral window', () => {
+    const sweetDream = CAMELLYA_BLOCKS.find(b => b.id === 'camellya.selfbuff.sweet-dream');
+    expect(sweetDream).toBeTruthy();
+    expect(sweetDream.trigger).toEqual({ type: 'resource-threshold', resource: 'Concerto Energy', threshold: 70, resourceStepOn: 'Forte:Ephemeral' });
+    expect(sweetDream.timing.duration).toBe(15);
+    const scopes = sweetDream.effects.map(e => e.scopedToBlockId).sort();
+    expect(scopes).toEqual(['camellya.skill.floral-ravage', 'camellya.skill.vining-waltz-combo'].sort());
+    expect(sweetDream.effects.every(e => e.value === 50)).toBe(true);
+  });
+
+  // Positive-verification test for all 3 Budding-Mode-window fixes above: proves the real numeric
+  // effect on actual hits, not just that the block fields changed. The FIRST (pre-Ephemeral)
+  // Vining Waltz combo hit must be unaffected by Sweet Dream/S6-bloom/S3-ATK; a hit resolved WITHIN
+  // the post-Ephemeral window (Floral Ravage, later in the rotation) must be boosted.
+  it('Budding-Mode-gated buffs (S3 ATK, base Sweet Dream, S6 bonus) only affect real post-Ephemeral hits, not the whole rotation', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Camellya'], CAMELLYA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withBudding = resolveHitComposedDps(CAMELLYA_BLOCKS, steps, ctx, 3500, 'havoc', 'Main DPS', null, 6);
+    const withoutBuddingBlocks = CAMELLYA_BLOCKS.filter(b => !['camellya.chain.s3-a-bud-adorned-by-thorns', 'camellya.selfbuff.sweet-dream', 'camellya.chain.s6-bloom-for-you-thousand-times-over'].includes(b.id));
+    const withoutBudding = resolveHitComposedDps(withoutBuddingBlocks, steps, ctx, 3500, 'havoc', 'Main DPS', null, 6);
+    // Crimson Blossom happens BEFORE Ephemeral in the modeled rotation — must be unaffected.
+    const blossomWith = withBudding.hitLog.find(h => h.blockId === 'camellya.skill.crimson-blossom');
+    const blossomWithout = withoutBudding.hitLog.find(h => h.blockId === 'camellya.skill.crimson-blossom');
+    expect(blossomWith.damage).toBeCloseTo(blossomWithout.damage, 5);
+    // Floral Ravage happens AFTER Ephemeral, inside the real Budding Mode window — must be boosted.
+    const ravageWith = withBudding.hitLog.filter(h => h.blockId === 'camellya.skill.floral-ravage');
+    const ravageWithout = withoutBudding.hitLog.filter(h => h.blockId === 'camellya.skill.floral-ravage');
+    const sumDmg = arr => arr.reduce((s, h) => s + h.damage, 0);
+    expect(sumDmg(ravageWith)).toBeGreaterThan(sumDmg(ravageWithout));
   });
 
   it('Basic-ATK-type moves (Crimson Blossom, Vining Waltz combo, Ephemeral, Floral Ravage) are basicDmg, not skillDmg, per kit text overrides and the dump\'s 0% Skill / 67.1% Basic Damage Profile', () => {

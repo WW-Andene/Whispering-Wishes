@@ -276,3 +276,65 @@ already documented elsewhere in this project (e.g. Mortefi's dump). alt4 top-2-b
 exactly (Feather Edge 77.80% > Lumingloss 76.80%).
 
 1 new test added (Floral Ravage block existence + rotation-usage check), full suite green (1331/1331).
+
+**Full re-audit (2026-09-08, explicitly requested — including cross-interactions and how
+`condition.requiresStance` actually behaves in the resolver, not just re-checking what the multiple
+prior passes already touched).** Found one real, significant bug plus one confirmed real omission,
+both centered on the same root cause.
+
+**`condition.requiresStance` is purely descriptive in this engine — it was never actually enforced.**
+`triggerEngine.js`'s own `conditionHolds()` has an explicit comment saying so: no state machine tracks
+which stance is active; only a SEPARATE mechanism (`filterExclusiveModeBlocks`, for genuinely rival
+"Mode A vs Mode B" block pairs like Denia's Tune Strain vs Fusion Burst) ever acts on it. Two of
+Camellya's Resonance Chain blocks relied SOLELY on `requiresStance: 'Budding Mode'` with no rival to
+be excluded against — meaning they were silently, permanently active for her WHOLE rotation instead of
+the real ~15s window that opens on her Forte Ephemeral cast:
+1. `camellya.chain.s3-a-bud-adorned-by-thorns` (ATK+58%) — a prior session's own comment in
+   `RESONANCE_CHAIN_DATA['Camellya']` already suspected this exact gap ("TODO: verify calc engine
+   gates this on Budding Mode state rather than applying it unconditionally") but left it unverified.
+2. `camellya.chain.s6-bloom-for-you-thousand-times-over` (Sweet Dream's own +150% additional DMG
+   Multiplier) — worse in practice, since it's scoped to `camellya.skill.vining-waltz-combo`, a block
+   that fires TWICE in her modeled rotation (once before Ephemeral, once after) — the unenforced
+   condition meant BOTH occurrences got the bonus, not just the real post-Ephemeral one.
+
+Both re-anchored to a real `resource-threshold` trigger (the same one `camellya.forte.ephemeral` itself
+already uses) + `timing.duration: 15`, matching `CHARACTER_ROTATIONS['Camellya']`'s own `duration: 15`
+already declared on that step — a genuine windowed buff now, not a decorative condition.
+
+This same investigation also surfaced a real, previously-untouched test file
+(`triggerEngineRequiresStanceGap.test.js`) whose own header comment claimed Camellya's Budding Mode
+blocks were "legitimately always applicable per her own kit" — that claim is factually wrong (Budding
+Mode is a real, temporary state, not always-on); the comment conflated "no rival to exclude against"
+with "therefore always-on." Corrected the comment and the one test it backed.
+
+**Real omission found in the same pass: the BASE (non-Sequence-gated) Forte Circuit "Sweet Dream"
+mechanic had no block at all, at ANY sequence level.** This dump's own Forte Circuit text (and
+`CHARACTER_DATA['Camellya'].desc`/`CHARACTER_ROTATIONS['Camellya']`'s own step notes, both already
+extensively documenting it in prose) describe a guaranteed +50% DMG Multiplier in Budding Mode (up to
++100% with Crimson Buds consumed on Ephemeral cast) to 7 named move types — covering her single biggest
+damage share (67.1% Basic ATK). This was missing from BOTH the modern engine and
+`CHAR_BUFF_TABLE['Camellya']` (the legacy engine's equivalent). Added a new
+`camellya.selfbuff.sweet-dream` block using the same real 15s post-Ephemeral window, scoped to the same
+2 real damage blocks the S6 node already targets — modeled at the guaranteed floor (+50%) since the
+variable +0-50% Crimson-Bud bonus can't be derived without a full Pistil-economy simulation this schema
+doesn't have (never fabricated). Flagged, but not added, to the legacy `CHAR_BUFF_TABLE` — its
+`selfBuffs` array has no real time-windowing mechanism, so adding a flat/always-on entry there would
+create a NEW overstatement bug (100% uptime instead of ~15s of a much longer rotation) worse than the
+current omission.
+
+Everything else re-verified clean: `SKILL_MULTIPLIERS`, `CHARACTER_ROTATIONS`, `weaponAlts`'s own
+"weapon rank isn't purely about raw %" reasoning (confirmed still correctly justified, unlike a
+similar-looking case just fixed for Calcharo), `dmgFocus`, base stats, and cross-character interactions
+(nothing else in the roster references Blossom/Budding Mode or Crimson Pistils/Buds).
+
+**Flagged for a separate decision, not fixed here:** the same "`requiresStance` alone, no rival, no
+real duration backing it, silently degrades to always-on" pattern likely affects other characters too
+— at least Yinlin's S5 (Resounding Will), which `rotationSimulator.test.js`'s own comment already
+documents as relying on exactly this unenforced behavior. A roster-wide sweep for this specific pattern
+was out of scope for a single-character audit but is a real, concrete follow-up worth doing.
+
+phase3-parityGolden.test.js caught real, expected drift — refreshed the golden fixture (net damage
+increased: the previously-missing base Sweet Dream block outweighs the S3/S6 duration restriction);
+the pre-existing EXPECTED_DIVERGENCES band still holds. Added positive-verification tests proving the
+Budding-Mode-gated buffs now only affect real post-Ephemeral hits, not the whole rotation. Full suite
+green (1800/1800).
