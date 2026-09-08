@@ -105,6 +105,23 @@ function actionMatches(actionTags, action) {
   return Array.isArray(action) ? action.some(a => actionTags.has(a)) : actionTags.has(action);
 }
 
+// actionCountOf (2026-09-08, Lucilla Film Roll full-kit audit — direct user correction: "Film Roll's
+// real effect... you sure isn't representable?"): actionTags was a plain presence Set, so a step where
+// TWO teammates' own blocks both tagged the same status (e.g. Lucilla's own Film Roll block re-applying
+// 'glacio-chafe' after ANOTHER teammate already applied it that same step) collapsed to the same single
+// boolean as one application — a real, sourced "2x more Chafe" mechanic had no distinct number to
+// consume. rotationSimulator.js now ALSO builds a parallel `actionTagCounts` Map (same population sites,
+// just incrementing instead of Set.add) alongside the unchanged `actionTags` Set, so every existing
+// boolean-only consumer (Cartethyia/Galbrena/Sigrika/Qingxiao/Luukherssen's own ally-action blocks) is
+// completely unaffected, while a reactive DAMAGE block can now multiply its output by the real count
+// instead of firing exactly once regardless of how many real applications actually landed.
+function actionCountOf(actionTagCounts, action) {
+  if (!actionTagCounts) return 0;
+  return Array.isArray(action)
+    ? action.reduce((sum, a) => sum + (actionTagCounts.get(a) || 0), 0)
+    : (actionTagCounts.get(action) || 0);
+}
+
 // `scopedToBlockId` matching (2026-09-07, Hiyuki full-kit audit): a real chain-node bonus can name a
 // SET of specific moves rather than one ("Foreclaimed-Self Basic/Heavy/Mid-air/Plunge/Dodge Counter
 // DMG Multipliers +120%" — 8 distinct blocks in Hiyuki's own file, all sharing one damage category
@@ -146,4 +163,4 @@ function conditionHolds(condition, targetElementLower, targetRole, casterHpPctAs
 // time-integration driver — see its own file header) can determine per-step block eligibility with
 // the EXACT same logic resolveTriggerBlocks() uses, instead of re-deriving a second copy that could
 // silently drift out of sync.
-export { triggerKey, triggerFired, conditionHolds, actionMatches, blockIdMatches };
+export { triggerKey, triggerFired, conditionHolds, actionMatches, actionCountOf, blockIdMatches };

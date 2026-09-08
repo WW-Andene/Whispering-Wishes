@@ -126,6 +126,13 @@
  * @property {string} [on]   The specific skill/move id this trigger fires on
  * @property {string} [action]  For 'ally-action': the appliesTags name this fires on, from ANY
  *                            team member's block, not just this block's own owner.
+ * @property {boolean} [requiresOtherOwner]  For 'ally-action' (2026-09-08, Lucilla Film Roll): only
+ *                            fires when a DIFFERENT owner's block applied the matching tag this step —
+ *                            excludes this block's own source (e.g. "when ANOTHER active teammate
+ *                            inflicts Glacio Chafe", not this character's own cast). Omit (default
+ *                            false/unset) for the normal "any team member, self included" behavior
+ *                            every other 'ally-action' block already uses (e.g. Hiyuki's Glacio Bite,
+ *                            which the dump's own text says converts Chafe "from herself or allies").
  * @property {string} [resource]      Gauge name, for 'resource-threshold'
  * @property {number} [threshold]     Value the resource must reach/cross
  * @property {string} [resourceStepOn]  The rotation step id representing this threshold being hit.

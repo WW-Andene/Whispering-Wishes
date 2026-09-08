@@ -21,7 +21,7 @@
 
 import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../../features/teams/calcEngine.js';
 import { simulateTeamRotation, DEFAULT_STEP_SECONDS } from './rotationSimulator.js';
-import { triggerFired, conditionHolds, actionMatches, blockIdMatches } from '../gating/triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches, actionCountOf, blockIdMatches } from '../gating/triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
 import { cumulativeTieredValue } from '../gating/tieredStacking.js';
 import { COORD_SNAPSHOT_DISCOUNT } from '../gating/coordinatedAtk.js';
@@ -157,7 +157,7 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
   const hitLog = [];
   let totalDamage = 0;
 
-  function pushHit(r, db, hits, category, basis, guaranteedCrit) {
+  function pushHit(r, db, hits, category, basis, guaranteedCrit, repeatCount = 1) {
     const stats = statsAtInstant(r.time, db.id);
     const categoryStat = category ? stats[category] || 0 : 0;
     const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify);
@@ -191,7 +191,9 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       // (self-kit cross-interaction pass, 2026-09-07): a real per-resource-unit scaling bonus read
       // off this specific step's own extra field, not a fabricated max-stacks assumption.
       const perUnitAtkPct = hit.perStepUnit ? (hit.atkPctPerUnit || 0) * (r.step?.[hit.perStepUnit] || 0) : 0;
-      const damage = (effBase * ((hit.atkPct + perUnitAtkPct) / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
+      // repeatCount (2026-09-08, Film Roll full-kit audit): real per-instance count for an
+      // 'ally-action' block — see resolveHitComposedDps.js's identical comment/actionCountOf() doc.
+      const damage = (effBase * ((hit.atkPct + perUnitAtkPct) / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100) * repeatCount;
       totalDamage += damage;
       hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct + perUnitAtkPct, damage, category });
     }
@@ -228,7 +230,8 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
       if (r.ineligibleBlockIds.has(db.id)) continue;
       if (!actionMatches(r.actionTags, db.trigger.action)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
-      pushHit(r, db, hits, category, basis, guaranteedCrit);
+      const repeatCount = actionCountOf(r.actionTagCounts, db.trigger.action) || 1;
+      pushHit(r, db, hits, category, basis, guaranteedCrit, repeatCount);
     }
   }
 

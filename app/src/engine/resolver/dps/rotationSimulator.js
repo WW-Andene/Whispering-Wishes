@@ -23,7 +23,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
-import { triggerFired } from '../gating/triggerEngine.js';
+import { triggerFired, actionMatches } from '../gating/triggerEngine.js';
 import { FUSION_BURST_THRESHOLD } from '../dot/dotFormulas.js';
 import { AEMEATH_EARLY_DETONATION_THRESHOLD, AEMEATH_DUET_BLOCK_IDS } from '../dot/resolveFusionBurstStacks.js';
 
@@ -330,6 +330,12 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
     const fired = new Set(['passive']); // passive blocks are always eligible, same as every prior test's convention
     const ineligibleBlockIds = new Set();
     const actionTags = new Set(); // 'ally-action' support — see the collection loop below
+    // actionTagCounts (2026-09-08, Film Roll full-kit audit): a parallel per-tag COUNT alongside the
+    // boolean actionTags Set — see triggerEngine.js's actionCountOf() doc for why. Every existing
+    // actionTags.add() site below also increments this via addActionTag(); no call site was missed
+    // (verified by routing every one of them through this single helper instead of the raw Set).
+    const actionTagCounts = new Map();
+    const addActionTag = (tag) => { actionTags.add(tag); actionTagCounts.set(tag, (actionTagCounts.get(tag) || 0) + 1); };
 
     // registerSwap()/the swap clock are global (no owner) — every swap counts against every open
     // partner-outro window across the WHOLE team, not just this step's own owner. resetSegment IS
@@ -408,8 +414,8 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
           // Bare-string entries (Qingxiao's shape) are unconditional, as before. Object entries
           // ({tag, requiresStance} — Denia/Lynae's shape) only fire when this owner's own resolved
           // mode (see stanceForOwner above) matches — added 2026-09-02, the engine-architecture history (git log) item 9.
-          if (typeof entry === 'string') { actionTags.add(entry); continue; }
-          if (entry.requiresStance == null || stanceForOwner(owner) === entry.requiresStance) actionTags.add(entry.tag);
+          if (typeof entry === 'string') { addActionTag(entry); continue; }
+          if (entry.requiresStance == null || stanceForOwner(owner) === entry.requiresStance) addActionTag(entry.tag);
         }
       }
       // Universal per-mechanic status tags (added 2026-09-07, cross-character reactivity pass): any
@@ -426,7 +432,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       for (const b of blocks) {
         if ((b.trigger.on ?? b.trigger.attemptOn) !== label || !b.dotApplier?.mechanic) continue;
         if (ineligibleBlockIds.has(b.id)) continue;
-        actionTags.add(b.dotApplier.mechanic);
+        addActionTag(b.dotApplier.mechanic);
       }
       // Universal 'echo-skill-cast' tag (added 2026-09-02, the engine-merge history (git log) Phase 0.5 gap #2 —
       // Sigrika's S4 retrofit): using an equipped Echo isn't a per-character KIT fact the way Shifting
@@ -436,7 +442,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       // per-character `appliesTags` declaration nobody would sensibly own. One small universal rule
       // here benefits every current/future character with an "ally casts Echo Skill" reactive mechanic,
       // not just Sigrika.
-      if (ev.type === 'Echo') actionTags.add('echo-skill-cast');
+      if (ev.type === 'Echo') addActionTag('echo-skill-cast');
 
       // Real Fusion Burst stack tracking (2026-09-06) — see resolveFusionBurstStacks.js's own header
       // for the full sourcing/mechanic. A real detonation is tagged into THIS SAME step's actionTags
@@ -453,7 +459,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
           const req = b.dotApplier.requiresStance;
           if (req == null || stanceForOwner(owner) === req) {
             sim.gainSharedGauge('fusionBurst', b.dotApplier.value);
-            if (sim.trySharedGaugeDetonation('fusionBurst', fusionBurstThreshold)) actionTags.add('fusion-burst-detonation');
+            if (sim.trySharedGaugeDetonation('fusionBurst', fusionBurstThreshold)) addActionTag('fusion-burst-detonation');
           }
         }
       }
@@ -466,7 +472,39 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       // stance correctly in both solo and team mode).
       if (aemeathDuetLabels.has(label) && stanceForOwner(owner) === 'Fusion Burst mode'
         && blocks.some(b => AEMEATH_DUET_BLOCK_IDS.includes(b.id) && (b.trigger.on ?? b.trigger.attemptOn) === label)) {
-        actionTags.add('fusion-burst-detonation');
+        addActionTag('fusion-burst-detonation');
+      }
+
+      // Reactive self-application (2026-09-08, Lucilla Film Roll — direct user correction: "Film
+      // Roll's real effect... you sure isn't representable?"). Generic, roster-wide, not
+      // Lucilla-specific: any block anywhere whose trigger is `{type:'ally-action', ...,
+      // requiresOtherOwner: true}` reacts ONLY to ANOTHER owner's own application (never its own
+      // source's cast, matching real kit text like Film Roll's "when ANOTHER active teammate
+      // inflicts Glacio Chafe") by contributing its OWN extra application of the same tag into this
+      // exact step's count via its own `appliesTags` — e.g. Film Roll: Lucilla banks a stack via
+      // Déjà Vu and consumes it to make herself inflict Glacio Chafe 2x more whenever an ally lands
+      // it, a real second application credited to her, not a re-statement of the ally's own. Must run
+      // AFTER this step's own owner's tag collection above (so `actionTags` already reflects what
+      // THIS owner's cast really applied) and BEFORE the result is pushed below (so any other
+      // ally-action consumer reading actionTagCounts this same step sees the reactor's contribution
+      // too — real per-instance counting, not a second, disconnected pass).
+      for (const b of allBlocks) {
+        if (b.trigger.type !== 'ally-action' || !b.trigger.requiresOtherOwner) continue;
+        // "another" teammate only — never the reactor's own cast. Checked via membership in THIS
+        // step's own owner's block list (`blocks`, already in scope), not `b.source === owner`:
+        // solo mode (simulateRotation) forces every step's `owner` to the synthetic '' while `b.source`
+        // stays the real character name (see simulateRotation's own `{'': blocks}` mapping) — comparing
+        // against the raw owner string would never actually exclude a character's own cast when
+        // running solo, wrongly letting a `requiresOtherOwner` block react to itself with no teammates
+        // even present. `blocks.includes(b)` is correct in both solo (blocks === allBlocks, b is
+        // always a member, correctly excluded) and team mode (blocks is only this step owner's own list).
+        if (blocks.includes(b)) continue;
+        if (!actionMatches(actionTags, b.trigger.action)) continue;
+        if (!b.appliesTags?.length) continue;
+        for (const entry of b.appliesTags) {
+          if (typeof entry === 'string') { addActionTag(entry); continue; }
+          if (entry.requiresStance == null || stanceForOwner(b.source) === entry.requiresStance) addActionTag(entry.tag);
+        }
       }
 
       // Cross-character 'windowed-proc' advancement (Cantarella's Diffusion): checked on EVERY
@@ -549,7 +587,7 @@ function simulateStepsCore(sim, ownedSteps, blocksByOwner, stanceOverrides = nul
       }
     }
 
-    results.push({ step: ev, owner, firedTriggers: fired, ineligibleBlockIds, actionTags, time: sim.time });
+    results.push({ step: ev, owner, firedTriggers: fired, ineligibleBlockIds, actionTags, actionTagCounts, time: sim.time });
   }
   return results;
 }

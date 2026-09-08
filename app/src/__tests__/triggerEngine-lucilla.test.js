@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
+import { resolveHitComposedTeamDps } from '../engine/resolver/dps/resolveHitComposedTeamDps.js';
+import { deriveStepsFromRotation, simulateTeamRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { LUCILLA_BLOCKS } from '../engine/characterBlocks/lucilla.blocks.js';
+import { HIYUKI_BLOCKS } from '../engine/characterBlocks/hiyuki.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
 
 describe('triggerEngine parity — Lucilla', () => {
@@ -104,6 +106,39 @@ describe('triggerEngine parity — Lucilla', () => {
     // Tracing Forms is confirmed NOT mode-dependent ("considered Basic Attack DMG regardless of
     // mode") and correctly has no Echo sibling.
     expect(LUCILLA_BLOCKS.find(b => b.id === 'lucilla.basic.tracing-forms-echo')).toBeUndefined();
+  });
+
+  it('2026-09-08: Forte Circuit Film Roll fires only off ANOTHER teammate\'s Chafe application, never her own, and adds a real 2nd application', () => {
+    // Direct user challenge after an earlier pass wrongly called Film Roll unrepresentable: fixed at
+    // the engine root (rotationSimulator.js's actionTagCounts + trigger.requiresOtherOwner), verified
+    // here with a real cross-character rotation, not inference.
+    const soloLucillaOnly = [{ type: 'Intro', skill: 'Clip It', owner: 'Lucilla' }];
+    const soloResults = simulateTeamRotation(soloLucillaOnly, { Lucilla: LUCILLA_BLOCKS });
+    // Lucilla's own cast must NOT trigger her own Film Roll (requiresOtherOwner) — count stays 1.
+    expect(soloResults[0].actionTagCounts.get('glacio-chafe')).toBe(1);
+
+    const teamSteps = [
+      { type: 'Intro', skill: 'Clip It', owner: 'Lucilla' },
+      { type: 'Liberation', skill: 'Frostedge', owner: 'Hiyuki' },
+    ];
+    const teamResults = simulateTeamRotation(teamSteps, { Lucilla: LUCILLA_BLOCKS, Hiyuki: HIYUKI_BLOCKS });
+    // Hiyuki's own Chafe application is real teammate action for Lucilla's Film Roll -> +1 extra.
+    expect(teamResults.find(r => r.owner === 'Hiyuki').actionTagCounts.get('glacio-chafe')).toBe(2);
+    expect(teamResults.find(r => r.owner === 'Lucilla').actionTagCounts.get('glacio-chafe')).toBe(1);
+
+    // Real DPS-level effect: Hiyuki's own Glacio Bite proc block now counts every real application,
+    // so the same Frostedge cast credits 2x the damage with Lucilla's Film Roll active vs solo.
+    const enemy = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const soloGlacioBite = resolveHitComposedTeamDps(
+      [{ type: 'Liberation', skill: 'Frostedge', owner: 'Hiyuki' }], { Hiyuki: HIYUKI_BLOCKS }, 'Hiyuki', enemy, 1000,
+    ).hitLog.filter(h => h.blockId === 'hiyuki.procdmg.glacio-bite').reduce((s, h) => s + h.damage, 0);
+    const teamGlacioBite = resolveHitComposedTeamDps(
+      teamSteps, { Lucilla: LUCILLA_BLOCKS, Hiyuki: HIYUKI_BLOCKS }, 'Hiyuki', enemy, 1000,
+    ).hitLog.filter(h => h.blockId === 'hiyuki.procdmg.glacio-bite').reduce((s, h) => s + h.damage, 0);
+    // 3x total, not 2x: Lucilla's own Clip It step contributes 1 real application on its own step,
+    // Hiyuki's Frostedge step contributes 2 (her own cast + Film Roll's reactive extra) on its step —
+    // 1 + 2 = 3 total Glacio Bite firings across the rotation, vs 1 in the solo-Hiyuki-only case.
+    expect(teamGlacioBite).toBeCloseTo(soloGlacioBite * 3, 5);
   });
 
   it('2026-09-07: Forte Circuit Zoom is modeled, scoped only to her Echo-mode hits (not the whole kit)', () => {

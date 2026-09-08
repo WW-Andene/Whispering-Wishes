@@ -23,10 +23,10 @@
 // NOT mode-dependent ("considered Basic Attack DMG regardless of mode") and
 // correctly has no Echo sibling. Forte Circuit's own passives (Film Roll, Zoom) —
 // previously entirely unrepresented anywhere, not just unmodeled as blocks — are
-// now covered too: Zoom is a real block (self-scoped Crit DMG on her own Echo-mode
-// hits); Film Roll's real effect is documented as a genuine, sourced mechanic this
-// engine's per-step-boolean Chafe-tag model cannot represent a distinct number for
-// (see its own comment below), not silently omitted.
+// now both real, firing blocks: Zoom (self-scoped Crit DMG on her own Echo-mode
+// hits), and Film Roll (2026-09-08, on re-challenge — see its own comment below for
+// why the first pass wrongly called it unrepresentable, and the root-cause engine
+// fix — `actionTagCounts` + `trigger.requiresOtherOwner` — that made it real).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -363,22 +363,41 @@ export const LUCILLA_BLOCKS = [
     ],
     note: "Each Photo consumed in Reminiscence grants 1 Remembrance stack (max 3, +200%/stack) on Letting It Go — a full 3-Photo Reminiscence reliably hits max, using the max value +600% (recategorized per the re-audit, same dual-key non-double-counting pattern as S3). Each key scoped to its own mode's block (2026-09-07 mode-rivalry fix, same dead-effect bug class as S3 — see its own note), kept passive.",
   },
-  // Added 2026-09-07 (full-kit cross-interaction audit, direct user correction: "i said all cross
-  // interactions, condition and logic between inside the kit"): two real, sourced Forte Circuit
-  // resources — Film Roll and Zoom (Data dump/Lucilla/Lucilla.md line 73-79) — had NO representation
-  // anywhere (not CHAR_BUFF_TABLE, not a block), the same class of gap the S1/S2/S4 chain audit already
-  // covered for Resonance Chain but never applied to her Forte Circuit's own passives.
-  //   Film Roll (Chafe mode, gained via Déjà Vu on casting Clear As Day: 4 stacks/30s, 10 with
-  //   Inherent Skill Remembrance): consumes 1 stack whenever ANOTHER active teammate inflicts Glacio
-  //   Chafe, to make Lucilla herself inflict Glacio Chafe 2x more on nearby targets. This is a real,
-  //   sourced ally-triggered self-resource interaction (same shape as an ally-action block), but its
-  //   payoff is a raw Chafe-APPLICATION-count increase, not a damage or %-buff value — and this engine's
-  //   cross-character reactivity (actionTags, see hiyuki.procdmg.glacio-bite) is a once-per-step boolean
-  //   tag, not a per-instance stack counter, so "2x more Chafe applications within the same step" has no
-  //   distinct number to compute (the tag is already set; setting it again is a no-op). Deliberately NOT
-  //   modeled as a block — a block with an empty/no-op effect would be dead code (CLAUDE.md §4.7), not a
-  //   real fix. Left here as an explicit, sourced limitation for if a future engine revision tracks raw
-  //   Chafe-stack counts instead of a per-step boolean.
+  // Added 2026-09-07/08 (full-kit cross-interaction audit, direct user correction: "i said all cross
+  // interactions, condition and logic between inside the kit" — and, after an initial pass wrongly
+  // called Film Roll unrepresentable, "you sure isn't representable?"): two real, sourced Forte
+  // Circuit resources — Film Roll and Zoom (Data dump/Lucilla/Lucilla.md line 73-79) — had NO
+  // representation anywhere (not CHAR_BUFF_TABLE, not a block), the same class of gap the S1/S2/S4
+  // chain audit already covered for Resonance Chain but never applied to her Forte Circuit's own
+  // passives.
+  //
+  // Film Roll (Chafe mode, gained via Déjà Vu on casting Clear As Day: 4 stacks/30s, 10 with Inherent
+  // Skill Remembrance): consumes 1 stack whenever ANOTHER active teammate inflicts Glacio Chafe, to
+  // make Lucilla herself inflict Glacio Chafe 2x more on nearby targets. The first pass here declared
+  // this unrepresentable because the engine's cross-character reactivity (actionTags) was a per-step
+  // BOOLEAN Set — a second application within the same step was a genuine no-op, no distinct number to
+  // compute. That was a real engine LIMITATION, not a fact about the mechanic itself, so on
+  // re-challenge it was fixed at the root instead of accepted: rotationSimulator.js now ALSO tracks a
+  // parallel per-tag COUNT (`actionTagCounts`) alongside the unchanged boolean Set, and a new
+  // `trigger.requiresOtherOwner` flag (block.schema.js) lets a block react only to another owner's own
+  // application — exactly Film Roll's own "another active teammate" gate. See
+  // rotationSimulator.js's own "Reactive self-application" comment and triggerEngine.js's
+  // actionCountOf() for the full mechanism; every other roster-wide ally-action consumer
+  // (Cartethyia/Galbrena/Sigrika/Qingxiao/Luukherssen, plus Hiyuki's own Glacio Bite) is unaffected
+  // since they only ever check tag PRESENCE, never a count.
+  {
+    id: 'lucilla.buff.forte-film-roll',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'ally-action', action: 'glacio-chafe', requiresOtherOwner: true },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    condition: { requiresStance: 'Glacio Chafe mode' },
+    // Film Roll's own payoff IS the extra application, not a separate damage/buff value — re-applies
+    // the same tag it reacted to, crediting Lucilla with a second real instance of Glacio Chafe that
+    // any OTHER team member's own ally-action-reactive block (e.g. Hiyuki's Glacio Bite) now counts via
+    // actionCountOf() instead of collapsing to the same single boolean as one application.
+    appliesTags: [{ tag: 'glacio-chafe' }],
+    note: 'Forte Circuit Film Roll (Chafe mode, gained via Déjà Vu on casting Clear As Day: 4 stacks/30s, cap raised to 10 by Inherent Skill Remembrance — assumed active/banked, same convention as every other Inherent-Skill/stack-cap assumption in this file): consumes 1 stack whenever another active teammate inflicts Glacio Chafe, to inflict Glacio Chafe 2x more herself on nearby targets. `requiresOtherOwner` enforces the real "ANOTHER active teammate" gate — this must never fire off Lucilla\'s own Clip It/Spotlight/Oblivion casts, only a genuine ally\'s.',
+  },
   {
     id: 'lucilla.buff.forte-zoom',
     source: SOURCE, kind: 'buff', section: 'Buff',

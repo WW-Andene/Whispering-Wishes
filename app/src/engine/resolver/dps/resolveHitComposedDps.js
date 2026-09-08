@@ -34,7 +34,7 @@
 
 import { calcAvgCrit, calcDmgBonus, calcDefMult, calcResMult, applyBuff, createStats } from '../../../features/teams/calcEngine.js';
 import { simulateRotation } from './rotationSimulator.js';
-import { triggerFired, conditionHolds, actionMatches, blockIdMatches } from '../gating/triggerEngine.js';
+import { triggerFired, conditionHolds, actionMatches, actionCountOf, blockIdMatches } from '../gating/triggerEngine.js';
 import { buildBlockWindows, activeCountAt } from '../gating/blockWindows.js';
 import { cumulativeTieredValue } from '../gating/tieredStacking.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../gating/sequenceGating.js';
@@ -205,6 +205,12 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
         : triggerFired(db.trigger, r.firedTriggers);
       if (!triggerMatches) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
+      // Real per-instance count (2026-09-08, Film Roll full-kit audit): an 'ally-action' block fires
+      // once per real application by default (actionCountOf returns 1 in every case except a genuine
+      // second same-step application — see rotationSimulator.js's own reactive-self-application pass
+      // and triggerEngine.js's actionCountOf() doc), not a flat, always-once assumption regardless of
+      // how many real applications actually landed this step.
+      const repeatCount = db.trigger.type === 'ally-action' ? (actionCountOf(r.actionTagCounts, db.trigger.action) || 1) : 1;
 
       const stats = statsAtInstant(r.time, db.id, r.firedTriggers);
       const categoryStat = category ? stats[category] || 0 : 0; // which stat pool this cast's DMG Bonus draws from
@@ -261,7 +267,7 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
         // not a fabricated max-stacks assumption, so a rotation that only ever banked 1 stack (the
         // curated case) correctly scales less than a hypothetical 3-stack cast would.
         const perUnitAtkPct = hit.perStepUnit ? (hit.atkPctPerUnit || 0) * (r.step?.[hit.perStepUnit] || 0) : 0;
-        const damage = (effBase * ((hit.atkPct + perUnitAtkPct) / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100);
+        const damage = (effBase * ((hit.atkPct + perUnitAtkPct) / 100) + (hit.flat || 0)) * avgCrit * dmgBonus * defMult * resMult * libGate * cooldownGate * (1 + stats.totalMult / 100) * repeatCount;
         totalDamage += damage;
         hitLog.push({ time: r.time, blockId: db.id, atkPct: hit.atkPct + perUnitAtkPct, damage, category });
       }
