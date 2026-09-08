@@ -140,14 +140,31 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Waveworn Residue' },
     // bestEchoes confirmed accurate (Void Thunder/Nightmare: Thundering Mephis is genuinely #1 per
     // the source calcs). weaponAlts/teams corrected against the source's live build calcs (2026-07-30 profile
-    // update): Wildfire Mark (100.72%) actually edges out even his own bestWeapon and belongs in alt5,
-    // not Verdant Summit (96.69%, still fine but not top-tier). 'Waning Redshift' was a straight data
-    // bug — it's a Rectifier weapon (see weapons.js), not equippable by a Broadblade user at all;
-    // replaced with Aureate Zenith, a real Broadblade 4★ option. Lynae + Mornye is Calcharo's explicit
-    // "Best Team" per the source (his best overall buffer by a wide margin) — added ahead of the Yinlin
-    // pairing, which remains valid as his "most reliable Outro buffing option".
-    bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Lustrous Razor',
-    weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Autumntrace', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
+    // update): Lynae + Mornye is Calcharo's explicit "Best Team" per the source (his best overall
+    // buffer by a wide margin) — added ahead of the Yinlin pairing, which remains valid as his "most
+    // reliable Outro buffing option".
+    //
+    // bestWeapon/weaponAlts fully corrected 2026-09-08 (full re-audit) against Data dump/Calcharo/
+    // Calcharo.md's own complete, exhaustive Best Weapons list (9 total: signature-less 5-star tier +
+    // 4-star tier, no "(signature)" weapon of his own since he's a standard-banner 5★). Two real bugs
+    // in the prior fix, both introduced by the same 2026-07-30 pass:
+    // 1. That pass's own comment already NOTICED "Wildfire Mark (100.72%) actually edges out even his
+    //    own bestWeapon" (100.00%) — correctly identifying it outranks Lustrous Razor — but then filed
+    //    it into alt5 instead of promoting it to bestWeapon. bestWeapon is this table's own "the
+    //    numerically top-ranked weapon" convention everywhere else in this file; fixed to Wildfire Mark,
+    //    with Lustrous Razor demoted into alt5 alongside it.
+    // 2. 'Waning Redshift' was removed as "a straight data bug — it's a Rectifier weapon, not equippable
+    //    by a Broadblade user at all" — this claim is FALSE: weapons.js's own entry for 'Waning
+    //    Redshift' is `type: 'Broadblade'`, and the dump explicitly lists it as one of Calcharo's own
+    //    real weapon options ("Waning Redshift (R5) 83.29% (solid F2P option)"). Restored; Aureate
+    //    Zenith (the weapon that had wrongly replaced it) is real too and kept alongside it.
+    // Also closed a genuine completeness gap the same pass left behind: Verdant Summit (96.69%, #4
+    // overall) was missing from alt5 entirely, and 3 of the dump's 5 real 4-star options (Waning
+    // Redshift, Helios Cleaver, Broadblade#41) were missing from alt4 — all restored, matching this
+    // table's own established "list every real, ranked alt the source provides" convention (see e.g.
+    // Brant's own weaponAlts completeness fix).
+    bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Wildfire Mark',
+    weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest', 'Verdant Summit'], alt4: ['Autumntrace', 'Aureate Zenith', 'Waning Redshift', 'Helios Cleaver', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
     teams: ['Calcharo + Lynae + Mornye', 'Calcharo + Yinlin + Shorekeeper'] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
     // desc rewritten 2026-08-31 against wuthering.gg/characters/encore (Lv.1 skill-detail widget, cross-checked
@@ -4118,20 +4135,25 @@ const SKILL_MULTIPLIERS = {
   //   both from the wiki's Phantom Etching sub-table, explicitly stated "considered as Resonance Liberation
   //   DMG") — previously entirely uncaptured; the old single "Standard" rows for Heavy ATK/Dodge Counter are
   //   the NORMAL-state values only and remain filed under their own categories, unchanged.
+  // All "TODO: verify" rows below resolved 2026-09-08 (full re-audit): Data dump/Calcharo/Calcharo.md
+  // (a real prydwen.gg snapshot, unavailable to the 2026-08-31 wiki cross-check pass that left these
+  // TODOs) independently confirms every one of them exactly — Basic ATK Stage 1-4, Heavy ATK Standard,
+  // Mid-air Plunging Attack, Dodge Counter Standard, Forte Mercy, Forte Death Messenger, and Intro
+  // Wanted Outlaw all match this table's stored values verbatim. TODOs removed.
   'Calcharo': [
-    ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%', 'TODO: verify — not present in either source this pass (see table-level comment above); the source confirms the 4-stage count only.'],
-    ['Heavy ATK', 'Standard', '41.36%×5', 'TODO: verify — normal-state Heavy ATK, not present in either source this pass. Do not confuse with the Deathblade Gear row below.'],
+    ['Basic ATK', 'Gnawing Fangs Stage 1-4', '45.73%×2 → 99.41% → 85.18%+42.59%×3 → 79.51%×2+106.01%', "Confirmed 2026-09-08 against Data dump/Calcharo/Calcharo.md's own Part 1-4 Damage rows (exact match)."],
+    ['Heavy ATK', 'Standard', '41.36%×5', 'Confirmed 2026-09-08 against the dump\'s own "Heavy Attack Damage: 41.36%×5" row (exact match). Do not confuse with the Deathblade Gear row below.'],
     ['Heavy ATK', 'Standard (Deathblade Gear)', '62.03%×5', 'Confirmed 2026-08-31 against the wiki Lv.10 "Heavy Attack DMG" row under Phantom Etching. While in Deathblade Gear (11s after Phantom Etching), Heavy Attack deals this boosted value instead of the normal-state row above, and is counted as Resonance Liberation DMG, not Heavy ATK DMG.'],
-    ['Mid-air', 'Plunging Attack', '123.27%', 'TODO: verify — not present in either source this pass.'],
-    ['Dodge Counter', 'Standard', '66.48%×3+85.47%', 'TODO: verify — normal-state Dodge Counter, not present in either source this pass. Do not confuse with the Deathblade Gear row below.'],
+    ['Mid-air', 'Plunging Attack', '123.27%', 'Confirmed 2026-09-08 against the dump\'s own "Mid-Air Attack Damage: 123.27%" row (exact match).'],
+    ['Dodge Counter', 'Standard', '66.48%×3+85.47%', 'Confirmed 2026-09-08 against the dump\'s own "Dodge Counter Damage: 66.48%×3+85.47%" row (exact match). Do not confuse with the Deathblade Gear row below.'],
     ['Dodge Counter', 'Standard (Deathblade Gear)', '56.99%×6', 'Confirmed 2026-08-31 against the wiki Lv.10 "Dodge Counter DMG" row under Phantom Etching. While in Deathblade Gear, Dodge Counter deals this boosted value instead of the normal-state row above, and is counted as Resonance Liberation DMG, not Dodge Counter DMG.'],
-    ['Skill', 'Extermination Order Stage 1-3', '51.57%×2+68.76% → 77.36%×2+103.14% → 214.87%×2', 'Confirmed exact match 2026-08-31 against the wiki Lv.10 Part 1/2/3 Damage rows. 10s cooldown; does not interrupt the Basic ATK cycle. Each Skill hit grants 1 Cruelty (cap 3) — frozen while in Deathblade Gear.'],
-    ['Forte', 'Heavy ATK: "Mercy"', '39.11%×8+78.22%', 'TODO: verify — not present in either source this pass. At 3 Cruelty, Heavy ATK becomes "Mercy" — consumes all 3 Cruelty, restores Resonance/Concerto Energy, counted as Heavy ATK DMG.'],
-    ['Forte', 'Heavy ATK: "Death Messenger"', '97.77%×8+195.53%', 'TODO: verify — not present in either source this pass. In Deathblade Gear, at 5 Killing Intent, Basic ATK becomes "Death Messenger" — consumes all 5 Killing Intent, restores Resonance/Concerto Energy, counted as Resonance Liberation DMG.'],
-    ['Liberation', 'Phantom Etching → Hounds Roar', '596.43% → 88.07%→35.23%×2+52.84%×2→163.84%→34.82%×6→150.19%×2', 'Confirmed exact match 2026-08-31 against the wiki Lv.10 Skill Damage / Hounds Roar Stage 1-5 rows. Enters Deathblade Gear (11s, 125 Resonance Energy cost, 20 Concerto Energy regen): Basic ATK replaced by Hounds Roar (each hit grants 1 Killing Intent, cap 5), Heavy ATK/Dodge Counter deal Liberation DMG (see the Deathblade Gear rows above).'],
-    ['Intro', 'Wanted Outlaw', '39.77%×2+59.65%×2', 'TODO: verify — not present in either source this pass. Official skill name confirmed "Wanted Outlaw" per the wiki\'s own footnote (in-game Resonance Chain text mislabels it "Wanted Criminal").'],
-    ['Intro', '"Necessary Means"', '198.81%×2', 'NEW row added 2026-08-31, confirmed exact match against the wiki Lv.10 "\'Necessary Means\' Damage" row (also matches the source\'s kit text). Previously entirely undocumented: once Deathblade Gear ends, Calcharo\'s next Intro Skill cast is silently replaced by this move instead of "Wanted Outlaw", counted as Intro Skill DMG. TODO: needs Phase 2 schema to model the cross-rotation "which Intro fires next" state — CHARACTER_ROTATIONS below always uses the "Wanted Outlaw" opener as the baseline case.'],
-    ['Outro', 'Shadowy Raid', '195.98%+391.96%', 'Confirmed exact match 2026-08-31 against the wiki Lv.10 Outro Skill row and the source\'s kit text ("195.98%+391.96% of Calcharo\'s ATK").'],
+    ['Skill', 'Extermination Order Stage 1-3', '51.57%×2+68.76% → 77.36%×2+103.14% → 214.87%×2', 'Confirmed exact match 2026-08-31 against the wiki Lv.10 Part 1/2/3 Damage rows (and again 2026-09-08 against the dump\'s own matching rows). 10s cooldown; does not interrupt the Basic ATK cycle. Each Skill hit grants 1 Cruelty (cap 3) — frozen while in Deathblade Gear.'],
+    ['Forte', 'Heavy ATK: "Mercy"', '39.11%×8+78.22%', 'Confirmed 2026-09-08 against the dump\'s own "Mercy Damage: 39.11%×8+78.22%" row (exact match). At 3 Cruelty, Heavy ATK becomes "Mercy" — consumes all 3 Cruelty, restores Resonance/Concerto Energy, counted as Heavy ATK DMG.'],
+    ['Forte', 'Heavy ATK: "Death Messenger"', '97.77%×8+195.53%', 'Confirmed 2026-09-08 against the dump\'s own "Death Messenger Damage: 97.77%×8+195.53%" row (exact match). In Deathblade Gear, at 5 Killing Intent, Basic ATK becomes "Death Messenger" — consumes all 5 Killing Intent, restores Resonance/Concerto Energy, counted as Resonance Liberation DMG.'],
+    ['Liberation', 'Phantom Etching → Hounds Roar', '596.43% → 88.07%→35.23%×2+52.84%×2→163.84%→34.82%×6→150.19%×2', 'Confirmed exact match 2026-08-31 against the wiki Lv.10 Skill Damage / Hounds Roar Stage 1-5 rows (and again 2026-09-08 against the dump). Enters Deathblade Gear (11s, 125 Resonance Energy cost, 20 Concerto Energy regen): Basic ATK replaced by Hounds Roar (each hit grants 1 Killing Intent, cap 5), Heavy ATK/Dodge Counter deal Liberation DMG (see the Deathblade Gear rows above).'],
+    ['Intro', 'Wanted Outlaw', '39.77%×2+59.65%×2', 'Confirmed 2026-09-08 against the dump\'s own "Skill Damage: 39.77%×2+59.65%×2" row under Intro Skill Wanted Outlaw (exact match). Official skill name confirmed "Wanted Outlaw" per the wiki\'s own footnote (in-game Resonance Chain text mislabels it "Wanted Criminal").'],
+    ['Intro', '"Necessary Means"', '198.81%×2', 'Confirmed exact match 2026-08-31 against the wiki Lv.10 "\'Necessary Means\' Damage" row (also matches the dump\'s "Necessary Means Damage: 198.81%×2" row, re-confirmed 2026-09-08). Previously entirely undocumented: once Deathblade Gear ends, Calcharo\'s next Intro Skill cast is silently replaced by this move instead of "Wanted Outlaw", counted as Intro Skill DMG. TODO: needs Phase 2 schema to model the cross-rotation "which Intro fires next" state — CHARACTER_ROTATIONS below always uses the "Wanted Outlaw" opener as the baseline case.'],
+    ['Outro', 'Shadowy Raid', '195.98%+391.96%', 'Confirmed exact match 2026-08-31 against the wiki Lv.10 Outro Skill row and the source\'s kit text ("195.98%+391.96% of Calcharo\'s ATK"); re-confirmed 2026-09-08 against the dump.'],
   ],
   // Corrected 2026-08-17 against the source's character #1603 sheet (Lv.10 skill attributes): every
   // row except Outro was roughly half its real value (e.g. Ephemeral was '635%' vs the real 1262.45%,

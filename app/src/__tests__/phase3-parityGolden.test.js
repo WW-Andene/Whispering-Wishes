@@ -185,6 +185,11 @@ const EXPECTED_DIVERGENCES = {
   // gate correctly derates the legacy RAW number (4803 -> 4644); this test's own standalone engine
   // call doesn't apply that gate, so it stays at the un-derated value. Measured ratio ~1.034
   // (engine/legacy) — real, expected, not a regression.
+  // Golden fixture re-measured 2026-09-08 (full re-audit): bestWeapon corrected from Lustrous Razor to
+  // Wildfire Mark (100.72%, the dump's own real #1-ranked weapon — a prior pass had already noticed it
+  // outranked bestWeapon but filed it into weaponAlts instead of promoting it). Both numbers moved
+  // together (4644->4400 legacy after the new weapon's own stat profile, ratio ~1.034) — same
+  // underlying cooldown-derating divergence cause as before, still inside the existing band.
   Calcharo: { min: 1.02, max: 1.10 },
   // Added 2026-09-06 (Cantarella completeness pass): same class as Aalto/Aemeath/Augusta/Baizhi/
   // Brant/Buling/Calcharo above. Flowing Suffocation (Liberation) got a real, sourced 25s cooldown

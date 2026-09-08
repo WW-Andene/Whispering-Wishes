@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA } from '../data/characters.js';
+import { WEAPON_DATA } from '../data/weapons.js';
 import { resolveHitComposedDps } from '../engine/resolver/dps/resolveHitComposedDps.js';
-import { deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
+import { simulateRotation, deriveStepsFromRotation } from '../engine/resolver/dps/rotationSimulator.js';
 import { CALCHARO_BLOCKS } from '../engine/characterBlocks/calcharo.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
 
@@ -83,5 +84,30 @@ describe('triggerEngine parity — Calcharo', () => {
 
   it("dmgFocus gains 'Outro' (real 7.6% share, now outroDmg-categorized) — Intro (5.1%) and Echo (5.2%, generic equipped-Echo damage) both stay excluded per this project's own precedent", () => {
     expect(CHARACTER_DATA['Calcharo'].dmgFocus).toEqual(['Liberation', 'Basic ATK', 'Outro']);
+  });
+
+  // Added 2026-09-08 (full re-audit): verifies the resource-threshold gate on Death Messenger/S6
+  // phantoms really fires once per real occurrence of that labeled rotation step (3 times, matching
+  // CHARACTER_ROTATIONS['Calcharo']'s own 3 "Heavy ATK: Death Messenger" steps), not just once overall
+  // despite the label repeating — deriveStepsFromRotation's own per-index (not per-unique-label)
+  // resourceStepOn matching, confirmed directly here rather than assumed from the block's own comment.
+  it('Death Messenger resource-threshold fires exactly 3 times, matching the 3 real occurrences in CHARACTER_ROTATIONS', () => {
+    const deathMessengerSteps = CHARACTER_ROTATIONS['Calcharo'].filter(s => s.type === 'Forte' && s.skill === 'Heavy ATK: "Death Messenger"');
+    expect(deathMessengerSteps.length).toBe(3);
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Calcharo'], CALCHARO_BLOCKS);
+    const results = simulateRotation(CALCHARO_BLOCKS, steps);
+    const firings = results.filter(r => r.firedTriggers.has('resource-threshold:Killing Intent:5'));
+    expect(firings.length).toBe(3);
+  });
+
+  // Added 2026-09-08 (full re-audit): bestWeapon was 'Lustrous Razor' (100.00%) even though a prior
+  // pass's own comment already noted 'Wildfire Mark' (100.72%) outranks it — filed into weaponAlts
+  // instead of promoted. Also restores 'Waning Redshift', wrongly removed by an earlier pass on the
+  // false claim it's a Rectifier weapon (weapons.js's own entry says type:'Broadblade').
+  it('bestWeapon is the real top-ranked weapon (Wildfire Mark), and Waning Redshift is a real, valid Broadblade alt', () => {
+    expect(CHARACTER_DATA['Calcharo'].bestWeapon).toBe('Wildfire Mark');
+    expect(WEAPON_DATA['Wildfire Mark'].type).toBe('Broadblade');
+    expect(WEAPON_DATA['Waning Redshift'].type).toBe('Broadblade');
+    expect(CHARACTER_DATA['Calcharo'].weaponAlts.alt4).toContain('Waning Redshift');
   });
 });

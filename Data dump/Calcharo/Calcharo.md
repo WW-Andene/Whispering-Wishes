@@ -209,3 +209,41 @@ extensive and accurate).
    `timing.duration: 30`.
 
 1 test added, full suite green (1339/1339).
+
+**Full re-audit (2026-09-08, explicitly requested — including cross-interactions, resource-threshold
+firing mechanics, and re-verifying "TODO: verify" gaps left by the prior wiki-only pass, not just
+re-checking what the last pass already touched).** Found 2 real bugs, both in weapon data.
+
+1. **bestWeapon was wrong, and the prior pass's own comment already knew it.** `bestWeapon` stored
+   'Lustrous Razor' (100.00%), but the 2026-07-30 pass's own comment explicitly said "Wildfire Mark
+   (100.72%) actually edges out even his own bestWeapon" — correctly identifying it as the real
+   top-ranked weapon per this dump's own Best Weapons list — then filed it into `weaponAlts.alt5`
+   instead of promoting it. Fixed: `bestWeapon` is now 'Wildfire Mark', with Lustrous Razor demoted
+   into alt5. Also closed a real completeness gap left by the same pass: Verdant Summit (96.69%, #4
+   overall) was missing from alt5 entirely.
+2. **'Waning Redshift' was removed based on a false claim.** The same pass's comment said it was
+   "a straight data bug — it's a Rectifier weapon, not equippable by a Broadblade user at all" and
+   replaced it with Aureate Zenith. This is factually wrong: `weapons.js`'s own entry for 'Waning
+   Redshift' is `type: 'Broadblade'`, and this dump explicitly lists it as one of Calcharo's own real
+   weapon options ("Waning Redshift (R5) 83.29% (solid F2P option)"). Restored it — Aureate Zenith is
+   real too and stays alongside it, not in its place. Also restored 2 more real 4-star options the
+   same pass had dropped (Helios Cleaver, Broadblade#41), matching the dump's complete 5-weapon
+   4-star list.
+
+Everything else re-verified clean and, where the 2026-08-31 wiki-only pass had left "TODO: verify"
+tags (Basic ATK Stage 1-4, Heavy ATK Standard, Mid-air Plunging Attack, Dodge Counter Standard, Forte
+Mercy, Forte Death Messenger, Intro Wanted Outlaw — 7 rows total), this dump now independently confirms
+every one of them exact — TODOs closed with a citation. Also directly verified (not just trusted the
+existing comment) that the Death Messenger/S6-phantoms resource-threshold trigger really fires once per
+real occurrence of that labeled step (3 times, matching CHARACTER_ROTATIONS' own 3 Death Messenger
+steps) by tracing deriveStepsFromRotation's per-index (not per-unique-label) matching directly, and
+added a test exercising it rather than trusting the block's own comment. CHAR_BUFF_TABLE (correctly
+empty — no team-facing buffs), RESONANCE_CHAIN_DATA (S1/S3/S4/S5/S6's already-documented TODOs for
+Phase-2-schema gaps all remain accurately described, not mischaracterized), and cross-character
+interactions (nothing else in the roster references Deathblade Gear/Killing Intent/Cruelty) all
+checked out.
+
+phase3-parityGolden.test.js caught real, expected drift from the weapon fix (a real stat-profile
+change) — refreshed both golden fixtures; the pre-existing EXPECTED_DIVERGENCES band still holds at
+the new numbers. Added positive-verification tests for the resource-threshold firing count and the
+weapon-data fix. Full suite green (1798/1798).
