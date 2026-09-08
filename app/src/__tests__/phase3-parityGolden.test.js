@@ -256,6 +256,12 @@ const EXPECTED_DIVERGENCES = {
   // derates the legacy RAW number (2940 -> 2309); this test's own standalone engine call doesn't
   // apply that gate, so it stays at the un-derated value. Measured ratio ~1.273 (engine/legacy) —
   // real, expected, not a regression.
+  // Golden fixture re-measured 2026-09-08 (full re-audit): DAKA DAKA!/Boom Boom were only modeled
+  // once despite the dump's own Burst Combo text casting both twice per real cycle (before and after
+  // Ultimate) — added the missing 2nd casts (chixia.forte.daka-daka-2/chixia.forte.boom-boom-2), same
+  // bug class already fixed on Changli. Both legacy (2973->4372) and engine (3727->5126) moved
+  // together. New measured ratio ~1.173 (engine/legacy), still inside this existing band — no change
+  // needed to the band itself.
   Chixia: { min: 1.15, max: 1.35 },
   // Added 2026-09-06 (Ciaccona completeness pass): same class as the prior 13 characters above.
   // Harmonic Allegro (Skill) and Singer's Triple Cadenza (Liberation) both got real, sourced

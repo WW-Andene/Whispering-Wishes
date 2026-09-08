@@ -63,4 +63,31 @@ describe('triggerEngine parity — Chixia', () => {
   it("dmgFocus is ['Skill', 'Liberation', 'Outro'] — 'Basic ATK' was wrong (she deals a genuine 0% Basic ATK share per her dump's Damage Profile, no basicDmg block exists at all), Liberation (32.5%) and Outro (9.6%) were both missing", () => {
     expect(CHARACTER_DATA['Chixia'].dmgFocus).toEqual(['Skill', 'Liberation', 'Outro']);
   });
+
+  // Found 2026-09-08 (full re-audit): the dump's own Burst Combo prose (beyond CHARACTER_ROTATIONS'
+  // own 6-step abstraction) is explicit that DAKA DAKA! -> Boom Boom is cast TWICE per real cycle
+  // ("...Ultimate -> another full Forte channel into Boom Boom -> Outro") — only the 1st was ever
+  // modeled, the same bug class already fixed on Changli's own 2x-cast gap.
+  it('DAKA DAKA! and Boom Boom each fire TWICE per rotation (the real cycle casts both twice — before and after Ultimate)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Chixia'], CHIXIA_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(CHIXIA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2500, 'fusion', 'Main DPS');
+    expect(hitLog.filter(h => h.blockId === 'chixia.forte.daka-daka' || h.blockId === 'chixia.forte.daka-daka-2')).toHaveLength(60); // 2 casts x 30 hits
+    expect(hitLog.filter(h => h.blockId === 'chixia.forte.boom-boom' || h.blockId === 'chixia.forte.boom-boom-2')).toHaveLength(2); // 2 casts x 1 hit
+  });
+
+  it("Scorching Magazine's +50% DMG Multiplier is scoped to BOTH real Boom Boom casts, not just the 1st", () => {
+    const buff = CHIXIA_BLOCKS.find(b => b.id === 'chixia.inherent.scorching-magazine-mult');
+    expect(buff.effects[0].scopedToBlockId.sort()).toEqual(['chixia.forte.boom-boom', 'chixia.forte.boom-boom-2']);
+  });
+
+  // Found 2026-09-08: the prior note on chain.s5 wrongly framed this as "the same Inherent Skill...
+  // not a separate additional bonus" and both blocks firing as an unintended double-count — but the
+  // dump's own kit text says ATK is "ADDITIONALLY increased" by 30% at max stacks, meaning this is a
+  // real, separate bonus that correctly stacks on top of the base Inherent Skill's own +30%.
+  it('chain.s5 stacks additively with the base Numbingly Spicy! max-stack ATK bonus (60% total at S5 + max stacks), not a double-count', () => {
+    const s5 = CHIXIA_BLOCKS.find(b => b.id === 'chixia.chain.s5');
+    const selfBuff = CHIXIA_BLOCKS.find(b => b.id === 'chixia.selfbuff.numbingly-spicy');
+    expect(s5.effects[0].value).toBe(30);
+    expect(selfBuff.effects[0].value * selfBuff.effects[0].maxStacks).toBe(30);
+  });
 });

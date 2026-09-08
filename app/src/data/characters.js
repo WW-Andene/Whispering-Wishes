@@ -6138,8 +6138,13 @@ const CHARACTER_ROTATIONS = {
   'Chixia': [
     { type: 'Intro', skill: 'Grand Entrance', note: 'rapid dual-pistol burst on entry, builds Thermobaric Bullets' },
     { type: 'Skill', skill: 'Whizzing Fight Spirit', note: 'hold to enter DAKA DAKA!, consuming Thermobaric Bullets on continuous fire' },
-    { type: 'Forte', skill: 'Heroic Bullets: DAKA DAKA!', note: 'spending all 30 Thermobaric Bullets in one go auto-casts Boom Boom' },
-    { type: 'Forte', skill: 'Heroic Bullets: Boom Boom', note: 'auto-triggered Resonance Skill finisher, exits DAKA DAKA!' },
+    // Notes expanded 2026-09-08 (full re-audit): the source's own Burst Combo prose casts this
+    // DAKA DAKA! -> Boom Boom pair TWICE per real cycle ("...Ultimate -> another full Forte channel
+    // into Boom Boom -> Outro") — chixia.blocks.js models both real casts of each riding these same 2
+    // steps (chixia.forte.daka-daka/-2, chixia.forte.boom-boom/-2), same "shared step, multiple real
+    // casts" convention already used for Changli's own 2x Skill/Forte Heavy casts.
+    { type: 'Forte', skill: 'Heroic Bullets: DAKA DAKA!', note: 'spending all 30 Thermobaric Bullets in one go auto-casts Boom Boom — landing 2 full channels per rotation (before and after Ultimate) is the goal' },
+    { type: 'Forte', skill: 'Heroic Bullets: Boom Boom', note: 'auto-triggered Resonance Skill finisher, exits DAKA DAKA! — cast twice per rotation (before and after Ultimate)' },
     { type: 'Liberation', skill: 'Blazing Flames', note: 'AoE rapid-fire burst hitting all nearby enemies' },
     { type: 'Outro', skill: 'Leaping Flames', note: 'AoE shockwave around the target, sets up the next Resonator' },
   ],

@@ -183,3 +183,40 @@ including correctly team-scoping S6.
 No test changes needed (none of the fixes touched RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/
 SKILL_MULTIPLIERS/CHARACTER_ROTATIONS, which the existing test file covers), full suite green
 (1339/1339).
+
+## Full re-audit (2026-09-08)
+
+Full re-read of this dump, `chixia.blocks.js`, and every relevant `characters.js` table
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, CHARACTER_DATA). One
+significant real bug found and fixed, plus one misleading comment corrected:
+
+1. **DAKA DAKA! -> Boom Boom was only modeled ONCE, despite the dump's own Burst Combo prose casting
+   it TWICE per real rotation cycle.** `CHARACTER_ROTATIONS['Chixia']`'s 6-step abstraction only shows
+   one of each, but the dump's own detailed text is explicit: "...Basic Attack (fires Boom Boom, ~4s
+   full execution...) → Ultimate (right after a full Forte channel, since it grants an ATK boost) →
+   **another full Forte channel into Boom Boom** → Outro." This is the exact same bug class already
+   found and fixed on Changli's own 2x-cast Skill/Forte Heavy gap earlier this session — only the
+   pre-Ultimate cast of each was ever credited, silently dropping an entire 2nd real cycle of her
+   single BIGGEST damage source (DAKA DAKA!'s 30-hit chain) and her single hardest-hitting move (Boom
+   Boom, 437.39%, plus its own +50% Scorching Magazine multiplier). Added `chixia.forte.daka-daka-2`
+   and `chixia.forte.boom-boom-2`, riding the same existing triggers as their 1st-cast counterparts
+   (same "shared trigger, no new rotation step" technique already used for Changli, to avoid inflating
+   the sourced ~8.83s rotation time). Widened `chixia.inherent.scorching-magazine-mult`'s
+   `scopedToBlockId` to cover both real Boom Boom casts. `CHARACTER_ROTATIONS`' own step notes updated
+   to document the real 2x-cast cycle.
+2. **`chain.s5`'s own note was misleading.** It previously claimed this block was "the SAME Inherent
+   Skill already modeled as chixia.selfbuff.numbingly-spicy... not a separate additional bonus" and
+   that both firing together was "a known accepted imprecision" — but the dump's own kit text says "At
+   Numbingly Spicy! max stacks, ATK is **ADDITIONALLY increased** by 30%," meaning S5 grants a real,
+   SEPARATE +30% ATK stacking on top of the base Inherent Skill's own +30% (60% total ATK at S5 + max
+   stacks). The code was already correct (both blocks already added together); only the comment's
+   reasoning was wrong. Corrected to reflect the real, intended additive mechanic.
+
+Golden-parity fixture re-measured for finding 1 (legacy 2973→4372, engine 3727→5126); new ratio ~1.173
+stays inside the existing `EXPECTED_DIVERGENCES` band (1.15–1.35), documented with a dated comment.
+
+Everything else re-verified clean against this dump with no changes needed: chain.s3/s6, Minor Fortes,
+Scorching Magazine's resource-cap half, base stats (9,088/300/953/150), DPS tier (T4/T4), bestWeapon
+(The Last Dance), weaponAlts, bestEchoes, dmgFocus, full SKILL_MULTIPLIERS, and CHARACTER_ROTATIONS'
+own move sequence all match this dump exactly. Full test suite: 1817/1817 passing (4 new/updated
+tests).
