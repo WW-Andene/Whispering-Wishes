@@ -50,6 +50,15 @@ export const DENIA_BLOCKS = [
     // concertoEnergyGain added 2026-09-06 (completeness pass): Data dump/Denia/Denia.md's own
     // "Concerto Regen: 10 each" row for the Intro Skill (It's Been A While!/Knock Knock).
     concertoEnergyGain: 10,
+    // dotApplier added 2026-09-08 (full re-audit): Denia dump line 92 explicitly names Intro as one of
+    // the "Intro/Final Act (both forms)/Erosion Field inflict 2 stacks of Fusion Burst" appliers — this
+    // block (and both Final Act blocks below) had NO dotApplier tag at all despite being named in the
+    // same kit-text sentence as denia.liberation.erosion-field, which already had one. Since dotApplier
+    // is purely tag-driven with no fallback (dotReactionsFromBlocks.js), this was a real, silent gap:
+    // Intro's real Fusion Burst application was entirely invisible to the cross-character reactivity
+    // system. requiresStance kept for consistency with the other two dotApplier tags in this file, even
+    // though Intro always opens in Stagecraft Form (Fusion Burst mode is a separate, independent toggle).
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 2 },
   },
   {
     id: 'denia.basic.stagecraft-stage1',
@@ -86,6 +95,10 @@ export const DENIA_BLOCKS = [
     // gain — no matching schema field, not modeled, same treatment as every other character's own
     // Liberation resource cost.
     concertoEnergyGain: 20,
+    // dotApplier added 2026-09-08 (full re-audit): same gap as denia.intro.its-been-a-while above —
+    // this Final Act cast is named in the dump's "Intro/Final Act (both forms)/Erosion Field inflict 2
+    // stacks of Fusion Burst" sentence (line 92) but had no dotApplier tag at all.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 2 },
   },
   {
     id: 'denia.basic.breakdown-stage1-4',
@@ -166,6 +179,10 @@ export const DENIA_BLOCKS = [
     note: 'Consumes full Conformal Charge + Void Particle, grants Entropy Shift: Stagecraft Form (30s), leaves an Erosion Field, switches back to Stagecraft Form.',
     // concertoEnergyGain added 2026-09-06 (completeness pass): same row's "Concerto Regen: 20 each".
     concertoEnergyGain: 20,
+    // dotApplier added 2026-09-08 (full re-audit): same gap as denia.intro.its-been-a-while above —
+    // this Final Act cast is named in the dump's "Intro/Final Act (both forms)/Erosion Field inflict 2
+    // stacks of Fusion Burst" sentence (line 92) but had no dotApplier tag at all.
+    dotApplier: { mechanic: 'fusionBurst', requiresStance: 'Fusion Burst mode', value: 2 },
   },
   {
     id: 'denia.liberation.erosion-field',
@@ -231,14 +248,23 @@ export const DENIA_BLOCKS = [
   // other Entropy-Shift-conditional buff in this file) is: kept passive rather than picking one
   // specific cast anchor.
   {
+    // Retargeted 2026-09-08 (full re-audit): was `trigger:{type:'passive'}` relying solely on
+    // `condition.requiresStance` to gate "while in Entropy Shift" — but `requiresStance` is PURELY
+    // DESCRIPTIVE in this engine (triggerEngine.js's own conditionHolds() never enforces it except via
+    // a separate mutual-exclusion mechanism that doesn't apply here — the same bug class already found
+    // and fixed on Camellya's chain.s3/s6 and Danjin's chain.s2). This team-wide +30% Fusion DMG Bonus
+    // was silently unconditional the WHOLE rotation, including her 3 real pre-Ultimate hits (Intro,
+    // Basic Stagecraft 1, Phantom Bubble) that fire before Entropy Shift ever exists. Retargeted to the
+    // same real cast anchor as chain.s6 above (her first Final Act cast, always Stagecraft Form first
+    // in the modeled rotation) for the exact same reasoning.
     id: 'denia.inherent.etched-colors-fusion-burst',
     source: SOURCE, kind: 'buff', section: 'Buff',
-    trigger: { type: 'passive' },
-    timing: { duration: 99 }, // sentinel: conditional on Entropy Shift + Fusion Burst mode, no single cast anchor picked (matches chain.s6's own convention)
+    trigger: { type: 'cast', on: 'Liberation:Final Act: Stagecraft Form' },
+    timing: { duration: 99 }, // sentinel: persists (mode-switching) through both Ultimates to rotation's end
     target: { scope: 'whole-team' },
-    condition: { element: 'fusion', requiresStance: 'Entropy Shift + Fusion Burst mode' },
+    condition: { element: 'fusion' },
     effects: [{ stat: 'elemDmg', value: 30, source: 'self-kit' }],
-    note: "Etched Colors (Fusion Burst half): while in Entropy Shift, team +30% Fusion DMG Bonus. See denia.inherent.etched-colors-tune-strain-note below for why the Tune Strain half isn't modeled.",
+    note: "Etched Colors (Fusion Burst half): while in Entropy Shift, team +30% Fusion DMG Bonus. Now gated to start on the same real Entropy-Shift-granting cast as chain.s6, instead of an unenforced requiresStance condition that was silently always-on. See denia.inherent.etched-colors-tune-strain-note below for why the Tune Strain half isn't modeled.",
   },
   // Added 2026-09-07 (completeness pass): the Tune Strain half of Etched Colors and her other
   // Inherent Skill, Vestiges of Falsehood — both real, sourced, previously not referenced anywhere.
@@ -263,7 +289,7 @@ export const DENIA_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'critDmg', value: 30, source: 'self-kit' }],
-    note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
+    note: "Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive. S1's OWN kit text also grants a 2nd real effect not modeled here: \"Entering combat in Stagecraft Form grants Entropy Shift: Stagecraft Form (30s)\" — no 'combat entry' trigger type exists in this schema, so this is a genuine, disclosed gap. Consequence flagged on denia.chain.s6/denia.inherent.etched-colors-fusion-burst below: their own fix (gating Entropy Shift's start to the first Final Act cast) is exactly correct at S0-S5, but at S6 (which implies S1 is also owned), this unmodeled S1 effect would make Entropy Shift real-active from combat start too — a known imprecision at S6 specifically, not silently ignored.",
   },
   {
     id: 'denia.chain.s2',
@@ -299,15 +325,27 @@ export const DENIA_BLOCKS = [
     note: "Final Act - Stagecraft Form's own DMG Multiplier +100% (confirmed exact, was 50 previously) — cast-scoped (instant, no persistent duration).",
   },
   {
+    // Retargeted 2026-09-08 (full re-audit): was `trigger:{type:'passive'}`, unconditionally active
+    // the WHOLE rotation — but the kit text is explicit this only applies "while in Entropy Shift," a
+    // real, temporary state that doesn't exist until her FIRST Final Act (Ultimate) cast. Her real
+    // modeled rotation (CHARACTER_ROTATIONS['Denia']) opens with Intro -> Basic Stagecraft 1 -> Skill:
+    // Phantom Bubble, all BEFORE the first Ultimate cast (Final Act: Stagecraft Form) ever grants
+    // Entropy Shift — the old unconditional-passive version was silently crediting +60% ATK/+60%
+    // Fusion DMG to those 3 pre-Ultimate hits, which the kit text says shouldn't receive it at all.
+    // Retargeted to a cast-triggered window opening on the FIRST Final Act cast in her modeled
+    // rotation (Stagecraft Form, always cast first per CHARACTER_ROTATIONS), sentinel duration since
+    // Entropy Shift then persists (with brief mode-switches) through both Ultimates to the end of the
+    // rotation — the "no single cast anchor" limitation the old note described only matters for a
+    // rotation that casts Final Act in the other order, which this one never does.
     id: 'denia.chain.s6',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: { duration: 99 }, // sentinel: conditional on being in Entropy Shift (grantable by either Final Act cast), no single cast anchor picked
+    trigger: { type: 'cast', on: 'Liberation:Final Act: Stagecraft Form' },
+    timing: { duration: 99 }, // sentinel: persists (mode-switching) through both Ultimates to rotation's end
     target: { scope: 'self' },
     effects: [
       { stat: 'atkPct', value: 60, source: 'self-kit' },
       { stat: 'elemDmg', value: 60, source: 'self-kit' },
     ],
-    note: 'While in Entropy Shift: +60% ATK AND +60% Fusion DMG Bonus simultaneously (the atkPct component was missing from an earlier version of this table, only elemDmg was captured — added). Entropy Shift can be granted by either Final Act cast, so kept passive rather than picking one specific anchor.',
+    note: 'While in Entropy Shift: +60% ATK AND +60% Fusion DMG Bonus simultaneously (the atkPct component was missing from an earlier version of this table, only elemDmg was captured — added). Now gated to start on her first real Entropy-Shift-granting cast (Final Act: Stagecraft Form) rather than applying from the start of the rotation before Entropy Shift ever exists.',
   },
 ];

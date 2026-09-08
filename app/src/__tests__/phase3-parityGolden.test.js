@@ -299,6 +299,14 @@ const EXPECTED_DIVERGENCES = {
   // derates the legacy RAW number (1527 -> 1267); this test's own standalone engine call doesn't
   // apply that gate, so it stays at the un-derated value. Measured ratio ~1.205 (engine/legacy) —
   // real, expected, not a regression.
+  // Re-measured 2026-09-08 (full re-audit): chain.s6/etched-colors-fusion-burst retargeted from
+  // unconditional passives to cast-anchored windows opening on the first Final Act cast (both now
+  // correctly skip her 3 real pre-Ultimate hits), and denia.intro.its-been-a-while/final-act-stagecraft/
+  // final-act-breakdown gained the dotApplier tags the dump's own kit text already named them for
+  // (does not affect this DPS-only measurement, dotApplier only feeds the separate DOT-reaction system).
+  // Both legacy (1740->1713) and engine (2093.89->2064.98) moved down together (fewer pre-Ultimate hits
+  // now get the Entropy Shift bonus). New measured ratio ~1.206 (engine/legacy), still inside this
+  // existing band — no change needed to the band itself.
   Denia: { min: 1.10, max: 1.30 },
 };
 
@@ -420,6 +428,15 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // calcTeamStats.js + engine/resolver/projection/ and confirming an exact JSON diff). Any drift here is a
 // bug in the extraction, full stop, not an intentional improvement — unlike
 // EXPECTED_DIVERGENCES above, there is no "documented divergence" escape hatch for this test.
+//
+// Denia's `score` field updated 2026-09-08 (full re-audit): 1387 -> 1316, an intentional,
+// sourced DPS-formula change, NOT an extraction bug. chain.s6/etched-colors-fusion-burst were
+// retargeted from unconditional passives to cast-anchored windows opening on her first Final Act
+// cast (see EXPECTED_DIVERGENCES.Denia comment above for the same fix's effect on rawDps/engineDps)
+// — this legacy calcTeamStats() score path consumes the same block effects, so it moved too.
+// effAtk/avgCrit/defMult/resMult are all unaffected (verified unchanged via a direct
+// calcTeamStats(['Denia'], ...) call before/after the fix) — only score, which folds in rawDps,
+// moved.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {
