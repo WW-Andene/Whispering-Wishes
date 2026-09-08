@@ -73,10 +73,16 @@
 // list, for consistency even though unused in the modeled rotation. Cross-checked for the two other
 // classes of bug found elsewhere this session: no chain-node scoping bugs found (every node was
 // already correctly scoped in prior passes); no character anywhere in the roster converts/negates
-// Fusion Burst or Tune Rupture-Shifting the way Zani converts Frazzle (checked directly). One real,
-// sourced self-kit mechanic (Seraphic Duet's Rupturous/Fusion Trail stack-consumption DMG bonus) is
-// flagged, not modeled — see aemeath.skill.seraphic-duet-encore's own comment for why a real stack
-// count can't be derived without fabricating one.
+// Fusion Burst or Tune Rupture-Shifting the way Zani converts Frazzle (checked directly).
+//
+// Seraphic Duet's stack-consumption DMG bonus, same-day follow-up: split by mode on user correction
+// ("tune mechanic is not buildable. however fusion burst is") — the Fusion Burst half IS now real and
+// modeled (resolveAemeathFusionTrailAmp(), dotReactionsFromBlocks.js — amps the aggregate Fusion Burst
+// reaction using the real per-rotation Fusion Trail count, the same real-per-step-firing infrastructure
+// already built for Frazzle/Erosion); the Tune Rupture half stays genuinely unmodeled, since its
+// Rupturous Trail stacks trace directly back to Tune Break detonations — the already-excluded mechanic
+// (2026-09-05) with no sourced fill rate anywhere, not a new gap. See
+// aemeath.skill.seraphic-duet-encore's own comment for the full split reasoning.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -195,19 +201,28 @@ export const AEMEATH_BLOCKS = [
     // the full rationale (same real dump line 84 trigger, Tune Rupture-mode half).
     appliesTags: [{ tag: 'tune-rupture-shifting', requiresStance: 'Tune Rupture mode' }],
   },
-  // Real, sourced mechanic NOT modeled (2026-09-08 full-kit audit, flagged rather than silently
-  // omitted): Forte Circuit's own "Seraphic Duet mode-based enhancement" text says both Duet casts
-  // consume her Rupturous Trail (Tune Rupture mode) or Fusion Trail (Fusion Burst mode) stacks for a
-  // real per-stack DMG bonus ("+4% DMG Mult per stack removed" / "+10% DMG Mult... per stack
-  // removed"), on top of extra hit instances. This is the same class of self-kit resource-scaling
-  // interaction as Hiyuki's Blade Liberation (stack count -> real %DMG scaling) — but unlike
-  // Snowforged Blade, there's no way to derive a REAL banked stack count without fabricating one:
-  // Rupturous/Fusion Trail stacks come from the WHOLE TEAM'S Tune Rupture-Interfered/Fusion Burst
-  // application history over the rotation (not a self-contained resource Aemeath's own casts alone
-  // build, the way Snowforged Blade or Lucilla's Photos are), which this engine has no per-instant
-  // team-composition-independent way to track. Modeling a specific stack count here would be
-  // guessing, not reading a sourced number — left honestly unmodeled, same discipline as chain.s5's
-  // utility-only S5.
+  // Seraphic Duet's mode-based "stack removal" enhancement (Forte Circuit's own text) — split
+  // resolution, 2026-09-08, direct user correction ("tune mechanic is not buildable. however fusion
+  // burst is"):
+  //   Fusion Burst mode half — "+10% DMG Mult to the main target's Fusion Burst per [Fusion Trail]
+  //   stack removed" — IS now modeled. Fusion Trail (cap 30) is gained from the SAME real "team
+  //   inflicting Fusion Burst" event this session's own real-per-step-firing DOT work already tracks
+  //   (rotationSimulator.js's universal dotApplier auto-tagging, dotReactionsFromBlocks.js's
+  //   collectRealApplications) — a concrete, sourced stack/threshold system, unlike Tune Break's
+  //   unsourced fill rate. See resolveAemeathFusionTrailAmp() (dotReactionsFromBlocks.js) for the
+  //   real implementation: it amps the WHOLE aggregate Fusion Burst reaction total by the real
+  //   per-rotation occurrence count (clamped at the real 30 cap), a documented one-canonical-pass
+  //   approximation (assumes her Duet casts after the team's real applications within the loop) since
+  //   the aggregate Fusion Burst reaction has no per-cast-instant hook the way her own damage blocks
+  //   do — every value feeding it is real and sourced, not fabricated.
+  //   Tune Rupture mode half — "+4% DMG Mult per [Rupturous Trail] stack removed" — stays genuinely
+  //   unmodeled: Rupturous Trail's own real trigger ("team responding to Tune Rupture-Interfered")
+  //   traces directly back to a team Tune Break detonation (dump line 103: "once a target's Off-Tune
+  //   Level is full, cast Tune Break on it... Responding to Tune Rupture-Interfered from a team Tune
+  //   Break triggers..."), i.e. the SAME Tune Break/Off-Tune mechanic already removed from this
+  //   engine entirely (2026-09-05, direct instruction — see dotFormulas.js's own removal note) because
+  //   its detonation frequency has no sourced number anywhere. Not a new gap — the same already-decided
+  //   exclusion, correctly not rebuilt here.
   {
     id: 'aemeath.skill.seraphic-duet-encore',
     source: SOURCE, kind: 'damage', section: 'Skill',

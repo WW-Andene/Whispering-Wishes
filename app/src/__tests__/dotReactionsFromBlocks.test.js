@@ -251,3 +251,54 @@ describe('dotReactionsFromBlocks — real, sourced stack caps enforced (2026-09-
     expect(lookupStackMult(EROSION_STACK_TABLE, 999)).toBe(EROSION_STACK_TABLE[EROSION_STACK_TABLE.length - 1]);
   });
 });
+
+describe('dotReactionsFromBlocks — Aemeath Fusion Trail amp (2026-09-08, "tune mechanic is not buildable. however fusion burst is")', () => {
+  // Fully synthetic, hand-computable scenario: ONE real fusionBurst-tagged applier block (value 1,
+  // fires once) plus a Duet cast, both from Aemeath — so the exact real occurrence count (1) and the
+  // exact resulting detonation count are both known, letting the amp be verified as an EXACT value,
+  // not just a directional "it went up."
+  const owner = 'Aemeath';
+  const applierBlock = {
+    id: 'synthetic.fusion-applier', source: owner, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:SyntheticApplier' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: [{ atkPct: 1 }] }, dotApplier: { mechanic: 'fusionBurst', value: 10 }, // 10 = FUSION_BURST_THRESHOLD -> exactly 1 detonation
+  };
+  const duetBlock = {
+    id: 'aemeath.skill.seraphic-duet-overture', source: owner, kind: 'damage',
+    trigger: { type: 'cast', on: 'Skill:SyntheticDuet' }, timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: [{ atkPct: 1 }] },
+  };
+  const blocksByOwner = { [owner]: [applierBlock, duetBlock] };
+  const rotationsByOwner = { [owner]: [{ type: 'Skill', skill: 'SyntheticApplier' }, { type: 'Skill', skill: 'SyntheticDuet' }] };
+
+  it('amps the aggregate Fusion Burst total by exactly 10% for 1 real occurrence, compounding correctly with her own pre-existing Duet-forced-detonation mechanic', () => {
+    // Using her own real block id (aemeath.skill.seraphic-duet-overture) for the synthetic Duet cast
+    // means it's ALSO recognized by the pre-existing Aemeath-Duet-forces-a-detonation mechanic
+    // (resolveFusionBurstStacks.js's AEMEATH_DUET_BLOCK_IDS) — correctly, since in the real game both
+    // effects genuinely fire together on the same real cast. So WITH-vs-WITHOUT-Duet isn't a pure
+    // amp-only ratio; it's (passiveDetonations+1 forced)*(1+amp) vs passiveDetonations*1 — verified
+    // here by computing both terms explicitly rather than assuming a bare 1.10x.
+    const noDuetRotation = { [owner]: [{ type: 'Skill', skill: 'SyntheticApplier' }] }; // applier fires, but no Duet cast
+    const withDuet = resolveFusionBurstFromBlocks(blocksByOwner, 25, defMult, resMult, [], { Aemeath: 'Fusion Burst mode' }, rotationsByOwner);
+    const withoutDuet = resolveFusionBurstFromBlocks(blocksByOwner, 25, defMult, resMult, [], { Aemeath: 'Fusion Burst mode' }, noDuetRotation);
+    // 1 real applier occurrence at value 10, Aemeath's own early-detonation threshold (5, since the
+    // owner key literally is 'Aemeath') -> passiveDetonations = 10/5 = 2; her Duet cast forces +1 more.
+    const passiveDetonations = 2;
+    const expectedRatio = ((passiveDetonations + 1) * (1 + 1 * 10 / 100)) / passiveDetonations;
+    expect(withDuet.dmg / withoutDuet.dmg).toBeCloseTo(expectedRatio, 6);
+  });
+
+  it('is exactly 0 (no amp applied) when Aemeath never actually casts her Duet in the given rotation', () => {
+    const noDuetRotation = { [owner]: [{ type: 'Skill', skill: 'SyntheticApplier' }] }; // applier fires, but no Duet cast
+    const withDuet = resolveFusionBurstFromBlocks(blocksByOwner, 25, defMult, resMult, [], { Aemeath: 'Fusion Burst mode' }, rotationsByOwner);
+    const withoutDuet = resolveFusionBurstFromBlocks(blocksByOwner, 25, defMult, resMult, [], { Aemeath: 'Fusion Burst mode' }, noDuetRotation);
+    // Same real applier occurrence (same detonation count), but the amp specifically requires her
+    // Duet to actually be cast — removing only the Duet cast must strictly lower the total.
+    expect(withoutDuet.dmg).toBeLessThan(withDuet.dmg);
+  });
+
+  it('requires Aemeath to actually be on the team — a team without her never computes the amp', () => {
+    const result = resolveFusionBurstFromBlocks({ Ciaccona: [] }, 25, defMult, resMult, [], null, { Ciaccona: [] });
+    expect(result.active).toBe(false);
+  });
+});

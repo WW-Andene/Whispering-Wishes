@@ -28,6 +28,13 @@ import {
 import { winningStanceForOwner } from '../gating/sequenceGating.js';
 import { resolveFusionBurstDetonations } from './resolveFusionBurstStacks.js';
 
+// Aemeath's own Fusion Trail constants (2026-09-08) — see resolveAemeathFusionTrailAmp()'s own doc.
+// Real, sourced (Data dump/Aemeath/Aemeath.md): "1 Fusion Trail stack (30s, cap 30)" per real team
+// Fusion Burst application; her Duet's own Fusion Burst-mode enhancement grants "+10% DMG Mult... per
+// stack removed."
+const FUSION_TRAIL_MAX_STACKS = 30;
+const FUSION_TRAIL_AMP_PER_STACK = 10;
+
 /**
  * Every dotApplier-tagged block across the whole team, keyed by mechanic — filtered by mode where the
  * block declares one. `dotApplier.requiresStance` (added alongside Denia/Aemeath's migration, same
@@ -187,7 +194,53 @@ export function resolveFusionBurstFromBlocks(blocksByOwner, rotTime, defMult, re
     ? resolveFusionBurstDetonations(blocksByOwner, rotationsByOwner, stanceOverrides).totalDetonations
     : Math.max(1, Math.floor(rotTime / Math.max(FUSION_BURST_THRESHOLD, 8)));
   const dmg = DOT_LEVEL_MULT * DOT_BASE_FACTOR * (FUSION_BURST_THRESHOLD * 0.5) * FUSION_TRAIL_MULT;
-  return { dmg: dmg * explosions * defMult * resMult, active: true };
+  // Aemeath's Fusion Trail amp (2026-09-08, direct user instruction — "tune mechanic is not
+  // buildable. however fusion burst is"): see resolveAemeathFusionTrailAmp()'s own doc for the full
+  // mechanic and sourcing. Only ever nonzero when Aemeath is actually on the team, in Fusion Burst
+  // mode, and her own Seraphic Duet cast genuinely appears in her modeled rotation.
+  const fusionTrailAmp = rotationsByOwner ? resolveAemeathFusionTrailAmp(blocksByOwner, rotationsByOwner, stanceOverrides) : 0;
+  return { dmg: dmg * explosions * defMult * resMult * (1 + fusionTrailAmp / 100), active: true };
+}
+
+/**
+ * Aemeath's Fusion Trail stack-consumption amp on the aggregate Fusion Burst reaction (2026-09-08,
+ * direct user instruction after correctly distinguishing this from her Tune Rupture side — "tune
+ * mechanic is not buildable. however fusion burst is"). Real mechanic (Forte Circuit's own "Seraphic
+ * Duet mode-based enhancement," Fusion Burst branch): her own Duet cast (Overture or Encore, while in
+ * Fusion Burst mode) "removes Fusion Trail stacks if present... +10% DMG Mult to the main target's
+ * Fusion Burst per stack removed." Fusion Trail itself (cap 30) is gained "+1 [stack] per [any] team
+ * [member] inflicting Fusion Burst" — the SAME real event this session's own universal per-mechanic
+ * actionTags auto-tagging (rotationSimulator.js) and `collectRealApplications()` (this file, built for
+ * the Frazzle/Erosion real-per-step-firing pass) already track for every dotApplier-tagged
+ * `mechanic:'fusionBurst'` block across the WHOLE team, not just Aemeath's own.
+ *
+ * Real, sourced ceiling used deliberately in place of live per-instant simulation state (which the
+ * aggregate Fusion Burst reaction has no hook for — it computes one whole-rotation total, not a
+ * per-cast-instant timeline the way her own damage blocks do): the real per-rotation count of every
+ * team member's real Fusion-Burst-tagged cast (via collectRealApplications, clamped at the real 30
+ * cap) is used as the stack count "banked" at her Duet's own cast — a documented approximation
+ * (assumes her Duet is cast after the team's real Fusion Burst applications within the modeled
+ * rotation loop, the same "one canonical pass" simplification this engine already makes everywhere
+ * else), not a fabricated number: every value going into it is real and sourced.
+ * @returns {number} The real %DMG amp to apply to the WHOLE Fusion Burst aggregate total (0 if
+ *   Aemeath isn't present, isn't in Fusion Burst mode, or her Duet never actually casts).
+ */
+function resolveAemeathFusionTrailAmp(blocksByOwner, rotationsByOwner, stanceOverrides = null) {
+  const aemeathBlocks = blocksByOwner['Aemeath'];
+  if (!aemeathBlocks) return 0;
+  const allBlocks = Object.values(blocksByOwner).flat();
+  const stance = stanceOverrides && Object.prototype.hasOwnProperty.call(stanceOverrides, 'Aemeath')
+    ? stanceOverrides['Aemeath'] : winningStanceForOwner(allBlocks, 'Aemeath');
+  if (stance !== 'Fusion Burst mode') return 0;
+  const duetLabels = new Set(
+    aemeathBlocks.filter(b => b.id === 'aemeath.skill.seraphic-duet-overture' || b.id === 'aemeath.skill.seraphic-duet-encore')
+      .map(b => b.trigger.attemptOn ?? b.trigger.on)
+  );
+  const aemeathRotation = rotationsByOwner['Aemeath'];
+  const castsDuet = aemeathRotation?.some(step => step.type && step.skill && duetLabels.has(`${step.type}:${step.skill}`));
+  if (!castsDuet) return 0;
+  const fusionTrailStacks = Math.min(FUSION_TRAIL_MAX_STACKS, collectRealApplications(blocksByOwner, rotationsByOwner, 'fusionBurst', stanceOverrides).length);
+  return fusionTrailStacks * FUSION_TRAIL_AMP_PER_STACK;
 }
 
 /**
