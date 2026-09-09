@@ -253,3 +253,27 @@ from ~1254 to include the new Butterfly damage (engine/legacy ratio now 1.015, p
 — the Stage 1 harness doesn't fold this new engine-only damage into the legacy comparison path, a known,
 expected divergence for any character whose engine block set now models MORE than the legacy flat table
 does).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above — re-verified
+all 3 prior fixes still hold; cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA`,
+`SKILL_MULTIPLIERS`, `SKILL_ICONS`, `SEQUENCE_NAMES`, `CHARACTER_ROTATIONS`, `dmgFocus`, and `teams`
+fresh against this dump — all still match exactly). No new bugs found. Specifically investigated:
+
+- **Illation's `heavyDmg` category**: confirmed correct — SKILL_MULTIPLIERS' own row explicitly labels
+  it "Illation, Heavy ATK", and the kit text's own Forte Circuit description calls the input "casting
+  Heavy Attack", matching the default-to-input-button convention with no "considered X DMG" override.
+- **Base Intro Enlightenment being entirely unmodeled**: confirmed deliberate, not a gap — the modeled
+  `CHARACTER_ROTATIONS` step is `Discernment` (the empowered variant), matching this dump's own
+  "Standard Rotation" (a repeating loop assuming Supernal Stellarealm is already up from a prior cycle);
+  Enlightenment only fires on a cold, Supernal-not-yet-reached first loop, which isn't the rotation this
+  file models — same "legitimately unused in the modeled rotation" precedent as Sanhua's Basic Attack V
+  / Rover: Havoc's Basic ATK combo.
+- **Inherent Skill "Self Gravitation"'s cross-character Rover Energy Regen buff**: confirmed correctly
+  unmodeled — this engine's DPS-focused stat schema doesn't track Energy Regen as a damage-affecting
+  stat at all (a structural limitation applied uniformly to every character's Concerto/Energy-generation
+  effects in this codebase, not something specific to Shorekeeper needing its own flag).
+- **`shorekeeper.chain.s6-to-the-new-world`'s dual totalMult/critDmg scoping**: confirmed both effects
+  correctly apply only to `shorekeeper.intro.discernment`'s own hit (no other block shares its
+  `Intro:Discernment` trigger key, so no leak risk).
+
+No code changes this pass. Full suite unaffected (1889/1889).
