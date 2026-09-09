@@ -59,4 +59,24 @@ describe('triggerEngine parity — Yangyang', () => {
   it("dmgFocus is ['Skill', 'Liberation', 'Basic ATK'] — Liberation (42.1%, her single biggest bucket) was missing; Basic ATK gained real sources once Zephyr Song and Feather Release were correctly categorized", () => {
     expect(CHARACTER_DATA['Yangyang'].dmgFocus).toEqual(['Skill', 'Liberation', 'Basic ATK']);
   });
+
+  // Fixed 2026-09-09 (full-kit audit): S3 was cast-scoped to only Zephyr Domain's own hit, but the kit
+  // text says "Resonance Skill DMG Bonus+40%" broadly (unlike S4/S5, which DO name one specific move
+  // each) and RESONANCE_CHAIN_DATA stores it as a flat, non-move-specific {skillDmg: 40} — both signals
+  // point to an unconditional category-wide bonus, not a single-hit proc.
+  it('S3 is a real unconditional passive boosting every skillDmg hit, not just Zephyr Domain', () => {
+    const s3 = YANGYANG_BLOCKS.find(b => b.id === 'yangyang.chain.s3');
+    expect(s3.trigger).toEqual({ type: 'passive' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yangyang'], YANGYANG_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withS3 = resolveHitComposedDps(YANGYANG_BLOCKS, steps, ctx, 2000, 'aero', 'Sub DPS', null, 3);
+    const withoutS3Blocks = YANGYANG_BLOCKS.filter(b => b.id !== 'yangyang.chain.s3');
+    const withoutS3 = resolveHitComposedDps(withoutS3Blocks, steps, ctx, 2000, 'aero', 'Sub DPS', null, 3);
+    const introAt = (res) => res.hitLog.filter(h => h.blockId === 'yangyang.intro.cerulean-song').reduce((sum, h) => sum + h.damage, 0);
+    const zephyrAt = (res) => res.hitLog.filter(h => h.blockId === 'yangyang.skill.zephyr-domain').reduce((sum, h) => sum + h.damage, 0);
+    // Both skillDmg-categorized hits must benefit — the bug was Intro getting zero credit.
+    expect(introAt(withS3)).toBeGreaterThan(introAt(withoutS3));
+    expect(zephyrAt(withS3)).toBeGreaterThan(zephyrAt(withoutS3));
+  });
 });

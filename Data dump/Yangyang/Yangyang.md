@@ -191,3 +191,24 @@ was already thoroughly audited from a prior pass, correctly team-scoping S6.
 No test changes needed (none of the fixes touched RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/
 CHARACTER_ROTATIONS in a way the test file checks, and the SKILL_MULTIPLIERS typo wasn't asserted in
 any test), full suite green (1339/1339).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above — re-verified
+all 3 prior fixes still hold; cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA`,
+`SKILL_MULTIPLIERS`, `SKILL_ICONS`, `CHARACTER_ROTATIONS`, `dmgFocus`, and `teams` fresh against this
+dump — all still match exactly). Found 1 real bug:
+
+4. **S3 wrongly scoped to a single hit instead of the whole category**: `yangyang.chain.s3`'s Resonance
+   Skill DMG Bonus +40% was modeled as a cast-scoped instant proc anchored to Zephyr Domain's own cast —
+   but this dump's own kit text says "Resonance Skill DMG Bonus+40%" broadly, naming the whole category
+   rather than one specific move (unlike S4's "Feather Release" and S5's "Wind Spirals", which DO each
+   name one move and are correctly instant-cast-scoped), and `RESONANCE_CHAIN_DATA` itself stores S3 as
+   a flat, non-move-specific `{skillDmg: 40}` — the same shape used for genuine unconditional
+   category-wide bonuses elsewhere in this dataset. Confirmed via direct measurement: with the old
+   model, `yangyang.intro.cerulean-song` (also `skillDmg`-categorized) got ZERO benefit from S3 despite
+   being a real Resonance-Skill-category hit that should qualify. Fixed by converting the trigger to a
+   real unconditional passive — now correctly boosts BOTH Intro Cerulean Song and Skill Zephyr Domain.
+
+Verified via direct before/after measurement (Intro's own hit damage rose only once S3 was made
+passive; Zephyr Domain's own +40% credit was unaffected either way, confirming no double-counting).
+No parity-golden regression (S3 is chain-gated at S3+, inactive at the S0 the golden fixture measures).
+1 new test added. Full suite green (1890/1890).

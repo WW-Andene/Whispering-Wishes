@@ -7,6 +7,14 @@
 // CHARACTER_ROTATIONS['Yangyang']. No new numbers invented. S2 correctly has NO
 // block — pure Resonance Energy utility with zero DPS component, per the audit's
 // own zeroing.
+//
+// Full kit audit 2026-09-09: fixed S3, which was cast-scoped to only Zephyr
+// Domain's own hit despite the kit text naming the whole Resonance Skill
+// category broadly (not one specific move, unlike S4/S5) and
+// RESONANCE_CHAIN_DATA storing it as a flat, non-move-specific {skillDmg: 40}.
+// Converted to a real unconditional passive so it correctly boosts every
+// skillDmg-categorized hit (confirmed via direct measurement that Intro
+// Cerulean Song previously got zero credit from it).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -94,10 +102,22 @@ export const YANGYANG_BLOCKS = [
   {
     id: 'yangyang.chain.s3',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'cast', on: 'Skill:Zephyr Domain' },
+    // Fixed 2026-09-09 (full-kit audit): was `trigger:{type:'cast', on:'Skill:Zephyr Domain'}` with no
+    // duration — an instant-cast scoping that (correctly, per this engine's own per-step firedTriggers
+    // architecture) confines the buff to ONLY that one Zephyr Domain hit. But the kit text says
+    // "Resonance Skill DMG Bonus+40%" broadly, naming the whole category, not one specific move (unlike
+    // S4's "Feather Release" or S5's "Wind Spirals", which DO name one move each and are correctly
+    // instant-cast-scoped) — and RESONANCE_CHAIN_DATA's own raw table stores this as a flat
+    // `{skillDmg: 40}` with no move-specific key, matching the shape used for genuine unconditional
+    // category-wide bonuses elsewhere, not a single-hit proc. Confirmed via direct measurement: with
+    // the old model, yangyang.intro.cerulean-song (also skillDmg-categorized) got ZERO benefit from S3
+    // even though it's a real Resonance-Skill-category hit that should qualify. Converted to a real
+    // unconditional passive so it correctly boosts EVERY skillDmg-categorized hit (Cerulean Song AND
+    // Zephyr Domain), not just the one it happened to be anchored to.
+    trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'skillDmg', value: 40, source: 'self-kit' }],
-    note: "Resonance Skill Zephyr Domain DMG +40% (confirmed exact) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5. Also increases pulling range +33%, not modeled.",
+    note: 'Resonance Skill DMG Bonus +40% (confirmed exact, unconditional) — applies to every skillDmg-categorized hit (Intro Cerulean Song and Skill Zephyr Domain both qualify). Also increases pulling range +33%, not modeled.',
   },
   {
     id: 'yangyang.chain.s4',
