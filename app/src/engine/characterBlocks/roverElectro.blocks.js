@@ -9,6 +9,17 @@
 //
 // Verified for parity against the legacy flat-table path by
 // __tests__/triggerEngine-rover-electro.test.js.
+//
+// Full kit audit 2026-09-09: fixed S3 (was unscoped skillDmg:20, silently over-crediting
+// rover-electro.skill.thunderclap — now scopedToBlockId'd to Overshock only, matching its
+// real kit text) and S6 (was unscoped skillDmg:20 with no matching block for its real named
+// targets, Thrum of All Sounds/Thunder Bane — now a real no-op, kind:'utility'). Both are now a
+// documented, deliberate divergence from RESONANCE_CHAIN_DATA's own coarser skillDmg:20+20=40 sum
+// (its flat applyResonanceChain() has no per-move scoping mechanism to express this precisely).
+// Also flagged (not fixed — out of scope, would need a new stance-tracking mechanism): S5's
+// condition.requiresStance:'Apex Resonance' is purely descriptive for a plain buff block per
+// block.schema.js, so its +20% Crit DMG currently applies unconditionally rather than only in
+// Apex Resonance (which the modeled Standard Rotation never enters).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -165,8 +176,15 @@ export const ROVER_ELECTRO_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 20, source: 'self-kit' }],
-    note: 'Overshock DMG +20%.',
+    // Fixed 2026-09-09 (full-kit audit): was an unscoped skillDmg:20, which — since skillDmg applies
+    // to EVERY skillDmg-categorized block unconditionally — silently over-credited
+    // rover-electro.skill.thunderclap too (also skillDmg-categorized), even though S3's own kit text
+    // names only Overshock ("Overshock's DMG Multiplier+20%"). Confirmed via direct measurement:
+    // Thunderclap's own hit damage rose from S0 to S3 before this fix, despite S3 naming Overshock
+    // only. Same over-crediting bug class already found/fixed on Jiyan/Phrolova/Qingxiao/Qiuyuan/
+    // Roccia/Lumi/Lupa/Rover: Aero's own S6. Fixed via scopedToBlockId.
+    effects: [{ stat: 'skillDmg', value: 20, scopedToBlockId: 'rover-electro.forte.overshock', source: 'self-kit' }],
+    note: "Overshock's own DMG Multiplier +20%.",
   },
   {
     id: 'rover-electro.chain.s4-earthquaking-rumble',
@@ -186,17 +204,40 @@ export const ROVER_ELECTRO_BLOCKS = [
     condition: { requiresStance: 'Apex Resonance' },
     timing: {},
     target: { scope: 'self' },
+    // Flagged 2026-09-09 (full-kit audit): condition.requiresStance is purely descriptive for a plain
+    // `kind:'buff'` block unless it participates in the exclusive-mode appliesTags/winningStanceForOwner
+    // gating system (block.schema.js's own documented limitation, same "unenforced condition.
+    // requiresStance" gap already flagged on Aemeath's audit) — there is no rival Apex-Resonance-tagged
+    // block group here for that system to resolve against, so this +20% Crit DMG currently applies
+    // UNCONDITIONALLY (confirmed via direct measurement: enabling S5 alone raised
+    // rover-electro.skill.thunderclap's own hit damage even though the modeled Standard Rotation never
+    // enters Apex Resonance at all — only TAP-Overshock is modeled, matching the dump's own Review
+    // verdict that Apex Resonance is "best avoided"). Left as-is rather than force-built into a new
+    // stance-tracking mechanism (out of scope for a single-character fix); real effect is a known,
+    // documented overstatement of S5's contribution in the modeled rotation, not a value/scoping error.
     effects: [{ stat: 'critDmg', value: 20, source: 'self-kit' }],
-    note: 'Crit DMG +20% while in Apex Resonance.',
+    note: 'Crit DMG +20% while in Apex Resonance — requiresStance not enforced for a plain buff block (see comment above); currently applies unconditionally.',
   },
   {
     id: 'rover-electro.chain.s6-minds-depths',
     source: SOURCE,
-    kind: 'buff', section: 'Chain',
+    kind: 'utility', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 20, source: 'self-kit' }],
-    note: 'Thrum of All Sounds/Thunder Bane DMG +20%.',
+    // Fixed 2026-09-09 (full-kit audit): was an unscoped skillDmg:20 — S6's own kit text names ONLY
+    // Thrum of All Sounds and Thunder Bane ("Thrum of All Sounds and Thunder Bane's DMG Multiplier is
+    // increased by 20%"), neither of which has a block of its own in this file (both live behind the
+    // HOLD-Overshock -> Apex Resonance branch, which the dump's own Review section calls "best avoided"
+    // and which the modeled Standard Rotation never enters — only TAP-Overshock is modeled). As coded,
+    // the unscoped effect did nothing for its real named targets (they don't exist as blocks) while
+    // silently over-crediting rover-electro.skill.thunderclap and rover-electro.forte.overshock instead
+    // (both skillDmg-categorized) — confirmed via direct measurement: Thunderclap's own hit damage rose
+    // again from S3 to S6 despite neither move being named by S6's kit text. Converted to a real no-op
+    // (kind:'utility', empty effects), same treatment already used for S1/S2's genuinely-unmodeled
+    // mechanics — correct until Thrum of All Sounds/Thunder Bane get their own blocks (out of scope for
+    // this fix: that branch isn't part of the modeled Standard Rotation at all).
+    effects: [],
+    note: "Thrum of All Sounds/Thunder Bane DMG +20% — correctly unmodeled (no block exists for either move; both live behind the HOLD-Overshock Apex Resonance branch, which isn't part of the modeled Standard Rotation).",
   },
 ];

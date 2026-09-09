@@ -1561,7 +1561,12 @@ const CHARACTER_DATA = {
   // standard already applied at comparable-or-smaller percentages elsewhere in this table (e.g. ~6.5%,
   // ~8.3%) — was silently rejecting a real teammate Basic ATK DMG Bonus.
   ['Rover: Aero',    ['Skill', 'Liberation', 'Basic ATK'], ['Heal', 'Erosion Cap Buff'],       []],
-  ['Rover: Electro', ['Skill', 'Liberation'],        ['ATK Buff', 'All DMG Amp'],             ['Electro Flare']],
+  // dmgFocus gained 'Basic ATK' 2026-09-09 (full-kit audit) against her own dump's Damage Profile:
+  // Basic is a genuine 10.6% (23,286) share (rover-electro.basic.deterrence + rover-electro.basic.repel,
+  // both already correctly basicDmg-categorized in roverElectro.blocks.js) — larger than several
+  // already-included shares elsewhere in this table (e.g. ~6.5%, ~8.3%, Rover: Aero's own 5%) — was
+  // silently rejecting a real teammate Basic ATK DMG Bonus.
+  ['Rover: Electro', ['Skill', 'Liberation', 'Basic ATK'], ['ATK Buff', 'All DMG Amp'],        ['Electro Flare']],
   // dmgFocus gained 'Liberation'/'Heavy ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against
   // her own dump's Damage Profile: Liberation is a genuine 14.3% (51,751) share and Heavy ATK a real
   // 6.8% (24,590), both already correctly libDmg/heavyDmg-categorized in yinlin.blocks.js

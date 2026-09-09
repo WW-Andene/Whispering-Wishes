@@ -203,3 +203,49 @@ more defensible.
 
 No test changes needed (the fixed values weren't hardcoded into any test assertion), full suite green
 (1339/1339).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above —
+re-verified all 3 prior fixes still hold; cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, and `CHARACTER_ROTATIONS` against this
+dump fresh — all still match). Found 3 more real bugs in `roverElectro.blocks.js`/`characters.js`:
+
+4. **S3 unscoped over-crediting**: `rover-electro.chain.s3-alchemy-of-wonders`'s `skillDmg:20` effect
+   had no `scopedToBlockId` — since `skillDmg` applies to every `skillDmg`-categorized block
+   unconditionally, this silently over-credited `rover-electro.skill.thunderclap` too, even though S3's
+   own kit text names only Overshock ("Overshock's DMG Multiplier+20%"). Confirmed via direct
+   measurement: Thunderclap's own hit damage rose between S0 and S3 before the fix, despite S3 naming
+   Overshock only. Same over-crediting bug class already found/fixed on Jiyan/Phrolova/Qingxiao/
+   Qiuyuan/Roccia/Lumi/Lupa/Rover: Aero's own S6. Fixed via `scopedToBlockId: 'rover-electro.forte.overshock'`.
+5. **S6 unscoped over-crediting a target with no home**: `rover-electro.chain.s6-minds-depths`'s
+   `skillDmg:20` effect had no `scopedToBlockId` either — S6's own kit text names ONLY Thrum of All
+   Sounds and Thunder Bane, neither of which has a block in this file at all (both live behind the
+   HOLD-Overshock → Apex Resonance branch, which this dump's own Review section calls "best avoided"
+   and which the modeled Standard Rotation never enters). As coded, the unscoped effect did nothing for
+   its real named targets while silently over-crediting Thunderclap AND Overshock instead — confirmed
+   via direct measurement (Thunderclap's own hit damage rose again from S3 to S6 despite neither move
+   being named by S6's kit text). Converted to a real no-op (`kind:'utility'`, empty `effects`), the
+   same treatment already used for S1/S2's genuinely-unmodeled mechanics on this same character.
+6. **`dmgFocus` missing a genuine damage-share type**: `CHARACTER_DATA['Rover: Electro'].dmgFocus` was
+   `['Skill', 'Liberation']`, omitting `'Basic ATK'` despite this dump's own Damage Profile showing a
+   genuine 10.6% (23,286) Basic ATK share (`rover-electro.basic.deterrence` + `rover-electro.basic.repel`,
+   both already correctly `basicDmg`-categorized) — larger than several already-included shares
+   elsewhere in this table (Rover: Aero's own 5%, ~6.5%, ~8.3%) — was silently rejecting a real teammate
+   Basic ATK DMG Bonus. Fixed by adding `'Basic ATK'`.
+
+**Flagged, not fixed (documented, known engine limitation, out of scope for a single-character fix)**:
+7. `rover-electro.chain.s5-principle-of-change`'s `condition.requiresStance: 'Apex Resonance'` is
+   purely descriptive for a plain `kind:'buff'` block per `block.schema.js`'s own documented limitation
+   (the same "unenforced `condition.requiresStance`" gap already flagged on Aemeath's audit) — there is
+   no rival Apex-Resonance-tagged block group here for the exclusive-mode gating system to resolve
+   against, so S5's +20% Crit DMG currently applies UNCONDITIONALLY. Confirmed via direct measurement:
+   enabling S5 alone raised Thunderclap's own hit damage even though the modeled Standard Rotation
+   never enters Apex Resonance (matching this dump's own Review verdict that Apex Resonance is "best
+   avoided"). Left as a documented, known overstatement rather than force-built into a new
+   stance-tracking mechanism, which is out of scope for this fix.
+
+No parity-golden regression: `phase3-parityGolden.test.js` measures at sequence 0, where none of S3/S5/
+S6/dmgFocus are active — verified the full suite stays green with no fixture changes needed. 2 existing
+tests updated to reflect the new, more correct behavior as a documented divergence from
+`RESONANCE_CHAIN_DATA`'s own coarser flat-table sum (`triggerEngine-rover-electro.test.js`'s S3-S6
+aggregate check, `resolveSimulatedRotation.test.js`'s passive-block full-value check), 4 new tests
+added. Full suite green (1882/1882).

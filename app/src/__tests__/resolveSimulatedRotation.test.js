@@ -96,12 +96,22 @@ describe('resolveSimulatedRotation — stacking-mode time integration', () => {
 });
 
 describe('resolveSimulatedRotation — passive blocks stay full-value (no time integration needed)', () => {
-  it("Rover: Electro's passive Resonance Chain buffs (S3 skillDmg+20, S4 libDmg+20) apply at full value regardless of the step sequence", () => {
+  // Updated 2026-09-09 (Rover: Electro full-kit audit): S3 was fixed from an unscoped skillDmg:20 to a
+  // scopedToBlockId'd effect (real kit text names Overshock only), and S6 was fixed from an unscoped
+  // skillDmg:20 to a real no-op (its named targets, Thrum of All Sounds/Thunder Bane, have no blocks).
+  // Both previously leaked their full value into this flat aggregate at skillDmg:40 total — that was
+  // itself a symptom of the same over-crediting bug the audit fixed, not a value this driver's own
+  // "honestly excluded" design (line ~132 above) should ever have surfaced: a scopedToBlockId'd passive
+  // effect is deliberately excluded from this flat, no-per-block-granularity accumulator, same as a
+  // duration-less per-hit-scoped block is excluded via perHitScopedBlockIds instead of guessed at.
+  it("Rover: Electro's passive Resonance Chain buffs — S3 is now honestly excluded (scoped), S4 (libDmg+20) still applies at full value", () => {
     const { stats } = resolveSimulatedRotation(ROVER_ELECTRO_BLOCKS, [
       { type: 'Basic ATK', skill: 'Repel', stepSeconds: 1 },
     ]);
-    // S3 (skillDmg 20) + S6 (skillDmg 20) both passive -> full 40 regardless of the 1-step timeline.
-    expect(stats.skillDmg).toBe(40);
+    // S3 is scopedToBlockId'd (excluded from this flat accumulator by design) and S6 is now an
+    // empty-effects no-op, so skillDmg is 0 here — verified separately via resolveHitComposedDps
+    // (triggerEngine-rover-electro.test.js) that S3's scoped bonus DOES reach Overshock's real hit.
+    expect(stats.skillDmg).toBe(0);
     expect(stats.libDmg).toBe(20);
   });
 });
