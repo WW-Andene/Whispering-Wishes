@@ -114,6 +114,17 @@ export const TAOQI_BLOCKS = [
       { stat: 'basicDmg', value: 40, source: 'self-kit' },
       { stat: 'heavyDmg', value: 40, source: 'self-kit' },
     ],
-    note: 'Basic ATK and Heavy ATK DMG +40% while Rocksteady Shield holds (confirmed exact, conditional) — the shield\'s real uptime/duration isn\'t modeled, kept passive.',
+    // Full kit audit 2026-09-09: confirmed the heavyDmg half is a real, harmless no-op — no
+    // heavyDmg-categorized block exists anywhere in this file (her real Heavy Attack is a pure
+    // utility input, entering Rocksteady Defense/Strategic Parry, never a direct-damage combo step —
+    // matching the dump's own Damage Profile showing a genuine 0% Heavy share), so this half of S6
+    // currently has nothing to apply to. The basicDmg half is correctly unscoped since S6's own kit
+    // text broadly names "Basic Attack" (not one specific move, unlike S5's "Power Shift" scoping),
+    // matching both taoqi.basic.concealed-edge and taoqi.forte.power-shift-timed-counters, both
+    // basicDmg-categorized. Verified S5's own unscoped basicDmg:50 does NOT leak into Concealed Edge
+    // via direct measurement (unaffected across sequence 4 vs 5) — it's an instant-cast, no-duration
+    // buff, which this engine correctly scopes to only the SAME rotation step as its own trigger
+    // (Forte:Power Shift: Timed Counters), not the whole basicDmg category.
+    note: 'Basic ATK and Heavy ATK DMG +40% while Rocksteady Shield holds (confirmed exact, conditional) — the shield\'s real uptime/duration isn\'t modeled, kept passive. The heavyDmg half is a real no-op (no heavyDmg block exists — her Heavy Attack is a pure 0%-damage utility input).',
   },
 ];

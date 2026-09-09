@@ -188,3 +188,29 @@ with no matching damage category.
 No test changes needed (none of the fixes touched RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE/
 SKILL_MULTIPLIERS/CHARACTER_ROTATIONS, which the existing test file covers), full suite green
 (1339/1339).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above and the
+prior 2026-09-01/2026-09-04 block-engine passes — re-verified all fixes still hold; cross-checked
+`CHARACTER_DATA`, `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`,
+`SEQUENCE_NAMES`, `CHARACTER_ROTATIONS`, `dmgFocus`, and `teams` fresh against this dump — all still
+match exactly). Found no new bugs; specifically investigated and confirmed correct:
+
+- **S5's unscoped `basicDmg:50`** (Power Shift's own DMG Multiplier): initially suspected this could
+  leak into `taoqi.basic.concealed-edge` (a separate, real Basic ATK combo also `basicDmg`-categorized),
+  matching the "unscoped totalMult/category leak" bug class found on many other characters this session.
+  Verified via direct measurement (sequence 4 vs. 5) that Concealed Edge's own hit damage is byte-
+  identical either way — S5 is a `trigger:{type:'cast', ...}` block with no `timing.duration`
+  (instant-cast), which this engine correctly scopes to only the SAME rotation step as its own trigger
+  (`Forte:Power Shift: Timed Counters`), not the whole `basicDmg` category. No fix needed — false alarm,
+  confirmed via measurement rather than assumed.
+- **S6's `heavyDmg:40` half**: confirmed a real, harmless no-op — no `heavyDmg`-categorized block
+  exists anywhere in this file, since her real Heavy Attack is a pure utility input (entering
+  Rocksteady Defense/Strategic Parry) with a genuine 0% share per this dump's own Damage Profile. Added
+  a documenting note in `taoqi.blocks.js` clarifying this, matching the transparency standard already
+  applied to other characters' similarly-inert kit-text-named-but-unmodeled targets this session
+  (Rover: Electro's S6, Sigrika's Innate Gift).
+- **S6's `basicDmg:40` half**: confirmed correctly UNSCOPED (unlike S5) — S6's own kit text broadly
+  names "Basic Attack" without naming one specific move, so it legitimately applies to both
+  `taoqi.basic.concealed-edge` and `taoqi.forte.power-shift-timed-counters`.
+
+No code/value changes beyond the S6 documenting note. Full suite unaffected (1889/1889).
