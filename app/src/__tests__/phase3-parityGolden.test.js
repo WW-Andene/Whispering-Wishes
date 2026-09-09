@@ -618,6 +618,23 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // damage total by ~28% (8140.93 -> 5855.76). Fixed by removing the duration to match elemDmg's own
 // correct instant-cast scoping; the DPS/avgCrit drop is a real, expected consequence of correctly
 // confining an "on that hit only" bonus to only that hit.
+//
+// Yangyang: Xuanling's `legacyRawDps`/`engineDps` updated 2026-09-09 (full re-audit): 6447 -> 6918/6918;
+// stat-panel `avgCrit` 2.1294 -> 1.986 (`score` 2516 -> 2346). Two combined root causes:
+// (1) yangyangxuanling.selfbuff.bated-breath (Bated Breath, +160% Crit DMG on Heavy Attack: Azure Sword
+// Stance's own hit) had the exact same `timing:{duration:999}` fake-sentinel bug as Suisui's Sky Over
+// Water above — confirmed via direct measurement it was incorrectly inflating the Outro (As the Wind
+// Wills), which fires immediately after in the modeled rotation, by ~7.3%. Fixed by removing the
+// duration. (2) The Feather-stance mirror of this same mechanic, Streaming Storm (+160% Crit DMG
+// extended across Heavy Attack: Feather Sword Stance, Mid-air: Feather Fall, and Basic: Havoc in Bloom
+// Stage 1-3 — a real, sourced value the kit text names explicitly), was entirely unmodeled. Added as a
+// new block, scoped via `scopedToBlockId` to exactly those 3 real blocks (a generous sentinel duration
+// is safe here specifically because the scoping array — not the duration — is what prevents it from
+// ever reaching an unrelated hit). Confirmed via direct measurement: Havoc in Bloom alone gained ~7.3%
+// from this addition. Net effect: avgCrit correctly DROPS (removing the erroneous broad Bated Breath
+// leak) while total DPS RISES (Streaming Storm's real, previously-missing contribution to her
+// Heavy-DMG-dominant kit — 89.3% of her real damage per her own dump's Damage Profile — outweighs the
+// removed leak).
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

@@ -169,3 +169,41 @@ Total: 1,670,411. Heavy 89.3% · Basic 4.2% · Outro 2.8% · Echo 2.6% · Intro 
 **S4 and S5 are byte-identical** (2,783,354 DMG / 274,492 DPS both) — the same "zero real DPS component" signature already seen for Augusta/Aemeath's own S5 chain nodes. Matches S5's own kit text exactly: "When Yangyang: Xuanling takes a fatal blow, she will not be downed... immune to DMG and interruption for 3s. Once every 10 min" — a purely defensive/survivability node with no DPS component at all.
 
 Calculation build used: Azure Oath (R1) + Song of Feathered Trace 5pc + Thousand-Puppet Pavilion main echo; substats ATK 45% / Crit Rate 42% / Crit DMG 84%.
+
+## App Data Comparison — 2026-09-09 full kit audit
+
+Independent full-kit re-derivation (no prior dedicated App Data Comparison section existed for this
+dump, though `yangyangxuanling.blocks.js` itself had already been through 2 prior fix passes,
+independently re-verified as still correct: S1's discrete proc conversion, S3's libDmg->heavyDmg fix,
+S4's whole-team retrofit, S5's zeroing, and the 2 previously-missing Feather Fall/Havoc in Bloom
+damage blocks). Cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA`,
+`SKILL_MULTIPLIERS`, `SKILL_ICONS`, `CHARACTER_ROTATIONS`, `dmgFocus`, and `teams` fresh against this
+dump — all still match exactly. Found 2 real bugs (one fix, one addition):
+
+1. **Dead/wrong duration on Bated Breath**: `yangyangxuanling.selfbuff.bated-breath` (+160% Crit DMG
+   on Heavy Attack: Azure Sword Stance's own hit, per its own kit text: "+160% Crit DMG to THIS Heavy
+   Attack") was modeled with `timing:{duration:999}` — the exact same fake-sentinel bug already found
+   and fixed on Suisui's Sky Over Water earlier this session: `buildBlockWindows` treats any non-null
+   duration as a REAL, near-permanent window, not a single-hit bonus. Confirmed via direct measurement:
+   the Outro (As the Wind Wills), which fires immediately after this Heavy Attack in the modeled
+   rotation, was incorrectly inflated by ~7.3%. Fixed by removing the duration.
+2. **Streaming Storm entirely unmodeled**: the kit text names a Feather-stance mirror of Bated Breath —
+   "+160% Crit DMG to this Heavy Attack OR the next Feather Fall/Havoc in Bloom Basic/Dodge Counter hit
+   (removed when Havoc in Bloom Stage 3 ends)" — a real, sourced bonus covering 3 real blocks that ALL
+   fire consecutively in the modeled rotation (Heavy: Feather Sword Stance -> Mid-air: Feather Fall ->
+   Basic: Havoc in Bloom Stage 1-3), but no block for it existed anywhere in this file. `CHARACTER_
+   ROTATIONS['Yangyang: Xuanling']`'s own rotation-step note even already described the mechanic in
+   passing ("+160% Crit DMG on the next few Feather-stance hits") without ever having a matching block.
+   Added as a new block, scoped via a `scopedToBlockId` array to exactly those 3 real blocks (no
+   explicit numeric duration is sourced — the real end-condition is a state, "Havoc in Bloom Stage 3
+   ends", not a timer — so a generous sentinel duration is used, made safe by the array scoping rather
+   than the duration itself). Confirmed via direct measurement: Havoc in Bloom alone gained ~7.3% from
+   this addition, with zero leakage into Azure-stance, Skill, or Liberation hits.
+
+Verified via direct before/after measurement for both fixes. Net effect on the real
+`phase3-parityGolden.test.js` calc: `legacyRawDps`/`engineDps` rose from 6447 to 6918/6918 (Streaming
+Storm's real, previously-missing contribution to her Heavy-DMG-dominant kit — 89.3% of her real damage
+per her own Damage Profile above — outweighs the over-crediting removed from Bated Breath), while
+stat-panel `avgCrit` correctly DROPPED (2.1294 -> 1.986, `score` 2516 -> 2346), confirming the erroneous
+broad Bated Breath leak is gone. Both golden fixtures updated with a cited reason logged in
+`phase3-parityGolden.test.js`'s own header-comment log. 2 new tests added. Full suite green (1891/1891).

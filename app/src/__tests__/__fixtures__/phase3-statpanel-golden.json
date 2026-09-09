@@ -358,10 +358,10 @@
   },
   "Yangyang: Xuanling": {
     "effAtk": 1265,
-    "avgCrit": 2.129418181818182,
+    "avgCrit": 1.986,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 2516
+    "score": 2346
   },
   "Yinlin": {
     "effAtk": 1140,

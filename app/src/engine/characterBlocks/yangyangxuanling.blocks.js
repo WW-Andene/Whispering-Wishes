@@ -9,6 +9,15 @@
 // (Mid-air:Feather Fall, Basic ATK:Havoc in Bloom Stage 1-3) previously had NO
 // matching SKILL_MULTIPLIERS row at all, silently dealing 0 DMG — fixed 2026-09-02
 // against a fresh the source dump, both now modeled with real numbers (heavyDmg).
+//
+// Full kit audit 2026-09-09: fixed selfbuff.bated-breath, which had the exact
+// same fake-sentinel-duration bug as Suisui's Sky Over Water (this same session)
+// — confirmed via direct measurement it was leaking its +160% Crit DMG into the
+// Outro that immediately follows in the modeled rotation. Also added the
+// previously entirely-unmodeled Feather-stance mirror of this mechanic
+// (Streaming Storm), a real, sourced bonus covering 3 subsequent real blocks —
+// scoped via scopedToBlockId array to exactly those 3, confirmed via direct
+// measurement it correctly boosts them without leaking elsewhere.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -141,11 +150,43 @@ export const YANGYANG_XUANLING_BLOCKS = [
   {
     id: 'yangyangxuanling.selfbuff.bated-breath',
     source: SOURCE, kind: 'buff', section: 'Buff',
+    // Fixed 2026-09-09 (full-kit audit): was `timing:{duration:999}` — a fake "sentinel" that actually
+    // made this a real, near-permanent windowed buff (buildBlockWindows treats any non-null duration as
+    // a genuine window), not the single-hit bonus the kit text describes: "+160% Crit DMG to THIS Heavy
+    // Attack (removed once it ends)". Confirmed via direct measurement: with the old model, the Outro
+    // (As the Wind Wills), which fires immediately after this Heavy Attack in the modeled rotation, was
+    // incorrectly inflated too (+~7.3%, 7298.58 vs the correct 6803.76) — a real over-crediting bug,
+    // same class as Suisui's Sky Over Water fix this session. Removed the duration to make this an
+    // instant, no-duration cast-scoped effect, correctly confined to only that Heavy Attack's own hit.
     trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack: Azure Sword Stance' },
-    timing: { duration: 999 }, // sentinel: gated once every 25s, no natural decay sourced beyond the gate
+    timing: {},
     target: { scope: 'self' },
     effects: [{ stat: 'critDmg', value: 160, source: 'self-kit' }],
-    note: 'Bated Breath/Streaming Storm — Heavy ATK Crit DMG, once every 25s — the 25s gate is not modeled, kept passive on this Heavy ATK cast.',
+    note: 'Bated Breath — Heavy Attack: Azure Sword Stance Crit DMG +160% on that one hit, once every 25s (gate not modeled) — cast-scoped (instant, no persistent duration).',
+  },
+  {
+    // Added 2026-09-09 (full-kit audit): the Feather-stance mirror of Bated Breath (Streaming Storm) was
+    // entirely unmodeled — a real, sourced +160% Crit DMG bonus explicitly named in the kit text, but
+    // unlike Bated Breath it covers MULTIPLE real subsequent hits, not just its own triggering cast:
+    // "+160% Crit DMG to this Heavy Attack OR the next Feather Fall/Havoc in Bloom Basic/Dodge Counter
+    // hit (removed when Havoc in Bloom Stage 3 ends)". The modeled rotation casts exactly this sequence
+    // uninterrupted (Heavy: Feather Sword Stance -> Mid-air: Feather Fall -> Basic: Havoc in Bloom
+    // Stage 1-3), so all 3 real blocks qualify. No explicit numeric duration is sourced (the real
+    // end-condition is "Havoc in Bloom Stage 3 ends", a state, not a timer) — rather than fabricate an
+    // unsourced duration value, this uses a generous sentinel duration made SAFE by `scopedToBlockId`
+    // restricting it to exactly the 3 named target blocks regardless of how long the window technically
+    // stays open, so it can never leak into Azure-stance hits or a later, unrelated cast.
+    id: 'yangyangxuanling.selfbuff.streaming-storm',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Heavy ATK:Heavy Attack: Feather Sword Stance' },
+    timing: { duration: 999 },
+    target: { scope: 'self' },
+    effects: [
+      { stat: 'critDmg', value: 160, scopedToBlockId: 'yangyangxuanling.heavy.feather-sword-stance', source: 'self-kit' },
+      { stat: 'critDmg', value: 160, scopedToBlockId: 'yangyangxuanling.midair.feather-fall', source: 'self-kit' },
+      { stat: 'critDmg', value: 160, scopedToBlockId: 'yangyangxuanling.basic.havoc-in-bloom-stage1-3', source: 'self-kit' },
+    ],
+    note: 'Streaming Storm — Heavy Attack: Feather Sword Stance Crit DMG +160%, extended to the next Feather Fall/Havoc in Bloom Basic/Dodge Counter hit (removed when Havoc in Bloom Stage 3 ends), once every 25s (gate not modeled) — scoped to exactly those 3 real blocks.',
   },
   {
     id: 'yangyangxuanling.selfbuff.unbroken-vow',

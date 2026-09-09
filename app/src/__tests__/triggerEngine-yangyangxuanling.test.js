@@ -63,6 +63,40 @@ describe('triggerEngine parity — Yangyang: Xuanling', () => {
     expect(outro.target.scope).toBe('whole-team');
   });
 
+  // Fixed 2026-09-09 (full-kit audit): was timing:{duration:999}, a fake sentinel that actually made
+  // this a real, near-permanent windowed buff instead of the single-hit bonus the kit text describes.
+  it('Bated Breath is instant/no-duration, no longer leaking into the following Outro', () => {
+    const bated = YANGYANG_XUANLING_BLOCKS.find(b => b.id === 'yangyangxuanling.selfbuff.bated-breath');
+    expect(bated.timing.duration).toBeUndefined();
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yangyang: Xuanling'], YANGYANG_XUANLING_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withBated = resolveHitComposedDps(YANGYANG_XUANLING_BLOCKS, steps, ctx, 2000, 'havoc', 'Main DPS');
+    const withoutBatedBlocks = YANGYANG_XUANLING_BLOCKS.filter(b => b.id !== 'yangyangxuanling.selfbuff.bated-breath');
+    const withoutBated = resolveHitComposedDps(withoutBatedBlocks, steps, ctx, 2000, 'havoc', 'Main DPS');
+    const outroAt = (res) => res.hitLog.filter(h => h.blockId === 'yangyangxuanling.outro.as-the-wind-wills').reduce((sum, h) => sum + h.damage, 0);
+    const azureHeavyAt = (res) => res.hitLog.filter(h => h.blockId === 'yangyangxuanling.heavy.azure-sword-stance').reduce((sum, h) => sum + h.damage, 0);
+    expect(outroAt(withBated)).toBeCloseTo(outroAt(withoutBated), 5);
+    expect(azureHeavyAt(withBated)).toBeGreaterThan(azureHeavyAt(withoutBated));
+  });
+
+  // Added 2026-09-09 (full-kit audit): Streaming Storm (Feather-stance mirror of Bated Breath) was
+  // entirely unmodeled — a real, sourced +160% Crit DMG extending across 3 real subsequent blocks.
+  it('Streaming Storm boosts exactly Feather Heavy/Feather Fall/Havoc in Bloom, not Azure-stance or Liberation hits', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yangyang: Xuanling'], YANGYANG_XUANLING_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withSS = resolveHitComposedDps(YANGYANG_XUANLING_BLOCKS, steps, ctx, 2000, 'havoc', 'Main DPS');
+    const withoutSSBlocks = YANGYANG_XUANLING_BLOCKS.filter(b => b.id !== 'yangyangxuanling.selfbuff.streaming-storm');
+    const withoutSS = resolveHitComposedDps(withoutSSBlocks, steps, ctx, 2000, 'havoc', 'Main DPS');
+    const sumAt = (res, id) => res.hitLog.filter(h => h.blockId === id).reduce((sum, h) => sum + h.damage, 0);
+    for (const id of ['yangyangxuanling.heavy.feather-sword-stance', 'yangyangxuanling.midair.feather-fall', 'yangyangxuanling.basic.havoc-in-bloom-stage1-3']) {
+      expect(sumAt(withSS, id)).toBeGreaterThan(sumAt(withoutSS, id));
+    }
+    for (const id of ['yangyangxuanling.skill.sword-stance-switch', 'yangyangxuanling.liberation.hush-of-a-thousand-voices', 'yangyangxuanling.heavy.azure-sword-stance']) {
+      expect(sumAt(withSS, id)).toBeCloseTo(sumAt(withoutSS, id), 5);
+    }
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yangyang: Xuanling'], YANGYANG_XUANLING_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(YANGYANG_XUANLING_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'havoc', 'Main DPS');
