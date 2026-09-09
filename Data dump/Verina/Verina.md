@@ -214,3 +214,29 @@ Shorekeeper. Best specifically in some Jinhsi teams running a secondary support 
 Attacks of their own, and in quickswap teams that favor her especially low field time.
 
 **Example Teams**: fully flexible — usable in the Support slot of any team composition in the game.
+
+## App Data Comparison — 2026-09-09 full kit audit
+
+First dedicated App Data Comparison for this dump file (`verina.blocks.js` itself had already been
+through prior fix passes referenced in its own inline comments — outro amplify-vs-allDmg correction,
+S6's dead-buff-to-real-damage-block conversion, S6's Coordinated Attack proc addition — all independently
+re-verified as still correct this pass). Cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, `SEQUENCE_NAMES`, `CHARACTER_ROTATIONS`, and
+`dmgFocus` fresh against this dump — all already match exactly. No new bugs found. Specifically
+investigated:
+
+- **`verina.libbuff.gift-of-nature` and `verina.chain.s4` are each anchored to only 1 of their real
+  4/3 valid trigger conditions** (Gift of Nature: Heavy/Mid-air Starflower Blooms, Liberation, OR Outro
+  all grant it; S4: Starflower Blooms, Liberation, OR Outro all grant it) — only Liberation and Mid-air
+  Starflower Blooms respectively are modeled. Verified via direct measurement this does NOT affect DPS
+  output: both buffs use `stacking:'refresh'` (re-triggering doesn't change the value) and their 20s/24s
+  durations vastly exceed her real ~2.35-3.75s total rotation time — a single anchor already covers the
+  buff for the ENTIRE modeled rotation regardless of which trigger sourced it. Confirmed via measurement,
+  not assumed; left as single-anchored since adding the redundant triggers would not change any computed
+  DPS value.
+- **`dmgFocus` correctly excludes 'Coordinated ATK'** despite a real `coordDmg`-categorized block
+  existing (S6's Coordinated Attack proc) — confirmed deliberate and already covered by the existing
+  test suite's own reasoning: Coordinated ATK as a damage type only exists via S6 (never in base kit),
+  so it correctly stays out of her S0/base-kit `dmgFocus` baseline.
+
+No code changes this pass. Full suite unaffected (1889/1889).
