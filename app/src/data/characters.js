@@ -6697,10 +6697,10 @@ const RESONANCE_CHAIN_DATA = {
   //   in Changli's/Phrolova's rows).
   // S3 Adelante, Cortado, Spinning in Grace: DMG Multiplier of Art of Violence AND Chromatic Splendor both
   //   +93% (was wrongly totalMult:15). ALSO enables Outro Skill "Kaleidoscope Sparks": Closing Remark gains
-  //   1 additional strike worth 1032.18% ATK Glacio DMG — a whole new action the flat schema can't add onto
-  //   the Outro row without inflating the base Closing Remark multiplier itself.
-  //   // TODO: needs Phase 2 schema — Kaleidoscope Sparks' +1032.18% ATK Outro strike is not representable
-  //   // as a flat totalMult on this node without conflating it with the Art of Violence/Chromatic Splendor bonus.
+  //   1 additional strike worth 1032.18% ATK Glacio DMG. FIXED (carlotta.blocks.js, 2026-09-03): the
+  //   +93% lives in carlotta.chain.s3, and Kaleidoscope Sparks' extra strike is its own real damage
+  //   block (carlotta.chain.s3-kaleidoscope-sparks) — this flat table's own s3 stays a totalMult
+  //   approximation of just the +93% portion since it has no room for a 2nd bonus-hit action.
   // S4 Yesterday's Raindrops Make Finest Wine: casting Heavy ATK, Containment Tactics, or Imminent Oblivion
   //   grants the WHOLE TEAM +25% Resonance Skill DMG Bonus for 30s (confirmed value; target is 'team', not
   //   Carlotta-only — TODO: verify calc engine applies this to teammates, not just self).
@@ -6842,9 +6842,10 @@ const RESONANCE_CHAIN_DATA = {
   // S1 "Prodigy of Protégés": Law of Reigns additionally launches 6 Convolution Matrices, each dealing
   // Resonance Liberation DMG = 8% of Law of Reigns' own DMG Multiplier — 6 extra proc hits scaling off
   // another move's multiplier, not a flat stat buff. Previous `totalMult: 10` was a fabricated filler
-  // number. Zeroed to {}.
-  // TODO: needs Phase 2 schema — can't represent "N bonus hits at X% of move Y's own multiplier" in
-  // the flat {stat: value} schema.
+  // number. Stays {} here deliberately (this flat table has no scopedToBlockId mechanism, so a real
+  // libDmg value would incorrectly also inflate Cogitation Model's/Revamp's own libDmg hits) — FIXED as
+  // a real damage block instead (documented-gaps sweep): xianglyao.chain.s1 now models the 6×8%=48% of
+  // Law of Reigns' own sourced 638.20% multiplier = 306.34%, a derived (not guessed) number.
   // S2 "Traces of Predecessors": Crit DMG +30% for 8s, triggered by casting Resonance Skill OR
   // Resonance Liberation Cogitation Model — value/category already correct (critDmg: 30).
   // S3 "Ruins of Ancient": was skillDmg: 40 (wrong value); real effect is DMG of Decipher/Deduction/

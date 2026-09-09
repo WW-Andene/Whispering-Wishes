@@ -10,10 +10,18 @@ describe('triggerEngine parity — Xiangli Yao', () => {
     expectValidBlockFile(XIANGLI_YAO_BLOCKS, 'Xiangli Yao');
   });
 
-  it('S1 stays correctly unmodeled (no block) — no derivable %ATK figure per RESONANCE_CHAIN_DATA', () => {
+  // Fixed (documented-gaps sweep): S1's "8% of Law of Reigns' own DMG Multiplier ×6" IS derivable —
+  // Law of Reigns' own multiplier is already sourced (95.73%×4+255.28%=638.20%), so 48% of that
+  // (306.34%) is a computed, not guessed, number. Modeled as a real bonus-hit damage block.
+  // RESONANCE_CHAIN_DATA.s1 deliberately stays {} (see its own comment: no scopedToBlockId there).
+  it('S1 is now a real bonus-hit damage block (48% of Law of Reigns\' own sourced multiplier)', () => {
     const rc = RESONANCE_CHAIN_DATA['Xiangli Yao'];
     expect(rc.s1).toEqual({});
-    expect(XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.chain.s1')).toBeUndefined();
+    const s1 = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.chain.s1');
+    expect(s1.kind).toBe('damage');
+    expect(s1.damage.category).toBe('libDmg');
+    expect(s1.damage.hits[0].atkPct).toBeCloseTo(306.34, 1);
+    expect(s1.trigger).toEqual({ type: 'cast', on: 'Forte:Law of Reigns' });
   });
 
   it('S2-S6 match RESONANCE_CHAIN_DATA exactly', () => {
