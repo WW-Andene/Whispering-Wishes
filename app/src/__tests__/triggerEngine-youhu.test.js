@@ -50,6 +50,20 @@ describe('triggerEngine parity — Youhu', () => {
     expect(CHARACTER_DATA['Youhu'].dmgFocus).toEqual(['Skill', 'Liberation', 'Basic ATK']);
   });
 
+  // Added 2026-09-09 (full-kit audit): Rare Find was already correctly modeled in youhu.blocks.js
+  // but was missing from CHAR_BUFF_TABLE['Youhu'].selfBuffs entirely — the same shape other characters'
+  // unconditional on-Intro-cast elemDmg buffs already use there. Confirmed via calcTeamStats measurement
+  // this has zero effect on Youhu's own rawDps/effAtk/score (she's fully block-converted, so
+  // computeLegacyMainDpsStats — and therefore this table's selfBuffs — is skipped entirely for her own
+  // DPS calc); added for data-layer consistency and because CollectionTab.jsx's search-tag indexing
+  // reads this table directly.
+  it('Rare Find is also present in CHAR_BUFF_TABLE.selfBuffs (data-layer consistency, even though a fully block-converted character never reads it for her own DPS)', () => {
+    const legacy = CHAR_BUFF_TABLE['Youhu'].selfBuffs.find(b => b.stat === 'elemDmg');
+    expect(legacy).toBeTruthy();
+    expect(legacy.value).toBe(15);
+    expect(legacy.duration).toBe(14);
+  });
+
   it('outro matches CHAR_BUFF_TABLE', () => {
     const legacy = CHAR_BUFF_TABLE['Youhu'];
     const outro = YOUHU_BLOCKS.find(b => b.id === 'youhu.outro.timeless-classics');

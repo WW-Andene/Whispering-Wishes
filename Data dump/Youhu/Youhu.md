@@ -225,3 +225,45 @@ confirmed, not an oversight.
 
 6 new/updated tests, `rawDps` moved from 448 → 515 (Rare Find + S6's real stacking + Intro's category
 fix all contributing real damage that was previously dropped), full suite green (1427/1427).
+
+## Full kit audit — 2026-09-09
+
+Independent re-audit (did not trust the prior passes' own claims — re-read this dump, `youhu.blocks.js`,
+the existing test file, and every relevant `characters.js` table from scratch). Cross-checked
+`CHARACTER_DATA` (desc, weapons, echoes, teams, dmgFocus, base stats incl. the corrected ATK 263, DPS
+tier), `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA` (including its own detailed S1/S2/S4 zeroing rationale
+— re-verified S2's "Poetic Essence never actually casts in the real modeled rotation" claim directly
+against `CHARACTER_ROTATIONS['Youhu']`, confirmed accurate), `SKILL_MULTIPLIERS`, `CHARACTER_ROTATIONS`,
+`SKILL_ICONS` (all 8 keys), and `SEQUENCE_NAMES` against this dump — all already consistent, no drift
+found. Also re-confirmed the prior pass's claim that Heavy Attack (Frostfall), Mid-air Attack, Dodge
+Counter, and Poetic Essence — all real, sourced `SKILL_MULTIPLIERS` rows — genuinely never appear in
+`CHARACTER_ROTATIONS['Youhu']` (re-read directly: Intro → Ruyi → Liberation → Ruyi → Basic ATK → Skill:
+Scroll Divination → Ruyi → Outro, no Heavy/Mid-air/Dodge/Poetic Essence step anywhere) — a real gap in
+her rotation coverage, not a bug, so `youhu.blocks.js` correctly has no block-coverage-firing test for
+those moves.
+
+**1 real, sourced gap found and fixed** — in the data layer (`characters.js`), not `youhu.blocks.js`
+itself: Inherent Skill **Rare Find** (Glacio DMG Bonus +15% for 14s upon casting Intro Skill) was already
+correctly modeled in `youhu.blocks.js` (`youhu.inherent.rare-find`), but was entirely missing from
+`CHAR_BUFF_TABLE['Youhu'].selfBuffs` — an unconditional, self-target, on-Intro-cast elemDmg buff, the
+same shape several other characters' own `selfBuffs` entries already use (e.g. "Quick Response: Intro
+Skill cast grants +12% Spectro DMG Bonus"). Measured directly via `calcTeamStats(['Youhu'],0,'Youhu',
+{},'',90)` before and after: **zero change** to `rawDps`/`effAtk`/`score` — Youhu is fully
+block-converted, and `calcTeamStats.js`'s own comment confirms the whole legacy buff-accumulation path
+(which reads this table's `selfBuffs`) is skipped entirely for a fully-converted team, since
+`resolveHitComposedDps` (already correctly crediting Rare Find via the block) unconditionally overrides
+every stat that path would have fed. Added anyway for data-layer consistency with the established
+convention, and because `CollectionTab.jsx`'s own search-tag indexing reads `CHAR_BUFF_TABLE[name]
+.selfBuffs` directly — a real, if minor, use this omission was silently failing (Youhu wouldn't have
+been tagged/searchable by "Glacio DMG" via that specific buff).
+
+No other bugs found across kit logic, conditions, inner-kit cross-interactions (S6 Slumber Evermore's
+stacking correctly keys off the one Antique Appraisal variant — Ruyi — the real rotation actually casts;
+S3/S5 passive/on-Intro buffs correctly unconditional and match `RESONANCE_CHAIN_DATA`; S1/S2/S4 correctly
+stay unmodeled per their own already-verified zero-DPS-in-context reasoning), or cross-character
+interactions (Outro Timeless Classics' +100% Coordinated ATK DMG Amp is target-scoped to `next-on-field`,
+correctly isolated from Youhu's own damage and from any other teammate not actually receiving the swap).
+
+1 new test added (`triggerEngine-youhu.test.js`: Rare Find's presence in `CHAR_BUFF_TABLE.selfBuffs`),
+full suite green (1894/1894). No golden fixture (`phase3-parity-golden.json`) update needed — measured,
+not assumed, that the fix moved neither `engineDps` nor `legacyRawDps` at all.

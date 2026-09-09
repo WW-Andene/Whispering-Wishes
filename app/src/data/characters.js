@@ -3505,7 +3505,22 @@ const CHAR_BUFF_TABLE = {
   'Youhu': {
     outroBuffs: [{ stat: 'coordDmg', value: 100, target: 'next', duration: 28 }],
     libBuffs: [],
-    selfBuffs: [],
+    // Added 2026-09-09 (full-kit audit): Inherent Skill Rare Find (Glacio DMG Bonus +15% for 14s upon
+    // casting Intro Skill) was already correctly modeled in youhu.blocks.js (youhu.inherent.rare-find)
+    // but entirely missing here — an unconditional, self-target, on-Intro-cast elemDmg buff, the exact
+    // same shape as multiple other characters' own selfBuffs entries (e.g. "Quick Response: Intro Skill
+    // cast grants +12% Spectro DMG Bonus"). Measured directly via calcTeamStats(['Youhu'],0,...): this
+    // addition makes ZERO difference to rawDps/effAtk/score, because Youhu is a fully block-converted
+    // character — calcTeamStats.js's own comment at its computeLegacyMainDpsStats() call site confirms
+    // that whole legacy buff-accumulation path (including this table's selfBuffs) is SKIPPED ENTIRELY
+    // for a fully-converted team, since resolveHitComposedDps (already correctly crediting Rare Find via
+    // the block) unconditionally overrides every stat it would have fed. Added anyway for data-layer
+    // consistency with the established convention (every other unconditional on-Intro-cast elemDmg kit
+    // fact lives here too) and because CollectionTab.jsx's own search-tag indexing reads
+    // CHAR_BUFF_TABLE[name].selfBuffs directly — a real, if minor, use this omission was silently failing.
+    selfBuffs: [
+      { stat: 'elemDmg', value: 15, target: 'self', duration: 14, condition: 'Inherent Skill Rare Find: Glacio DMG Bonus +15% for 14s upon casting Intro Skill.' },
+    ],
     debuffs: [],
     note: 'Glacio healer (Scroll Divination + Poetic Essence, both heal on cast). Outro Timeless Classics: +100% Coordinated ATK DMG Amp (28s) to the incoming Resonator — her signature niche buff.',
   },

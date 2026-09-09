@@ -18,6 +18,18 @@
 // Antique Appraisal's own damage category (skillDmg vs basicDmg — kit prose calls it "the next Basic
 // Attack" empowered, but no explicit "considered X DMG" override exists either way) was flagged as a
 // genuine ambiguity and explicitly decided: kept skillDmg, matching SKILL_MULTIPLIERS' own row type.
+//
+// 2026-09-09 full-kit audit (independent re-audit — cross-checked every characters.js table fresh
+// against Data dump/Youhu/Youhu.md, not trusting the prior passes' own claims): every block here,
+// every CHARACTER_DATA/CHAR_BUFF_TABLE/RESONANCE_CHAIN_DATA/SKILL_MULTIPLIERS/CHARACTER_ROTATIONS/
+// SKILL_ICONS/SEQUENCE_NAMES entry, and this file's own blocks were already correct and consistent —
+// no bugs found in this file. One real, sourced gap found in the DATA LAYER (characters.js, not this
+// file): Inherent Skill Rare Find was already correctly modeled here (youhu.inherent.rare-find) but
+// was entirely missing from CHAR_BUFF_TABLE['Youhu'].selfBuffs — added there for data-layer
+// consistency (measured to have zero effect on her own DPS/effAtk/score, since she's fully
+// block-converted and that legacy path is skipped entirely for her; the fix matters only for
+// CollectionTab.jsx's search-tag indexing, which reads CHAR_BUFF_TABLE directly). Full suite verified
+// green (1894/1894) after; no golden fixture changes needed (measured, not assumed).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
