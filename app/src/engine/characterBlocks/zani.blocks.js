@@ -19,11 +19,11 @@
 //      cast → whole team ATK +20% for 30s"). Retargeted to a real cast-triggered, 30s-duration buff.
 //      Measured zero DPS change for the standard modeled rotation (well under 30s, Intro cast first) —
 //      a correctness/robustness fix, not a DPS-moving one for this specific rotation.
-//   3. Genuine gap newly found, NOT fixed: chain.s6's real kit text has a 3rd component beyond the
-//      modeled flat +40% Heavy Slash multiplier — a separate per-Blaze-consumed Nightfall-specific
-//      scaling bonus ("each Blaze consumed → Nightfall's DMG Multiplier +40% on hit"), missed entirely
-//      by every prior pass. Left unmodeled (documented in both this file and characters.js) rather than
-//      inventing an unsourced approximation — flagged for a future pass.
+//   3. chain.s6's real kit text has a 3rd component beyond the modeled flat +40% Heavy Slash
+//      multiplier — a separate Nightfall-specific scaling bonus ("each Blaze consumed → Nightfall's
+//      DMG Multiplier +40% on hit"), missed entirely by every prior pass. FIXED in a later pass (see
+//      zani.chain.s6-nightfall-mult below) — the ambiguous per-Blaze-vs-flat-total wording was
+//      resolved with the user, modeled as a flat +40% Nightfall-only bonus.
 // Full suite verified green (1896/1896) after the 3 fixes.
 //
 // Documented-gaps sweep (direct user request to build a real frazzleDmg category): Inherent Skill
@@ -37,6 +37,13 @@
 // single category there, not dual). Measured: a real, live DPS increase — legacyRawDps/engineDps rose
 // 2401 -> 2574/2574, golden fixtures regenerated. See Data dump/Zani/Zani.md's own writeup for the full
 // engine-change list and the Phoebe cross-character candidate considered and left unchanged.
+//
+// S6 Nightfall-per-Blaze gap fixed (direct user follow-up): the dump's "each Blaze consumed →
+// Nightfall's DMG Multiplier +40% on hit" mirrors S3's per-point phrasing but has no stated cap — read
+// literally as a per-Blaze rate over Nightfall's own up-to-40-Blaze consumption, this would be +1600%,
+// wildly out of line with every other dupe bonus in the game. Explicitly decided with the user: model
+// "+40%" as the already-total flat value, not a per-point rate. Added zani.chain.s6-nightfall-mult
+// (heavyDmg+40, scoped to Nightfall's own block + the combined 2nd-pass block).
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -283,6 +290,27 @@ export const ZANI_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'heavyDmg', value: 40, source: 'self-kit' }],
-    note: 'Heavy ATK DMG +40% (confirmed exact) — kept passive, applies broadly to her many Heavy Slash-categorized blocks above. Does NOT yet include the separate per-Blaze-consumed Nightfall-specific scaling component (see comment above).',
+    note: 'Heavy ATK DMG +40% (confirmed exact) — kept passive, applies broadly to her many Heavy Slash-categorized blocks above.',
+  },
+  {
+    // Fixed (Nightfall-per-Blaze sweep, direct user decision): the dump's own S6 text — "Each Blaze
+    // consumed → Nightfall's DMG Multiplier +40% on hit" — mirrors S3's per-point phrasing exactly
+    // ("each Blaze consumed → The Last Stand's DMG Multiplier +8%, capped +1200%") but gives no cap.
+    // Read as a literal per-Blaze rate, Nightfall's own up-to-40-Blaze consumption would make this
+    // +1600% — implausible next to every other dupe bonus in her kit and the roster (nothing else is
+    // remotely that large). Explicitly decided with the user: modeled as a flat +40% Nightfall-only
+    // DMG Multiplier instead (treating "+40%" as the already-total value, not a per-point rate), in
+    // line with typical dupe power levels elsewhere. Scoped via scopedToBlockId to BOTH
+    // zani.forte.heavy-slash-nightfall (the 1st pass) and zani.forte.heavy-slash-string-2nd-pass (the
+    // combined 2nd-pass block, which also carries Daybreak/Dawning's own hits within the SAME block —
+    // this schema can't scope to one move's hits WITHIN a multi-move combined block, so the 2nd pass's
+    // Daybreak/Dawning portion is a known, small over-credit, same class of approximation already
+    // accepted for that combined block elsewhere in this file).
+    id: 'zani.chain.s6-nightfall-mult',
+    source: SOURCE, kind: 'buff', section: 'Chain',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'heavyDmg', value: 40, scopedToBlockId: ['zani.forte.heavy-slash-nightfall', 'zani.forte.heavy-slash-string-2nd-pass'], source: 'self-kit' }],
+    note: "Each Blaze consumed grants Nightfall's own DMG Multiplier +40% — modeled as a flat +40% Nightfall-only bonus (not a literal per-Blaze rate; see fix comment above for the ambiguous-source-text reasoning), on top of the broader +40% Heavy Slash bonus above and Nightfall's own base-kit +9.95%/Blaze (still unmodeled, base value used).",
   },
 ];

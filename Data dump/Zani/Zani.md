@@ -348,3 +348,28 @@ there's no live number to correct. Documented the new option there for a future 
 4 new/updated tests (2 synthetic resolver tests + Zani's own Sunburst test + the pre-existing suite),
 full suite green (1900/1900). Golden fixtures regenerated (see above) — the one real, live-DPS-affecting
 change from this whole documented-gaps sweep.
+
+## S6 Nightfall-per-Blaze gap fixed (direct user follow-up)
+
+The remaining, previously-flagged S6 gap: her kit text — "Each Blaze consumed → Nightfall's DMG
+Multiplier +40% on hit" — mirrors S3's per-point phrasing exactly ("each Blaze consumed → The Last
+Stand's DMG Multiplier +8%, capped +1200%") but gives no stated cap. Read literally as a per-Blaze rate
+over Nightfall's own up-to-40-Blaze consumption, this would be **+1600%** — implausible next to every
+other dupe bonus on her kit or across the roster (nothing else is remotely that large).
+
+Flagged this ambiguity to the user explicitly rather than guessing between a ~40x-different outcome.
+**Decided**: model "+40%" as the already-total flat value (not a per-point rate), consistent with
+typical dupe power levels elsewhere. Added `zani.chain.s6-nightfall-mult` (`heavyDmg+40`, scoped via
+`scopedToBlockId` to `zani.forte.heavy-slash-nightfall` and `zani.forte.heavy-slash-string-2nd-pass`).
+
+**Known, disclosed limitation**: the combined 2nd-pass block bundles Daybreak+Dawning+Nightfall's hits
+into one block id (the real rotation collapses the 2nd pass into a single step), so this schema can't
+scope the bonus to just Nightfall's own hits WITHIN that block — the 2nd pass's Daybreak/Dawning portion
+receives a small over-credit as a result. Documented inline; same class of approximation already
+accepted elsewhere in this file for combined multi-move blocks.
+
+Measured directly: Nightfall's own damage rises with the new block present vs. absent (confirmed via
+`with6`/`without6` comparison at sequence 6), and Daybreak's own standalone block is correctly
+unaffected. Sequence-gated (S6 only), so this does NOT move the golden fixture's tested sequence-0
+baseline — confirmed by the full suite staying green with no drift. 1 new test added, full suite green
+(1901/1901).

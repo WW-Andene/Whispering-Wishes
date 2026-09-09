@@ -6932,14 +6932,17 @@ const RESONANCE_CHAIN_DATA = {
   // NEWLY FOUND 2026-09-09 (full-kit audit) — heavyDmg:40 does NOT fully represent s6's damage-relevant
   //   effects after all, contradicting this comment's own prior claim: Data dump/Zani/Zani.md's S6 text
   //   is explicit there is a THIRD, separate component: "Each Blaze consumed → Nightfall's DMG
-  //   Multiplier +40% on hit" — an additional per-Blaze-consumed scaling bonus specific to Nightfall,
-  //   on top of both the flat +40% Heavy Slash multiplier above AND Nightfall's own base-kit +9.95%/
-  //   Blaze (also already unmodeled — see zani.blocks.js's own Nightfall block note). This is the same
-  //   "per-unit-of-a-consumable-resource scaling, no schema field" class as s3 above, but UNLIKE s3, no
-  //   conservative rotation-representative estimate has been derived or verified for it here — flagged
-  //   as a genuine, currently-unaddressed gap rather than inventing an unsourced flat number. A future
-  //   pass should either derive a defensible conservative estimate (matching s3's approach) or await
-  //   the same Phase 2 per-resource-point-scaling schema this file already TODOs for s3.
+  //   Multiplier +40% on hit" — on top of both the flat +40% Heavy Slash multiplier above AND
+  //   Nightfall's own base-kit +9.95%/Blaze (also already unmodeled — see zani.blocks.js's own
+  //   Nightfall block note).
+  // FIXED (Nightfall-per-Blaze sweep): this text mirrors s3's per-point phrasing ("each Blaze consumed
+  //   → ... DMG Multiplier +8%, capped +1200%") but gives no cap — read literally as a per-Blaze rate
+  //   over Nightfall's own up-to-40-Blaze consumption, it would be +1600%, wildly out of line with
+  //   every other dupe bonus on her kit or the roster. Explicitly decided with the user rather than
+  //   guessing: modeled as a flat +40% Nightfall-only DMG Multiplier (treating "+40%" as the already-
+  //   total value, not a per-point rate) — see zani.blocks.js's own zani.chain.s6-nightfall-mult block.
+  //   This flat table's own s6 stays heavyDmg:40 (the broader bonus only) since it has no
+  //   scopedToBlockId mechanism to represent a Nightfall-specific 2nd bonus.
   // Note: one wiki-style source's own S3 text refers to the Liberation by the name "Judgement Day" whereas
   // other sources and the skill's own in-game name is "The Last Stand" — treated as a stale/inconsistent
   // translation label for the same skill (other sources and the Forte/Liberation section of that same

@@ -95,6 +95,24 @@ describe('triggerEngine parity — Zani', () => {
     expect(lastStandHitS5.damage).toBeCloseTo(lastStandHitNoS5.damage, 5);
   });
 
+  // Added (Nightfall-per-Blaze sweep, direct user follow-up): S6's "each Blaze consumed → Nightfall's
+  // DMG Multiplier +40% on hit" was previously left unmodeled — the wording is ambiguous (mirrors S3's
+  // per-point phrasing with no stated cap, which read literally would be +1600%, implausible). Decided
+  // with the user to model +40% as the already-total flat value rather than a per-point rate.
+  it('S6 also grants Nightfall a real +40% DMG Multiplier bonus (modeled as flat, not per-Blaze — see block comment)', () => {
+    const nightfallMult = ZANI_BLOCKS.find(b => b.id === 'zani.chain.s6-nightfall-mult');
+    expect(nightfallMult.effects[0]).toEqual({ stat: 'heavyDmg', value: 40, scopedToBlockId: ['zani.forte.heavy-slash-nightfall', 'zani.forte.heavy-slash-string-2nd-pass'], source: 'self-kit' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Zani'], ZANI_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const with6 = resolveHitComposedDps(ZANI_BLOCKS, steps, ctx, 3000, 'spectro', 'Main DPS', null, 6);
+    const without6 = resolveHitComposedDps(ZANI_BLOCKS.filter(b => b.id !== 'zani.chain.s6-nightfall-mult'), steps, ctx, 3000, 'spectro', 'Main DPS', null, 6);
+    const sumAt = (res, id) => res.hitLog.filter(h => h.blockId === id).reduce((s, h) => s + h.damage, 0);
+    expect(sumAt(with6, 'zani.forte.heavy-slash-nightfall')).toBeGreaterThan(sumAt(without6, 'zani.forte.heavy-slash-nightfall'));
+    // Must NOT bleed onto Daybreak's own standalone block (only Nightfall/2nd-pass are scoped).
+    expect(sumAt(with6, 'zani.forte.heavy-slash-daybreak')).toBeCloseTo(sumAt(without6, 'zani.forte.heavy-slash-daybreak'), 5);
+  });
+
   it('the 2nd Heavy Slash pass combines all three real hits', () => {
     const b = ZANI_BLOCKS.find(bl => bl.id === 'zani.forte.heavy-slash-string-2nd-pass');
     expect(b.damage.hits.length).toBe(4); // Daybreak(1) + Dawning(1) + Nightfall(2)
