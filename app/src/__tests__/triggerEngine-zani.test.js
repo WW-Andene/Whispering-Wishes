@@ -19,6 +19,17 @@ describe('triggerEngine parity — Zani', () => {
     expect(ZANI_BLOCKS.find(b => b.id === 'zani.chain.s6').effects[0].value).toBe(rc.s6.heavyDmg);
   });
 
+  // Added 2026-09-09 (full-kit audit): S4 was trigger:{type:'passive'} despite RESONANCE_CHAIN_DATA's
+  // own audit comment and the Zani.md dump both being explicit about a real trigger anchor and
+  // duration ("Intro cast → whole team ATK +20% for 30s") — the block's own note claiming "no specific
+  // cast anchor sourced" was simply false.
+  it('S4 is a real cast-triggered, 30s-duration team buff (fixed 2026-09-09) — not an unconditional passive', () => {
+    const s4 = ZANI_BLOCKS.find(b => b.id === 'zani.chain.s4');
+    expect(s4.trigger).toEqual({ type: 'cast', on: 'Intro:Immediate Execution' });
+    expect(s4.timing.duration).toBe(30);
+    expect(s4.target.scope).toBe('whole-team');
+  });
+
   it('S2 has both real effects, matching RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Zani'];
     const s2 = ZANI_BLOCKS.find(b => b.id === 'zani.chain.s2');
@@ -44,7 +55,14 @@ describe('triggerEngine parity — Zani', () => {
 
   // Fixed 2026-09-03: S2/S3/S5 were all kind:'buff' with trigger:{type:'cast',...} and no
   // timing.duration — the item-12 dead-buff architecture bug — silent no-ops.
-  it('S2/S3/S5 actually apply and stay correctly scoped (were dead no-ops)', () => {
+  // Fixed AGAIN 2026-09-09 (full-kit audit): S3/S5's scopedToBlockId targets were swapped backwards
+  // ever since the 2026-09-03 fix — S3 (the-last-stand's approximated scaling multiplier per
+  // RESONANCE_CHAIN_DATA's own audit comment) was boosting Rekindle instead, and S5 (Rekindle's
+  // confirmed-exact +120%) was boosting The Last Stand instead. This test's own assertions were
+  // written to match that swapped (wrong) behavior — corrected below to match the real kit text
+  // (Zani.md: "S3: ...The Last Stand's DMG Multiplier +8%, capped +1200%"; "S5: Rekindle's DMG
+  // Multiplier +120%.") and RESONANCE_CHAIN_DATA['Zani']'s own comment, which named this exact pairing.
+  it('S2/S3/S5 actually apply and stay correctly scoped (were dead no-ops, then had S3/S5 swapped)', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Zani'], ZANI_BLOCKS);
     const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
 
@@ -54,25 +72,27 @@ describe('triggerEngine parity — Zani', () => {
     const taHitNoS2 = withoutS2.hitLog.find(h => h.blockId === 'zani.skill.targeted-action');
     expect(taHit.damage).toBeGreaterThan(taHitNoS2.damage);
 
+    // S3 boosts The Last Stand (its approximated scaling multiplier), NOT Rekindle.
     const withS3 = resolveHitComposedDps(ZANI_BLOCKS, steps, ctx, 3000, 'spectro', 'Main DPS', null, 3);
     const withoutS3 = resolveHitComposedDps(ZANI_BLOCKS.filter(b => b.id !== 'zani.chain.s3'), steps, ctx, 3000, 'spectro', 'Main DPS', null, 3);
-    const rekindleHit = withS3.hitLog.find(h => h.blockId === 'zani.liberation.rekindle');
-    const rekindleHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'zani.liberation.rekindle');
-    expect(rekindleHit.damage).toBeGreaterThan(rekindleHitNoS3.damage);
-    // S3 must NOT bleed onto The Last Stand (also libDmg-categorized).
     const lastStandHit = withS3.hitLog.find(h => h.blockId === 'zani.liberation.the-last-stand');
     const lastStandHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'zani.liberation.the-last-stand');
-    expect(lastStandHit.damage).toBeCloseTo(lastStandHitNoS3.damage, 5);
+    expect(lastStandHit.damage).toBeGreaterThan(lastStandHitNoS3.damage);
+    // S3 must NOT bleed onto Rekindle (also libDmg-categorized).
+    const rekindleHit = withS3.hitLog.find(h => h.blockId === 'zani.liberation.rekindle');
+    const rekindleHitNoS3 = withoutS3.hitLog.find(h => h.blockId === 'zani.liberation.rekindle');
+    expect(rekindleHit.damage).toBeCloseTo(rekindleHitNoS3.damage, 5);
 
+    // S5 boosts Rekindle (its confirmed-exact +120%), NOT The Last Stand.
     const withS5 = resolveHitComposedDps(ZANI_BLOCKS, steps, ctx, 3000, 'spectro', 'Main DPS', null, 5);
     const withoutS5 = resolveHitComposedDps(ZANI_BLOCKS.filter(b => b.id !== 'zani.chain.s5'), steps, ctx, 3000, 'spectro', 'Main DPS', null, 5);
-    const lastStandHitS5 = withS5.hitLog.find(h => h.blockId === 'zani.liberation.the-last-stand');
-    const lastStandHitNoS5 = withoutS5.hitLog.find(h => h.blockId === 'zani.liberation.the-last-stand');
-    expect(lastStandHitS5.damage).toBeGreaterThan(lastStandHitNoS5.damage);
-    // S5 must NOT bleed onto Rekindle.
     const rekindleHitS5 = withS5.hitLog.find(h => h.blockId === 'zani.liberation.rekindle');
     const rekindleHitNoS5 = withoutS5.hitLog.find(h => h.blockId === 'zani.liberation.rekindle');
-    expect(rekindleHitS5.damage).toBeCloseTo(rekindleHitNoS5.damage, 5);
+    expect(rekindleHitS5.damage).toBeGreaterThan(rekindleHitNoS5.damage);
+    // S5 must NOT bleed onto The Last Stand.
+    const lastStandHitS5 = withS5.hitLog.find(h => h.blockId === 'zani.liberation.the-last-stand');
+    const lastStandHitNoS5 = withoutS5.hitLog.find(h => h.blockId === 'zani.liberation.the-last-stand');
+    expect(lastStandHitS5.damage).toBeCloseTo(lastStandHitNoS5.damage, 5);
   });
 
   it('the 2nd Heavy Slash pass combines all three real hits', () => {

@@ -4,6 +4,27 @@
 // CHAR_BUFF_TABLE['Zani'], RESONANCE_CHAIN_DATA['Zani'] (+ its own audit comment,
 // read directly for each node's real mechanic), SKILL_MULTIPLIERS['Zani'], and
 // CHARACTER_ROTATIONS['Zani']. No new numbers invented.
+//
+// 2026-09-09 full-kit audit (independent re-audit, cross-checked every characters.js table fresh
+// against Data dump/Zani/Zani.md, not trusting prior passes' claims): 3 real fixes, 1 newly-found
+// documented gap.
+//   1. chain.s3/chain.s5's scopedToBlockId targets were SWAPPED backwards ever since first written:
+//      s3 (The Last Stand's approximated per-Blaze scaling, per RESONANCE_CHAIN_DATA's own comment)
+//      was incorrectly scoped to Rekindle; s5 (Rekindle's confirmed-exact +120%) was incorrectly
+//      scoped to The Last Stand. Both the flat table's own comment and the fresh dump independently
+//      confirm the correct pairing. Fixed by swapping both scopedToBlockId values; the existing test's
+//      own assertions (written to match the swapped/wrong behavior) corrected too.
+//   2. chain.s4 was trigger:{type:'passive'} with a note claiming "no specific cast anchor sourced" —
+//      false, contradicted by RESONANCE_CHAIN_DATA's own comment ("on Intro cast") and the dump ("Intro
+//      cast → whole team ATK +20% for 30s"). Retargeted to a real cast-triggered, 30s-duration buff.
+//      Measured zero DPS change for the standard modeled rotation (well under 30s, Intro cast first) —
+//      a correctness/robustness fix, not a DPS-moving one for this specific rotation.
+//   3. Genuine gap newly found, NOT fixed: chain.s6's real kit text has a 3rd component beyond the
+//      modeled flat +40% Heavy Slash multiplier — a separate per-Blaze-consumed Nightfall-specific
+//      scaling bonus ("each Blaze consumed → Nightfall's DMG Multiplier +40% on hit"), missed entirely
+//      by every prior pass. Left unmodeled (documented in both this file and characters.js) rather than
+//      inventing an unsourced approximation — flagged for a future pass.
+// Full suite verified green (1896/1896) after the 3 fixes.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -164,40 +185,70 @@ export const ZANI_BLOCKS = [
     note: 'Crit Rate +20% + a multiplier boost to Targeted Action/Forcible Riposte specifically (confirmed exact per the audit comment) — skillDmg scoped via scopedToBlockId since Targeted Action is not her only skillDmg-tagged block.',
   },
   {
+    // Fixed 2026-09-09 (full-kit audit): was scoped to zani.liberation.rekindle — backwards.
+    // RESONANCE_CHAIN_DATA['Zani']'s own audit comment (characters.js) is explicit S3's real effect is
+    // "+8% Last Stand DMG Mult PER Blaze consumed in Inferno Mode, maxed at +1200%", with libDmg:200
+    // documented there as "the conservative rotation-representative estimate" for THE LAST STAND
+    // specifically (not the true 0-1200% scaling range, which this schema has no per-resource-point
+    // field for) — matching the fresh Zani.md dump's own kit text ("each Blaze consumed → The Last
+    // Stand's DMG Multiplier +8%, capped +1200%"). S5 (below) is Rekindle's own confirmed-exact flat
+    // +120% — the two were swapped, so S3 was silently boosting the wrong Liberation cast (and S5 the
+    // other wrong one) ever since this file's chain blocks were first written.
     id: 'zani.chain.s3',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    // Scoped via scopedToBlockId: libDmg is category-gated, but `zani.liberation.the-last-stand` is
-    // ALSO libDmg-categorized — without scoping, this would incorrectly also boost The Last Stand,
-    // when the kit text is explicit this is Rekindle's own multiplier only.
-    effects: [{ stat: 'libDmg', value: 200, scopedToBlockId: 'zani.liberation.rekindle', source: 'self-kit' }],
-    note: "Rekindle's own DMG Multiplier +200%.",
+    // Scoped via scopedToBlockId: libDmg is category-gated, but `zani.liberation.rekindle` is ALSO
+    // libDmg-categorized — without scoping, this would incorrectly also boost Rekindle.
+    effects: [{ stat: 'libDmg', value: 200, scopedToBlockId: 'zani.liberation.the-last-stand', source: 'self-kit' }],
+    note: "The Last Stand's own DMG Multiplier — real effect is +8% per Blaze consumed in Inferno Mode, capped at +1200%; approximated here as a conservative flat +200% (RESONANCE_CHAIN_DATA's own documented rotation-representative estimate), since this schema has no per-resource-point scaling field.",
   },
   {
+    // Fixed 2026-09-09 (full-kit audit): was trigger:{type:'passive'} with the note claiming "no
+    // specific cast anchor sourced" — false, and contradicted by data already sitting in this same
+    // file: RESONANCE_CHAIN_DATA['Zani']'s own audit comment (characters.js) states "s4 team +20% ATK
+    // on Intro cast confirmed correct", and the fresh Zani.md dump is explicit: "S4: Intro cast →
+    // whole team ATK +20% for 30s." Retargeted to a real cast-triggered, 30s-duration buff. Measured:
+    // zero change to the currently-modeled rotation's DPS (her real rotation totals ~16.5s, entirely
+    // within the 30s window opened by her own opening Intro cast, so this was a correctness/robustness
+    // fix — matching the sourced mechanic honestly — not a DPS-moving one for the standard rotation.
     id: 'zani.chain.s4',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'whole-team' },
-    effects: [{ stat: 'atkPct', value: 20, source: 'self-kit' }],
-    note: 'Team ATK +20% (confirmed exact, team-wide) — no specific cast anchor sourced, kept passive.',
+    trigger: { type: 'cast', on: 'Intro:Immediate Execution' },
+    timing: { duration: 30, stacking: 'refresh' },
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'atkPct', value: 20, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Team ATK +20% for 30s after Intro Skill cast (confirmed exact).',
   },
   {
+    // Fixed 2026-09-09 (full-kit audit): was scoped to zani.liberation.the-last-stand — backwards, the
+    // other half of the S3/S5 swap documented above. RESONANCE_CHAIN_DATA['Zani']'s own audit comment
+    // is explicit: "s5 Rekindle DMG Mult +120% (was totalMult:40, wrong category)" — Rekindle, not The
+    // Last Stand — matching the fresh Zani.md dump's own kit text ("S5: Rekindle's DMG Multiplier
+    // +120%.").
     id: 'zani.chain.s5',
     source: SOURCE, kind: 'buff', section: 'Chain',
     // Fixed 2026-09-03: same dead cast-scoped/no-duration no-op shape as S2/S3 above.
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    // Scoped for the same reason as S3: libDmg is category-gated but shared with Rekindle.
-    effects: [{ stat: 'libDmg', value: 120, scopedToBlockId: 'zani.liberation.the-last-stand', source: 'self-kit' }],
-    note: "The Last Stand's own DMG Multiplier +120%.",
+    // Scoped for the same reason as S3: libDmg is category-gated but shared with The Last Stand.
+    effects: [{ stat: 'libDmg', value: 120, scopedToBlockId: 'zani.liberation.rekindle', source: 'self-kit' }],
+    note: "Rekindle's own DMG Multiplier +120% (confirmed exact).",
   },
   {
+    // NEWLY FOUND 2026-09-09 (full-kit audit) — GENUINE GAP, NOT YET FIXED: the dump's real S6 text has
+    // a THIRD component beyond the flat +40% Heavy Slash multiplier modeled below: "Each Blaze consumed
+    // → Nightfall's DMG Multiplier +40% on hit" — a separate, per-Blaze-consumed scaling bonus specific
+    // to Nightfall, stacking on top of both this flat +40% AND Nightfall's own already-unmodeled base
+    // +9.95%/Blaze (see zani.forte.heavy-slash-nightfall's own note). Same "per-resource-point scaling,
+    // no schema field" class as chain.s3, but no conservative estimate has been derived for this one —
+    // see characters.js's own RESONANCE_CHAIN_DATA['Zani'] comment for the full writeup. Left
+    // unmodeled rather than inventing an unsourced number; flagged for a future pass or Phase 2 schema.
     id: 'zani.chain.s6',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'heavyDmg', value: 40, source: 'self-kit' }],
-    note: 'Heavy ATK DMG +40% (confirmed exact) — kept passive, applies broadly to her many Heavy Slash-categorized blocks above.',
+    note: 'Heavy ATK DMG +40% (confirmed exact) — kept passive, applies broadly to her many Heavy Slash-categorized blocks above. Does NOT yet include the separate per-Blaze-consumed Nightfall-specific scaling component (see comment above).',
   },
 ];

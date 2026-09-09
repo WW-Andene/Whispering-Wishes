@@ -247,3 +247,58 @@ No dump file existed before this pass — created. `RESONANCE_CHAIN_DATA`/`CHAR_
    as best for non-Quickswap teams) — reordered to lead with the source's own "best" framing.
 
 7 new/rewritten tests, full suite green (1329/1329).
+
+## Full kit audit — 2026-09-09
+
+Independent re-audit (did not trust the prior pass's own claims — re-read this dump, `zani.blocks.js`,
+the existing test file, and every relevant `characters.js` table from scratch). Cross-checked
+`CHARACTER_DATA`, `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA` (including its own detailed audit comment,
+re-read directly rather than trusted), `SKILL_MULTIPLIERS`, `CHARACTER_ROTATIONS`, `SKILL_ICONS`, and
+`SEQUENCE_NAMES` against this dump.
+
+**3 real bugs found and fixed**:
+
+1. **Chain S3/S5's `scopedToBlockId` targets were swapped backwards**, apparently since the 2026-09-03
+   dead-buff fix first wrote them. Real kit text (this dump, and independently confirmed by
+   `RESONANCE_CHAIN_DATA['Zani']`'s own audit comment in `characters.js`): S3 is **The Last Stand's**
+   approximated per-Blaze scaling multiplier (real effect +8%/Blaze consumed, capped +1200%,
+   conservatively modeled as a flat +200%); S5 is **Rekindle's** own confirmed-exact +120%. The code had
+   S3 scoped to `zani.liberation.rekindle` and S5 scoped to `zani.liberation.the-last-stand` — exactly
+   backwards, silently boosting the wrong Liberation cast for both nodes at sequence 3 and sequence 5.
+   Fixed by swapping both `scopedToBlockId` values. The existing test (`triggerEngine-zani.test.js`) had
+   its own assertions written to match the swapped, wrong behavior — corrected to assert the real
+   pairing instead.
+2. **Chain S4 was `trigger:{type:'passive'}`** (an unconditional, always-on team ATK+20%), with its own
+   note claiming "no specific cast anchor sourced" — false, contradicted by data already present in the
+   same file: `RESONANCE_CHAIN_DATA['Zani']`'s own audit comment states "s4 team +20% ATK **on Intro
+   cast** confirmed correct", and this dump is explicit: "S4: **Intro cast** → whole team ATK +20% for
+   **30s**." Retargeted to a real `cast`-triggered, 30s-duration, refresh-stacking buff. Measured
+   directly: zero DPS change for the standard modeled rotation (it totals ~16.5s, well within the 30s
+   window opened by the opening Intro cast) — a correctness/robustness fix, not one that moves the
+   currently-computed numbers, but it matters for any future custom/longer rotation.
+3. **`CHARACTER_DATA['Zani']`'s structured debuffs column (4th element of its dmgFocus/buffs/debuffs
+   row) was `['Frazzle']`**, directly contradicting this dump's own repeated, explicit emphasis: "She
+   cannot apply Frazzle herself — entirely teammate-dependent." `CHAR_BUFF_TABLE['Zani'].debuffs` (the
+   functional DOT-detection array `calcTeamStats.js` actually reads for Frazzle/Erosion/FusionBurst
+   mechanics) was already correctly `[]`; this structured column instead feeds the UI's own "Debuffs
+   Applied" team-summary list (`allDebuffs`, rendered directly in `DamageCalculator.jsx`) — a real,
+   user-visible bug that would have told a player Zani applies Frazzle, when her entire kit identity is
+   built around NOT being able to and needing a teammate who does. Fixed to `[]`.
+
+**1 genuine gap newly found, left unmodeled (not invented)**: Chain S6's real kit text has a **third**
+component beyond the already-modeled flat +40% Heavy Slash DMG Multiplier: "Each Blaze consumed →
+Nightfall's DMG Multiplier +40% on hit" — a separate, per-Blaze-consumed scaling bonus specific to
+Nightfall, stacking on top of both the flat +40% AND Nightfall's own already-unmodeled base kit
++9.95%/Blaze. This was missed entirely by every prior pass (the existing `RESONANCE_CHAIN_DATA` comment
+explicitly — and, per this finding, wrongly — claimed "heavyDmg:40 above already fully represents s6's
+only damage-relevant effect"). Same "per-unit-of-a-consumable-resource scaling, no schema field" class
+as S3, but unlike S3, no conservative rotation-representative estimate has been derived for this
+component — flagging it honestly (documented in both `characters.js` and `zani.blocks.js`) rather than
+inventing an unsourced number. This could matter meaningfully for sequence-6 DPS and should be revisited
+in a future pass, ideally with a derived conservative estimate matching S3's approach or the Phase 2
+per-resource-point-scaling schema extension this file already TODOs for S3.
+
+3 new/updated tests, full suite green (1897/1897). No golden fixture changes needed — all 3 fixes are
+either sequence-gated (S3/S5 only activate at sequence ≥3/≥5, both above the golden fixture's tested
+sequence 0) or UI-display-only (the debuffs column), and S4's fix measured zero DPS change at the
+sequences it does apply to; confirmed by the full suite staying green with no drift, not assumed.

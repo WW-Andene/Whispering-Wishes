@@ -1485,7 +1485,15 @@ const CHARACTER_DATA = {
   // rotation damage comes from Heavy Slash combos (Heavy ATK, scaled further by her Inferno Mode +40%
   // Heavy Slash multiplier) and her Resonance Liberation Rekindle (+120% multiplier), which build guides
   // note she "needs to deal most of her damage."
-  ['Zani',          ['Heavy ATK', 'Liberation'],     [],                                      ['Frazzle']],
+  // debuffs column corrected 2026-09-09 (full-kit audit): was ['Frazzle'], directly contradicting her
+  // own dump's explicit, repeated emphasis — "She cannot apply Frazzle herself — entirely
+  // teammate-dependent" (her Forte instead CONSUMES teammates' Frazzle, converting it 1:1 into her own
+  // Heliacal Ember). CHAR_BUFF_TABLE['Zani'].debuffs was already correctly [] (the functional DOT-
+  // detection path calcTeamStats.js reads); this structured column feeds the UI's own "Debuffs Applied"
+  // team-summary list (calcTeamStats.js's allDebuffs, rendered directly in DamageCalculator.jsx) — a
+  // real, user-visible bug telling players Zani applies Frazzle when she's the one character in the
+  // roster defined by NOT being able to.
+  ['Zani',          ['Heavy ATK', 'Liberation'],     [],                                      []],
   // dmgFocus corrected 2026-09-02 against a fresh the source dump's own damage-profile breakdown: was
   // ['Basic ATK'] only — but her real profile is Basic 51.6% / Liberation 23.6% / Debuff(Erosion) 12.5%
   // / Skill 6.6% / Intro 3.4% / Echo 3.4%. Liberation is a major, second-largest share (Blade of
@@ -6911,8 +6919,18 @@ const RESONANCE_CHAIN_DATA = {
   // - s6 also grants two non-DPS utility effects on top of the confirmed +40% Heavy Slash DMG Mult: (a) once
   //   per Inferno Mode, if Blaze is below 70 when this would matter, instantly restore it to 70, and (b) for
   //   8s after entering Inferno Mode, Zani survives an otherwise-fatal hit at 1 HP. Both are zeroed/omitted
-  //   from any DPS field per the Phrolova/Brant precedent (pure survivability, no DMG component) — heavyDmg:40
-  //   above already fully represents s6's only damage-relevant effect.
+  //   from any DPS field per the Phrolova/Brant precedent (pure survivability, no DMG component).
+  // NEWLY FOUND 2026-09-09 (full-kit audit) — heavyDmg:40 does NOT fully represent s6's damage-relevant
+  //   effects after all, contradicting this comment's own prior claim: Data dump/Zani/Zani.md's S6 text
+  //   is explicit there is a THIRD, separate component: "Each Blaze consumed → Nightfall's DMG
+  //   Multiplier +40% on hit" — an additional per-Blaze-consumed scaling bonus specific to Nightfall,
+  //   on top of both the flat +40% Heavy Slash multiplier above AND Nightfall's own base-kit +9.95%/
+  //   Blaze (also already unmodeled — see zani.blocks.js's own Nightfall block note). This is the same
+  //   "per-unit-of-a-consumable-resource scaling, no schema field" class as s3 above, but UNLIKE s3, no
+  //   conservative rotation-representative estimate has been derived or verified for it here — flagged
+  //   as a genuine, currently-unaddressed gap rather than inventing an unsourced flat number. A future
+  //   pass should either derive a defensible conservative estimate (matching s3's approach) or await
+  //   the same Phase 2 per-resource-point-scaling schema this file already TODOs for s3.
   // Note: one wiki-style source's own S3 text refers to the Liberation by the name "Judgement Day" whereas
   // other sources and the skill's own in-game name is "The Last Stand" — treated as a stale/inconsistent
   // translation label for the same skill (other sources and the Forte/Liberation section of that same
