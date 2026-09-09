@@ -587,6 +587,22 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // rose by the same small amount as a real, direct consequence of more frequent Liberation casts, not
 // a coincidental drift — verified by re-running the exact same measurement before/after the one-line
 // data fix.
+//
+// Sanhua's `legacyRawDps`/`engineDps` updated 2026-09-09 (full re-audit): 1790 -> 1733/1733. Root
+// cause: sanhua.chain.s1 (Basic Attack V -> Crit Rate +15% for 10s) and sanhua.selfbuff.avalanche
+// (Basic Attack V -> Ice Burst DMG +20% for 8s) were both modeled as `trigger:{type:'passive'}` — this
+// session's own established "dead duration on unconditional passive" bug class: a passive trigger
+// applies unconditionally and ignores timing.duration entirely, so both were silently PERMANENTLY
+// active for her whole rotation (including at Sequence 0, where Avalanche is base-kit) rather than
+// only within their real windows after an actual Basic Attack V hit — a move CHARACTER_ROTATIONS
+// ['Sanhua'] never uses at all (her modeled rotation is a pure Concerto burst combo that skips Basic
+// Attacks entirely). Converted both to a real `cast` trigger on the actual Basic ATK row name
+// ('Basic ATK:Frigid Light Stage 1-5'), which correctly never fires in the current modeled rotation
+// (yielding zero uptime, matching reality) while staying ready to activate if a future Basic-Attack-
+// focused rotation variant is ever added. The DPS drop is a real, expected consequence of removing two
+// previously-always-on bonuses that should never have been active in this rotation at all — verified
+// by re-running the exact same measurement before/after the fix (Sequence-0-vs-Sequence-1 totals were
+// previously different due to chain.s1 alone; now byte-identical, confirming S1 correctly never fires).
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

@@ -7,6 +7,17 @@
 // mechanic), SKILL_MULTIPLIERS['Sanhua'], and CHARACTER_ROTATIONS['Sanhua']. No new
 // numbers invented. S2 correctly has NO block — pure STA-cost-reduction/
 // interruption-resist utility with zero DPS component, per the audit's own zeroing.
+//
+// Full kit audit 2026-09-09: fixed chain.s1 and selfbuff.avalanche, both previously
+// `trigger:{type:'passive'}` with the (honestly documented, but ultimately incorrect)
+// justification "no plain Basic ATK step exists in her real rotation" — a passive
+// trigger applies unconditionally and ignores timing.duration entirely, so both were
+// silently PERMANENTLY active instead of correctly never firing (their real trigger,
+// Basic Attack V, is never cast in the modeled Concerto rotation at all). Converted
+// both to a real `cast` trigger on the actual Basic ATK row name, which now correctly
+// yields zero uptime in this rotation while staying ready for a future Basic-Attack-
+// focused variant. See phase3-parityGolden.test.js's own header-comment log for the
+// measured DPS impact and golden-fixture update.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -78,14 +89,20 @@ export const SANHUA_BLOCKS = [
   {
     id: 'sanhua.selfbuff.avalanche',
     source: SOURCE, kind: 'buff', section: 'Buff',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    // Fixed 2026-09-09 (full-kit audit), same bug class as chain.s1 below: was `trigger:{type:'passive'}`
+    // with no duration — a permanently-active passive ignores timing.duration entirely, so this was
+    // silently PERMANENTLY boosting Ice Burst instead of only for 8s after a real Basic Attack V hit,
+    // which never occurs in the modeled Concerto rotation at all. Converted to a real cast trigger on
+    // the actual Basic ATK row name, matching chain.s1's own fix — correctly yields zero uptime in the
+    // current modeled rotation.
+    trigger: { type: 'cast', on: 'Basic ATK:Frigid Light Stage 1-5' },
+    timing: { duration: 8 }, target: { scope: 'self' },
     // stat/scope fixed 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): was 'heavyDmg' with no
     // scopedToBlockId, documented at the time as over-crediting the Detonate portion since both hits
     // shared one combined heavyDmg block. Now that Ice Burst is its own skillDmg block
     // (sanhua.forte.ice-burst), this buff can finally be modeled correctly — the approximation is gone.
     effects: [{ stat: 'skillDmg', value: 20, scopedToBlockId: 'sanhua.forte.ice-burst', source: 'self-kit' }],
-    note: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — no plain Basic ATK step exists in her real rotation to anchor a real cast trigger (same limitation as chain.s1 below), kept passive.',
+    note: 'Inherent Skill Avalanche: Forte Circuit Ice Burst DMG +20% for 8s after casting Basic Attack V — correctly does not fire in the modeled Concerto rotation, which never uses Basic Attacks.',
   },
   {
     id: 'sanhua.outro.silversnow',
@@ -102,11 +119,22 @@ export const SANHUA_BLOCKS = [
   {
     id: 'sanhua.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
+    // Fixed 2026-09-09 (full-kit audit): was `trigger:{type:'passive'}` with `timing.duration:10` —
+    // per this session's own established "dead duration on unconditional passive" bug class, a passive
+    // trigger applies unconditionally and ignores timing.duration entirely, so this was silently
+    // PERMANENTLY active for her whole rotation rather than only 10s after a real Basic Attack V hit.
+    // Confirmed via direct measurement: enabling S1 raised total rotation damage by ~7.3% even though
+    // CHARACTER_ROTATIONS['Sanhua'] never includes a Basic ATK step at all (her real modeled rotation
+    // is a pure Concerto burst combo that skips Basic Attacks entirely). Converted to a real cast
+    // trigger on the actual Basic ATK row name ('Basic ATK:Frigid Light Stage 1-5', matching
+    // SKILL_MULTIPLIERS' own row) — this simply never fires in the current modeled rotation (correctly
+    // yielding zero uptime, matching reality), while still being ready to activate correctly if a
+    // future Basic-Attack-focused rotation variant is ever added.
+    trigger: { type: 'cast', on: 'Basic ATK:Frigid Light Stage 1-5' },
     timing: { duration: 10 },
     target: { scope: 'self' },
     effects: [{ stat: 'critRate', value: 15, source: 'self-kit' }],
-    note: 'Basic Attack V grants +15% Crit Rate for 10s (confirmed exact) — no plain Basic ATK step exists in her real rotation to anchor the cast trigger, kept passive.',
+    note: 'Basic Attack V grants +15% Crit Rate for 10s (confirmed exact) — correctly does not fire in the modeled Concerto rotation, which never uses Basic Attacks.',
   },
   // S2 correctly has NO block — Heavy Attack Detonate STA cost -10 plus interruption-resistance
   // utility on Eternal Frost cast, zero DPS component.

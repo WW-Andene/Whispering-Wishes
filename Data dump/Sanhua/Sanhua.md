@@ -226,3 +226,32 @@ RESONANCE_CHAIN_DATA (S1/S3/S4/S5/S6, S2 correctly zeroed), Outro buff, base sta
    not a new number invented.
 
 2 tests added, full suite green (1333/1333).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above —
+re-verified all 4 prior fixes still hold; cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, and `CHARACTER_ROTATIONS` fresh against
+this dump — all still match exactly). Found 1 more real bug, affecting 2 blocks:
+
+5. **Dead duration on unconditional passive (two instances)**: `sanhua.chain.s1` (Basic Attack V ->
+   Crit Rate +15% for 10s) and `sanhua.selfbuff.avalanche` (Basic Attack V -> Ice Burst DMG +20% for
+   8s) were both modeled as `trigger:{type:'passive'}` — the prior pass's own note honestly documented
+   "no plain Basic ATK step exists in her real rotation to anchor the cast trigger, kept passive," but
+   this reasoning missed that a passive trigger applies unconditionally and ignores `timing.duration`
+   entirely (this session's own established "dead duration on unconditional passive" bug class, found
+   on Baizhi/Brant/Ciaccona/Denia/Galbrena/Jinhsi/Lucilla/Lupa and others earlier this session). Both
+   were consequently silently PERMANENTLY active for her entire rotation — including `avalanche` at
+   Sequence 0, since it's base-kit, not chain-gated — rather than only within their real windows after
+   an actual Basic Attack V hit, a move `CHARACTER_ROTATIONS['Sanhua']` never uses at all (her modeled
+   rotation is a pure Concerto burst combo that skips Basic Attacks entirely). Confirmed via direct
+   measurement: Sequence 0 vs. Sequence 1 totals previously differed by ~7.3% due to `chain.s1` alone
+   despite no Basic Attack ever being cast. Fixed by converting both to a real `cast` trigger on the
+   actual Basic ATK row name (`'Basic ATK:Frigid Light Stage 1-5'`, matching `SKILL_MULTIPLIERS`' own
+   row) — this correctly never fires in the current modeled rotation (yielding honest zero uptime)
+   while remaining ready to activate if a future Basic-Attack-focused rotation variant is ever added.
+
+Verified via direct before/after measurement: Sequence 0 and Sequence 1 totals are now byte-identical
+(confirming `chain.s1` correctly never fires), and the real `phase3-parityGolden.test.js` calc's
+`legacyRawDps`/`engineDps` dropped from 1790 to 1733/1733 (a real, expected consequence of removing two
+previously-always-on bonuses that should never have been active in this rotation at all) — golden
+fixture updated with a cited reason in `phase3-parityGolden.test.js`'s own header-comment log. 1 new
+test added. Full suite green (1887/1887).

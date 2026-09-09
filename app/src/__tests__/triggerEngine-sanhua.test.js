@@ -79,6 +79,27 @@ describe('triggerEngine parity — Sanhua', () => {
     expect(legacy.selfBuffs[1].stat).toBe(avalanche.effects[0].stat);
   });
 
+  // Fixed 2026-09-09 (full-kit audit): both were `trigger:{type:'passive'}` with the "no plain Basic
+  // ATK step exists" caveat honestly documented — but a passive trigger applies unconditionally and
+  // ignores timing.duration entirely, so both were silently PERMANENTLY active (chain.s1's own
+  // timing.duration:10 was a dead, ignored field), not just within their real windows after a Basic
+  // Attack V hit that never occurs in the modeled Concerto rotation. Converted both to a real cast
+  // trigger that correctly never fires in this rotation.
+  it('chain.s1 and selfbuff.avalanche now correctly never fire in the modeled Concerto rotation (no Basic ATK step exists)', () => {
+    const s1 = SANHUA_BLOCKS.find(b => b.id === 'sanhua.chain.s1');
+    const avalanche = SANHUA_BLOCKS.find(b => b.id === 'sanhua.selfbuff.avalanche');
+    expect(s1.trigger).toEqual({ type: 'cast', on: 'Basic ATK:Frigid Light Stage 1-5' });
+    expect(avalanche.trigger).toEqual({ type: 'cast', on: 'Basic ATK:Frigid Light Stage 1-5' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Sanhua'], SANHUA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const s0 = resolveHitComposedDps(SANHUA_BLOCKS, steps, ctx, 3000, 'glacio', 'Sub DPS', null, 0);
+    const s1res = resolveHitComposedDps(SANHUA_BLOCKS, steps, ctx, 3000, 'glacio', 'Sub DPS', null, 1);
+    // Sequence 0 and 1 must now be identical (S1 never fires) — before the fix, S1's always-on model
+    // inflated Sequence 1's total even without any real Basic Attack V hit in the rotation.
+    expect(s1res.totalDamage).toBeCloseTo(s0.totalDamage, 5);
+  });
+
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Sanhua'], SANHUA_BLOCKS);
     const { totalDamage, hitLog } = resolveHitComposedDps(SANHUA_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 2000, 'glacio', 'Sub DPS');
