@@ -6623,8 +6623,9 @@ const RESONANCE_CHAIN_DATA = {
   // equivalent. Zeroed to {} rather than guessing. TODO: needs Phase 2 schema. S6's basicDmg: 40 ("+40%
   // Basic ATK DMG Bonus from every source") is directionally correct but the node also grants a separate
   // bonus hit — an extra instance of Electro DMG equal to 900% ATK during Rat-tat-tat!/Bang-bang-bang!,
-  // considered Basic Attack DMG — not represented here (same bonus-hit-at-flat-%-ATK class documented
-  // elsewhere in this file, e.g. Xiangli Yao's S1/Ciaccona's S6). TODO: needs Phase 2 schema.
+  // considered Basic Attack DMG. FIXED (rebecca.blocks.js): modeled as a real proc-style damage block
+  // (rebecca.chain.s6-bonus-hit) using the source's own sourced 900% ATK figure — this flat table's own
+  // s6 stays basicDmg:40 (just the multiplier portion) since it has no room for the 2nd bonus-hit action.
   'Rebecca':      { s1: { basicDmg: 50 }, s2: { allDmg: 20 }, s3: { libDmg: 60 }, s4: {}, s5: { basicDmg: 20 }, s6: { basicDmg: 40 } },
   // Denia S3: Final Act - Breakdown Form DMG+80% (confirmed exact, Tune Strain/Fusion Burst dual mode averaged elsewhere).
   // S5: Final Act - Stagecraft Form DMG+100% (confirmed exact via the source 2026-08-16 cross-check; was 50 previously)
@@ -6798,20 +6799,21 @@ const RESONANCE_CHAIN_DATA = {
   //   DMG-multiplier bonus on those two specific casts) — WAS wrongly `totalMult: 15`, less than a third of
   //   the real value and with no basis in source. Corrected to `totalMult: 50` (matches this file's
   //   convention elsewhere, e.g. Jiyan's S5/Carlotta's nodes, for a flat DMG-multiplier bonus scoped to a
-  //   specific move) — TODO: needs Phase 2 schema to scope this to Intro-Skill-only rather than a generic
-  //   total multiplier.
+  //   specific move). FIXED (calcharo.blocks.js): calcharo.chain.s5 is a real cast-scoped block, scoped
+  //   via scopedToBlockId to Wanted Outlaw's own Intro block — this flat table's own totalMult:50 stays
+  //   as-is (it has no scopedToBlockId mechanism of its own, but the real, correctly-scoped value lives
+  //   in the block).
   // S6 The Ultimatum: casting Resonance Liberation "Death Messenger" summons 2 Phantoms that EACH deal
   //   Electro DMG equal to 100% of Calcharo's ATK (considered Resonance Liberation DMG) — this is two
-  //   separate extra attack instances, not a %DMG buff at all. Previous `totalMult: 40` was fabricated (not
-  //   40, not a multiplier-type effect in the first place) — corrected to `totalMult: 200` as the closest
-  //   flat-schema approximation of "2 hits × 100% ATK" (200% ATK-scaling worth of extra Liberation DMG per
-  //   Death Messenger cast), with a TODO noting the real mechanic is two separate flat-ATK-scaling hits, not
-  //   a multiplier on Death Messenger's own damage, and needs Phase 2 schema to model properly.
+  //   separate extra attack instances, not a %DMG buff at all. FIXED (calcharo.blocks.js): modeled as a
+  //   real damage block (calcharo.chain.s6-phantoms, 2 hits at 100% ATK each, libDmg-categorized) rather
+  //   than the flat totalMult:200 approximation below, which stays only as the pre-conversion legacy
+  //   fallback value.
   'Calcharo':     { s1: { totalMult: 0 }, /* TODO: needs Phase 2 schema — Covert Negotiation's Resonance Energy recovery is pure utility with no DPS component */
-    s2: { skillDmg: 30 }, /* TODO: needs Phase 2 schema — only active for 15s after casting Intro Skill Wanted Outlaw/Necessary Means, not a flat passive buff */
+    s2: { skillDmg: 30 }, /* FIXED (calcharo.blocks.js): calcharo.chain.s2 is cast-scoped to Wanted Outlaw via scopedToBlockId, not a flat passive buff — this flat table's own value stays as the legacy-fallback approximation */
     s3: { elemDmg: 25 }, s4: { elemDmg: 20 },
-    s5: { totalMult: 50 }, /* TODO: needs Phase 2 schema — scoped to Intro Skill Wanted Outlaw/Necessary Means only, not a generic total multiplier */
-    s6: { totalMult: 200 } /* TODO: needs Phase 2 schema — real mechanic is 2 separate Phantom hits at 100% ATK each on "Death Messenger" cast, not a %DMG multiplier; 200 approximates the combined ATK-scaling value */ },
+    s5: { totalMult: 50 }, /* FIXED (calcharo.blocks.js): calcharo.chain.s5 is scoped to Wanted Outlaw's own block via scopedToBlockId, not a generic total multiplier — see comment above */
+    s6: { totalMult: 200 } /* FIXED (calcharo.blocks.js): calcharo.chain.s6-phantoms is a real damage block (2 hits × 100% ATK, libDmg), not a %DMG multiplier — see comment above; this flat totalMult:200 stays as the legacy-fallback approximation */ },
   // Encore — re-verified verbatim 2026-08-31 against the wiki/Encore/Combat + wuthering.gg/characters/encore.
   // S1: "Fusion DMG Bonus +3%, stacking up to 4 times for 6s" on Basic ATK hit = 12% max (elemDmg, confirmed correct category+value).
   // S2 corrected: previous `totalMult: 5` was a fabricated placeholder for a node that has ZERO DPS component —
@@ -6853,16 +6855,18 @@ const RESONANCE_CHAIN_DATA = {
   // itself counted as Liberation DMG (not Skill DMG, see CHARACTER_ROTATIONS comment above) — this
   // single node buffs both a skillDmg-type set of moves (Decipher/Deduction/Divergence) and a
   // libDmg-type move (Law of Reigns) at once; only the Skill-type portion is captured here.
-  // TODO: needs Phase 2 schema — the Law of Reigns (libDmg) portion of this same S3 buff has no home
-  // in a single-category node.
+  // FIXED (xianglyao.blocks.js): xianglyao.chain.s3 carries BOTH effects on the same block — a single
+  // node can have multiple {stat, value} effects, no new schema field was actually needed. This flat
+  // table's own s3 stays skillDmg-only below since it's a one-key-per-node object shape.
   // S4 "Vessel of Rebirth": casting Cogitation Model grants the whole team +25% DMG Bonus to Resonance
   // Liberation for 30s — value/category already correct (libDmg: 25).
   // S5 "End of Stars": was totalMult: 15 (fabricated); real effect is Outro Chain Rule's own DMG
   // Multiplier +222% AND Resonance Liberation Cogitation Model's own DMG Multiplier +100% — two
   // separate multiplier boosts to two different named moves, not a flat total multiplier. Captured the
   // Liberation-type portion as libDmg: 100.
-  // TODO: needs Phase 2 schema — the Outro Chain Rule +222% DMG Multiplier portion has no matching
-  // category in this schema (no "outro DMG" stat exists) and is not represented in the object below.
+  // FIXED (xianglyao.blocks.js, 2026-09-02): the Outro Chain Rule +222% DMG Multiplier portion is now
+  // its own real block (xianglyao.chain.s5-outro) using the outroDmg category added that same day —
+  // this flat table's own s5 stays libDmg-only below since it's a one-key-per-node object shape.
   // S6 "Solace of the Ordinary": was totalMult: 15 (fabricated, wrong category and value); real effect
   // is Law of Reigns' own DMG Multiplier +76% (re-verified 2026-09-01 against
   // the wiki/Xiangli_Yao/Combat node text via the MediaWiki API AND
@@ -7642,8 +7646,11 @@ const RESONANCE_CHAIN_DATA = {
   // Genius/Creation's Zenith cast, an extra Ivory Herald procs at 120% of Stroke of Genius's own DMG
   // Multiplier" (120% x 298.22% = 357.86%, matching the source's raw Ink and Wash damage-data row 4 of
   // 357.86% exactly) — same bonus-hit-at-X%-of-another-move class as S5. Zeroed to {}.
-  // TODO: needs Phase 2 schema — S5/S6's bonus-hit-at-X%-of-move-Y's-own-multiplier effects have no home
-  // in a single-category flat node (same class of gap as Xiangli Yao's S1, documented above).
+  // FIXED (zhezhi.blocks.js): both S5 (zhezhi.chain.s5-bonus-hit) and S6 (zhezhi.chain.s6-bonus-hit +
+  // zhezhi.chain.s6-bonus-hit-creations-zenith for its 2nd real trigger) are modeled as real proc-style
+  // damage blocks using the audit's own computed figures above — same "discrete proc, not a modifier"
+  // treatment as Xiangli Yao's S1/Ciaccona's S6. This flat table's own s5/s6 stay {} deliberately (no
+  // scopedToBlockId mechanism here).
   'Zhezhi':       { s1: { critRate: 10 }, s2: {}, s3: { atkPct: 15 }, s4: { atkPct: 20 }, s5: {}, s6: {} },
   'Qiuyuan':      { s1: { critRate: 20 }, s2: { echoDmg: 30 }, s3: { libDmg: 500, heavyDmg: 600 }, s4: { atkPct: 20 }, s5: { defIgnore: 15 }, s6: { critDmg: 100 } },
   // Qiuyuan R-chain corrected 2026-08-16 via the source: s1 +20% Crit Rate + uninterruptible Heavy ATKs (was echoDmg:10, wrong stat);
