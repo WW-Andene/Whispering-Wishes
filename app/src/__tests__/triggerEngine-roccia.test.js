@@ -95,4 +95,29 @@ describe('triggerEngine parity — Roccia', () => {
     expect(fired.has('roccia.forte.real-fantasy')).toBe(true);
     expect(fired.has('roccia.liberation.commedia-improvviso')).toBe(true);
   });
+
+  // Fixed 2026-09-09 (full-kit audit): S6 unlocks "Reality Recreation" — a self-perpetuating
+  // move triggered after landing from Real Fantasy Stage 3, dealing 100% of Stage 3's own DMG
+  // (a precise, sourced value) as Heavy Attack DMG. Previously left entirely unmodeled. Verified
+  // via direct before/after measurement: with sequence 6, total rotation damage rose from
+  // 116591.57 to 128960.84 (+~10.6%); with sequence 0 it is unchanged (44305.24 both ways),
+  // confirming correct chain-level gating.
+  it('S6 grants a real Reality Recreation bonus-hit block equal to 100% of Stage 3\'s own DMG', () => {
+    const rf = ROCCIA_BLOCKS.find(b => b.id === 'roccia.forte.real-fantasy');
+    const stage3AtkPct = rf.damage.hits[2].atkPct;
+    const bonus = ROCCIA_BLOCKS.find(b => b.id === 'roccia.chain.s6-reality-recreation');
+    expect(bonus.kind).toBe('damage');
+    expect(bonus.damage.category).toBe('heavyDmg');
+    expect(bonus.damage.hits[0].atkPct).toBeCloseTo(stage3AtkPct, 2);
+  });
+
+  it('Reality Recreation only fires at S6, not S0 (chain-level gating)', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Roccia'], ROCCIA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const s0 = resolveHitComposedDps(ROCCIA_BLOCKS, steps, ctx, 3000, 'havoc', 'Sub DPS', null, 0);
+    const s6 = resolveHitComposedDps(ROCCIA_BLOCKS, steps, ctx, 3000, 'havoc', 'Sub DPS', null, 6);
+    expect(s0.hitLog.some(h => h.blockId === 'roccia.chain.s6-reality-recreation')).toBe(false);
+    expect(s6.hitLog.some(h => h.blockId === 'roccia.chain.s6-reality-recreation')).toBe(true);
+    expect(s6.totalDamage).toBeGreaterThan(s0.totalDamage);
+  });
 });

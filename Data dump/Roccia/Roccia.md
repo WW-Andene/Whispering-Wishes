@@ -187,3 +187,42 @@ all 3 fixes above still hold, and found 3 further real bugs the 2026-09-03 pass 
 4 tests added/updated in `triggerEngine-roccia.test.js` (S4 scoping, S5 raw-table merge, exhaustive
 `damage.category` presence check, `getSkillIcon` coverage of every real rotation step). Full suite green
 (1507/1507).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the two passes above —
+re-verified all 7 prior fixes still hold, cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, and `CHARACTER_ROTATIONS` for Roccia against
+this dump fresh — all found already correct and consistent with each other, no further two-path desyncs
+or category/scoping gaps found there):
+
+8. **Unmodeled S6 "Reality Recreation" bonus hit**: S6's text ("...also unlocks 'Reality Recreation' — a
+   self-perpetuating move chain triggered after landing from Real Fantasy Stage 3, dealing 100% of Stage
+   3's DMG as Heavy Attack DMG, with its own interrupt immunity") was previously left entirely unmodeled
+   ("no home in this schema for a stateful re-cast mechanic"). Unlike Phrolova's Apparition of
+   Beyond-Hecate (a vague "~1.2-1.5s" rate that must NOT be force-fit into an exact count), this mechanic's
+   value is precise and sourced — exactly 100% of Real Fantasy Stage 3's own multiplier (357.86% ATK at
+   Lv.10) — so it fits the established "precise-value proc-style bonus hit" pattern already used for
+   Phrolova's `chain.s6-apparition` and Rebecca's `chain.s6-bonus-hit`. Added
+   `roccia.chain.s6-reality-recreation`: a `heavyDmg`-category damage block anchored to the same
+   `Forte:Real Fantasy 1-3` cast trigger as the base Forte block (the schema has no separate per-stage-
+   landing trigger, so it fires once per full 1-3 combo — matching the modeled Standard Rotation, which
+   only ever casts the full combo once per loop). Verified via direct before/after measurement of
+   `resolveHitComposedDps()` on the real rotation: at sequence 6 (S6 owned), total rotation damage rose
+   from 116,591.57 to 128,960.84 (+~10.6%); at sequence 0, both before and after measure identically at
+   44,305.24, confirming the fix is correctly gated to S6 ownership only (via the `chain.sN` id-convention
+   auto-gating in `sequenceGating.js`) and does not leak into the S0/ungated case the parity golden
+   fixture actually measures.
+9. Checked `roccia.selfbuff.immersive-performance`'s single Skill-cast anchor against the dump's own
+   "Skill or Heavy ATK cast" text — confirmed NOT a gap: `CHARACTER_ROTATIONS['Roccia']` has no literal
+   Heavy Attack step distinct from Real Fantasy (which is its own `Forte` step, not `Heavy ATK`), so a
+   second anchor has nothing real to attach to in the modeled Standard Rotation.
+10. Checked S1's zero-DPS utility text, S2's team-wide stacking model, S3's flat self-buff, S4's
+    Real-Fantasy-scoped totalMult, and S5's dual-effect split against both the dump and
+    `RESONANCE_CHAIN_DATA['Roccia']` — all confirmed to still exactly match, no drift since the
+    2026-09-04 pass.
+
+2 tests added in `triggerEngine-roccia.test.js`: one confirming `roccia.chain.s6-reality-recreation`'s
+value exactly equals Real Fantasy's own Stage 3 `atkPct`, one confirming it fires only at sequence 6 and
+not at sequence 0 (chain-level gating), with the total damage strictly greater at S6. Full suite green
+(1874/1874). No golden fixture changes required — `phase3-parityGolden.test.js` calls
+`resolveHitComposedDps()` without a `sequence` argument (defaults to null/S0), so this S6-only addition
+does not affect the parity baseline for Roccia or any other character.

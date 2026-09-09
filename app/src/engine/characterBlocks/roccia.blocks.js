@@ -143,6 +143,14 @@ export const ROCCIA_BLOCKS = [
     timing: { duration: 12 },
     target: { scope: 'self' },
     effects: [{ stat: 'defIgnore', value: 60, source: 'self-kit' }],
-    note: 'Casting Liberation grants, for 12s, Real Fantasy DEF Ignore +60% (confirmed exact, corrected from a wrong basicDmg:15 category/value). Also unlocks an extra move-loop (Reality Recreation, a re-triggering Heavy-Attack-typed follow-up), not modeled — no home in this schema for a stateful re-cast mechanic.',
+    note: 'Casting Liberation grants, for 12s, Real Fantasy DEF Ignore +60% (confirmed exact, corrected from a wrong basicDmg:15 category/value). Also unlocks "Reality Recreation" — see roccia.chain.s6-reality-recreation below.',
+  },
+  {
+    id: 'roccia.chain.s6-reality-recreation',
+    source: SOURCE, kind: 'damage', section: 'Chain',
+    trigger: { type: 'cast', on: 'Forte:Real Fantasy 1-3' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: [{ atkPct: 357.86 }], category: 'heavyDmg', basis: 'ATK' },
+    note: "Fixed 2026-09-09 (full-kit audit): S6 unlocks 'Reality Recreation', a self-perpetuating move triggered after landing from Real Fantasy Stage 3, dealing 100% of Stage 3's own DMG (357.86% ATK at Lv.10) as Heavy Attack DMG with its own interrupt immunity — a precise, sourced value (unlike Phrolova's vague-rate Hecate), so modeled as a real S6-gated bonus-hit proc reusing Stage 3's own multiplier, same pattern as Phrolova's chain.s6-apparition and Rebecca's chain.s6-bonus-hit. Anchored to the same Real Fantasy 1-3 cast trigger as the base Forte block (the schema has no separate per-stage-landing trigger), so it fires once per Real Fantasy 1-3 combo, matching the modeled rotation (which only ever casts the full 1-3 combo once per loop).",
   },
 ];
