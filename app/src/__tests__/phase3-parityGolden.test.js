@@ -603,6 +603,21 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // previously-always-on bonuses that should never have been active in this rotation at all — verified
 // by re-running the exact same measurement before/after the fix (Sequence-0-vs-Sequence-1 totals were
 // previously different due to chain.s1 alone; now byte-identical, confirming S1 correctly never fires).
+//
+// Suisui's `legacyRawDps`/`engineDps` updated 2026-09-09 (full re-audit): 1913 -> 1802/1802; her
+// stat-panel `avgCrit` also updated 1.445 -> 1.125 (`score` 10896 -> 8483). Root cause:
+// suisui.selfbuff.sky-over-water-critrate (Inherent Skill Sky Over Water's +80% Crit Rate on her
+// Intro/Awakening Spring hit) was modeled with `timing:{duration:999}` — a fake "sentinel" that
+// buildBlockWindows treats as a REAL, near-permanent window (any non-null duration is a genuine
+// window), not the single-hit bonus the kit text describes ("grant THAT HIT +80% Crit Rate... once
+// per 25s"). The sibling elemDmg block for the exact same real-world event (+240% Glacio DMG on that
+// same hit) already correctly used an instant, no-duration cast-scoped shape — this block used a
+// different, inconsistent, and wrong shape for the other half of the identical event, inflating crit
+// chance on every subsequent hit in the rotation instead of just the Intro's own hit. Confirmed via
+// direct measurement with synthetic stats: removing the duration dropped the rotation's non-Intro
+// damage total by ~28% (8140.93 -> 5855.76). Fixed by removing the duration to match elemDmg's own
+// correct instant-cast scoping; the DPS/avgCrit drop is a real, expected consequence of correctly
+// confining an "on that hit only" bonus to only that hit.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

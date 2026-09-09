@@ -1795,7 +1795,13 @@ const CHARACTER_DATA = {
   // {basicDmg, echoDmg} in an earlier pass; only this array and the engine block's own damage.category
   // for Clear As Day (fixed alongside this) still had the stale libDmg categorization.
   ['Lucilla',       ['Basic ATK', 'Echo'],           ['Glacio DMG Buff', 'Echo Skill DMG Buff'], ['Glacio Chafe']],
-  ['Suisui',        ['Skill', 'Outro'],              ['Heal', 'All DMG Amp'],                 []],
+  // 'Outro' dropped 2026-09-09 (full-kit audit): unlike every other character carrying this tag
+  // (Calcharo/Encore/Lingyang/Chixia/Qingxiao, all of whom have a real outroDmg-categorized direct-
+  // damage hit), Suisui's own Outro (Rippling Waters) deals ZERO personal damage per its own kit text —
+  // it's entirely a team ATK/All DMG Amp buff and a stance-transition trigger (suisui.outro.rippling-
+  // waters is correctly kind:'buff', not kind:'damage', in suisui.blocks.js). A genuine 0% Outro share,
+  // same "wrongly-included tag for a real 0% share" bug class already fixed elsewhere this session.
+  ['Suisui',        ['Skill'],                       ['Heal', 'All DMG Amp'],                 []],
   // dmgFocus gained 'Liberation'/'Heavy ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c): her dump
   // has no Damage Profile percentages (a Support, unlike DPS characters' dumps), but both are real,
   // already correctly libDmg/heavyDmg-categorized blocks (Momentary Union, Destined Promise channel)

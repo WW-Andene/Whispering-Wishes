@@ -323,10 +323,10 @@
   },
   "Suisui": {
     "effAtk": 16713,
-    "avgCrit": 1.445,
+    "avgCrit": 1.125,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 10896
+    "score": 8483
   },
   "Taoqi": {
     "effAtk": 1564,

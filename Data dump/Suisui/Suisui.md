@@ -207,3 +207,38 @@ At S3+, skip straight from Skill: Drizzle to Basic: Drizzle 4, saving significan
 - **Best Team**: Yangyang: Xuanling + Chisa + Rebecca / Phrolova + Suisui (Phrolova may perform strongest in Whimpering Wastes).
 - **Hiyuki Team**: Hiyuki + Lucilla + Lynae + Suisui.
 - **Aemeath Team**: Aemeath + Denia + Suisui.
+
+## App Data Comparison — 2026-09-09 full kit audit
+
+Independent full-kit re-derivation (no prior dedicated audit doc existed for this file before this
+pass). Cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`,
+`SKILL_ICONS`, `SEQUENCE_NAMES`, and `CHARACTER_ROTATIONS` fresh against this dump — all already matched
+exactly. Found 2 real bugs:
+
+1. **Dead/wrong duration on Sky Over Water's Crit Rate half**: `suisui.selfbuff.sky-over-water-critrate`
+   (Inherent Skill Sky Over Water: "grant that hit +80% Crit Rate... once per 25s" on Intro/Awakening
+   Spring) was modeled with `timing:{duration:999}` — a fake "sentinel" comment claimed this represented
+   an unenforced 25s gate, but `buildBlockWindows` treats ANY non-null `timing.duration` as a real,
+   time-integrated buff window — so this was actually a near-PERMANENT +80% Crit Rate spanning almost
+   the whole rotation, not the single-hit bonus the kit text describes. Its own sibling block for the
+   exact same real-world event, `suisui.selfbuff.sky-over-water-elemdmg` (+240% Glacio DMG on that same
+   hit), already correctly modeled this as an instant, no-duration cast-scoped effect — the crit-rate
+   half used a different, inconsistent, and wrong shape for one half of a single kit mechanic. Confirmed
+   via direct measurement with synthetic stats (ATK 1000, HP 40000): the rotation's non-Intro damage
+   total was inflated by ~28% (5855.76 real vs. 8140.93 with the bug) — Basic/Skill/Liberation hits were
+   all getting crit-boosted by a bonus meant only for the Intro's own hit. Fixed by removing the duration
+   to match elemDmg's own correct instant-cast scoping.
+2. **`dmgFocus` wrongly included 'Outro' for a genuine 0% Outro damage share**: every other character
+   carrying this tag (Calcharo/Encore/Lingyang/Chixia/Qingxiao) has a real `outroDmg`-categorized direct-
+   damage hit on their own Outro. Suisui's Outro (Rippling Waters) deals ZERO personal damage per its
+   own kit text — it's entirely a team ATK/All DMG Amp buff and a stance-transition trigger
+   (`suisui.outro.rippling-waters` is correctly `kind:'buff'`, never `kind:'damage'`, in
+   `suisui.blocks.js`). Fixed by dropping `'Outro'` from `dmgFocus` — this tag was functionally inert
+   either way ('Outro' has no entry in `calcEngine.js`'s `TYPE_FOCUS_MAP`/`DMG_FOCUS_ROLE_TAG`), but the
+   correction matches the established "genuine share only" standard used everywhere else in this table.
+
+Verified via direct before/after measurement: the real `phase3-parityGolden.test.js` calc's
+`legacyRawDps`/`engineDps` dropped from 1913 to 1802/1802, and the stat-panel `avgCrit` dropped from
+1.445 to 1.125 (`score` 10896 -> 8483) — both real, expected consequences of correctly confining an
+"on that hit only" bonus to only that hit. Both golden fixtures updated with a cited reason logged in
+`phase3-parityGolden.test.js`'s own header-comment log. 1 new test added. Full suite green (1888/1888).

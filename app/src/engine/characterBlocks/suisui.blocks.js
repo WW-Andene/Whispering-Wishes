@@ -7,6 +7,14 @@
 // correctly have NO block — pure utility/healing effects with zero DPS component,
 // per the audit's own zeroing. Her two openers (Tinkling Jade, Awakening Spring)
 // scale off Max HP (basis: 'HP'), not ATK, per their own row text.
+//
+// Full kit audit 2026-09-09: fixed suisui.selfbuff.sky-over-water-critrate — was
+// `timing:{duration:999}`, a fake "sentinel" that actually made this a real,
+// near-permanent windowed buff instead of the single-hit bonus the kit text
+// describes. Removed the duration to match its own sibling elemDmg block's
+// already-correct instant-cast scoping. See phase3-parityGolden.test.js's own
+// header-comment log for the measured DPS/avgCrit impact and golden-fixture
+// update.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -83,10 +91,22 @@ export const SUISUI_BLOCKS = [
     id: 'suisui.selfbuff.sky-over-water-critrate',
     source: SOURCE, kind: 'buff', section: 'Buff',
     trigger: { type: 'cast', on: 'Intro:Tinkling Jade' },
-    timing: { duration: 999 }, // sentinel: gated once every 25s, no natural decay sourced beyond the gate
+    // Fixed 2026-09-09 (full-kit audit): was `timing:{duration:999}` — a fake "sentinel" duration that
+    // actually makes this a REAL, near-permanent windowed buff spanning almost the entire rotation
+    // (buildBlockWindows treats any non-null timing.duration as a genuine window), not the single-hit
+    // bonus the kit text describes: "grant THAT HIT +80% Crit Rate / +240% Glacio DMG" (once per 25s).
+    // The sibling elemDmg block right below it already models the SAME real mechanic correctly as an
+    // instant, no-duration cast-scoped effect (matching Calcharo's S5 pattern) — this block used a
+    // different, inconsistent, and wrong shape for the other half of the identical event. Confirmed via
+    // direct measurement: removing the duration (making it instant, scoped only to the Intro's own hit)
+    // dropped the rotation's non-Intro damage total by ~28% (8140.93 -> 5855.76 in a synthetic-stats
+    // test), proving the old model was inflating crit chance on every subsequent Basic/Skill/Liberation
+    // hit for the whole rotation, not just the Intro hit. Removed the duration to match elemDmg's own
+    // correct instant-cast scoping.
+    timing: {},
     target: { scope: 'self' },
     effects: [{ stat: 'critRate', value: 80, source: 'self-kit' }],
-    note: 'Inherent Skill Sky Over Water: Awakening Spring/Tinkling Jade hit, once every 25s — the 25s gate is not modeled, kept passive on the Intro cast.',
+    note: 'Inherent Skill Sky Over Water: Tinkling Jade hit grants that hit +80% Crit Rate (once per 25s, gate not modeled) — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as the elemDmg block below and Calcharo\'s S5.',
   },
   {
     id: 'suisui.selfbuff.sky-over-water-elemdmg',
