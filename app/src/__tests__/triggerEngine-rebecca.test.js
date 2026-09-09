@@ -111,4 +111,29 @@ describe('triggerEngine parity — Rebecca', () => {
       expect(getSkillIcon('Rebecca', skillName)).toBeTruthy();
     }
   });
+
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): Party 'til Dawn's Mk. 31 HMG
+  // channel was a single representative 24.30% tick standing in for the whole 9.5s auto-fire — but
+  // unlike Phrolova's Hecate (only a vague rate range), this dump's own Review text gives a precise,
+  // sourced total: "3 escalating stages (15 total bullets, enhanced every 5th)" — 5 hits at each of the
+  // 3 real firepower tiers (24.30% / 48.60% / 72.90%).
+  it("Party 'til Dawn fires all 15 real bullets across its 3 firepower tiers, not a single representative tick", () => {
+    const block = REBECCA_BLOCKS.find(b => b.id === 'rebecca.liberation.party-til-dawn');
+    expect(block.damage.hits.length).toBe(15);
+    const byTier = { standard: 0, first: 0, second: 0 };
+    for (const h of block.damage.hits) {
+      if (h.atkPct === 24.30) byTier.standard++;
+      else if (h.atkPct === 48.60) byTier.first++;
+      else if (h.atkPct === 72.90) byTier.second++;
+    }
+    expect(byTier).toEqual({ standard: 5, first: 5, second: 5 });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Rebecca'], REBECCA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const { hitLog } = resolveHitComposedDps(REBECCA_BLOCKS, steps, ctx, 3000, 'electro', 'Sub DPS');
+    const dmg = hitLog.filter(h => h.blockId === 'rebecca.liberation.party-til-dawn').reduce((s, h) => s + h.damage, 0);
+    const totalDmg = hitLog.reduce((s, h) => s + h.damage, 0);
+    // Must be a real, substantial share now (was ~1.3% of the rotation total before this fix).
+    expect(dmg / totalDmg).toBeGreaterThan(0.2);
+  });
 });

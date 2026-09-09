@@ -334,3 +334,47 @@ Notes on real-game rotation mechanics:
    inclusion) almost never happens there.
 3. **Phoebe Team**: Phoebe + Rebecca + Rover: Spectro.
 4. **Alternative Heavy Attack Teams**: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina.
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the prior 2026-09-02/09-04 passes' own claims of completeness, per
+standing audit instruction) of `engine/characterBlocks/rebecca.blocks.js` and `characters.js`'s Rebecca
+tables against this dump — despite prior passes already fixing 3 category miscategorizations, a
+source-conflict value correction, `bestEchoes`, and an icon-lookup gap.
+
+**1 real bug found and fixed**: `rebecca.liberation.party-til-dawn` (the Mk. 31 HMG auto-fire channel)
+was modeled as a SINGLE representative 24.30% tick standing in for the real 9.5s repeating channel —
+already flagged in the block's own note as a simplification. Re-examined against the same "does the
+source give a confident, precise number, or only a vague range" test already applied this session to
+Phrolova's analogous Hecate-tick gap (left unfixed there since the source only gives "~1.2-1.5s"). Here
+the answer differs: this dump's own Review section gives an exact, sourced total — "her Ultimate...
+deals major damage across 3 escalating stages (15 total bullets, enhanced every 5th)" — a precise count
+this schema CAN represent losslessly, the same bar that justified fixing Phoebe's Starflash 4x
+undercount and Mortefi's exact-rate Marcato proc earlier this session. Fixed to the real 15 hits: 5 at
+each of the 3 sourced firepower tiers (24.30% / 48.60% / 72.90%, matching "up to 2 enhancement
+triggers" across "3 escalating stages"). Measured directly: the old single tick contributed only 342
+damage out of a 25,958 rotation total (1.3%) — a massive, confirmed undercount, not a defensible
+approximation like Phrolova's case.
+
+**Deliberately re-confirmed, not changed**: two potential double-count risks were checked via direct
+measurement rather than assumed safe: (1) `CHAR_BUFF_TABLE['Rebecca'].selfBuffs` still carries BOTH the
+Huntress (`critDmg:30`) and Guts (`defIgnore:15`) mode buffs at `duration:999` (unconditionally
+"permanent") despite the modes being mutually exclusive in real play — verified via a direct
+`calcTeamStats()` call (with/without the Guts entry) that `rawDps` is byte-identical, confirming the
+legacy engine's `selfBuffs` array doesn't feed the RAW-tier DPS calculation at all (same architectural
+situation independently confirmed for Qingxiao's analogous leftover duplicate this session), so this is
+not a live bug. (2) Hack Response - Meltdown's real, massive damage share (Hack = 37.9% of her total
+profile per this dump) is correctly represented entirely through the separate, non-hit-composed
+`CHAR_BUFF_TABLE.tuneBreak.ruptureDmgMult` system (already correctly sourced at 1186.50%) rather than
+as a block — this schema has no `hackDmg` category, matching the same architectural treatment already
+established for Lucy/Lynae/Mornye's own Tune-Rupture-family mechanics.
+
+**Verification**: `legacyRawDps`/`engineDps` golden snapshot updated (1037 → 1445) via the established
+DUMP_GOLDEN pattern, documented with a cited reason in `phase3-parityGolden.test.js`'s own header. 1 new
+positive-verification test added to `triggerEngine-rebecca.test.js`. Full test suite re-run and green
+(1874/1874).
+
+**Everything else re-verified this pass, found already correct**: all 6 category assignments, the
+Huntress/Guts mode-switching cast-scoped windows (already correctly fixed from a prior double-counting
+bug), all Resonance Chain nodes' mechanics and scoping, the Outro pairing against `CHAR_BUFF_TABLE`,
+and `SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/`CHARACTER_DATA` entries generally.

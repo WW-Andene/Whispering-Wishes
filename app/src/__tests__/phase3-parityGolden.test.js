@@ -510,6 +510,13 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // staying in close agreement (4194.36 vs 4194) confirms this is a coherent, self-consistent model
 // change rather than a new legacy/modern divergence.
 //
+// Rebecca's `legacyRawDps`/`engineDps` (1037 -> 1445) updated 2026-09-09 (full re-audit): Party 'til
+// Dawn's Mk. 31 HMG channel was a single representative 24.30% tick standing in for the whole 9.5s
+// auto-fire — but unlike Phrolova's Hecate (only a vague, unusable rate range), this dump's own Review
+// text gives a precise, sourced total: "3 escalating stages (15 total bullets, enhanced every 5th)".
+// Fixed to the real 15 hits across the 3 firepower tiers (5x24.30% / 5x48.60% / 5x72.90%). Measured:
+// the old tick contributed only 342 of a 25958 rotation total (1.3%) — a massive, confirmed undercount.
+//
 // Mornye's `legacyRawDps`/`engineDps` (840 -> 1376) updated 2026-09-09 (full re-audit): Critical
 // Protocol's own base-kit ER-scaling Crit self-buff ("for every 1% ER over 100%, +0.5% Crit Rate cap
 // +80%, +1% Crit DMG cap +160%") had NO representation anywhere (CHAR_BUFF_TABLE's selfBuffs was

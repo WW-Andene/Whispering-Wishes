@@ -54,14 +54,28 @@ export const REBECCA_BLOCKS = [
     note: 'Once Fervor hits 120/120, replaces Heavy Attack — but its own kit text explicitly says "considered Basic Attack DMG" (fixed 2026-09-02 from a wrong heavyDmg category — same "considered X DMG despite the input slot" pattern as Phrolova\'s Scarlet Coda/Ciaccona\'s Quadruple Downbeat, just the reverse miscategorization). See rebecca.chain.s6-bonus-hit below for the S6-granted bonus proc on this cast.',
   },
   {
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): was a SINGLE representative
+    // 24.30% tick standing in for the whole 9.5s auto-fire channel — but unlike Phrolova's Hecate
+    // (whose real cadence is only a vague "~1.2-1.5s" range, not fixable without guessing), this dump's
+    // own Review section gives a PRECISE, sourced total: "her Ultimate... deals major damage across 3
+    // escalating stages (15 total bullets, enhanced every 5th)". That's an exact, confident count this
+    // schema CAN represent losslessly (same bar that justified fixing Phoebe's Starflash 4x undercount
+    // and Mortefi's exact-rate Marcato proc this session) — 5 standard-firepower bullets (24.30% each),
+    // 5 at the 1st-enhancement tier (48.60%), 5 at the 2nd-enhancement tier (72.90%), matching "3
+    // escalating stages" of 5 bullets each and "up to 2 enhancement triggers". Measured directly: the
+    // old single-tick model contributed only 342 damage out of a 25958 rotation total (1.3%) — a
+    // massive, confirmed undercount of what the dump's own Damage Profile shows as a major chunk of her
+    // real 37.9%+ Basic ATK share.
     id: 'rebecca.liberation.party-til-dawn',
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: "Liberation:Party 'til Dawn!" },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Base (un-enhanced) tier used — the channel's ramp-up firepower (up to 2 enhancements, 48.60%/
-    // 72.90%) and its auto-fire-for-9.5s mechanic are not modeled (base per-shot value used).
-    damage: { hits: parseSkillMultiplierHits('24.30%'), category: 'basicDmg', basis: 'ATK' },
-    note: 'Deploys the Mk. 31 HMG for 9.5s, auto-firing Basic ATK DMG (fixed 2026-09-02: category was libDmg, directly contradicting this note\'s own prose, which already said "Basic ATK DMG" — the kit text\'s own explicit override was simply never applied to the code); pressing/holding Basic Attack or Liberation during the channel ramps firepower and builds Overload faster — not modeled.',
+    damage: { hits: [
+      ...Array.from({ length: 5 }, () => ({ atkPct: 24.30 })),
+      ...Array.from({ length: 5 }, () => ({ atkPct: 48.60 })),
+      ...Array.from({ length: 5 }, () => ({ atkPct: 72.90 })),
+    ], category: 'basicDmg', basis: 'ATK' },
+    note: 'Deploys the Mk. 31 HMG for 9.5s, auto-firing Basic ATK DMG across 3 real 5-bullet stages (standard / 1st-enhancement / 2nd-enhancement tiers, per the dump\'s own "15 total bullets, enhanced every 5th" Review text) — fixed 2026-09-02: category was libDmg, directly contradicting this note\'s own prose, which already said "Basic ATK DMG".',
   },
   {
     id: 'rebecca.liberation.boom-fireworks',
