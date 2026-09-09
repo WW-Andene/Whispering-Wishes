@@ -237,9 +237,12 @@ for Rover: Aero against this dump fresh). Found 3 more real bugs:
 9. **`dmgFocus` missing a genuine damage-share type**: `CHARACTER_DATA['Rover: Aero'].dmgFocus` was
    `['Skill', 'Liberation']`, omitting `'Basic ATK'` despite this dump's own Damage Profile showing a
    genuine 5% (5,732) Basic ATK share via her Mid-air Plunging Attack — already correctly
-   `basicDmg`-categorized in `roveraero.blocks.js` — silently rejecting a real teammate Basic ATK DMG
-   Bonus buff. Same bug class as the already-fixed 'Liberation' omission on this same row. Fixed by
-   adding `'Basic ATK'`.
+   `basicDmg`-categorized in `roveraero.blocks.js`. Added `'Basic ATK'` at the time — **then reverted**
+   (direct user follow-up after Sigrika's own audit surfaced this project's established dmgFocus
+   threshold convention, documented on Jiyan's/Calcharo's own rows: a ~4.6–5.5% share is the "exclude"
+   example, 6.8%+ is "include"). At exactly 5%, this addition landed inside the documented exclude
+   range it should have been compared against — reverted to match Jiyan's own excluded 5.1% Intro
+   precedent instead. `dmgFocus` stays `['Skill', 'Liberation']`.
 10. **`maxEnergy` miscopy**: `BASE_STATS`'s row for Rover: Aero stored `maxEnergy: 150`, but this dump's
     own Stats section states "Max Energy 125" — 150 is actually Liberation Omega Storm's own Resonance
     Cost figure ("Resonance Cost | 150"), the same miscopy bug class already found and fixed on
@@ -260,3 +263,7 @@ comparable cross-character mechanic this session, e.g. Roccia's Reality Recreati
 
 3 new tests added in `triggerEngine-roveraero.test.js` (Intro category, dmgFocus Basic ATK inclusion,
 maxEnergy value). Full suite green (1879/1879).
+
+**Follow-up revert**: `dmgFocus`'s `'Basic ATK'` addition was reverted per item 9's updated writeup
+above — the dmgFocus test was updated to assert exclusion instead of inclusion. Full suite re-verified
+green after the revert.

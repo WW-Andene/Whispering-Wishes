@@ -1585,12 +1585,15 @@ const CHARACTER_DATA = {
   // dump's Damage Profile: Liberation is a genuine 18.9% (21,860) share — her 2nd-largest damage
   // bucket, already correctly libDmg-categorized in roveraero.blocks.js — was silently rejecting a
   // real teammate Liberation DMG Bonus.
-  // dmgFocus gained 'Basic ATK' 2026-09-09 (full-kit audit) against the same dump's Damage Profile:
-  // Basic is a genuine 5% (5,732) share (her Mid-air Plunging Attack, roveraero.midair.plunging-attack,
-  // already correctly basicDmg-categorized) — same "real, already-categorized, non-negligible share"
-  // standard already applied at comparable-or-smaller percentages elsewhere in this table (e.g. ~6.5%,
-  // ~8.3%) — was silently rejecting a real teammate Basic ATK DMG Bonus.
-  ['Rover: Aero',    ['Skill', 'Liberation', 'Basic ATK'], ['Heal', 'Erosion Cap Buff'],       []],
+  // dmgFocus gained 'Basic ATK' 2026-09-09 (full-kit audit), then REVERTED (direct user follow-up
+  // after Sigrika's audit surfaced this project's own established dmgFocus threshold convention):
+  // Basic is a real, already-categorized 5% (5,732) share (her Mid-air Plunging Attack,
+  // roveraero.midair.plunging-attack) — but this table's own Jiyan/Calcharo comments document an
+  // explicit precedent that a ~4.6-5.5% share is the "exclude" example while 6.8%+ is "include" (a
+  // fuzzy, judgment-call boundary, not a hard rule). At exactly 5%, this addition landed inside the
+  // documented exclude range rather than the include range it was compared against — reverted to
+  // match Jiyan's own excluded 5.1% Intro precedent instead.
+  ['Rover: Aero',    ['Skill', 'Liberation'], ['Heal', 'Erosion Cap Buff'],       []],
   // dmgFocus gained 'Basic ATK' 2026-09-09 (full-kit audit) against her own dump's Damage Profile:
   // Basic is a genuine 10.6% (23,286) share (rover-electro.basic.deterrence + rover-electro.basic.repel,
   // both already correctly basicDmg-categorized in roverElectro.blocks.js) — larger than several

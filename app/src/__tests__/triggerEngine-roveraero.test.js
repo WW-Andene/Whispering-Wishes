@@ -102,12 +102,13 @@ describe('triggerEngine parity — Rover: Aero', () => {
     expect(intro.damage.category).toBe('skillDmg');
   });
 
-  // Fixed 2026-09-09 (full-kit audit): dmgFocus was missing 'Basic ATK' despite the dump's own Damage
-  // Profile showing a genuine 5% (5,732) Basic ATK share (her Mid-air Plunging Attack, already
-  // correctly basicDmg-categorized) — was silently rejecting a real teammate Basic ATK DMG Bonus,
-  // same bug class already fixed for 'Liberation' on this same row.
-  it("dmgFocus includes 'Basic ATK' (5% of her real damage profile via Mid-air Plunging Attack)", () => {
-    expect(CHARACTER_DATA['Rover: Aero'].dmgFocus).toEqual(expect.arrayContaining(['Skill', 'Liberation', 'Basic ATK']));
+  // 'Basic ATK' was added 2026-09-09 (full-kit audit) for a real 5% (5,732) Basic ATK share (Mid-air
+  // Plunging Attack), then REVERTED (direct user follow-up after Sigrika's audit surfaced this
+  // project's own established dmgFocus threshold convention documented on Jiyan/Calcharo's rows: a
+  // ~4.6-5.5% share is the "exclude" example, 6.8%+ is "include"). At exactly 5%, this landed in the
+  // exclude range — reverted to match Jiyan's own excluded 5.1% Intro precedent.
+  it("dmgFocus does NOT include 'Basic ATK' (5% share falls in this project's documented exclude range, matching Jiyan's precedent)", () => {
+    expect(CHARACTER_DATA['Rover: Aero'].dmgFocus).not.toContain('Basic ATK');
   });
 
   // Fixed 2026-09-09 (full-kit audit): BASE_STATS' maxEnergy row stored 150 (her Liberation's own
