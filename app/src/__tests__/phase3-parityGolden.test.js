@@ -657,6 +657,23 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // this value anyway). RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE intentionally NOT updated for this (see
 // yuanwu.blocks.js's and characters.js's own 2026-09-09 comments) since Yuanwu is fully block-converted
 // and that legacy path is skipped entirely for his own DPS calc.
+//
+// Zani's `legacyRawDps`/`engineDps` updated (documented-gaps sweep, direct user request to build a
+// real `frazzleDmg` category): 2401 -> 2574/2574; stat-panel unaffected (avgCrit/score unchanged —
+// frazzleDmg doesn't touch crit stats). Root cause: her Inherent Skill Sunburst ("Targeted Action/
+// Forcible Riposte cast → +20% Spectro Frazzle DMG for 14s") had been left entirely unmodeled because
+// this engine had no `frazzleDmg` stat category at all — added one this pass (categories.js,
+// calcEngine.js's applyBuff/createStats) plus a new `damage.secondaryCategory` field/resolver change so
+// a hit can draw its DMG Bonus from two category pools at once (needed because her Heavy Slash combo
+// is genuinely dual-categorized: "counted as BOTH Heavy Attack AND Spectro Frazzle DMG"). Added
+// zani.selfbuff.sunburst (real, cast-triggered, 14s-duration frazzleDmg+20 buff, fires 3x in her real
+// modeled rotation) plus damage.secondaryCategory:'frazzleDmg' on her 4 real Heavy Slash blocks and a
+// corrected primary category:'frazzleDmg' on her Outro (previously uncategorized under the same "no
+// matching category" reasoning). Verified via a new synthetic resolver test
+// (resolveHitComposedDps.test.js's own "damage.secondaryCategory" describe block) that the dual-category
+// mechanism is purely additive/backward-compatible — any block without a secondaryCategory computes
+// byte-identically to before this field existed, confirmed by the rest of the roster's golden numbers
+// staying unchanged.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

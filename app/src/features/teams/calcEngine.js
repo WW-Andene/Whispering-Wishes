@@ -160,7 +160,7 @@ export function createStats() {
   return {
     atkPct: 0, cr: BASE_CRIT_RATE, cd: BASE_CRIT_DMG,
     elemDmg: 0, skillDmg: 0, basicDmg: 0, heavyDmg: 0,
-    libDmg: 0, echoDmg: 0, coordDmg: 0, outroDmg: 0,
+    libDmg: 0, echoDmg: 0, coordDmg: 0, outroDmg: 0, frazzleDmg: 0,
     amplify: 0,
     defShred: 0, resShred: 0, defIgnore: 0,
     // hpPct/defPct (added 2026-09-05, engine-readiness pass): real kit buffs to Max HP%/DEF% —
@@ -422,6 +422,12 @@ export function applyBuff(stats, buff, value, options = {}) {
     case 'skillDmg':  stats[target || 'skillDmg'] += value; break;
     case 'coordDmg':  stats[target || 'coordDmg'] += value; break;
     case 'outroDmg':  stats[target || 'outroDmg'] += value; break;
+    // frazzleDmg added (documented-gaps sweep): Spectro Frazzle DMG — a status-flag category some
+    // hits carry ALONGSIDE their normal category (e.g. Zani's Heavy Slash combo is "counted as BOTH
+    // Heavy Attack AND Spectro Frazzle DMG"), not a mutually-exclusive move-type slot like the others
+    // above. See resolveHitComposedDps.js's own damage.secondaryCategory doc for how a hit reads
+    // bonuses from two categories at once.
+    case 'frazzleDmg': stats[target || 'frazzleDmg'] += value; break;
     case 'totalMult': stats.totalMult += value; break;
     case 'critRate':  stats.cr += value; break;
     case 'critDmg':   stats.cd += value; break;

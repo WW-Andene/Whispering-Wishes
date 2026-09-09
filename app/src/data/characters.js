@@ -3342,18 +3342,22 @@ const CHAR_BUFF_TABLE = {
   // Re-verified 2026-08-31 vs the wiki/Zani/Combat + the source kit tab: outroBuffs
   // (+20% Spectro DMG Amp/20s to marked-target hits) and Quick Response selfBuff (+12% Spectro DMG/14s on
   // Intro cast) both confirmed exact, no change. Sunburst (Targeted Action/Forcible Riposte cast → +20%
-  // Spectro Frazzle DMG for 14s) is a real, numeric self-buff confirmed on both sources but intentionally
-  // NOT added as a stat entry here — this schema's BUFF_STAT_TAGS has no "Frazzle DMG amp" category (only
-  // elemDmg/basicDmg/heavyDmg/skillDmg/libDmg/etc., none of which correctly scope to "Frazzle-flagged hits
-  // only" the way Sunburst does), so force-fitting it to e.g. elemDmg would over-apply it to her non-Frazzle
-  // Spectro damage too. TODO: needs Phase 2 schema (a frazzleDmg buff-stat key) to represent Sunburst without
-  // being lossy. Fear No Pain (Ready Stance: -40% DMG taken) is pure mitigation, not a DPS buff — omitted here
-  // for the same reason Augusta/Carlotta's non-DPS defensive Forte effects are omitted from this table.
+  // Spectro Frazzle DMG for 14s) FIXED (documented-gaps sweep): a real frazzleDmg category/stat key was
+  // added this pass (categories.js + calcEngine.js's applyBuff) specifically because the old
+  // elemDmg/basicDmg/heavyDmg/skillDmg/libDmg vocabulary had no way to scope a buff to "Frazzle-flagged
+  // hits only" without over-applying it to her non-Frazzle Spectro damage too. Added below as a real
+  // selfBuffs entry (data-layer consistency — this legacy table is never read for her own DPS calc,
+  // since she's fully block-converted; the real, live-DPS-affecting version is
+  // zani.selfbuff.sunburst in zani.blocks.js, which correctly scopes via the new dual-category
+  // damage.secondaryCategory mechanism to just her Heavy Slash combo + Outro). Fear No Pain (Ready
+  // Stance: -40% DMG taken) is pure mitigation, not a DPS buff — omitted here for the same reason
+  // Augusta/Carlotta's non-DPS defensive Forte effects are omitted from this table.
   'Zani': {
     outroBuffs: [{ stat: 'elemDmg', value: 20, target: 'team', duration: 20, condition: 'To allies hitting the Heliacal Ember-marked target' }],
     libBuffs: [],
     selfBuffs: [
       { stat: 'elemDmg', value: 12, target: 'self', duration: 14, condition: 'Quick Response: Intro Skill cast grants +12% Spectro DMG Bonus' },
+      { stat: 'frazzleDmg', value: 20, target: 'self', duration: 14, condition: 'Sunburst: Targeted Action/Forcible Riposte cast grants +20% Spectro Frazzle DMG Bonus' },
     ],
     debuffs: [],
     note: 'Converts Frazzle→Heliacal Embers. Outro grants allies hitting the marked target +20% Spectro DMG Amp (20s). Weapon contribution now comes entirely from the equipped weapon\'s own pv, not a hardcoded assumption.',

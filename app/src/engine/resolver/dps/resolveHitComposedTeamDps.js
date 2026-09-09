@@ -150,16 +150,20 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
   const damageBlocks = (blocksByOwner[targetName] || [])
     .filter(b => b.kind === 'damage' && (b.damage?.hits?.length || b.proc))
     .map(b => b.damage?.hits?.length
-      ? { block: b, hits: b.damage.hits, category: b.damage.category, basis: b.damage.basis || 'ATK', guaranteedCrit: !!b.damage.guaranteedCrit }
-      : { block: b, hits: [{ atkPct: b.proc.atkPct }], category: b.proc.category, basis: 'ATK', guaranteedCrit: false });
+      ? { block: b, hits: b.damage.hits, category: b.damage.category, secondaryCategory: b.damage.secondaryCategory, basis: b.damage.basis || 'ATK', guaranteedCrit: !!b.damage.guaranteedCrit }
+      : { block: b, hits: [{ atkPct: b.proc.atkPct }], category: b.proc.category, secondaryCategory: b.proc.secondaryCategory, basis: 'ATK', guaranteedCrit: false });
 
   const targetResults = results.filter(r => r.owner === targetName);
   const hitLog = [];
   let totalDamage = 0;
 
-  function pushHit(r, db, hits, category, basis, guaranteedCrit, repeatCount = 1) {
+  function pushHit(r, db, hits, category, secondaryCategory, basis, guaranteedCrit, repeatCount = 1) {
     const stats = statsAtInstant(r.time, db.id);
-    const categoryStat = category ? stats[category] || 0 : 0;
+    // damage.secondaryCategory — see resolveHitComposedDps.js's identical comment (documented-gaps
+    // sweep, Zani's Sunburst): a hit can be dual-categorized (e.g. "counted as BOTH Heavy Attack AND
+    // Spectro Frazzle DMG"), drawing DMG Bonus from both category pools additively. Purely additive/
+    // opt-in — a block without a secondaryCategory computes byte-identically to before.
+    const categoryStat = (category ? stats[category] || 0 : 0) + (secondaryCategory ? stats[secondaryCategory] || 0 : 0);
     const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify);
     const avgCrit = guaranteedCrit ? 1 + stats.cd / 100 : calcAvgCrit(stats.cr, stats.cd);
     const defMult = calcDefMult(enemyDef, stats.defShred, stats.defIgnore);
@@ -206,13 +210,13 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
   // cross-character advancement pass writes the fired key onto whichever step actually triggered it).
   // So this one damage-block shape needs to scan ALL team results for its fired key, not just
   // targetResults — every other damage block keeps the original owner-only scan below.
-  for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+  for (const { block: db, hits, category, secondaryCategory, basis, guaranteedCrit } of damageBlocks) {
     if (db.trigger.type !== 'windowed-proc' || !db.trigger.crossCharacterHit) continue;
     for (const r of results) {
       if (r.ineligibleBlockIds.has(db.id)) continue;
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
-      pushHit(r, db, hits, category, basis, guaranteedCrit);
+      pushHit(r, db, hits, category, secondaryCategory, basis, guaranteedCrit);
     }
   }
 
@@ -224,25 +228,25 @@ export function resolveHitComposedTeamDps(ownedSteps, blocksByOwner, targetName,
   // step's real `actionTags` set by whichever block's `appliesTags` fired there, per
   // rotationSimulator.js's own collection pass), and credits the damage to targetName (whose OWN
   // block this still is — `damageBlocks` is already scoped to `blocksByOwner[targetName]` above).
-  for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+  for (const { block: db, hits, category, secondaryCategory, basis, guaranteedCrit } of damageBlocks) {
     if (db.trigger.type !== 'ally-action') continue;
     for (const r of results) {
       if (r.ineligibleBlockIds.has(db.id)) continue;
       if (!actionMatches(r.actionTags, db.trigger.action)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
       const repeatCount = actionCountOf(r.actionTagCounts, db.trigger.action) || 1;
-      pushHit(r, db, hits, category, basis, guaranteedCrit, repeatCount);
+      pushHit(r, db, hits, category, secondaryCategory, basis, guaranteedCrit, repeatCount);
     }
   }
 
   for (const r of targetResults) {
-    for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+    for (const { block: db, hits, category, secondaryCategory, basis, guaranteedCrit } of damageBlocks) {
       if (db.trigger.type === 'windowed-proc' && db.trigger.crossCharacterHit) continue; // handled above
       if (db.trigger.type === 'ally-action') continue; // handled above
       if (r.ineligibleBlockIds.has(db.id)) continue;
       if (!triggerFired(db.trigger, r.firedTriggers)) continue;
       if (!conditionHolds(db.condition, targetElementLower, targetRole)) continue;
-      pushHit(r, db, hits, category, basis, guaranteedCrit);
+      pushHit(r, db, hits, category, secondaryCategory, basis, guaranteedCrit);
     }
   }
 

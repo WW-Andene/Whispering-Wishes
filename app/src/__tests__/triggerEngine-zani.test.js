@@ -123,4 +123,36 @@ describe('triggerEngine parity — Zani', () => {
     const { hitLog } = resolveHitComposedDps(ZANI_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'spectro', 'Main DPS');
     expect(hitLog.some(h => h.blockId === 'zani.skill.standard-defense-protocol')).toBe(true);
   });
+
+  // Added (documented-gaps sweep): Sunburst ("Targeted Action/Forcible Riposte cast → +20% Spectro
+  // Frazzle DMG for 14s") was previously left unmodeled — this schema had no frazzleDmg stat key at
+  // all until this pass added one. Her Heavy Slash combo (Daybreak/Dawning/Nightfall/2nd-pass) is
+  // genuinely dual-categorized ("counted as BOTH Heavy Attack AND Spectro Frazzle DMG" per her kit
+  // text) via the new damage.secondaryCategory mechanism; her Outro is now directly category:
+  // 'frazzleDmg' (a single category there, not dual).
+  it('Sunburst is a real frazzleDmg self-buff that boosts her Heavy Slash combo (dual-categorized) and Outro (frazzleDmg-categorized), but not her non-Frazzle hits', () => {
+    const sunburst = ZANI_BLOCKS.find(b => b.id === 'zani.selfbuff.sunburst');
+    expect(sunburst.trigger).toEqual({ type: 'cast', on: 'Skill:Targeted Action / Forcible Riposte' });
+    expect(sunburst.timing.duration).toBe(14);
+    expect(sunburst.effects[0]).toEqual({ stat: 'frazzleDmg', value: 20, stacking: 'refresh', source: 'self-kit' });
+
+    const daybreak = ZANI_BLOCKS.find(b => b.id === 'zani.forte.heavy-slash-daybreak');
+    expect(daybreak.damage.secondaryCategory).toBe('frazzleDmg');
+    const outro = ZANI_BLOCKS.find(b => b.id === 'zani.outro.beacon-for-the-future');
+    expect(outro.damage.category).toBe('frazzleDmg');
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Zani'], ZANI_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withSunburst = resolveHitComposedDps(ZANI_BLOCKS, steps, ctx, 3000, 'spectro', 'Main DPS');
+    const withoutSunburst = resolveHitComposedDps(ZANI_BLOCKS.filter(b => b.id !== 'zani.selfbuff.sunburst'), steps, ctx, 3000, 'spectro', 'Main DPS');
+    const sumAt = (res, id) => res.hitLog.filter(h => h.blockId === id).reduce((s, h) => s + h.damage, 0);
+
+    for (const id of ['zani.forte.heavy-slash-daybreak', 'zani.forte.heavy-slash-dawning', 'zani.forte.heavy-slash-nightfall', 'zani.forte.heavy-slash-string-2nd-pass', 'zani.outro.beacon-for-the-future']) {
+      expect(sumAt(withSunburst, id)).toBeGreaterThan(sumAt(withoutSunburst, id));
+    }
+    // Must NOT bleed onto her non-Frazzle-flagged hits (Rekindle/The Last Stand/Intro/Basic/Skill).
+    for (const id of ['zani.liberation.rekindle', 'zani.liberation.the-last-stand', 'zani.intro.immediate-execution', 'zani.skill.targeted-action']) {
+      expect(sumAt(withSunburst, id)).toBeCloseTo(sumAt(withoutSunburst, id), 5);
+    }
+  });
 });

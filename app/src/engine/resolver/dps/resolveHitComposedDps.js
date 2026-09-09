@@ -183,14 +183,14 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
   const damageBlocks = blocks
     .filter(b => b.kind === 'damage' && (b.damage?.hits?.length || b.proc))
     .map(b => b.damage?.hits?.length
-      ? { block: b, hits: b.damage.hits, category: b.damage.category, basis: b.damage.basis || 'ATK', guaranteedCrit: !!b.damage.guaranteedCrit }
-      : { block: b, hits: [{ atkPct: b.proc.atkPct }], category: b.proc.category, basis: 'ATK', guaranteedCrit: false });
+      ? { block: b, hits: b.damage.hits, category: b.damage.category, secondaryCategory: b.damage.secondaryCategory, basis: b.damage.basis || 'ATK', guaranteedCrit: !!b.damage.guaranteedCrit }
+      : { block: b, hits: [{ atkPct: b.proc.atkPct }], category: b.proc.category, secondaryCategory: b.proc.secondaryCategory, basis: 'ATK', guaranteedCrit: false });
 
   const hitLog = [];
   let totalDamage = 0;
 
   for (const r of results) {
-    for (const { block: db, hits, category, basis, guaranteedCrit } of damageBlocks) {
+    for (const { block: db, hits, category, secondaryCategory, basis, guaranteedCrit } of damageBlocks) {
       if (r.ineligibleBlockIds.has(db.id)) continue; // this specific cast is on cooldown
       // 'ally-action' damage blocks (cross-character reactivity, e.g. Hiyuki's Glacio Bite proc
       // firing off ANY Chafe-applying cast, her own included) key off the step's real `actionTags`
@@ -213,7 +213,12 @@ export function resolveHitComposedDps(blocks, steps, enemyContext, baseStats, ta
       const repeatCount = db.trigger.type === 'ally-action' ? (actionCountOf(r.actionTagCounts, db.trigger.action) || 1) : 1;
 
       const stats = statsAtInstant(r.time, db.id, r.firedTriggers);
-      const categoryStat = category ? stats[category] || 0 : 0; // which stat pool this cast's DMG Bonus draws from
+      // damage.secondaryCategory (documented-gaps sweep, Zani's Sunburst): a hit can genuinely be
+      // dual-categorized in the real game — e.g. Zani's Heavy Slash combo is "counted as BOTH Heavy
+      // Attack AND Spectro Frazzle DMG" — so its DMG Bonus draws from BOTH category pools additively,
+      // not just one. Purely additive/opt-in: any block without a secondaryCategory (the vast
+      // majority of the roster) computes byte-identically to before this field existed.
+      const categoryStat = (category ? stats[category] || 0 : 0) + (secondaryCategory ? stats[secondaryCategory] || 0 : 0);
       const dmgBonus = calcDmgBonus(stats.elemDmg, categoryStat, stats.amplify);
       // A guaranteed-Crit hit (Shorekeeper's Discernment, per its own kit text) always lands at full
       // Crit — calcAvgCrit's expected-value blend would silently undercount it, same category of bug

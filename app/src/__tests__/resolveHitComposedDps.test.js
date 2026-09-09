@@ -80,6 +80,59 @@ describe('resolveHitComposedDps — a passive buff correctly boosts only its own
   });
 });
 
+// Added (documented-gaps sweep): damage.secondaryCategory lets one hit draw its DMG Bonus from TWO
+// category pools additively — built for Zani's Heavy Slash combo ("counted as BOTH Heavy Attack AND
+// Spectro Frazzle DMG"). Synthetic blocks used here (not real character data) since this is testing
+// the generic resolver mechanism itself, independent of any one character.
+describe('resolveHitComposedDps — damage.secondaryCategory (dual-categorized hits)', () => {
+  it('a hit with both category and secondaryCategory draws DMG Bonus from both stat pools additively', () => {
+    const dualBlock = {
+      id: 'test.dual', source: 'Test', kind: 'damage', section: 'Forte',
+      trigger: { type: 'cast', on: 'Forte:Dual Hit' },
+      timing: {}, target: { scope: 'self' }, effects: [],
+      damage: { hits: [{ atkPct: 100 }], category: 'heavyDmg', secondaryCategory: 'frazzleDmg', basis: 'ATK' },
+    };
+    const heavyBuff = {
+      id: 'test.heavy-buff', source: 'Test', kind: 'buff', section: 'Buff',
+      trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' },
+      effects: [{ stat: 'heavyDmg', value: 30, source: 'self-kit' }],
+    };
+    const frazzleBuff = {
+      id: 'test.frazzle-buff', source: 'Test', kind: 'buff', section: 'Buff',
+      trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' },
+      effects: [{ stat: 'frazzleDmg', value: 20, source: 'self-kit' }],
+    };
+    const steps = [{ type: 'Forte', skill: 'Dual Hit', stepSeconds: 1 }];
+    const baseAtk = 1000;
+
+    const neither = resolveHitComposedDps([dualBlock], steps, NEUTRAL_ENEMY, baseAtk);
+    const heavyOnly = resolveHitComposedDps([dualBlock, heavyBuff], steps, NEUTRAL_ENEMY, baseAtk);
+    const both = resolveHitComposedDps([dualBlock, heavyBuff, frazzleBuff], steps, NEUTRAL_ENEMY, baseAtk);
+
+    // Both bonuses apply additively inside the same (1 + x/100) DMG Bonus term (0 -> 30 -> 50).
+    expect(heavyOnly.totalDamage / neither.totalDamage).toBeCloseTo(1.3, 6);
+    expect(both.totalDamage / neither.totalDamage).toBeCloseTo(1.5, 6);
+  });
+
+  it('a block with no secondaryCategory is completely unaffected by a frazzleDmg buff (backward compatibility)', () => {
+    const heavyOnlyBlock = {
+      id: 'test.heavy-only', source: 'Test', kind: 'damage', section: 'Forte',
+      trigger: { type: 'cast', on: 'Forte:Heavy Only' },
+      timing: {}, target: { scope: 'self' }, effects: [],
+      damage: { hits: [{ atkPct: 100 }], category: 'heavyDmg', basis: 'ATK' },
+    };
+    const frazzleBuff = {
+      id: 'test.frazzle-buff', source: 'Test', kind: 'buff', section: 'Buff',
+      trigger: { type: 'passive' }, timing: {}, target: { scope: 'self' },
+      effects: [{ stat: 'frazzleDmg', value: 20, source: 'self-kit' }],
+    };
+    const steps = [{ type: 'Forte', skill: 'Heavy Only', stepSeconds: 1 }];
+    const without = resolveHitComposedDps([heavyOnlyBlock], steps, NEUTRAL_ENEMY, 1000);
+    const withFrazzle = resolveHitComposedDps([heavyOnlyBlock, frazzleBuff], steps, NEUTRAL_ENEMY, 1000);
+    expect(withFrazzle.totalDamage).toBeCloseTo(without.totalDamage, 6);
+  });
+});
+
 describe('resolveHitComposedDps — proc composition (S6 Furious Thunder)', () => {
   it('a hand-built rotation that actually LANDS a qualifying Basic ATK inside the post-Liberation proc window adds a real extra hit at 419.59% ATK', () => {
     const s6 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.chain.s6-pursuit-of-justice');

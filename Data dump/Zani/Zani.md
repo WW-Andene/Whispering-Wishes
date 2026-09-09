@@ -302,3 +302,49 @@ per-resource-point-scaling schema extension this file already TODOs for S3.
 either sequence-gated (S3/S5 only activate at sequence ≥3/≥5, both above the golden fixture's tested
 sequence 0) or UI-display-only (the debuffs column), and S4's fix measured zero DPS change at the
 sequences it does apply to; confirmed by the full suite staying green with no drift, not assumed.
+
+## frazzleDmg category built (direct user request)
+
+The user explicitly asked for a real, engine-wide `frazzleDmg` stat category to be built, after an
+audit surfaced that Phoebe's own kit already solves the same *single-category* Frazzle-Amp shape via
+`scopedToBlockId` (no new category needed there). Zani's own Sunburst mechanic, however, needed genuine
+dual-categorization support: her Heavy Slash combo is "counted as BOTH Heavy Attack AND Spectro Frazzle
+DMG" simultaneously, which a single `damage.category` string can't express.
+
+**Engine changes** (documented-gaps sweep, not specific to any one character):
+- `categories.js`: registered `frazzleDmg` as a real category.
+- `calcEngine.js`: added `frazzleDmg` to `createStats()`'s accumulator and a `case 'frazzleDmg'` to
+  `applyBuff()`'s switch — mirrors `coordDmg`/`outroDmg` exactly.
+- `block.schema.js`/`validate.js`: added an optional `damage.secondaryCategory`/`proc.secondaryCategory`
+  field — a SECOND, additive category a hit can also carry alongside its primary `category`, for
+  genuinely dual-categorized hits. Purely additive/opt-in.
+- `resolveHitComposedDps.js`/`resolveHitComposedTeamDps.js`: the `categoryStat` calculation now sums
+  `stats[category] + stats[secondaryCategory]` (when present) instead of reading just one category —
+  backward-compatible by construction, since `secondaryCategory` defaults to `undefined` for every
+  existing block. Verified via 2 new synthetic unit tests in `resolveHitComposedDps.test.js` (dual-bonus
+  additivity, and byte-identical behavior for a block with no `secondaryCategory`).
+
+**Zani's own fix**: added `zani.selfbuff.sunburst` (a real, cast-triggered, 14s-duration `frazzleDmg+20`
+buff, firing 3× in her real modeled rotation on Targeted Action/Forcible Riposte casts — previously
+entirely unmodeled, since no `frazzleDmg` stat existed to model it with). Tagged her 4 real Heavy Slash
+blocks (Daybreak/Dawning/Nightfall/2nd-pass) with `damage.secondaryCategory: 'frazzleDmg'`, and corrected
+her Outro (`zani.outro.beacon-for-the-future`) from uncategorized to `category: 'frazzleDmg'` directly
+(a single category there, not dual — her kit text says the Outro hit is "counted as Spectro Frazzle
+DMG" alone). Added the same buff to `CHAR_BUFF_TABLE['Zani'].selfBuffs` for data-layer consistency
+(inert for her own DPS calc, same reasoning as Youhu's Rare Find — she's fully block-converted).
+
+Measured directly: this is a REAL, live DPS increase (not sequence-gated like S3/S5) — `legacyRawDps`/
+`engineDps` rose 2401 → 2574/2574 (a real, previously-missing self-buff, not double-counting anything).
+Golden fixtures regenerated via the established `DUMP_GOLDEN` pattern; reason logged in
+`phase3-parityGolden.test.js`'s own header-comment log. Stat-panel golden (avgCrit/score) unaffected —
+frazzleDmg doesn't touch crit stats.
+
+Also reviewed Phoebe's `phoebe.outro.confession-frazzle-amp` (a cross-character "+100% Frazzle DMG Amp
+to the incoming ally" buff) as a candidate second beneficiary of the new category — left unchanged: it
+would need the RECEIVING ally's own blocks to be frazzleDmg-tagged, which no character's kit has been
+audited for, and the block never fires in her modeled rotation anyway (stays in Absolution mode), so
+there's no live number to correct. Documented the new option there for a future revisit.
+
+4 new/updated tests (2 synthetic resolver tests + Zani's own Sunburst test + the pre-existing suite),
+full suite green (1900/1900). Golden fixtures regenerated (see above) — the one real, live-DPS-affecting
+change from this whole documented-gaps sweep.

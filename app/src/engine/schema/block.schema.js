@@ -112,6 +112,17 @@
  *                                        deliberate "no category-specific bonus" statement, not a
  *                                        gap to silently default away. Never invent a category to
  *                                        satisfy this field; an unconfirmed hit stays uncategorized.
+ * @property {string} [secondaryCategory] A SECOND, additive damage-type category (see categories.js)
+ *                                        this cast's damage ALSO counts as, for a genuinely
+ *                                        dual-categorized hit per its own kit text (e.g. Zani's Heavy
+ *                                        Slash combo is "counted as BOTH Heavy Attack AND Spectro
+ *                                        Frazzle DMG"). Unlike `category` (mutually-exclusive move-type
+ *                                        slots), this is for status-flag categories like `frazzleDmg`
+ *                                        that can co-occur with any primary category — the resolver
+ *                                        reads BOTH pools' DMG Bonus additively for this hit. Omit for
+ *                                        the overwhelming majority of blocks that only carry one
+ *                                        category; never invent a secondary category without explicit
+ *                                        "considered BOTH X AND Y" kit text.
  * @property {string} basis             REQUIRED. Which base stat these hits scale off: 'ATK'
  *                                        (the common case) | 'HP' | 'DEF' — never assumed silently.
  * @property {boolean} [guaranteedCrit] True if this cast is a guaranteed Crit per its own kit text.
@@ -157,6 +168,9 @@
  * @typedef {Object} Proc
  * @property {number} atkPct    The discrete extra-hit's damage, as a % of ATK.
  * @property {string} category  REQUIRED. Which damage-type category this proc counts as.
+ * @property {string} [secondaryCategory] Same dual-categorization shape as DamageHits.secondaryCategory
+ *                                        above — omit unless the proc's own kit text names a second,
+ *                                        additive status-flag category (e.g. `frazzleDmg`).
  */
 
 /**

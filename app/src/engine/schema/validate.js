@@ -57,6 +57,13 @@ export function validateBlock(block, expectedSource) {
         const catCheck = checkCategory(block.damage.category);
         if (!catCheck.valid) errors.push(`damage.category invalid: ${catCheck.reason} (block id: ${id})`);
       }
+      // secondaryCategory (documented-gaps sweep): same optional-but-validated-when-present shape as
+      // category above, for a genuinely dual-categorized hit (e.g. "counted as BOTH Heavy Attack AND
+      // Spectro Frazzle DMG") — see block.schema.js's own DamageHits doc.
+      if (block.damage.secondaryCategory != null) {
+        const secCatCheck = checkCategory(block.damage.secondaryCategory);
+        if (!secCatCheck.valid) errors.push(`damage.secondaryCategory invalid: ${secCatCheck.reason} (block id: ${id})`);
+      }
       if (!block.damage.basis) errors.push(`damage block missing damage.basis (block id: ${id})`);
     }
   }

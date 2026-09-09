@@ -25,6 +25,18 @@
 //      by every prior pass. Left unmodeled (documented in both this file and characters.js) rather than
 //      inventing an unsourced approximation — flagged for a future pass.
 // Full suite verified green (1896/1896) after the 3 fixes.
+//
+// Documented-gaps sweep (direct user request to build a real frazzleDmg category): Inherent Skill
+// Sunburst ("Targeted Action/Forcible Riposte cast → +20% Spectro Frazzle DMG for 14s") was previously
+// entirely unmodeled — this engine had no frazzleDmg stat category at all. Added one engine-wide
+// (categories.js, calcEngine.js) plus a new damage.secondaryCategory field/resolver change so a hit can
+// draw its DMG Bonus from two category pools additively (needed since her Heavy Slash combo is
+// genuinely dual-categorized: "counted as BOTH Heavy Attack AND Spectro Frazzle DMG"). Added
+// zani.selfbuff.sunburst below, tagged her 4 real Heavy Slash blocks with
+// damage.secondaryCategory:'frazzleDmg', and corrected her Outro to category:'frazzleDmg' directly (a
+// single category there, not dual). Measured: a real, live DPS increase — legacyRawDps/engineDps rose
+// 2401 -> 2574/2574, golden fixtures regenerated. See Data dump/Zani/Zani.md's own writeup for the full
+// engine-change list and the Phoebe cross-character candidate considered and left unchanged.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -75,7 +87,7 @@ export const ZANI_BLOCKS = [
     // have matched this block even after its own dead-trigger fix, since category-gated stats only
     // apply to matching-category hits.
     damage: { hits: parseSkillMultiplierHits('86.2% + 28.7% + 172.4%'), category: 'skillDmg', basis: 'ATK' },
-    note: 'Once Redundant Energy hits 100/100 — applies 1 Heliacal Ember stack, grants 10 Blaze, starts Sunburst (+20% Spectro Frazzle DMG for 14s, not modeled).',
+    note: 'Once Redundant Energy hits 100/100 — applies 1 Heliacal Ember stack, grants 10 Blaze, starts Sunburst (+20% Spectro Frazzle DMG for 14s — see zani.selfbuff.sunburst below).',
   },
   {
     id: 'zani.liberation.rekindle',
@@ -90,7 +102,9 @@ export const ZANI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Daybreak' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.8%'), category: 'heavyDmg', basis: 'ATK' },
+    // secondaryCategory added (documented-gaps sweep): her own kit text says this hit is "counted as
+    // both Heavy Attack and Spectro Frazzle DMG" — a genuine dual-categorization, now representable.
+    damage: { hits: parseSkillMultiplierHits('198.8%'), category: 'heavyDmg', secondaryCategory: 'frazzleDmg', basis: 'ATK' },
     note: 'Counted as Heavy ATK + Spectro Frazzle DMG.',
   },
   {
@@ -98,16 +112,18 @@ export const ZANI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Dawning' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('424.1%'), category: 'heavyDmg', basis: 'ATK' },
-    note: 'Auto-chains at >30 remaining Blaze.',
+    // secondaryCategory added (documented-gaps sweep) — same dual-categorization as Daybreak above.
+    damage: { hits: parseSkillMultiplierHits('424.1%'), category: 'heavyDmg', secondaryCategory: 'frazzleDmg', basis: 'ATK' },
+    note: 'Auto-chains at >30 remaining Blaze. Counted as Heavy ATK + Spectro Frazzle DMG.',
   },
   {
     id: 'zani.forte.heavy-slash-nightfall',
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Nightfall' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('135.2% + 262.4%'), category: 'heavyDmg', basis: 'ATK' },
-    note: 'Consumes up to 40 Blaze, each point adding +9.95% DMG Multiplier — not modeled (base value used), her hardest-hitting single attack.',
+    // secondaryCategory added (documented-gaps sweep) — same dual-categorization as Daybreak above.
+    damage: { hits: parseSkillMultiplierHits('135.2% + 262.4%'), category: 'heavyDmg', secondaryCategory: 'frazzleDmg', basis: 'ATK' },
+    note: 'Consumes up to 40 Blaze, each point adding +9.95% DMG Multiplier — not modeled (base value used), her hardest-hitting single attack. Counted as Heavy ATK + Spectro Frazzle DMG.',
   },
   {
     id: 'zani.forte.heavy-slash-string-2nd-pass',
@@ -115,8 +131,9 @@ export const ZANI_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Heavy Slash: Daybreak → Dawning → Nightfall' },
     timing: {}, target: { scope: 'self' }, effects: [],
     // 2nd full pass of the 3-hit string, combining all 3 rows since the rotation collapses them into
-    // a single step.
-    damage: { hits: [...parseSkillMultiplierHits('198.8%'), ...parseSkillMultiplierHits('424.1%'), ...parseSkillMultiplierHits('135.2% + 262.4%')], category: 'heavyDmg', basis: 'ATK' },
+    // a single step. secondaryCategory added (documented-gaps sweep) — same dual-categorization as
+    // each individual Heavy Slash stage above.
+    damage: { hits: [...parseSkillMultiplierHits('198.8%'), ...parseSkillMultiplierHits('424.1%'), ...parseSkillMultiplierHits('135.2% + 262.4%')], category: 'heavyDmg', secondaryCategory: 'frazzleDmg', basis: 'ATK' },
     note: 'Repeats the full 3-hit string a 2nd time, with Blaze refilled by allies feeding Spectro Frazzle.',
   },
   {
@@ -132,12 +149,12 @@ export const ZANI_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category/basis added for Layer 4 migration — were entirely missing (note below already explains
-    // the "no matching category, left uncategorized" reasoning at the time this was written; the
-    // schema now requires one, so this uses the same outroDmg convention as the batch's other
-    // Outro-slot damage blocks with no more specific override).
-    damage: { hits: parseSkillMultiplierHits('150%'), basis: 'ATK' },
-    note: 'Consumes all Heliacal Ember stacks on the target for a scaling hit (+10% DMG/stack, not modeled, base value used), counted as Spectro Frazzle DMG (no matching category, left uncategorized). Also grants every other teammate hitting that marked target +20% Spectro DMG Amp (see the buff block below).',
+    // category fixed (documented-gaps sweep): was uncategorized under the old "no matching category"
+    // reasoning — frazzleDmg is now a real category (added same pass), and her own kit text is
+    // explicit this hit is "counted as Spectro Frazzle DMG" (a single category here, not dual, unlike
+    // her Heavy Slash combo — no secondaryCategory needed).
+    damage: { hits: parseSkillMultiplierHits('150%'), category: 'frazzleDmg', basis: 'ATK' },
+    note: 'Consumes all Heliacal Ember stacks on the target for a scaling hit (+10% DMG/stack, not modeled, base value used), counted as Spectro Frazzle DMG. Also grants every other teammate hitting that marked target +20% Spectro DMG Amp (see the buff block below).',
   },
 
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
@@ -159,6 +176,23 @@ export const ZANI_BLOCKS = [
     target: { scope: 'self' },
     effects: [{ stat: 'elemDmg', value: 12, source: 'self-kit' }],
     note: 'Quick Response: Intro Skill cast grants +12% Spectro DMG Bonus.',
+  },
+  {
+    // Added (documented-gaps sweep): previously left unmodeled — this schema had no frazzleDmg stat
+    // key at all until this same pass added one (see calcEngine.js's applyBuff/categories.js). Real,
+    // sourced, unconditional +20% Spectro Frazzle DMG for 14s on either Targeted Action or Forcible
+    // Riposte cast (same value per the kit text: "Either cast → ... enters Sunburst"). Fires 3x in the
+    // real modeled rotation (CHARACTER_ROTATIONS casts Skill:Targeted Action / Forcible Riposte 3
+    // times), correctly boosting her Heavy Slash Daybreak/Dawning/Nightfall/2nd-pass hits — the only
+    // blocks in her kit tagged frazzleDmg (via damage.secondaryCategory, added same pass) — plus her
+    // own Outro (now category:'frazzleDmg' directly, see that block's own fix comment).
+    id: 'zani.selfbuff.sunburst',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Skill:Targeted Action / Forcible Riposte' },
+    timing: { duration: 14, stacking: 'refresh' },
+    target: { scope: 'self' },
+    effects: [{ stat: 'frazzleDmg', value: 20, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Sunburst: Targeted Action/Forcible Riposte cast grants +20% Spectro Frazzle DMG Bonus for 14s.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's

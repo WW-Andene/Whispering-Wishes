@@ -161,6 +161,14 @@ export const PHOEBE_BLOCKS = [
     timing: { duration: 30 },
     target: { scope: 'next-on-field' },
     condition: { requiresStance: 'Confession mode', assumedInactive: true },
+    // Kept as a blanket `amplify` rather than the new `frazzleDmg` stat (added same pass as Zani's
+    // Sunburst fix): a real frazzleDmg stat now exists, but using it here correctly would require
+    // knowing which of the RECEIVING ally's own blocks are frazzleDmg-tagged (this is a cross-
+    // character 'next-on-field' buff, not a self-buff on Phoebe's own known kit) — nobody's kit has
+    // been audited for that yet, and this block never fires in her modeled rotation anyway (stays in
+    // Absolution mode), so there's no live number to correct. Left as the existing blanket
+    // approximation; revisit if a real Confession-mode rotation or a frazzleDmg-tagged ally partner is
+    // ever modeled.
     effects: [{ stat: 'amplify', value: 100, stacking: 'refresh', source: 'teammate-ally-action' }],
     note: 'Confession mode only: grants the on-field ally Silent Prayer (+100% Spectro Frazzle DMG Amp, plus -10% target Spectro RES and 50% longer Frazzle interval, neither modeled) — her real rotation stays in Absolution mode, so this block does not fire. The 18-Frazzle-stack debuff (frazzle stat, Level-scaling DOT) has no matching stat key in this schema, not modeled.',
   },

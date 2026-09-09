@@ -17,6 +17,11 @@ export const KNOWN_CATEGORIES = {
   coordDmg: 'Coordinated ATK DMG.',
   introDmg: 'Intro Skill DMG.',
   outroDmg: 'Outro Skill DMG.',
+  // Added (documented-gaps sweep): a STATUS-flag category, not a move-type slot like the others above
+  // — some hits are dual-categorized in the real game (e.g. Zani's Heavy Slash combo is "counted as
+  // BOTH Heavy Attack AND Spectro Frazzle DMG"). Declared via damage.secondaryCategory/proc.secondaryCategory
+  // (see block.schema.js's own doc) rather than replacing the hit's primary category.
+  frazzleDmg: 'Spectro Frazzle DMG — a status/DoT-type damage flag some hits also carry alongside their normal category.',
 };
 
 const CATEGORY_PATTERN = /^[a-z][a-zA-Z]*Dmg$/;
