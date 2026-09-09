@@ -259,47 +259,78 @@ export const LUCILLA_BLOCKS = [
     note: 'Echo-mode sibling of lucilla.selfbuff.clear-as-day-bonus (see its own note) — same +30% value, Echo Skill DMG Bonus instead of Basic ATK DMG Bonus.',
   },
   {
+    // Fixed 2026-09-09 (full-kit audit): was `trigger:{type:'passive'}` PLUS `timing:{duration:30}` —
+    // same "duration is dead metadata on a passive trigger" bug class just fixed on chain.s1 below
+    // (and on Baizhi/Brant/Ciaccona/Denia/Galbrena/Jinhsi this session). The dump's own Inherent
+    // Skill text (line 88) is explicit: "Casting Spotlight — Chafe mode: Glacio RES... -8% for 30s"
+    // — a real cast anchor, already named in this block's own note but never actually wired in.
+    // Measured directly: this -8% RES Shred was silently active for her real pre-Spotlight Intro hit
+    // too — removing the block dropped Intro's own damage by ~8.9%. Retargeted to the same
+    // `Skill:Spotlight` cast anchor `lucilla.skill.spotlight`'s own damage block already uses.
     id: 'lucilla.debuff.inherent-skill-resshred',
     source: SOURCE, kind: 'debuff', section: 'Buff',
-    trigger: { type: 'passive' },
+    trigger: { type: 'cast', on: 'Skill:Spotlight' },
     timing: { duration: 30 },
     target: { scope: 'all-enemies' },
     condition: { element: 'glacio' },
     effects: [{ stat: 'resShred', value: 8 }],
-    note: 'Inherent Skill Slow Motion, Glacio Chafe mode, on casting Spotlight: Glacio RES Shred -8% for 30s.',
+    note: 'Inherent Skill Slow Motion, Glacio Chafe mode: on casting Spotlight, Glacio RES Shred -8% for 30s — now correctly gated to start on that real cast.',
   },
   {
+    // Fixed 2026-09-09 (full-kit audit): same bug class as the resShred debuff above — was
+    // `trigger:{type:'passive'}` with `timing:{duration:30}`, but the same dump sentence ("Casting
+    // Spotlight — ... Echo mode: team +25% Echo Skill DMG Bonus for 30s") names the identical real
+    // cast anchor, already named in this block's own note but never actually wired in.
     id: 'lucilla.buff.inherent-skill-echo-teamdmg',
     source: SOURCE, kind: 'buff', section: 'Buff',
     // Added Phase A audit (2026-09-04): CHAR_BUFF_TABLE['Lucilla'].selfBuffs was missing this
     // Inherent Skill Slow Motion Echo-mode branch entirely (see that file's own audit comment on
     // this same read) — team +25% Echo Skill DMG Bonus for 30s on casting Spotlight in Echo mode,
     // mutually exclusive with the Chafe-mode resShred debuff above.
-    trigger: { type: 'passive' },
+    trigger: { type: 'cast', on: 'Skill:Spotlight' },
     timing: { duration: 30 },
     target: { scope: 'whole-team' },
     condition: { requiresStance: 'Echo mode' },
     effects: [{ stat: 'echoDmg', value: 25, source: 'self-kit' }],
-    note: 'Inherent Skill Slow Motion, Echo mode, on casting Spotlight: team +25% Echo Skill DMG Bonus for 30s. Ends early on mode switch (not modeled) — mutually exclusive with lucilla.debuff.inherent-skill-resshred.',
+    note: 'Inherent Skill Slow Motion, Echo mode: on casting Spotlight, team +25% Echo Skill DMG Bonus for 30s — now correctly gated to start on that real cast. Ends early on mode switch (not modeled) — mutually exclusive with lucilla.debuff.inherent-skill-resshred.',
   },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 audit comment for
   //    each node's real mechanic; S3/S5/S6 all buff BOTH Letting It Go and Oblivion, so kept passive
   //    rather than scoped to one specific cast) ──
   {
+    // Fixed 2026-09-09 (full-kit audit): was `trigger:{type:'passive'}` PLUS `timing:{duration:10}` —
+    // the "duration is dead metadata on a passive trigger" bug class already found and fixed this
+    // session on Baizhi/Brant/Ciaccona/Denia/Galbrena/Jinhsi (resolveHitComposedDps.js's
+    // `passiveBlocks` filter only checks `trigger.type === 'passive'` and always applies
+    // unconditionally, completely ignoring `timing.duration`). The old note claimed "no specific cast
+    // anchor sourced" — but this dump's own S1 text (line 93) is explicit: "Crit. Rate +20% for 10s
+    // ON CASTING SPOTLIGHT" — a real, sourced cast anchor that was simply missed, not absent. Measured
+    // directly: this +20% Crit Rate was silently active for her real pre-Spotlight Intro hit too
+    // (Intro fires BEFORE Spotlight in her modeled rotation) — removing the block dropped Intro's own
+    // damage by ~9.4%. Retargeted to the same `Skill:Spotlight` cast anchor `lucilla.skill.spotlight`'s
+    // own damage block already uses.
     id: 'lucilla.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: { duration: 10 }, // sourced from CHAR_BUFF_TABLE's own selfBuffs entry for this same node
+    trigger: { type: 'cast', on: 'Skill:Spotlight' },
+    timing: { duration: 10 },
     target: { scope: 'self' },
     effects: [{ stat: 'critRate', value: 20, source: 'self-kit' }],
-    note: 'Confirmed exact value, 10s duration per CHAR_BUFF_TABLE\'s own selfBuffs entry for this node — no specific cast anchor sourced, kept passive.',
+    note: 'Crit Rate +20% for 10s on casting Spotlight (confirmed exact) — now correctly gated to start on the real Spotlight cast instead of an unconditional passive that was silently active for her pre-Spotlight Intro hit too.',
   },
   {
+    // Verified 2026-09-09 (full-kit audit): the block's own `echoDmg` stat is category-gated (only
+    // applies to echoDmg-categorized hits) and, since a Chafe-mode composition's mode-rivalry
+    // filtering means NO echoDmg-categorized block ever exists to fire, this was already provably
+    // harmless without an explicit `requiresStance` condition (confirmed by direct measurement: a
+    // Chafe-mode Basic ATK hit is byte-identical with or without this block). Added the condition
+    // anyway for consistency with every other Echo-mode-specific block in this file, and as a guard
+    // against a future echoDmg block ever being added for Chafe mode.
     id: 'lucilla.chain.s2',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'whole-team' },
+    condition: { requiresStance: 'Echo mode' },
     effects: [{ stat: 'echoDmg', value: 40, source: 'self-kit' }],
     note: 'Glacio Chafe DMG Amp +80% in Glacio Chafe mode OR team Echo Skill DMG Bonus +40% in Echo mode — only the Echo-mode branch has a matching schema category (echoDmg), modeled here; the Glacio-Chafe-mode branch (Glacio Chafe DMG Amp, not a plain elemDmg buff) has no matching category, not modeled.',
   },

@@ -485,6 +485,17 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // effAtk/avgCrit/defMult/resMult are all unaffected (verified unchanged via a direct
 // calcTeamStats(['Denia'], ...) call before/after the fix) — only score, which folds in rawDps,
 // moved.
+//
+// Lucilla's `score` field updated 2026-09-09 (full re-audit): 1356 -> 1306, same class of
+// intentional, sourced DPS-formula change as Denia's above, NOT an extraction bug. chain.s1, the
+// Inherent Skill Slow Motion Glacio RES Shred debuff, and its Echo-mode team Echo Skill DMG
+// counterpart were retargeted from unconditional passives to the real, sourced `Skill:Spotlight`
+// cast anchor named in each of their own kit texts (Data dump/Lucilla/Lucilla.md line 88/93) —
+// same "dead duration on unconditional passive" bug class already fixed this session on Baizhi/
+// Brant/Ciaccona/Denia/Galbrena/Jinhsi. All three had been silently active for her real
+// pre-Spotlight Intro hit too. Verified via direct calcTeamStats(['Lucilla'], ...) call
+// before/after the fix: effAtk/avgCrit/defMult/resMult unchanged, only score (which folds in
+// rawDps) moved.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

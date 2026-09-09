@@ -170,4 +170,30 @@ describe('triggerEngine parity — Lucilla', () => {
     expect(block.target.scope).toBe('whole-team');
     expect(block.timing.duration).toBe(30);
   });
+
+  it('2026-09-09 full-kit audit: chain.s1, the resShred debuff, and the Echo-mode team buff are gated to the real Skill:Spotlight cast, not an unconditional passive', () => {
+    // Real bug found: all three were `trigger:{type:'passive'}` with a nonzero `timing.duration` —
+    // resolveHitComposedDps.js's `passiveBlocks` filter never checks duration, so they were silently
+    // active for her real pre-Spotlight Intro hit too. Verified below via direct measurement (Intro's
+    // own damage strictly lower without each block than with it, since they no longer fire before
+    // Spotlight is cast) — not just a static trigger-shape assertion.
+    for (const id of ['lucilla.chain.s1', 'lucilla.debuff.inherent-skill-resshred', 'lucilla.buff.inherent-skill-echo-teamdmg']) {
+      const block = LUCILLA_BLOCKS.find(b => b.id === id);
+      expect(block.trigger).toEqual({ type: 'cast', on: 'Skill:Spotlight' });
+    }
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lucilla'], LUCILLA_BLOCKS);
+    const enemy = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const introDamage = (blocks) => {
+      const { hitLog } = resolveHitComposedDps(blocks, steps, enemy, 3000, 'glacio', 'Sub DPS');
+      return hitLog.filter(h => h.blockId === 'lucilla.intro.clip-it').reduce((s, h) => s + h.damage, 0);
+    };
+    const baseline = introDamage(LUCILLA_BLOCKS);
+    const withoutS1 = introDamage(LUCILLA_BLOCKS.filter(b => b.id !== 'lucilla.chain.s1'));
+    const withoutResShred = introDamage(LUCILLA_BLOCKS.filter(b => b.id !== 'lucilla.debuff.inherent-skill-resshred'));
+    // Removing either block from the already-fixed kit must have NO effect on Intro's damage, since
+    // both are now correctly gated to start on the later Spotlight cast (Intro fires first).
+    expect(withoutS1).toBeCloseTo(baseline, 5);
+    expect(withoutResShred).toBeCloseTo(baseline, 5);
+  });
 });

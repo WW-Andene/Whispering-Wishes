@@ -179,3 +179,55 @@ Key mechanic: her core rotation is generating 3 Photos (Intro → timed Skill) t
 Buff recap by mode: attacks apply 25 Glacio Chafe stacks (Chafe) or 40% Echo Skill CRIT DMG (Echo); held-Skill grants -8% Glacio RES (Chafe) or +25% Echo Skill DMG team-wide (Echo); Outro amplifies Glacio Chafe DMG +60%/30s (Chafe) or Echo Skill DMG +50%/14s to the incoming character (Echo); 5pc Wishes of Quiet Snowfall + Glommoth gives the incoming character +37% Glacio DMG Bonus (Chafe teams); 5pc Moonlit Clouds + Heron gives +22.5% ATK and +12% general DMG Bonus to the incoming character (Echo teams); in Echo mode, each Photo consumed counts as a separate Echo Skill cast; in the Phrolova team, Voidwing Moth adds +12% ATK to the incoming character; her Signature gives the team +24% ATK.
 
 Meta position: best-in-slot for Hiyuki (Glacio Chafe) and on equal footing with Qiuyuan for Sigrika/Galbrena/Phrolova (Echo) — Lucilla is more consistent (interruption-immune during Letting It Go, more specialized buffs, pairs better with Shorekeeper for Sigrika) but more Signature-reliant than Qiuyuan and less effective for Galbrena specifically. Strong contender in the meta as of release.
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting prior passes' own claims of completeness, per standing audit
+instruction) of `engine/characterBlocks/lucilla.blocks.js` against a fresh read of this dump, despite
+this file having already been through two documented prior deep-audit passes (2026-09-04 Phase A,
+2026-09-07/08 mode-rivalry + Forte Circuit work).
+
+**3 real bugs found and fixed** — all instances of the "dead duration on unconditional passive" bug
+class already found this session on Baizhi/Brant/Ciaccona/Denia/Galbrena/Jinhsi
+(`resolveHitComposedDps.js`'s `passiveBlocks` filter only checks `trigger.type === 'passive'` and
+applies unconditionally at multiplier 1 for every hit, completely ignoring `timing.duration`). Each of
+these 3 blocks had a nonzero `timing.duration` on a `trigger:{type:'passive'}`, and each block's own
+kit text (line 88, 93 above) names a real, specific cast anchor ("on casting Spotlight") that a prior
+pass had simply missed wiring in, despite naming it correctly in the block's own note:
+
+- `lucilla.chain.s1` (Crit Rate +20%/10s "on casting Spotlight") — was silently active for her real
+  pre-Spotlight Intro hit too (Intro fires before Spotlight in her modeled rotation). Measured: Intro's
+  own damage dropped ~9.4% when the block was removed pre-fix, confirming the leak. Retargeted to
+  `trigger:{type:'cast', on:'Skill:Spotlight'}`, `timing.duration` unchanged at 10.
+- `lucilla.debuff.inherent-skill-resshred` (Glacio RES Shred -8%/30s, Chafe mode, same "casting
+  Spotlight" sentence) — same leak, same fix. Measured: Intro's damage dropped a further ~8.9% when
+  removed.
+- `lucilla.buff.inherent-skill-echo-teamdmg` (team +25% Echo Skill DMG/30s, Echo mode, same sentence)
+  — same fix, same real cast anchor.
+
+**1 hygiene-only fix (verified harmless before changing)**: `lucilla.chain.s2` (team Echo Skill DMG
++40%) had no `requiresStance` condition at all. Measured directly first (a Chafe-mode Basic ATK hit's
+damage was byte-identical with/without the block) — already harmless in practice because its `echoDmg`
+stat is category-gated and the existing mode-rivalry filtering means no `echoDmg`-categorized block
+ever exists in a Chafe-mode composition. Added `condition:{requiresStance:'Echo mode'}` anyway for
+consistency with every other Echo-mode-specific block in this file and as a guard against a future
+`echoDmg` block being added for Chafe mode — documented as precautionary, not corrective.
+
+**Everything else re-verified this pass, found already correct**: Resonance Chain S3-S6 (scoping to
+their own named move via `scopedToBlockId`, dual-mode key separation), Film Roll and Zoom (Forte
+Circuit passives, `actionTagCounts`/`requiresOtherOwner` cross-character reactivity), Minor Fortes,
+all 4 dual-mode damage/buff block pairs (Clear As Day, Oblivion, Letting It Go, the Liberation
+self-buff), the 7 unused-in-rotation base-kit rows, `CHAR_BUFF_TABLE`/`RESONANCE_CHAIN_DATA`/
+`SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/`CHARACTER_DATA` entries in `characters.js` (already
+cross-checked against a fresh source dump in `lucillaAuditFix.test.js`, which still passes
+unmodified), and Glacio Chafe's use of `appliesTags`/`ally-action` rather than `dotApplier` (confirmed
+correct — Chafe/Bite is not part of the `dotReactionsFromBlocks.js` Erosion/Frazzle/ElectroFlare/
+FusionBurst system).
+
+**DPS impact**: the 3 real fixes lowered her real DPS golden snapshot (`legacyRawDps`/`engineDps`:
+3991 → 3982; stat-panel `score`: 1356 → 1306) since the pre-Spotlight Intro hit was previously
+over-boosted by all 3 effects — documented with cited reasons in
+`phase3-parityGolden.test.js`'s own header comment, fixtures regenerated via the established
+DUMP_GOLDEN pattern and a direct `calcTeamStats()` call, full test suite re-run and green (1856/1856).
+New positive-verification test added to `triggerEngine-lucilla.test.js` proving the pre-Spotlight
+Intro hit is now unaffected by removing any of the 3 fixed blocks.
