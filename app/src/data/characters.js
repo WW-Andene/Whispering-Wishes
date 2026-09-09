@@ -5396,6 +5396,18 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Dawn of Enlightenment', note: 'Cast Liberation immediately after Absolution Litany — this also cancels Absolution Litany\'s ending animation, saving time. Deals a single (non-chained) hit with DMG Multiplier +255% while in Absolution mode (in Confession mode it instead applies 8 Spectro Frazzle stacks, with no DMG Multiplier change).' },
     { type: 'Skill', skill: "Chamuel's Star 1-3", note: 'While standing inside the Ring of Mirrors, tap Basic Attack 3 times — her Basic Attack is automatically replaced by this stronger combo while inside the ring.' },
     { type: 'Forte', skill: 'Starflash', note: 'Right after landing Basic Attack Stage 3 (or a Dodge Counter) while Divine Voice > 0, her Heavy Attack becomes this automatically — press Heavy Attack to fire it, consuming 15 Divine Voice per cast in Absolution mode (base cost 30, reduced by 15 via the Absolution Enhancement) and gaining +256% DMG Amp against targets already carrying Spectro Frazzle. Repeat the "3 Basics into Starflash" pattern exactly 4 times (60÷15 Divine Voice) until the gauge empties.' },
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): this table's OWN note above says
+    // "Repeat the '3 Basics into Starflash' pattern exactly 4 times" — but only 1 of the 4 real cycles
+    // was ever encoded as array steps, silently undercounting Starflash (her single biggest real damage
+    // bucket, "Heavy 43.8%" per the dump's own Damage Profile) and Chamuel's Star by 4x. Added the
+    // missing 3 repetitions below, matching the established "repeat a real multi-cast pattern as
+    // literal duplicate array entries" convention (e.g. Lupa's Energized Pounce firing twice).
+    { type: 'Skill', skill: "Chamuel's Star 1-3", note: '2nd of 4 real "3 Basics into Starflash" cycles.' },
+    { type: 'Forte', skill: 'Starflash', note: '2nd of 4 real casts.' },
+    { type: 'Skill', skill: "Chamuel's Star 1-3", note: '3rd of 4 real "3 Basics into Starflash" cycles.' },
+    { type: 'Forte', skill: 'Starflash', note: '3rd of 4 real casts.' },
+    { type: 'Skill', skill: "Chamuel's Star 1-3", note: '4th of 4 real "3 Basics into Starflash" cycles.' },
+    { type: 'Forte', skill: 'Starflash', note: '4th of 4 real casts — Divine Voice now empty.' },
     { type: 'Outro', skill: 'Attentive Heart', note: 'Swap out after the 4th Starflash to trigger this automatically — deals a final hit with DMG Multiplier +255% while in Absolution mode (in Confession mode it instead grants the on-field ally Silent Prayer: -10% target Spectro RES + 100% Spectro Frazzle DMG Amp + 50% longer Frazzle damage interval, lasting 30s or until Phoebe swaps back to Absolution).' },
   ],
   // Standard Rotation — sourced from the source's "Gameplay and teams" tab for Roccia (2026-08-17,

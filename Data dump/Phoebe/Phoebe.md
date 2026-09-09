@@ -233,3 +233,43 @@ leak onto Absolution Litany now that both share the category. Also fixed `dmgFoc
 `['Skill']` (3.6% real share, wrong) — corrected to `['Heavy ATK', 'Liberation', 'Basic ATK']` matching
 this dump's own Damage Profile's three real dominant buckets. 4 new tests, full suite green
 (1490/1490). See REMAINING_WORK.md §1c for the full write-up.
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting either prior pass's own claims of completeness, per standing audit
+instruction) of `engine/characterBlocks/phoebe.blocks.js` and `characters.js`'s `CHARACTER_ROTATIONS`
+against this dump — despite this being the character with the most documented prior audit depth in
+the whole roster (2 full passes, 13 prior fixes).
+
+**2 real bugs found and fixed, both significant**:
+
+1. **4x undercount on Starflash/Chamuel's Star** — `CHARACTER_ROTATIONS['Phoebe']`'s OWN note already
+   said "Repeat the '3 Basics into Starflash' pattern exactly 4 times (60/15 Divine Voice)" (matching
+   this dump's own text, line 75 above), but only 1 of the 4 real cycles was ever encoded as array
+   steps. Starflash is her single biggest real damage bucket ("Heavy 43.8%" per this dump's own Damage
+   Profile), so this silently discarded roughly 3/4 of her real Heavy Attack damage and Basic ATK
+   damage (Chamuel's Star shares the same cycle). Fixed by adding the 3 missing repetitions. Measured:
+   total damage at Sequence 0 rose from 75,743 to 125,508 (+66%) — Heavy-category share after the fix
+   (Starflash + Absolution Litany, 57,870 / 125,508 = 46.1%) now closely matches the dump's own 43.8%,
+   strongly confirming the fix's correctness (before the fix, Heavy share was badly understated).
+2. **S6's "free extra Starflash" proc missing its own multipliers** — `phoebe.chain.s6-free-starflash`
+   is narratively the same move as Starflash (per its own note, reusing Starflash's raw %ATK), but
+   neither `chain.s3`'s own +91% DMG Multiplier nor the base-kit `+256%` Frazzle-target Amp
+   (`phoebe.kit.starflash-frazzle-amp`) had it in their `scopedToBlockId` lists — any Sequence-6 player
+   would see this "same move" proc dealing roughly 1/7th of what a real Starflash instance deals.
+   Fixed by adding `phoebe.chain.s6-free-starflash` to both scoping lists. Measured: the free proc's
+   damage rose from ~4241 to ~27,363 (vs. a real Starflash instance's ~29,954 at the same Sequence,
+   now in the right order of magnitude — the small remaining gap is a legitimate timing-window
+   difference, not a bug).
+
+**Verification**: both fixes measured directly via a temporary script (deleted after use).
+`legacyRawDps`/`engineDps` golden snapshot updated (4355 → 4194 — DPS actually went slightly DOWN
+despite total damage rising 66%, since the added real casts also add real rotation TIME; the two
+engines staying in close agreement, 4194.36 vs 4194, confirms this is a coherent model change, not a
+new divergence). 3 new positive-verification tests added to `triggerEngine-phoebe.test.js`. Full test
+suite re-run and green (1873/1873).
+
+**Everything else re-verified this pass, found already correct**: all 6 previously-fixed dead-buff
+blocks (the item-12 architecture bug fix), all category assignments, S1/S2/S4/S5's mechanics and
+scoping, the Confession-mode blocks' correct inertness in the Absolution-only modeled rotation, and
+`SKILL_MULTIPLIERS`/`CHAR_BUFF_TABLE`/`CHARACTER_DATA`/weapon/echo data generally.

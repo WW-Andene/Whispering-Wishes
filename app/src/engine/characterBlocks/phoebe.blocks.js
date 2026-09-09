@@ -79,7 +79,13 @@ export const PHOEBE_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Starflash' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('82.7%×3'), category: 'heavyDmg', basis: 'ATK' },
-    note: 'Heavy ATK replacement once Divine Voice > 0. Real rotation repeats "3 Basics into Starflash" 4x per Absolution Litany (60/15 Divine Voice) — only one CHARACTER_ROTATIONS step models this, so it fires once here rather than 4x. See phoebe.kit.starflash-frazzle-amp below for the +256% Frazzle-target DMG Amp bonus.',
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): CHARACTER_ROTATIONS['Phoebe']'s
+    // own note already said "Repeat the '3 Basics into Starflash' pattern exactly 4 times" but only 1
+    // of the 4 real cycles was ever encoded as array steps — a real, sourced 4x undercount on her
+    // single biggest real damage bucket ("Heavy 43.8%" per the dump's own Damage Profile). Fixed at the
+    // rotation-data level (added the 3 missing Chamuel's Star/Starflash repetitions), so this block now
+    // correctly fires 4 times per real Absolution Litany cycle without any change needed here.
+    note: 'Heavy ATK replacement once Divine Voice > 0. Real rotation repeats "3 Basics into Starflash" 4x per Absolution Litany (60/15 Divine Voice) — now modeled as 4 real CHARACTER_ROTATIONS steps. See phoebe.kit.starflash-frazzle-amp below for the +256% Frazzle-target DMG Amp bonus.',
   },
   {
     id: 'phoebe.outro.attentive-heart',
@@ -126,8 +132,14 @@ export const PHOEBE_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     condition: { requiresStance: 'target carries Spectro Frazzle' },
-    effects: [{ stat: 'totalMult', value: 256, scopedToBlockId: 'phoebe.forte.starflash', source: 'self-kit' }],
-    note: 'Starflash gains +256% DMG Amp against targets already carrying Spectro Frazzle (base kit, not Resonance Chain).',
+    // scopedToBlockId fixed 2026-09-09 (full-kit audit): was scoped only to 'phoebe.forte.starflash' —
+    // but phoebe.chain.s6-free-starflash (S6's own "free extra Starflash" proc) is narratively the SAME
+    // move, using Starflash's own multiplier, per that block's own note ("no unique multiplier of its
+    // own is ever published... the same move, not a new one"). Without including it here, the free
+    // proc silently missed this +256% bonus entirely. Measured directly: the free proc's own damage was
+    // only ~1/7th of a real Starflash instance's per-set damage before this fix.
+    effects: [{ stat: 'totalMult', value: 256, scopedToBlockId: ['phoebe.forte.starflash', 'phoebe.chain.s6-free-starflash'], source: 'self-kit' }],
+    note: 'Starflash gains +256% DMG Amp against targets already carrying Spectro Frazzle (base kit, not Resonance Chain) — also applies to the S6 free-Starflash proc below, since it\'s the same real move.',
   },
 
   // ── Buff/debuff blocks (from CHAR_BUFF_TABLE) — both Confession-mode-only, present per legacy
@@ -178,14 +190,17 @@ export const PHOEBE_BLOCKS = [
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'heavyDmg', value: 91, scopedToBlockId: 'phoebe.forte.starflash', source: 'self-kit' }],
+    effects: [{ stat: 'heavyDmg', value: 91, scopedToBlockId: ['phoebe.forte.starflash', 'phoebe.chain.s6-free-starflash'], source: 'self-kit' }],
     // scopedToBlockId added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the note here previously
     // claimed heavyDmg was category-gated to Starflash alone, but phoebe.forte.absolution-litany was
     // just recategorized to heavyDmg too (it's the dump's own "Heavy Attack: Absolution Litany") — an
     // unscoped heavyDmg node here would now silently leak S3's Starflash-only +91% onto Absolution
     // Litany as well. The dump names only Starflash for this node, so it's pinned explicitly. Same
     // unscoped-buff-leak bug class already found on Jiyan's totalMult passive.
-    note: "Starflash DMG Multiplier +91% in Absolution (+249% in Confession, not modeled) — scoped to Starflash specifically since heavyDmg now also covers Absolution Litany.",
+    // phoebe.chain.s6-free-starflash added 2026-09-09 (full-kit audit): the S6 free-Starflash proc is
+    // narratively the same move as Starflash itself (see that block's own note) and any player who has
+    // it unlocked (Sequence 6) also has S3's own bonus active — it was missing this +91% entirely.
+    note: "Starflash DMG Multiplier +91% in Absolution (+249% in Confession, not modeled) — scoped to Starflash and its S6 free-proc counterpart specifically since heavyDmg now also covers Absolution Litany.",
   },
   {
     id: 'phoebe.chain.s4',

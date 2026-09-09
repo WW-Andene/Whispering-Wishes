@@ -141,4 +141,37 @@ describe('triggerEngine parity — Phoebe', () => {
   it('dmgFocus reflects the dump\'s real dominant Damage Profile buckets (Heavy ATK/Liberation/Basic ATK, not Skill)', () => {
     expect(CHARACTER_DATA['Phoebe'].dmgFocus).toEqual(['Heavy ATK', 'Liberation', 'Basic ATK']);
   });
+
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): CHARACTER_ROTATIONS['Phoebe']'s
+  // own note already said "Repeat the '3 Basics into Starflash' pattern exactly 4 times (60/15 Divine
+  // Voice)" but only 1 of the 4 real cycles was ever encoded as array steps — a real 4x undercount on
+  // Starflash, her single biggest real damage bucket ("Heavy 43.8%" per the dump's own Damage Profile).
+  it("Starflash and Chamuel's Star each fire 4 times in the real rotation, not once", () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phoebe'], PHOEBE_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(PHOEBE_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'spectro', 'Sub DPS');
+    const starflashHits = hitLog.filter(h => h.blockId === 'phoebe.forte.starflash').length;
+    const chamuelHits = hitLog.filter(h => h.blockId === 'phoebe.skill.chamuels-star').length;
+    // Each cast fires 3 hits (82.7%x3) for Starflash, so 4 real casts = 12 logged hits.
+    expect(starflashHits).toBe(4 * 3);
+    // Chamuel's Star Stage 1-3 fires 1+2+6=9 hits per cast, so 4 real casts = 36 logged hits.
+    expect(chamuelHits).toBe(4 * 9);
+  });
+
+  // Fixed 2026-09-09: the S6 free-Starflash proc is narratively the same move as Starflash (per its
+  // own note) but was missing S3's own +91% DMG Multiplier and the base-kit +256% Frazzle-target Amp,
+  // since neither scopedToBlockId list included it — a real, confirmed ~7x under-credit on this proc.
+  it('S6 free-Starflash proc receives the same real multipliers as a normal Starflash cast', () => {
+    const s3 = PHOEBE_BLOCKS.find(b => b.id === 'phoebe.chain.s3');
+    const frazzleAmp = PHOEBE_BLOCKS.find(b => b.id === 'phoebe.kit.starflash-frazzle-amp');
+    expect(s3.effects[0].scopedToBlockId).toEqual(expect.arrayContaining(['phoebe.forte.starflash', 'phoebe.chain.s6-free-starflash']));
+    expect(frazzleAmp.effects[0].scopedToBlockId).toEqual(expect.arrayContaining(['phoebe.forte.starflash', 'phoebe.chain.s6-free-starflash']));
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Phoebe'], PHOEBE_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const r = resolveHitComposedDps(PHOEBE_BLOCKS, steps, ctx, 3000, 'spectro', 'Sub DPS', null, 6);
+    const freeDamage = r.hitLog.filter(h => h.blockId === 'phoebe.chain.s6-free-starflash').reduce((s, h) => s + h.damage, 0);
+    const realDamagePerInstance = r.hitLog.filter(h => h.blockId === 'phoebe.forte.starflash').reduce((s, h) => s + h.damage, 0) / 4;
+    // Should now be roughly comparable (same order of magnitude), not off by ~7x like before the fix.
+    expect(freeDamage / realDamagePerInstance).toBeGreaterThan(0.7);
+  });
 });

@@ -497,6 +497,19 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // before/after the fix: effAtk/avgCrit/defMult/resMult unchanged, only score (which folds in
 // rawDps) moved.
 //
+// Phoebe's `legacyRawDps`/`engineDps` (4355 -> 4194) updated 2026-09-09 (full re-audit):
+// CHARACTER_ROTATIONS['Phoebe']'s own note already said "Repeat the '3 Basics into Starflash' pattern
+// exactly 4 times (60/15 Divine Voice)" but only 1 of the 4 real cycles was ever encoded as array
+// steps — a real 4x undercount on Starflash, her single biggest real damage bucket. Added the 3
+// missing Chamuel's Star/Starflash repetitions (total damage at S0 rose from 75743 to 125508, +66%,
+// closely matching the dump's own "Heavy 43.8%" damage-profile share once corrected) and fixed the S6
+// free-Starflash proc's scoping (it's narratively the same move as Starflash but was missing S3's own
+// +91% and the base-kit +256% Frazzle-target Amp, since neither scopedToBlockId list included it —
+// confirmed ~7x under-credited before the fix). DPS (not total damage) went DOWN slightly here because
+// the added real casts also add real rotation TIME, not just damage — `engineDps`/`legacyRawDps`
+// staying in close agreement (4194.36 vs 4194) confirms this is a coherent, self-consistent model
+// change rather than a new legacy/modern divergence.
+//
 // Mornye's `legacyRawDps`/`engineDps` (840 -> 1376) updated 2026-09-09 (full re-audit): Critical
 // Protocol's own base-kit ER-scaling Crit self-buff ("for every 1% ER over 100%, +0.5% Crit Rate cap
 // +80%, +1% Crit DMG cap +160%") had NO representation anywhere (CHAR_BUFF_TABLE's selfBuffs was
