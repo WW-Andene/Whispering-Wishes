@@ -48,6 +48,11 @@ export const LUUK_HERSSEN_BLOCKS = [
     // ATK or Heavy ATK DMG, never their own type) plus the dump's own kit structure — listed under
     // "Basic Attack — Such is Light", not Heavy Attack — confirms basicDmg.
     damage: { hits: parseSkillMultiplierHits('50.42%×2 → 74.92%×2'), category: 'basicDmg', basis: 'ATK' },
+    // appliesTags added 2026-09-09 (full-kit audit): real, sourced Shifting application ("Jump input
+    // → Scythe: Resection string (also inflicts Tune Strain - Shifting for 25s..." — dump's own Basic
+    // Attack section) — see luukherssen.inherent.uncaused-diagnosis-atk's own note below for why this
+    // was previously missing entirely, leaving that block's ally-action trigger permanently dead.
+    appliesTags: [{ tag: 'shifting' }],
     note: 'Jump-input airborne combo (does slightly more damage/Energy than the Basic-input variant), restores Ichor Flow, applies Tune Strain.',
   },
   {
@@ -62,6 +67,11 @@ export const LUUK_HERSSEN_BLOCKS = [
     // around Basic ATK DMG) on one of his 3 core damage casts — same bug class already fixed on
     // Camellya/Cantarella/Zhezhi/Rebecca's "considered Basic Attack DMG" moves.
     damage: { hits: parseSkillMultiplierHits('26.56%×5+88.53%'), category: 'basicDmg', basis: 'ATK' },
+    // appliesTags added 2026-09-09 (full-kit audit): real, sourced Shifting application — "Aureole of
+    // Execution: ... inflicts Tune Strain - Shifting (25s)" (dump's own Resonance Skill section) applies
+    // regardless of which of the 3 forms is cast. See luukherssen.inherent.uncaused-diagnosis-atk's own
+    // note below for why this was previously missing entirely, leaving that block's trigger dead.
+    appliesTags: [{ tag: 'shifting' }],
     note: 'Resets the Mid-air Attack cycle, grants 1 Endnotes stack. Unlocks a Golden Impale follow-up.',
   },
   {
@@ -82,6 +92,9 @@ export const LUUK_HERSSEN_BLOCKS = [
     // 2026-09-02: same basis as the sibling Mid-air block above (Basic Attack section, no Heavy
     // override) — basicDmg.
     damage: { hits: parseSkillMultiplierHits('50.42%×2 → 74.92%×2'), category: 'basicDmg', basis: 'ATK' },
+    // appliesTags added 2026-09-09 (full-kit audit): same real Resection-string Shifting application as
+    // luukherssen.midair.jump-scythe-resection-stage2-3 above (this block is its 2nd firing).
+    appliesTags: [{ tag: 'shifting' }],
     note: 'Jump back into the airborne combo for a further cycle. No separate row for the leading Basic Attack input, not modeled. Fires twice in the real rotation.',
   },
   {
@@ -92,6 +105,9 @@ export const LUUK_HERSSEN_BLOCKS = [
     // category fixed 2026-09-04 (Phase A audit): same kit-text override as Ring above — Aureole of
     // Execution "Deals Basic Attack DMG" regardless of form. Was wrongly skillDmg.
     damage: { hits: parseSkillMultiplierHits('95.91%×3'), category: 'basicDmg', basis: 'ATK' },
+    // appliesTags added 2026-09-09 (full-kit audit): same real Shifting application as
+    // luukherssen.skill.aureole-ring above (all 3 Aureole of Execution forms inflict it).
+    appliesTags: [{ tag: 'shifting' }],
     note: 'Resets the Mid-air Attack cycle, hurls an Ichor Blade, grants another Endnotes stack.',
   },
   {
@@ -102,6 +118,9 @@ export const LUUK_HERSSEN_BLOCKS = [
     // category fixed 2026-09-04 (Phase A audit): same kit-text override as Ring/Breach above — Aureole
     // of Execution "Deals Basic Attack DMG" regardless of form. Was wrongly skillDmg.
     damage: { hits: parseSkillMultiplierHits('354.11%'), category: 'basicDmg', basis: 'ATK' },
+    // appliesTags added 2026-09-09 (full-kit audit): same real Shifting application as
+    // luukherssen.skill.aureole-ring above (all 3 Aureole of Execution forms inflict it).
+    appliesTags: [{ tag: 'shifting' }],
     note: 'Hurls Solid-State Ichor forming an Ichor Deposit, grants the 3rd Endnotes stack, unlocks the plunging Mid-air Attack finisher.',
   },
   {
@@ -140,6 +159,9 @@ export const LUUK_HERSSEN_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Golden Reflux' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('201.20%'), category: 'skillDmg', basis: 'ATK' },
+    // appliesTags added 2026-09-09 (full-kit audit): real, sourced Shifting application — "flash to
+    // target, Spectro DMG, inflicts Tune Strain - Shifting (25s)" (dump's own Resonance Skill section).
+    appliesTags: [{ tag: 'shifting' }],
     note: 'Dash strike, unlocks the 3-stage Aureole of Execution. Cast a 2nd time near the end of the rotation to bank Concerto Energy for the Outro.',
   },
   {
@@ -175,6 +197,15 @@ export const LUUK_HERSSEN_BLOCKS = [
     // with this schema, so in practice this buff is close to permanently up during his own rotation
     // (which also roughly matches real play, since his best teams — Denia/Lynae/Mornye — apply
     // Shifting off-field too).
+    //
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): despite this note's own claim
+    // that the buff is "close to permanently up during his own rotation," NOT ONE of his own damage
+    // blocks actually carried `appliesTags:[{tag:'shifting'}]` — so this trigger could NEVER fire, in
+    // a solo rotation or otherwise, contradicting the reasoning written right above it. Confirmed dead
+    // via direct measurement (removing this block changed total damage by exactly 0). Root-caused and
+    // fixed by adding the real, sourced Shifting application to his own Golden Reflux, all 3 Aureole of
+    // Execution forms, and both Mid-air Resection blocks (see each one's own `appliesTags` comment) —
+    // the same real moves his own kit text already documents as inflicting Shifting.
     trigger: { type: 'ally-action', action: 'shifting' },
     timing: { duration: 20 },
     target: { scope: 'self' },
@@ -185,12 +216,24 @@ export const LUUK_HERSSEN_BLOCKS = [
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's
   //    real mechanic) ──
   {
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): was an UNSCOPED `basicDmg: 15`
+    // — a prior pass's own "DPS-impact-weighted average" approximation of the real +150% Mid-air ATK
+    // DMG Bonus, spread thin across his ENTIRE basicDmg-categorized kit (~90% of his damage, since
+    // nearly everything is "considered Basic Attack DMG") instead of the 2 real Mid-air Attack blocks
+    // it actually names. This schema has no obstacle to precise scoping here — both real Mid-air blocks
+    // already exist with stable ids — so the "no literal Mid-air-only category" excuse doesn't actually
+    // apply once `scopedToBlockId` is used instead of relying on the `basicDmg` category alone. Measured
+    // directly: the old unscoped approximation added only +6716 DPS-equivalent to the modeled rotation
+    // vs. the real, precisely-scoped effect's +15651 — undercounting the real bonus by more than half.
     id: 'luukherssen.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'basicDmg', value: 15, source: 'self-kit' }],
-    note: '+150% Mid-air ATK DMG — simplified as a basicDmg ~15 DPS-impact approximation, documented and kept per the source table\'s own reasoning (not a literal Mid-air-only category in this schema).',
+    effects: [{ stat: 'basicDmg', value: 150, scopedToBlockId: [
+      'luukherssen.midair.jump-scythe-resection-stage2-3',
+      'luukherssen.midair.basic1-jump-resection2-3',
+    ], source: 'self-kit' }],
+    note: '+150% Mid-air Attack DMG Bonus (confirmed exact) — now correctly scoped to only his 2 real Mid-air Attack blocks instead of an unscoped flat approximation applied to his whole kit.',
   },
   {
     id: 'luukherssen.chain.s2',
@@ -223,12 +266,30 @@ export const LUUK_HERSSEN_BLOCKS = [
     note: 'Team All DMG +20% (not Basic DMG) on ally Tune Break — a cross-character trigger (an ALLY applying Tune Break, not Luuk\'s own cast) this schema has no clean anchor for, kept passive team-wide as an approximation.',
   },
   {
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): was an UNSCOPED `totalMult: 15`
+    // approximating 2 separate, UNCONDITIONAL, precisely-nameable move bonuses (Intro/Outro +80% DMG
+    // Bonus, Golden Reflux DMG Multiplier +50%) — unlike S3's Aureate-Judge-conditional bonus, neither
+    // component here has any live-state gate this schema can't track; both moves already have stable
+    // block ids, so there was no real obstacle to precise `scopedToBlockId` scoping (only the CD
+    // reduction/+1 charge part of Golden Reflux's own node is genuinely unrepresentable resource
+    // economy, same as documented for other characters' CD/charge mechanics). Measured directly: the
+    // old unscoped approximation added +12603 DPS-equivalent at Sequence 5 vs. the real, precisely-
+    // scoped effect's +11238 — the flat guess wasn't even a safe overcount OR undercount consistently,
+    // just an unrelated proxy number. Split into 2 scoped `totalMult` effects (Intro/Outro use
+    // `totalMult` rather than `skillDmg`/etc. since both are uncategorized damage blocks — see their own
+    // notes above — and `totalMult` applies regardless of category once scoped to a specific block id).
     id: 'luukherssen.chain.s5',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 15, source: 'self-kit' }],
-    note: 'Intro (Before Injection of Dawn) and Outro (Bow to the Last Light) DMG Bonus +80%, plus Golden Reflux DMG Multiplier +50% (cooldown -2s, +1 charge, unrepresentable here) — two separate conditional pieces, kept as the same totalMult documented-approximation pattern as S1/S3 (corrected 2026-09-02: the prior note wrongly claimed this was a single confirmed-exact flat bonus).',
+    effects: [
+      { stat: 'totalMult', value: 80, scopedToBlockId: [
+        'luukherssen.intro.before-injection-of-dawn',
+        'luukherssen.outro.bow-to-the-last-light',
+      ], source: 'self-kit' },
+      { stat: 'totalMult', value: 50, scopedToBlockId: 'luukherssen.skill.golden-reflux', source: 'self-kit' },
+    ],
+    note: 'Intro (Before Injection of Dawn) and Outro (Bow to the Last Light) DMG Bonus +80%, plus Golden Reflux DMG Multiplier +50% (confirmed exact) — now correctly scoped to only those 3 named moves; Golden Reflux\'s own cooldown -2s/+1 charge remains unrepresentable resource economy, not a DPS multiplier.',
   },
   {
     id: 'luukherssen.chain.s6',

@@ -170,3 +170,53 @@ Total: 1,456,556. Basic 88.9% · Outro 6.6% · Intro 2.9% · Echo 1.6%.
 No adjacent-sequence pair is byte-identical — every node has a real, distinct DPS contribution.
 
 Calculation build used: Daybreaker's Spine (R1) + Rite of Gilded Revelation 5pc + Twin Nova: Nebulous Cannon main echo; substats ATK 45% / Crit Rate 42% / Crit DMG 84%.
+
+## App Data Comparison (vs. `app/src/data/characters.js` + `luukherssen.blocks.js`)
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (this is the first pass with an "App Data Comparison" section, though the file's
+own header comments show extensive prior work) of `engine/characterBlocks/luukherssen.blocks.js` and
+`characters.js`'s tables against this dump.
+
+**1 critical bug found and fixed — a dead trigger, contradicting its own documentation.** The
+Inherent Skill Uncaused Diagnosis ATK+25%-for-20s buff (added in a 2026-09-04 pass) is wired to
+`trigger:{type:'ally-action', action:'shifting'}`. That same block's own note argued the buff is
+"close to permanently up during his own rotation" since Luuk's own kit inflicts Shifting constantly
+(Golden Reflux, Aureole of Execution, Mid-air Resection Stage 3, all per this dump's own kit text) —
+but NOT ONE of his own damage blocks actually carried `appliesTags:[{tag:'shifting'}]`. The trigger
+could never fire, in a solo rotation or otherwise. Confirmed via direct measurement: removing the
+block changed total damage by exactly 0 before the fix. Root-caused and fixed by adding
+`appliesTags:[{tag:'shifting'}]` to the 6 real blocks that inflict it: `luukherssen.skill.golden-reflux`,
+all 3 Aureole of Execution forms, and both Mid-air Resection blocks.
+
+**2 approximation-quality fixes** — both chain nodes had unscoped flat-value approximations of
+precisely-nameable, unconditional move bonuses, when the real blocks needed for exact scoping already
+existed:
+1. `chain.s1`: was an unscoped `basicDmg: 15` approximating the real "+150% Mid-air ATK DMG Bonus"
+   (line 70 above) — spread thin across his whole basicDmg-categorized kit (~90% of his damage) instead
+   of the 2 real Mid-air Attack blocks it names. Measured directly: the old approximation added only
+   +6716 DPS-equivalent vs. the real, precisely-scoped effect's +15651 — undercounting by more than
+   half. Fixed via `scopedToBlockId` to the 2 real Mid-air blocks at the true 150% value.
+2. `chain.s5`: was an unscoped `totalMult: 15` approximating 2 separate, unconditional bonuses
+   ("Intro/Outro DMG Bonus +80%", "Golden Reflux DMG Multiplier +50%", line 74) — unlike S3's genuinely
+   Aureate-Judge-conditional bonus (left as-is, since that live state isn't tracked by this engine),
+   neither S5 component has any condition blocking precise scoping. Measured: the old flat guess added
+   +12603 DPS-equivalent at Sequence 5 vs. the real, precisely-scoped +11238 — not even a safe
+   over/undercount, just an unrelated proxy number. Fixed via 2 `scopedToBlockId` `totalMult` effects
+   on Intro/Outro and Golden Reflux respectively.
+
+**Verification**: all 3 fixes measured directly via a temporary script (deleted after use).
+`legacyRawDps`/`engineDps` golden snapshots updated (2674 → 3246) and stat-panel `effAtk`/`score`
+(1176 → 1398, 1338 → 1591) via the established DUMP_GOLDEN pattern and a direct `calcTeamStats()`
+call — `avgCrit`/`defMult`/`resMult` confirmed unchanged. `RESONANCE_CHAIN_DATA['Luuk Herssen']`'s own
+s1/s5 flat values (15/15) are intentionally left as-is with a new documenting comment — the legacy
+`applyResonanceChain()` engine has no per-move scoping mechanism at all, so its own flat approximation
+remains the best available number for that specific engine, distinct from the modern block engine's
+now-precise values. 4 new positive-verification tests added to `triggerEngine-luukherssen.test.js`.
+Full test suite re-run and green (1868/1868).
+
+**Everything else re-verified this pass, found already correct**: all damage-category fixes from the
+prior 2026-09-04 pass (Aureole of Execution/Gavel/Liberation all correctly `basicDmg` per their own
+"considered Basic Attack DMG" kit text), chain.s2/s3/s4/s6's mechanics and scoping, and
+`SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/`CHARACTER_DATA`/`CHAR_BUFF_TABLE` entries generally.

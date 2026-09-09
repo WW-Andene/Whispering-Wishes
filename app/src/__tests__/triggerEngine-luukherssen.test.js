@@ -67,13 +67,12 @@ describe('triggerEngine parity — Luuk Herssen', () => {
     expect(b.effects[0]).toMatchObject({ stat: 'atkPct', value: 25, stacking: 'refresh' });
   });
 
-  it('S1-S5 match RESONANCE_CHAIN_DATA exactly', () => {
+  it('S1/S3/S4 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Luuk Herssen'];
-    expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s1').effects[0].value).toBe(rc.s1.basicDmg);
+    expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s1').effects[0].value).toBe(150);
     expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s2').effects[0].value).toBe(rc.s2.libDmg);
     expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s3').effects[0].value).toBe(rc.s3.totalMult);
     expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s4').effects[0].value).toBe(rc.s4.allDmg);
-    expect(LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s5').effects[0].value).toBe(rc.s5.totalMult);
   });
 
   it('S6 models the real per-stack Endnotes mechanic (40 x3 stacks = 120 max)', () => {
@@ -98,5 +97,69 @@ describe('triggerEngine parity — Luuk Herssen', () => {
     expect(fired.has("luukherssen.liberation.rewritten-in-winters-margins")).toBe(true);
     expect(fired.has('luukherssen.forte.gavel-of-earthshaker')).toBe(true);
     expect(fired.has('luukherssen.skill.aureole-glare')).toBe(true);
+  });
+
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): chain.s1 was an UNSCOPED
+  // `basicDmg: 15` — a prior pass's own DPS-impact-weighted approximation of the real +150% Mid-air
+  // ATK DMG Bonus, spread across his whole basicDmg-categorized kit instead of the 2 real Mid-air
+  // blocks it names. Since both real blocks already exist with stable ids, this is precisely scopable.
+  it("S1's +150% Mid-air ATK DMG Bonus is now precisely scoped to only his 2 real Mid-air blocks", () => {
+    const s1 = LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s1');
+    expect(s1.effects[0]).toMatchObject({ stat: 'basicDmg', value: 150 });
+    expect(s1.effects[0].scopedToBlockId).toEqual(expect.arrayContaining([
+      'luukherssen.midair.jump-scythe-resection-stage2-3', 'luukherssen.midair.basic1-jump-resection2-3',
+    ]));
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Luuk Herssen'], LUUK_HERSSEN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const introDamage = (blocks) => {
+      const { hitLog } = resolveHitComposedDps(blocks, steps, ctx, 3000, 'spectro', 'Main DPS', null, 1);
+      return hitLog.filter(h => h.blockId === 'luukherssen.intro.before-injection-of-dawn').reduce((s, h) => s + h.damage, 0);
+    };
+    // Intro isn't a Mid-air block — its damage must be unaffected by S1's scoped bonus.
+    expect(introDamage(LUUK_HERSSEN_BLOCKS)).toBeCloseTo(introDamage(LUUK_HERSSEN_BLOCKS.filter(b => b.id !== 'luukherssen.chain.s1')), 5);
+  });
+
+  // Fixed 2026-09-09: chain.s5 was an UNSCOPED `totalMult: 15` approximating 2 separate, UNCONDITIONAL
+  // move bonuses (Intro/Outro +80%, Golden Reflux +50%) — unlike S3's Aureate-Judge-conditional bonus,
+  // neither piece here has a live-state gate, so both are precisely scopable via their own block ids.
+  it("S5's Intro/Outro/Golden Reflux DMG bonuses are now precisely scoped, not an unrelated flat approximation", () => {
+    const s5 = LUUK_HERSSEN_BLOCKS.find(b => b.id === 'luukherssen.chain.s5');
+    expect(s5.effects).toContainEqual(expect.objectContaining({ stat: 'totalMult', value: 80 }));
+    expect(s5.effects).toContainEqual(expect.objectContaining({ stat: 'totalMult', value: 50, scopedToBlockId: 'luukherssen.skill.golden-reflux' }));
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Luuk Herssen'], LUUK_HERSSEN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const gavelDamage = (blocks) => {
+      const { hitLog } = resolveHitComposedDps(blocks, steps, ctx, 3000, 'spectro', 'Main DPS', null, 5);
+      return hitLog.filter(h => h.blockId === 'luukherssen.forte.gavel-of-earthshaker').reduce((s, h) => s + h.damage, 0);
+    };
+    // Gavel of Earthshaker isn't Intro/Outro/Golden Reflux — its damage must be unaffected by S5.
+    expect(gavelDamage(LUUK_HERSSEN_BLOCKS)).toBeCloseTo(gavelDamage(LUUK_HERSSEN_BLOCKS.filter(b => b.id !== 'luukherssen.chain.s5')), 5);
+  });
+
+  // Fixed 2026-09-09: the Inherent Skill Uncaused Diagnosis ATK buff (added 2026-09-04) reacts to
+  // `ally-action`/`shifting`, but NOT ONE of his own damage blocks carried `appliesTags:[{tag:'shifting'}]`
+  // — despite the buff's own note claiming it's "close to permanently up during his own rotation." This
+  // made the trigger permanently dead (confirmed: removing the block changed total damage by exactly 0).
+  it('Uncaused Diagnosis ATK buff now actually fires off his own real Shifting-inflicting moves', () => {
+    const shiftingBlockIds = [
+      'luukherssen.midair.jump-scythe-resection-stage2-3',
+      'luukherssen.midair.basic1-jump-resection2-3',
+      'luukherssen.skill.aureole-ring',
+      'luukherssen.skill.aureole-breach',
+      'luukherssen.skill.aureole-glare',
+      'luukherssen.skill.golden-reflux',
+    ];
+    for (const id of shiftingBlockIds) {
+      const block = LUUK_HERSSEN_BLOCKS.find(b => b.id === id);
+      expect(block.appliesTags).toEqual(expect.arrayContaining([{ tag: 'shifting' }]));
+    }
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Luuk Herssen'], LUUK_HERSSEN_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withBuff = resolveHitComposedDps(LUUK_HERSSEN_BLOCKS, steps, ctx, 3000, 'spectro', 'Main DPS', null, 0).totalDamage;
+    const withoutBuff = resolveHitComposedDps(LUUK_HERSSEN_BLOCKS.filter(b => b.id !== 'luukherssen.inherent.uncaused-diagnosis-atk'), steps, ctx, 3000, 'spectro', 'Main DPS', null, 0).totalDamage;
+    expect(withBuff).toBeGreaterThan(withoutBuff);
   });
 });

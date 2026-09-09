@@ -497,6 +497,22 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // before/after the fix: effAtk/avgCrit/defMult/resMult unchanged, only score (which folds in
 // rawDps) moved.
 //
+// Luuk Herssen's `legacyRawDps`/`engineDps` (2674 -> 3246) and stat-panel `effAtk`/`score`
+// (1176 -> 1398, 1338 -> 1591) updated 2026-09-09 (full re-audit): the Inherent Skill Uncaused
+// Diagnosis ATK+25%-on-Shifting buff (added in a 2026-09-04 pass) reacts to `ally-action`/`shifting`,
+// but NOT ONE of Luuk's own damage blocks carried `appliesTags:[{tag:'shifting'}]` despite his own kit
+// applying it constantly (Golden Reflux, all 3 Aureole of Execution forms, both Mid-air Resection
+// blocks — all per the dump's own kit text) — so the trigger was permanently dead even at Sequence 0,
+// confirmed by direct measurement (removing the block changed total damage by exactly 0 before the
+// fix). Added the real, sourced `appliesTags` to those 6 blocks, making the buff fire as originally
+// intended. Also fixed chain.s1 (unscoped `basicDmg:15` DPS-impact approximation of a real +150%
+// Mid-air-only bonus -> precisely scoped `basicDmg:150` on the 2 real Mid-air blocks) and chain.s5
+// (unscoped `totalMult:15` approximating 2 unconditional move bonuses -> precisely scoped `totalMult`
+// effects on Intro/Outro/Golden Reflux) — both now measurably more accurate since neither has any
+// live-state condition blocking precise scoping (unlike S3's genuinely Aureate-Judge-conditional
+// bonus, correctly left as a documented approximation). avgCrit/defMult/resMult confirmed unchanged
+// via a direct calcTeamStats(['Luuk Herssen'], ...) call.
+//
 // Lumi's `legacyRawDps`/`engineDps` (1379 -> 1536) and stat-panel `effAtk`/`score` (925 -> 1004,
 // 536 -> 582) updated 2026-09-09 (full re-audit): 2 real, sourced fixes. (1) Both Inherent Skills
 // (Pathfinding: +10% Electro DMG in Red Light Mode; Expediting: +10% ATK for 5s on Energized

@@ -7131,6 +7131,16 @@ const RESONANCE_CHAIN_DATA = {
   // conditional pieces: Intro/Outro DMG Bonus +80%, and Golden Reflux DMG Multiplier +50% (+CD -2s, +1 charge, both
   // unrepresentable here). Kept as the same totalMult:15 documented-approximation pattern as S1/S3, now with an
   // accurate comment instead of a false "exact" claim.
+  // NOTE (2026-09-09 full-kit audit): this table's own s1/s5 VALUES (15/15) are now intentionally
+  // DIFFERENT from luukherssen.blocks.js's own s1 (150, scoped to his 2 real Mid-air blocks) and s5
+  // (80/50, scoped to Intro/Outro/Golden Reflux) — not a drift bug. applyResonanceChain() (calcEngine.js,
+  // the LEGACY engine this table feeds) has NO per-move scoping mechanism at all — it can only add a
+  // flat stat bonus across the character's WHOLE matching-category kit — so it architecturally cannot
+  // replicate the real, precisely-scoped effect the way the modern block engine now does. This table's
+  // 15/15 values remain the best available flat approximation for the legacy engine specifically;
+  // luukherssen.blocks.js's own values are the real, sourced numbers for the engine that can use them
+  // correctly. See lucy.blocks.js's own S3 for a related but distinct case (legacy/modern divergence in
+  // STAT NAME rather than VALUE).
   'Luuk Herssen': { s1: { basicDmg: 15 }, s2: { libDmg: 60 }, s3: { totalMult: 15 }, s4: { allDmg: 20 }, s5: { totalMult: 15 }, s6: { libDmg: 120 } },
   // Lupa S1: CR+20% for 10s (not elemDmg)
   // Full re-audit 2026-09-01 against the wiki/Lupa/Combat, cross-checked against
