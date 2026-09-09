@@ -43,7 +43,26 @@ describe('triggerEngine parity — Mortefi', () => {
   // Burning Rhapsody window, when the kit text is explicit this is Marcato-only.
   it("S3's +30% Crit DMG only applies to Marcato procs, not Mortefi's own attacks", () => {
     const s3 = MORTEFI_BLOCKS.find(b => b.id === 'mortefi.chain.s3');
-    expect(s3.effects.every(e => ['mortefi.liberation.burning-rhapsody-marcato', 'mortefi.chain.s1-bonus-marcato', 'mortefi.chain.s5-bonus-marcato'].includes(e.scopedToBlockId))).toBe(true);
+    const validIds = ['mortefi.liberation.burning-rhapsody-marcato', 'mortefi.chain.s1-bonus-marcato', 'mortefi.chain.s5-bonus-marcato', 'mortefi.chain.s5-bonus-marcato-skill'];
+    expect(s3.effects.every(e => validIds.includes(e.scopedToBlockId))).toBe(true);
+  });
+
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): the real S5 kit text names TWO
+  // trigger casts ("Passionate Variation OR Fury Fugue hits"), and RESONANCE_CHAIN_DATA's own comment
+  // confirms both ("Skill/Fury Fugue hits fire 4 bonus Marcato hits") — but only the Fury Fugue anchor
+  // was ever wired in, silently dropping the Passionate Variation cast's own real proc.
+  it("S5's bonus Marcato proc fires off BOTH real trigger casts (Passionate Variation and Fury Fugue), not just Fury Fugue", () => {
+    const skillProc = MORTEFI_BLOCKS.find(b => b.id === 'mortefi.chain.s5-bonus-marcato-skill');
+    expect(skillProc).toBeTruthy();
+    expect(skillProc.trigger).toEqual({ type: 'cast', on: 'Skill:Passionate Variation' });
+    expect(skillProc.damage.hits.length).toBe(4);
+    expect(skillProc.damage.hits[0].atkPct).toBeCloseTo(15.905);
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Mortefi'], MORTEFI_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withSkillProc = resolveHitComposedDps(MORTEFI_BLOCKS, steps, ctx, 3000, 'fusion', 'Sub DPS', null, 5).totalDamage;
+    const withoutSkillProc = resolveHitComposedDps(MORTEFI_BLOCKS.filter(b => b.id !== 'mortefi.chain.s5-bonus-marcato-skill'), steps, ctx, 3000, 'fusion', 'Sub DPS', null, 5).totalDamage;
+    expect(withSkillProc).toBeGreaterThan(withoutSkillProc);
   });
 
   it("base-kit Burning Rhapsody Marcato (2026-09-04, previously entirely unmodeled) fires 28 hits — the kit's own \"1 proc/0.35s\" cap fully saturated over the 10s window — categorized coordDmg", () => {

@@ -84,6 +84,26 @@ export const MORTEFI_BLOCKS = [
     note: 'Base-kit Burning Rhapsody proc: teammates\' Basic/Heavy ATK hits trigger off-field Marcato, capped 1/0.35s for the 10s window — modeled as 28 hits assuming the cap is fully saturated.',
   },
 
+  // Inherent Skills (2026-09-09 full-kit audit, independent re-verification): both examined, neither
+  // modeled — deliberately, not by omission:
+  // - "Harmonic Control: after Passionate Variation cast, Draconic Hellfire damage +25% for 8s." — "Draconic
+  //   Hellfire" names no move anywhere in Mortefi's own kit (Passionate Variation, Fury Fugue, Violent
+  //   Finale, Dissonance, Rage Transposition, Marcato — none match), and no other character's dump in
+  //   this project's own Data dump/ directory contains that string either. This reads as a scraping/
+  //   template artifact in the source page, not a real Mortefi mechanic — modeling it would mean
+  //   guessing which real move it's actually supposed to name, which this project's own "zero, don't
+  //   guess" rule forbids. Left unmodeled pending a cleaner source re-check, not silently dropped.
+  // - "Rhythmic Vibrato: during Burning Rhapsody, each Marcato hit → next Marcato's damage +1.5%,
+  //   triggerable once per 0.35s, stacking x50." — a real, sourced, but genuinely complex escalating
+  //   per-proc ramp (each successive Marcato is stronger than the last within the same 10s window) that
+  //   this schema has no primitive for (no "stacking bonus that escalates per proc of a specific block,
+  //   within a single duration window" mechanism exists anywhere in this codebase). The stated 50-stack
+  //   cap is itself unreachable given Burning Rhapsody's own hard 0.35s-per-proc rate cap over its 10s
+  //   duration (max ~28 real procs, not 50) — averaging the true ramp would require per-hit
+  //   incremental modeling this resolver doesn't support. Flagged as a known, real, unrepresentable-
+  //   in-schema gap (same treatment as Mornye's own S5 Particle Jet DMG Multiplier gap), not force-fit
+  //   into an approximation without a defensible derivation.
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'mortefi.outro.rage-transposition',
@@ -118,12 +138,17 @@ export const MORTEFI_BLOCKS = [
     // skillDmg/basicDmg/heavyDmg/libDmg/echoDmg/coordDmg), so without scoping it would over-credit ANY
     // of Mortefi's own hits landing within the 10s Burning Rhapsody window (Basic ATK, Skill, Fury
     // Fugue), when the kit text is explicit this is Marcato-only ("the Crit. DMG of Resonance
-    // Liberation's Marcato is increased by 30%"). Scoped to all 3 real Marcato proc blocks (the base-kit
-    // proc added 2026-09-04, plus S1's/S5's bonus-hit blocks) via 3 separate scopedToBlockId effects.
+    // Liberation's Marcato is increased by 30%"). Scoped to all real Marcato proc blocks (the base-kit
+    // proc added 2026-09-04, plus S1's/S5's bonus-hit blocks) via separate scopedToBlockId effects.
+    // mortefi.chain.s5-bonus-marcato-skill added 2026-09-09 (full-kit audit) included here too for
+    // forward correctness — currently inert since Passionate Variation always fires before Liberation
+    // in the modeled rotation (outside Burning Rhapsody's own window), but the underlying mechanic
+    // doesn't care which of S5's two real Marcato sources fires it.
     effects: [
       { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.liberation.burning-rhapsody-marcato', source: 'self-kit' },
       { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s1-bonus-marcato', source: 'self-kit' },
       { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s5-bonus-marcato', source: 'self-kit' },
+      { stat: 'critDmg', value: 30, scopedToBlockId: 'mortefi.chain.s5-bonus-marcato-skill', source: 'self-kit' },
     ],
     note: "During Burning Rhapsody, Marcato Crit DMG +30% (confirmed exact) — scoped to Burning Rhapsody's own 10s window, applied by the Violent Finale cast that starts it.",
   },
@@ -135,7 +160,23 @@ export const MORTEFI_BLOCKS = [
     trigger: { type: 'cast', on: 'Forte:Fury Fugue' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: Array.from({ length: 4 }, () => ({ atkPct: MARCATO_ATK_PCT * 0.5 })), category: 'coordDmg', basis: 'ATK' },
-    note: 'Skill/Fury Fugue hits fire 4 bonus Marcato hits at 50% reduced DMG — modeled as a real proc-style damage block (4 x 15.905% ATK), instead of the flat {} it was zeroed to, same "discrete proc, not a modifier" treatment as S1 above. Anchored to the Fury Fugue cast.',
+    note: 'Skill/Fury Fugue hits fire 4 bonus Marcato hits at 50% reduced DMG — modeled as a real proc-style damage block (4 x 15.905% ATK), instead of the flat {} it was zeroed to, same "discrete proc, not a modifier" treatment as S1 above. Anchored to the Fury Fugue cast (fires twice in the real rotation). See mortefi.chain.s5-bonus-marcato-skill below for the same node\'s OTHER real trigger.',
+  },
+  {
+    // Added 2026-09-09 (full-kit audit, independent re-verification): the real S5 kit text names TWO
+    // separate trigger casts — "Passionate Variation OR Fury Fugue hits → fires 4 Marcato hits at -50%
+    // DMG" (RESONANCE_CHAIN_DATA's own comment confirms: "S5 Funerary Quartet — Skill/Fury Fugue hits
+    // fire 4 bonus Marcato hits") — but only the Fury Fugue anchor above was ever wired in; the
+    // Passionate Variation cast (a real, separate step in her rotation, always cast before either Fury
+    // Fugue) never got its own proc block, silently dropping 1 of the node's 3 real trigger firings in
+    // the modeled rotation. Fixed by adding this 2nd block, same "one block per anchor" pattern as
+    // Lumi's Expediting / Lupa's chain.s5.
+    id: 'mortefi.chain.s5-bonus-marcato-skill',
+    source: SOURCE, kind: 'damage', section: 'Chain',
+    trigger: { type: 'cast', on: 'Skill:Passionate Variation' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: Array.from({ length: 4 }, () => ({ atkPct: MARCATO_ATK_PCT * 0.5 })), category: 'coordDmg', basis: 'ATK' },
+    note: 'Same real mechanic as mortefi.chain.s5-bonus-marcato above, anchored to the other real trigger cast (Passionate Variation itself).',
   },
   {
     id: 'mortefi.chain.s6',

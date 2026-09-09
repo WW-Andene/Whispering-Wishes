@@ -192,3 +192,44 @@ the post-Liberation window), but a real correctness fix regardless.
 the source's own ranking — corrected.
 
 2 new/rewritten tests, full suite green (1330/1330).
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the prior 2026-09-01/09-04 passes' own claims of completeness, per
+standing audit instruction) of `engine/characterBlocks/mortefi.blocks.js` against this dump.
+
+**1 real bug found and fixed**: S5's real kit text names TWO trigger casts — "Passionate Variation or
+Fury Fugue hits → fires 4 Marcato hits at -50% DMG" (line 76 above), also confirmed by
+`RESONANCE_CHAIN_DATA`'s own comment ("S5 Funerary Quartet — Skill/Fury Fugue hits fire 4 bonus
+Marcato hits") — but only the Fury Fugue anchor was ever wired into a block; the Passionate Variation
+cast (a real, separate step that always fires before either Fury Fugue cast in the modeled rotation)
+never got its own proc. Added `mortefi.chain.s5-bonus-marcato-skill`, anchored to
+`Skill:Passionate Variation`, same value/shape as the existing Fury-Fugue-anchored block. Also added
+it to `chain.s3`'s own Crit DMG scoping list for forward correctness (currently inert in the modeled
+rotation since Passionate Variation fires before Burning Rhapsody starts, but the underlying mechanic
+doesn't distinguish which of S5's two real Marcato sources triggered it).
+
+**Verification**: measured directly at Sequence 5 — the new proc adds real, non-zero damage
+(+882.66 in the test enemy-config). Parity-golden fixtures unaffected (the golden snapshot runs at
+Sequence 0, where S5 doesn't apply). 2 new positive-verification tests added to
+`triggerEngine-mortefi.test.js`. Full test suite re-run and green (1871/1871).
+
+**2 Inherent Skills examined, deliberately left unmodeled (documented, not silently dropped)**:
+- **Harmonic Control** ("after Passionate Variation cast, Draconic Hellfire damage +25% for 8s") —
+  "Draconic Hellfire" names no move anywhere in Mortefi's own kit text, and no other character's dump
+  in this project contains that string either. This reads as a scraping/template artifact in the
+  source page rather than a real mechanic — modeling it would require guessing which real move it's
+  actually supposed to name, which this project's "zero, don't guess" rule forbids. Flagged for a
+  cleaner source re-check rather than modeled or silently ignored.
+- **Rhythmic Vibrato** ("during Burning Rhapsody, each Marcato hit → next Marcato's damage +1.5%,
+  stacking ×50") — a real, sourced, but genuinely complex escalating per-proc ramp this schema has no
+  primitive for (no mechanism exists anywhere in this codebase for "a bonus that escalates per proc of
+  a specific block within one duration window"). The stated 50-stack cap is itself unreachable given
+  Burning Rhapsody's own hard 0.35s-per-proc rate cap over its 10s duration (max ~28 real procs, not
+  50). Flagged as a known, real, unrepresentable-in-schema gap — same treatment as Mornye's own S5
+  Particle Jet DMG Multiplier gap — rather than force-fit into an undefensible approximation.
+
+**Everything else re-verified this pass, found already correct**: S1/S2/S3/S4/S6's mechanics and
+scoping, the base-kit Burning Rhapsody Marcato proc-count derivation, the Outro pairing against
+`CHAR_BUFF_TABLE`, `dmgFocus`, `weaponAlts`, and `SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/
+`CHARACTER_DATA` entries generally.
