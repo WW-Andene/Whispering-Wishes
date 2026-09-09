@@ -134,4 +134,50 @@ describe('triggerEngine parity — Lucy', () => {
   it('baseDef matches the sourced Lv.90 value (1149, not the previously off-by-one 1148)', () => {
     expect(CHARACTER_DATA['Lucy'].baseDef).toBe(1149);
   });
+
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): the base-kit "Multi-threading:
+  // with SQL, +270% DMG Multiplier" mechanic was named in lucy.heavy.multi-threading's OWN note, in
+  // SKILL_MULTIPLIERS' row annotation, and in CHARACTER_ROTATIONS' own step note, but no block anywhere
+  // ever actually applied it — a real, sourced, base-kit bonus silently missing for every Sequence.
+  it('the base-kit +270% SQL DMG Multiplier on Multi-threading is now modeled and measurably applied', () => {
+    const base = LUCY_BLOCKS.find(b => b.id === 'lucy.buff.forte-sql-bonus');
+    expect(base).toBeTruthy();
+    expect(base.effects[0]).toMatchObject({ stat: 'totalMult', value: 270, scopedToBlockId: 'lucy.heavy.multi-threading' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lucy'], LUCY_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const mtDamage = (blocks, seq) => {
+      const r = resolveHitComposedDps(blocks, steps, ctx, 3500, 'spectro', 'Main DPS', null, seq);
+      return r.hitLog.filter(h => h.blockId === 'lucy.heavy.multi-threading').reduce((s, h) => s + h.damage, 0);
+    };
+    const withBase = mtDamage(LUCY_BLOCKS, 0);
+    const withoutBase = mtDamage(LUCY_BLOCKS.filter(b => b.id !== 'lucy.buff.forte-sql-bonus'), 0);
+    // At S0 (no chain nodes active), the ONLY totalMult contributor is this base block — the ratio
+    // must be exactly (1 + 270/100) = 3.70, proving the +270% is applied and nothing else confounds it.
+    expect(withBase / withoutBase).toBeCloseTo(3.70, 5);
+  });
+
+  // Fixed 2026-09-09: chain.s2's own totalMult value (30) matched nothing in its own kit text/comment
+  // ("raises the SQL DMG Mult from 270% to 560%", a +290 jump) — root-caused to the base 270% above
+  // never having existed as a block, so this node's value had no correct baseline to be a delta from.
+  it("S2's totalMult is the real +290 delta on top of the base +270%, reaching the documented 560% total at S2", () => {
+    const rc = RESONANCE_CHAIN_DATA['Lucy'];
+    const s2 = LUCY_BLOCKS.find(b => b.id === 'lucy.chain.s2');
+    expect(s2.effects[0].value).toBe(290);
+    expect(s2.effects[0].value).toBe(rc.s2.totalMult);
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lucy'], LUCY_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const mtDamage = (blocks, seq) => {
+      const r = resolveHitComposedDps(blocks, steps, ctx, 3500, 'spectro', 'Main DPS', null, seq);
+      return r.hitLog.filter(h => h.blockId === 'lucy.heavy.multi-threading').reduce((s, h) => s + h.damage, 0);
+    };
+    // Isolate totalMult's own contribution by comparing against the no-multiplier-at-all baseline —
+    // both measured at the same Sequence (2) so any other Sequence-gated effect (e.g. chain.s1's ATK
+    // buff) is identical in both and cancels out of the ratio.
+    const bareBlocks = LUCY_BLOCKS.filter(b => b.id !== 'lucy.buff.forte-sql-bonus' && b.id !== 'lucy.chain.s2');
+    const bare = mtDamage(bareBlocks, 2);
+    const full = mtDamage(LUCY_BLOCKS, 2);
+    expect(full / bare).toBeCloseTo(1 + 560 / 100, 5);
+  });
 });

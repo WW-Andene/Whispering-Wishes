@@ -95,7 +95,7 @@ export const LUCY_BLOCKS = [
     trigger: { type: 'cast', on: 'Heavy ATK:Multi-threading' },
     timing: {}, target: { scope: 'self' }, effects: [],
     damage: { hits: parseSkillMultiplierHits('59.65%+59.65%×3'), category: 'heavyDmg', basis: 'ATK' },
-    note: 'Fires automatically off Dual Threading, consumes banked SQL stack for a +270% DMG Multiplier bonus (see lucy.chain.s2 below), applies Hack: Shifting.',
+    note: 'Fires automatically off Dual Threading, consumes banked SQL stack for a +270% DMG Multiplier bonus (see lucy.buff.forte-sql-bonus below), applies Hack: Shifting.',
   },
   {
     id: 'lucy.liberation.old-net-deep-dive',
@@ -128,6 +128,29 @@ export const LUCY_BLOCKS = [
     note: 'Spoofing Program: Breach Protocol — one of the Spoofing Programs chosen during Old Net Deep Dive, modeled as anchored to that cast.',
   },
 
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): the base-kit Forte Circuit
+  // mechanic "Multi-threading: with SQL, +270% DMG Multiplier (removes SQL)" — named explicitly in
+  // the dump's own Algorithm Compaction text, in SKILL_MULTIPLIERS' own Multi-threading row
+  // annotation ("(+270% SQL bonus)"), in CHARACTER_ROTATIONS' own Multi-threading step note, and even
+  // in lucy.heavy.multi-threading's OWN note above — was never actually applied anywhere: no block in
+  // this file, and no legacy calcTeamStats.js code path, ever added this +270% multiplier to Multi-
+  // threading's damage. A prior audit pass's own S2 comment ("raises SQL DMG Mult from 270% to 560%")
+  // shows the 270% BASE value was known and named, yet no block carried it — only chain.s2 (built from
+  // scratch expecting the 270% floor to already exist elsewhere) was ever wired in. Modeled here as an
+  // unconditional totalMult scoped to Multi-threading: SQL is banked by Algorithm Compaction's own
+  // entry (1 stack, granted by the Deadlock cast that opens it) and nothing in the modeled rotation
+  // consumes it before Multi-threading fires, so "with SQL" is a real, sourced, always-true condition
+  // for this specific rotation, not a guess — same "assumed active for the modeled scenario" precedent
+  // used throughout this file's own Inherent-Skill/stack-cap assumptions.
+  {
+    id: 'lucy.buff.forte-sql-bonus',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 270, scopedToBlockId: 'lucy.heavy.multi-threading', source: 'self-kit' }],
+    note: 'Base kit: Multi-threading consumes her banked SQL stack (granted by Algorithm Compaction on the Deadlock cast that opens it) for a +270% DMG Multiplier — modeled unconditional since nothing in the real rotation consumes SQL before Multi-threading fires. Raised to +560% at Resonance Chain 2 (see lucy.chain.s2 below, now modeled as the +290 DELTA on top of this base 270, not the full 560 — the two stack additively via totalMult).',
+  },
+
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's
   //    real mechanic) ──
   {
@@ -151,10 +174,18 @@ export const LUCY_BLOCKS = [
     // (the engine-architecture history (git log) item 12), so this never actually applied. Converted to
     // `trigger:{type:'passive'}` + `scopedToBlockId` (Augusta's S3 pattern) so it fires and stays
     // scoped to only Multi-threading's own hit.
+    //
+    // Value fixed 2026-09-09 (full-kit audit, independent re-verification): was `totalMult: 30`, which
+    // doesn't correspond to anything in this node's own kit text or in this very comment — "raises the
+    // SQL DMG Mult from 270% to 560%" is a jump of +290 percentage points, not 30. Root cause: no block
+    // anywhere ever carried the base +270% SQL bonus this node upgrades (see the newly-added
+    // lucy.buff.forte-sql-bonus above), so this node's own value had nothing correct to be a delta
+    // from and was left at an unsourced placeholder. Now modeled as the real +290 DELTA on top of that
+    // base 270 (270 + 290 = 560, matching the kit text exactly via totalMult's additive stacking).
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'totalMult', value: 30, scopedToBlockId: 'lucy.heavy.multi-threading', source: 'self-kit' }],
-    note: "Raises Heavy Attack - Multi-threading's SQL DMG Mult from 270% to 560% (conditional, only on SQL-consuming casts) and grants +32 starting RAM (from 24, resource-economy, not modeled) — none of this reduces to a flat always-on heavyDmg% (calcEngine.js applies heavyDmg unconditionally to every Heavy ATK instance, which the real effect isn't), kept as an approximated totalMult per the audit comment's own reasoning. See lucy.chain.s2-bonus-hit below for the node's separately-representable real bonus hit.",
+    effects: [{ stat: 'totalMult', value: 290, scopedToBlockId: 'lucy.heavy.multi-threading', source: 'self-kit' }],
+    note: "Raises Heavy Attack - Multi-threading's SQL DMG Mult from 270% to 560% (conditional, only on SQL-consuming casts) and grants +32 starting RAM (from 24, resource-economy, not modeled) — modeled as the +290 delta on top of lucy.buff.forte-sql-bonus's base +270% (the two stack additively via totalMult to reach the real 560% total). See lucy.chain.s2-bonus-hit below for the node's separately-representable real bonus hit.",
   },
   {
     id: 'lucy.chain.s2-bonus-hit',
@@ -208,11 +239,20 @@ export const LUCY_BLOCKS = [
     note: 'Purely defensive: Optical Illusion stack cap 1→2, HP<50% auto-triggers a stack (180s CD), grants a 150%-ATK 10s Shield on trigger. Zero DPS component — no fabricated value.',
   },
   {
+    // Verified 2026-09-09 (full-kit audit, independent re-verification): the real kit text is target-
+    // conditional ("Hack-Shifting/Interfered targets take +40% increased Heavy Attack DMG... from
+    // Lucy"), not a plain self-buff — this schema has no target-status condition primitive (same
+    // documented gap as Mornye's "+32% Crit DMG vs Interfered Marker targets", modeled unconditional
+    // there too). Modeling it unconditional here is safe for the real modeled rotation specifically:
+    // her only heavyDmg-categorized blocks (Deadlock, Thread Shredding, Dual/Multi-threading, Old Net
+    // Deep Dive) all fire AFTER lucy.skill.payload's own Hack: Shifting application, so the target is
+    // always already Shifted by the time any Heavy-ATK-categorized hit lands in this rotation — not
+    // an unconditional real-world buff, but functionally equivalent to one for this specific sequence.
     id: 'lucy.chain.s6',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
     effects: [{ stat: 'heavyDmg', value: 40, source: 'self-kit' }],
-    note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive, applies to her Heavy ATK-categorized blocks above.',
+    note: 'Confirmed exact value — real effect is "+40% increased Heavy Attack DMG to Hack-Shifting/Interfered targets", modeled unconditional since Payload (which applies Hack: Shifting) always precedes every heavyDmg-categorized hit in the modeled rotation. Also grants +60% Hack DMG (a separate, unmodeled category — see this file\'s header/characters.js RESONANCE_CHAIN_DATA comment for the schema gap).',
   },
 ];

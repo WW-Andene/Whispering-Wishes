@@ -496,6 +496,20 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // pre-Spotlight Intro hit too. Verified via direct calcTeamStats(['Lucilla'], ...) call
 // before/after the fix: effAtk/avgCrit/defMult/resMult unchanged, only score (which folds in
 // rawDps) moved.
+//
+// Lucy's `legacyRawDps`/`engineDps` updated 2026-09-09 (full re-audit): 2329 -> 2727. Root cause: the
+// base-kit Forte Circuit mechanic "Multi-threading: with SQL, +270% DMG Multiplier" — named in
+// lucy.heavy.multi-threading's OWN note, in SKILL_MULTIPLIERS' own row annotation, and in
+// CHARACTER_ROTATIONS' own step note — had never been applied by any block or by calcTeamStats.js;
+// a prior audit pass's own chain.s2 comment ("raises the SQL DMG Mult from 270% to 560%") shows the
+// 270% floor was known and named, yet chain.s2's own value (totalMult:30) didn't match a +290 jump
+// from that floor either. Added a new unconditional lucy.buff.forte-sql-bonus block (totalMult:270,
+// scoped to Multi-threading — SQL is banked by Algorithm Compaction's own entry and nothing in the
+// modeled rotation consumes it first) and corrected chain.s2's value to the real +290 delta
+// (270+290=560, matching the kit text exactly). Verified via direct measurement: S0 Multi-threading
+// damage exactly 3.70x (1+270/100) with the new block vs. without it. effAtk/avgCrit/defMult/resMult/
+// score (a Sequence-0, non-rotation-dependent formula for Lucy) are unaffected — verified via direct
+// calcTeamStats(['Lucy'], ...) call before/after, byte-identical.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

@@ -282,3 +282,49 @@ skillDmg/basicDmg/heavyDmg/libDmg/echoDmg/coordDmg for hit-composed calc, plus t
 non-hit-composed `tuneBreak.ruptureDmgMult` table) — not force-fit into the wrong category.
 
 7 new/rewritten tests, full suite green (1316/1316).
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the prior 2026-09-02 pass's own claims of completeness, per
+standing audit instruction) of `engine/characterBlocks/lucy.blocks.js`, `characters.js`'s Lucy tables,
+and this dump, despite the extensive real work already documented above.
+
+**1 real, significant bug found and fixed**: the base-kit Forte Circuit mechanic "Multi-threading:
+with SQL, +270% DMG Multiplier (removes SQL)" (line 132 above) — named explicitly in this dump's own
+Algorithm Compaction text, in `SKILL_MULTIPLIERS`' own Multi-threading row annotation ("+270% SQL
+bonus"), in `CHARACTER_ROTATIONS`' own Multi-threading step note, and even in
+`lucy.heavy.multi-threading`'s OWN block note — was never actually applied anywhere in either engine.
+The prior pass's own S2 audit comment ("raises the SQL DMG Mult from 270% to 560%") shows the 270%
+base value was known and named at the time, yet no block ever carried it, and chain.s2's own modeled
+value (`totalMult: 30`) didn't correspond to the claimed +290-point jump from that floor either — a
+placeholder left over from before the 270% base was correctly sourced, never revisited once it was.
+
+**Fix**: added a new unconditional block `lucy.buff.forte-sql-bonus` (`totalMult: 270`, scoped to
+`lucy.heavy.multi-threading`) — modeled unconditional because Algorithm Compaction's own entry (via
+the Deadlock cast that opens it) grants exactly 1 SQL stack and nothing in the real modeled rotation
+consumes it before Multi-threading fires, so "with SQL" is a real, sourced, always-true condition for
+this specific sequence, not a guess. Corrected `chain.s2`'s value from the unsourced 30 to the real
++290 delta on top of that base (270+290=560, matching "270% to 560%" exactly) in both
+`lucy.blocks.js` and `RESONANCE_CHAIN_DATA['Lucy']`.
+
+**Verification**: measured directly — at Sequence 0 (no chain nodes active), Multi-threading's own
+damage is exactly 3.70x (i.e. `1 + 270/100`) with the new block present vs. absent, isolating the
++270% multiplier's effect precisely. `legacyRawDps`/`engineDps` golden snapshots updated (2329 → 2727)
+via the established DUMP_GOLDEN pattern, documented with a cited reason in
+`phase3-parityGolden.test.js`'s own header; stat-panel `score`/`effAtk`/`avgCrit`/`defMult`/`resMult`
+confirmed byte-identical before/after (Lucy's score formula doesn't route through this Sequence-2+
+rotation-dependent bonus). 2 new positive-verification tests added to `triggerEngine-lucy.test.js`.
+
+**Also documented (no code change needed)**: `chain.s6`'s "+40% Heavy ATK DMG" is real-kit
+target-conditional ("Hack-Shifting/Interfered targets take..."), not a plain self-buff — this schema
+has no target-status condition primitive (same documented gap as Mornye's Interfered-Marker Crit DMG
+bonus). Confirmed safe to model unconditional for THIS rotation specifically: every one of Lucy's
+heavyDmg-categorized blocks fires strictly after `lucy.skill.payload`'s own Hack: Shifting
+application, so the target is always already Shifted by the time any Heavy-ATK-categorized hit lands.
+
+**Everything else re-verified this pass, found already correct**: S1/S3/S4/S5's mechanics and
+conditions, the S3 `libDmg`-key/`heavyDmg`-category naming split (already deliberately tested, not a
+live discrepancy), Thread Shredding/Dual Threading's previously-added values, Payload's full
+Charge+Follow-Up total, the Outro/debuff pairing against `CHAR_BUFF_TABLE`, `baseDef`, and
+`SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/`CHARACTER_DATA` entries generally. Full test suite re-run
+and green (1858/1858).

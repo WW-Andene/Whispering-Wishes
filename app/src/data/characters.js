@@ -6515,6 +6515,10 @@ const RESONANCE_CHAIN_DATA = {
   // +32 starting RAM (from 24), and adds a separate flat extra hit worth 450% ATK as Heavy DMG after Pulse Interference.
   // None of this reduces to a flat always-on heavyDmg% (calcEngine.js applies heavyDmg unconditionally to every Heavy
   // ATK instance, which the real effect isn't), so it's modeled via totalMult like other complex/conditional S2 nodes.
+  // Value fixed 2026-09-09 (full-kit audit): was `totalMult: 30`, which matches nothing in this node's
+  // own "270% to 560%" text (a +290 jump, not +30) — root-caused to the base-kit +270% SQL DMG
+  // Multiplier itself never having been modeled anywhere (see lucy.blocks.js's newly-added
+  // lucy.buff.forte-sql-bonus). Now the real +290 DELTA on top of that base 270 (270+290=560).
   // S3: Override DMG Mult+50% + Crit DMG+100% on Liberation (confirmed exact). S4: team +20% All-Attr DMG on
   // Hack-Shifting for 20s (confirmed exact — a real .mht snapshot 2026-09-02 confirms 20s, not the
   // previously-assumed 25s). S1 is conditional on casting Intro (+20% ATK for 14s), not unconditional.
@@ -6525,7 +6529,7 @@ const RESONANCE_CHAIN_DATA = {
   // modeled) — not added here, this schema has no "hackDmg" category (only skillDmg/basicDmg/
   // heavyDmg/libDmg/echoDmg/coordDmg + the separate, non-hit-composed tuneBreak.ruptureDmgMult table),
   // documented as a real, sourced gap rather than force-fit into the wrong category.
-  'Lucy':         { s1: { atkPct: 20 }, s2: { totalMult: 30 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: {}, s6: { heavyDmg: 40 } },
+  'Lucy':         { s1: { atkPct: 20 }, s2: { totalMult: 290 }, s3: { libDmg: 50, critDmg: 100 }, s4: { allDmg: 20 }, s5: {}, s6: { heavyDmg: 40 } },
   // Rebecca S2: team +20% All-Attribute DMG on Intro/Lib (confirmed exact). S3: Liberation DMG Mult+60% (confirmed exact)
   // Re-audited 2026-09-01 against the wiki/Rebecca/Combat, cross-checked against
   // the source/character/1308 (both agree exactly). S1 (basicDmg: 50, "Huntress/Guts core moves DMG
