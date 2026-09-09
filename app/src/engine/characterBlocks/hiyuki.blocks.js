@@ -55,12 +55,16 @@
 // Fixing this required `scopedToBlockId` to accept an array (previously one block id only) — see
 // triggerEngine.js's own blockIdMatches() doc.
 //
-// Still NOT modeled (real, sourced, genuinely out of this engine's current reach): chain.s6's own
-// +25% Glacio Bite DMG TAKEN debuff at 3 Snow Rust stacks — a Glacio-Bite-specific enemy-side
-// debuff with no matching stat key anywhere in this engine's vocabulary (see that block's own
-// note); Blade Liberation's tap-vs-hold input distinction (dump line 67) — not separately modeled
-// since a DPS-optimal player always holds to consume whatever's banked, same "assume optimal
-// execution" convention used everywhere else in this engine.
+// chain.s6's own +25% Glacio Bite DMG TAKEN debuff at 3 Snow Rust stacks was FIXED in a later pass
+// (hiyuki.chain.s6-glacio-bite-dmg-taken) — the "no matching stat key" claim above was wrong: an
+// enemy-side amplify debuff scoped via scopedToBlockId (kind:'debuff', target:'all-enemies'),
+// already proven working for Qingxiao's Mindlock, covers it exactly, scoped onto
+// hiyuki.procdmg.glacio-bite's own dedicated proc block.
+//
+// Still NOT modeled (real, sourced, genuinely out of this engine's current reach): Blade
+// Liberation's tap-vs-hold input distinction (dump line 67) — not separately modeled since a
+// DPS-optimal player always holds to consume whatever's banked, same "assume optimal execution"
+// convention used everywhere else in this engine.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -312,6 +316,24 @@ export const HIYUKI_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('660.96%'), basis: 'ATK' },
     note: 'Glacio Bite proc firing off ANY real Glacio Chafe application on the team (her own included) — see this file\'s header comment for the full derivation/assumptions and the cross-character mechanism.',
   },
+  {
+    // Fixed (Hiyuki S6 DMG-taken sweep): the prior audit's own chain.s6 comment claimed this had "no
+    // matching stat key anywhere in this engine's vocabulary" and was "real engine work, not a data
+    // gap" — wrong, confirmed by direct precedent already proven working elsewhere in this codebase:
+    // Qingxiao's own qingxiao.debuff.mindlock uses the exact same shape (kind:'debuff',
+    // target:'all-enemies', effects:[{stat:'amplify', scopedToBlockId:...}]) for an identical
+    // "DMG taken from THIS SPECIFIC move only" enemy-side debuff. Glacio Bite already has its own
+    // dedicated, uncategorized damage block (hiyuki.procdmg.glacio-bite above) to scope onto — no new
+    // engine capability was actually needed, just noticing the precedent. Modeled at the 3-Snow-Rust
+    // ceiling value (kept at ceiling rather than a real stacking ramp, same convention this file
+    // already uses for Fine Snow/Glacio Bite/chain.s6's own +40% Crit DMG).
+    id: 'hiyuki.chain.s6-glacio-bite-dmg-taken',
+    source: SOURCE, kind: 'debuff', section: 'Chain',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'all-enemies' },
+    effects: [{ stat: 'amplify', value: 25, scopedToBlockId: 'hiyuki.procdmg.glacio-bite', source: 'self-kit' }],
+    note: 'S6, at 3 Snow Rust stacks: total Glacio Bite DMG taken by nearby targets +25% more — scoped to hiyuki.procdmg.glacio-bite only (the dump\'s own text is explicit this only affects Glacio Bite damage, not her wider kit). Sequence-6-gated via the chain.sN id convention.',
+  },
 
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own audit comment for each node's
   //    real mechanic) ──
@@ -408,15 +430,16 @@ export const HIYUKI_BLOCKS = [
     // own Crit DMG +40%" (line 116), a genuinely broad bonus distinct from S3's own DMG-multiplier
     // concept, not a move-specific one — kept at ceiling, same "modeled at the ceiling rather than
     // the ramp" convention this file already uses for Fine Snow/Glacio Bite. The +25% Glacio Bite
-    // DMG TAKEN at 3 stacks is a genuinely different concept (a debuff on the enemy's Glacio-Bite-
-    // specific damage taken, not a Crit DMG modifier) with no matching stat key anywhere in this
-    // engine's vocabulary — real engine work (a new stat category), not a data-modeling gap, so
-    // still left undone and documented.
+    // DMG TAKEN at 3 stacks is modeled SEPARATELY as its own debuff block
+    // (hiyuki.chain.s6-glacio-bite-dmg-taken below) — fixed in a later pass: this comment previously
+    // claimed "no matching stat key anywhere in this engine's vocabulary," which was wrong (an enemy-
+    // side amplify debuff scoped via scopedToBlockId, already proven working for Qingxiao's Mindlock,
+    // covers it exactly).
     effects: [
       { stat: 'critDmg', value: 500, scopedToBlockId: 'hiyuki.liberation.foreclaiming-inward-vision', source: 'self-kit' },
       { stat: 'critDmg', value: 500, scopedToBlockId: 'hiyuki.liberation.foreclaiming-blade-liberation', source: 'self-kit' },
       { stat: 'critDmg', value: 40, source: 'self-kit' },
     ],
-    note: 'Foreclaiming: Inward Vision/Blade Liberation Crit DMG +500% (corrected from 100 per the audit) — scoped to exactly those 2 blocks (see this effect\'s own comment; was previously a real over-crediting bug applying to her entire kit). PLUS a further, genuinely broad +40% Crit DMG at 2 Snow Rust stacks (kept at ceiling, same convention as hiyuki.chain.s2). The +25% Glacio Bite DMG TAKEN at 3 stacks has no matching stat key in this engine (a Glacio-Bite-specific enemy debuff, not a Crit DMG modifier) and is not modeled — real engine work, not a data gap.',
+    note: 'Foreclaiming: Inward Vision/Blade Liberation Crit DMG +500% (corrected from 100 per the audit) — scoped to exactly those 2 blocks (see this effect\'s own comment; was previously a real over-crediting bug applying to her entire kit). PLUS a further, genuinely broad +40% Crit DMG at 2 Snow Rust stacks (kept at ceiling, same convention as hiyuki.chain.s2). The +25% Glacio Bite DMG TAKEN at 3 stacks is modeled separately — see hiyuki.chain.s6-glacio-bite-dmg-taken below.',
   },
 ];

@@ -175,4 +175,24 @@ describe('triggerEngine parity — Hiyuki', () => {
     const perUnitHit = block.damage.hits.find(h => h.perStepUnit === 'snowforgedBladeConsumed');
     expect(perUnitHit.atkPctPerUnit).toBeCloseTo(265.08, 2);
   });
+
+  // Added (Hiyuki S6 DMG-taken sweep): S6's "+25% Glacio Bite DMG taken at 3 Snow Rust stacks" was
+  // previously left unmodeled under a claim of "no matching stat key anywhere in this engine's
+  // vocabulary" — wrong, per the exact same shape already proven working for Qingxiao's Mindlock
+  // (kind:'debuff', target:'all-enemies', amplify scoped via scopedToBlockId onto one specific block).
+  it('S6 also grants a real +25% Glacio Bite DMG-taken debuff, scoped to only the Glacio Bite proc', () => {
+    const debuff = HIYUKI_BLOCKS.find(b => b.id === 'hiyuki.chain.s6-glacio-bite-dmg-taken');
+    expect(debuff.kind).toBe('debuff');
+    expect(debuff.target.scope).toBe('all-enemies');
+    expect(debuff.effects[0]).toEqual({ stat: 'amplify', value: 25, scopedToBlockId: 'hiyuki.procdmg.glacio-bite', source: 'self-kit' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Hiyuki'], HIYUKI_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const with6 = resolveHitComposedDps(HIYUKI_BLOCKS, steps, ctx, 3000, 'glacio', 'Main DPS', null, 6);
+    const without6 = resolveHitComposedDps(HIYUKI_BLOCKS.filter(b => b.id !== 'hiyuki.chain.s6-glacio-bite-dmg-taken'), steps, ctx, 3000, 'glacio', 'Main DPS', null, 6);
+    const sumAt = (res, id) => res.hitLog.filter(h => h.blockId === id).reduce((s, h) => s + h.damage, 0);
+    expect(sumAt(with6, 'hiyuki.procdmg.glacio-bite') / sumAt(without6, 'hiyuki.procdmg.glacio-bite')).toBeCloseTo(1.25, 5);
+    // Must NOT bleed onto her other damage (e.g. Foreclaiming: Inward Vision, libDmg-categorized).
+    expect(sumAt(with6, 'hiyuki.liberation.foreclaiming-inward-vision')).toBeCloseTo(sumAt(without6, 'hiyuki.liberation.foreclaiming-inward-vision'), 5);
+  });
 });

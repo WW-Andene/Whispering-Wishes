@@ -6595,10 +6595,12 @@ const RESONANCE_CHAIN_DATA = {
   // Resonance Skill DMG, no "considered" reclassification — but value was wrong). Real is +80%. Corrected
   // 60 -> 80.
   // S6: was critDmg: 100 (value wrong) — real primary effect is Foreclaiming: Inward Vision/Blade
-  // Liberation Crit DMG +500%. Corrected 100 -> 500. TODO: needs Phase 2 schema — the node also grants a
-  // further conditional +40% Crit DMG at 2 Snow Rust stacks and +25% Glacio Bite DMG taken at 3 stacks,
-  // neither represented (stacking on top of an already-conditional Inherent Skill mechanic with no clean
-  // single-node home in this schema).
+  // Liberation Crit DMG +500%. Corrected 100 -> 500. The node also grants a further conditional +40%
+  // Crit DMG at 2 Snow Rust stacks — FIXED (hiyuki.blocks.js's own chain.s6, kept at ceiling) — and
+  // +25% Glacio Bite DMG taken at 3 stacks — FIXED separately as hiyuki.chain.s6-glacio-bite-dmg-taken
+  // (an enemy-side amplify debuff scoped via scopedToBlockId, same mechanism already proven working
+  // for Qingxiao's Mindlock). This flat table's own s6 stays critDmg:500 only (the primary effect) —
+  // it has no scopedToBlockId mechanism for either of the two additional components.
   'Hiyuki':       { s1: { libDmg: 120 }, s2: { libDmg: 125 }, s3: { libDmg: 160 }, s4: { allDmg: 20 }, s5: { skillDmg: 80 }, s6: { critDmg: 500 } },
   // Lucy S2 (confirmed via the source 2026-08-16 cross-check, was an unverified heavyDmg:60 previously): raises
   // Heavy Attack - Multi-threading's SQL DMG Mult from 270% to 560% (conditional, only on SQL-consuming casts), grants

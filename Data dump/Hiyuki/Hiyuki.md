@@ -296,3 +296,23 @@ value and added a regression test guarding against reintroducing the inflated fi
 suite re-run to confirm zero DPS impact (confirmed: 1836/1836 passing, unchanged). No golden fixture
 update needed. One new test added guarding the corrected note text against reintroduction of the
 inflated per-stack figure.
+
+## S6 Glacio Bite DMG-taken gap fixed (direct user follow-up)
+
+The last remaining documented gap on this character: S6's "+25% Glacio Bite DMG taken by nearby
+targets at 3 Snow Rust stacks" had been left unmodeled under the claim "no matching stat key anywhere
+in this engine's vocabulary — real engine work, not a data-modeling gap." That claim was wrong,
+discovered by checking precedent already proven working elsewhere in this codebase: Qingxiao's own
+Mindlock debuff (`qingxiao.debuff.mindlock`) models the exact same shape — an enemy-side "DMG taken
+from THIS SPECIFIC move only" debuff via `kind:'debuff'`, `target:{scope:'all-enemies'}`,
+`effects:[{stat:'amplify', value:X, scopedToBlockId:'...'}]` — already live and tested.
+
+Hiyuki's own Glacio Bite proc already has its own dedicated, uncategorized damage block
+(`hiyuki.procdmg.glacio-bite`) to scope onto — no new engine capability was actually needed. Added
+`hiyuki.chain.s6-glacio-bite-dmg-taken` using that exact mechanism, scoped to only that one block.
+
+Measured directly: Glacio Bite's own damage rises by exactly ×1.25 (the real +25%) with the block
+present vs. absent at sequence 6, while her other damage (e.g. Foreclaiming: Inward Vision) is
+correctly untouched. Sequence-6-gated, so this doesn't move the golden fixture's tested sequence-0
+baseline — confirmed by the full suite staying green with no drift. 1 new test added, full suite green
+(1901/1901).
