@@ -65,4 +65,12 @@ describe('triggerEngine parity — Rover: Havoc', () => {
     const b = ROVER_HAVOC_BLOCKS.find(bl => bl.id === 'roverhavoc.outro.soundweaver');
     expect(b.damage.category).toBe('outroDmg');
   });
+
+  // Fixed 2026-09-09 (full-kit audit): the header comment already claimed "category added for Layer 4
+  // schema migration", but the field was never actually set on this block — comment/code mismatch, the
+  // same exact bug found on Rover: Aero's own Intro block this session.
+  it('Intro Instant of Annihilation is skillDmg-categorized (was silently uncategorized)', () => {
+    const intro = ROVER_HAVOC_BLOCKS.find(b => b.id === 'roverhavoc.intro.instant-of-annihilation');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
 });

@@ -256,3 +256,37 @@ correctly built for everything it modeled.
    in Dark Surge, with no natural decay timer sourced).
 
 1 test added/updated, full suite green (1335/1335).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above —
+re-verified all 6 prior fixes still hold; cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, and `CHARACTER_ROTATIONS` against this
+dump fresh — all still match exactly). Found 1 more real bug:
+
+7. **Comment/code mismatch — missing `damage.category`**: `roverhavoc.intro.instant-of-annihilation`'s
+   header comment already claimed "category added for Layer 4 schema migration... same default-to-
+   skillDmg convention", but the actual `damage.category` field was never set on the block — a stale/
+   aspirational comment that never matched the code (the same exact bug found on Rover: Aero's own
+   Intro block earlier this session). Fixed to `skillDmg`, matching the convention actually applied on
+   Sanhua/Baizhi/Taoqi's equivalent uncategorized-Intro fixes.
+
+**Investigated and confirmed NOT a bug**: the entire Umbra Basic Attack combo (56.37% → 93.94% →
+155.67% → 37.13%×3+111.39% → 28.52%×4+114.07%, his single LARGEST real damage bucket at 31.6% per this
+dump's own Damage Profile) has no matching block in `roverhavoc.blocks.js` at all. Confirmed this is
+deliberate, not an oversight: `CHARACTER_ROTATIONS['Rover: Havoc']` models this source's own named
+"Short Burst Combo" verbatim (Intro → Skill → Heavy: Devastation → Skill: Umbra: Lifetaker → Liberation
+→ Echo → Outro), which this dump's own Gameplay section explicitly says "ignores Basic Attacks
+entirely" — a real, named, legitimate rotation variant (not an app invention), already reviewed and
+matched exactly in the 2026-09-03 pass. The Damage Profile's own 31.6% Basic ATK share necessarily
+reflects a DIFFERENT combo (Medium or Long Burst Combo, both of which use Basic Attack strings) than
+the one this app models, since Short Burst Combo produces 0% Basic ATK by design — an inherent, already
+correctly-handled asymmetry: `CHARACTER_DATA['Rover: Havoc'].dmgFocus` was already fixed (2026-09-03)
+to include `'Basic ATK'` independent of which combo is modeled, with its own comment explicitly stating
+"dmgFocus describes her real kit capability, not this one rotation choice." Building a new Basic ATK
+block set now would be speculative scope creep for a rotation variant this file doesn't model — left
+as-is. As a direct consequence, `roverhavoc.chain.s5`'s `basicDmg:50` bonus is a real no-op in the
+currently-modeled Short Burst Combo (confirmed: no basicDmg-categorized block ever fires in this
+rotation) — not a bug, since S5's own kit text and sourced value remain correct; it would only start
+mattering if a Medium/Long Burst Combo variant were modeled instead, which is out of scope here.
+
+1 new test added (Intro category). Full suite green (1883/1883). No parity-golden regression (the
+Intro category fix has no effect at solo S0 without a matching teammate skillDmg buff present).

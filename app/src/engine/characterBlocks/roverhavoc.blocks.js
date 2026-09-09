@@ -9,6 +9,20 @@
 // debuffs entries for this character are explicitly chain-gated (S6/S4-copy-
 // conditional, "not innate") — modeled once via their Resonance Chain blocks
 // below, not duplicated as separate base-kit blocks.
+//
+// Full kit audit 2026-09-09: fixed a comment/code mismatch on the Intro block (a
+// stale comment claimed its category was already set; it wasn't — added
+// category:'skillDmg'). Confirmed the whole Umbra Basic Attack combo (his single
+// largest real damage bucket, 31.6% per the dump's Damage Profile) is correctly
+// absent from this file: the modeled CHARACTER_ROTATIONS entry is the source's own
+// named "Short Burst Combo", which explicitly excludes Basic Attacks entirely (see
+// the Outro block's own note) — CHARACTER_DATA.dmgFocus already correctly includes
+// 'Basic ATK' regardless (fixed in the 2026-09-03 pass), reflecting his real kit
+// capability independent of which named combo variant this file models. S5's
+// basicDmg:50 bonus is consequently a real no-op in the currently-modeled rotation
+// (nothing basicDmg-categorized ever fires) — not a bug, since S5's own kit text
+// and value are still correctly sourced; it would matter if a Medium/Long Burst
+// Combo variant were ever modeled instead.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -23,10 +37,12 @@ export const ROVER_HAVOC_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Instant of Annihilation' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category added for Layer 4 schema migration (validate.js requires damage.category on every
-    // damage block) — no override text names a different category, same default-to-skillDmg
-    // convention used throughout this migration sweep for uncategorized Intro casts.
-    damage: { hits: parseSkillMultiplierHits('198.81%'), basis: 'ATK' },
+    // Fixed 2026-09-09 (full-kit audit): the header comment already claimed "category added for
+    // Layer 4 schema migration", but the actual field was never set — a stale/aspirational comment
+    // vs. code mismatch (same exact bug found on Rover: Aero's own Intro block this session). No
+    // override text names a different category for this Intro cast, same default-to-skillDmg
+    // convention actually applied on Sanhua/Baizhi/Taoqi's equivalent uncategorized-Intro fixes.
+    damage: { hits: parseSkillMultiplierHits('198.81%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Builds Umbra (Forte gauge, 0-100).',
   },
   {
