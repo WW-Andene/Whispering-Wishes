@@ -10,10 +10,10 @@ describe('triggerEngine parity — Yuanwu', () => {
     expectValidBlockFile(YUANWU_BLOCKS, 'Yuanwu');
   });
 
-  it('S1-S4/S6 stay correctly unmodeled (no block) — no matching DPS category per RESONANCE_CHAIN_DATA', () => {
+  it('S1-S4 stay correctly unmodeled (no block) — no matching DPS category per RESONANCE_CHAIN_DATA', () => {
     const rc = RESONANCE_CHAIN_DATA['Yuanwu'];
-    ['s1', 's2', 's3', 's4', 's6'].forEach(s => expect(rc[s]).toEqual({}));
-    ['yuanwu.chain.s1', 'yuanwu.chain.s2', 'yuanwu.chain.s3', 'yuanwu.chain.s4', 'yuanwu.chain.s6'].forEach(id => {
+    ['s1', 's2', 's3', 's4'].forEach(s => expect(rc[s]).toEqual({}));
+    ['yuanwu.chain.s1', 'yuanwu.chain.s2', 'yuanwu.chain.s3', 'yuanwu.chain.s4'].forEach(id => {
       expect(YUANWU_BLOCKS.find(b => b.id === id)).toBeUndefined();
     });
   });
@@ -21,6 +21,29 @@ describe('triggerEngine parity — Yuanwu', () => {
   it('S5 matches RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Yuanwu'];
     expect(YUANWU_BLOCKS.find(b => b.id === 'yuanwu.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
+  });
+
+  // Added 2026-09-09 (full-kit audit): S6 was previously correctly zeroed under a since-stale reasoning
+  // ("no team-DEF% stat category") — defPct was wired into the engine on 2026-09-05, so S6 is now a
+  // real, representable block. RESONANCE_CHAIN_DATA['Yuanwu'].s6 stays {} deliberately (see its own
+  // 2026-09-09 comment): applyResonanceChain() has no defPct branch and no team-broadcast mechanism a
+  // whole-team buff needs, unlike the block engine's own generic whole-team effect routing.
+  it('S6 is now a real whole-team defPct buff (fixed 2026-09-09) — RESONANCE_CHAIN_DATA.s6 deliberately stays {} since the legacy engine cannot broadcast a team-wide defPct buff at all', () => {
+    const rc = RESONANCE_CHAIN_DATA['Yuanwu'];
+    expect(rc.s6).toEqual({});
+    const s6 = YUANWU_BLOCKS.find(b => b.id === 'yuanwu.chain.s6');
+    expect(s6.effects[0]).toEqual({ stat: 'defPct', value: 32, stacking: 'refresh', source: 'self-kit' });
+    expect(s6.target.scope).toBe('whole-team');
+    expect(s6.trigger).toEqual({ type: 'cast', on: 'Skill:Thunder Wedge' });
+  });
+
+  it('S6 real DEF% buff measurably increases Yuanwu\'s own (DEF-basis) damage in his real modeled rotation', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Yuanwu'], YUANWU_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const baseStats = { atk: 1000, hp: 8000, def: 1638 };
+    const withS6 = resolveHitComposedDps(YUANWU_BLOCKS, steps, ctx, baseStats, 'electro', 'Support');
+    const withoutS6 = resolveHitComposedDps(YUANWU_BLOCKS.filter(b => b.id !== 'yuanwu.chain.s6'), steps, ctx, baseStats, 'electro', 'Support');
+    expect(withS6.totalDamage).toBeGreaterThan(withoutS6.totalDamage);
   });
 
   it("Blazing Might's own hit and its Thunder Wedge Detonation are 2 separate blocks with different categories (libDmg vs skillDmg) — the dump's own dedicated \"Thunder Wedge Detonation\" SKILL_MULTIPLIERS row is explicit \"counted as Resonance Skill DMG\", previously wrongly combined into one libDmg block", () => {

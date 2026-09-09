@@ -635,6 +635,28 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // leak) while total DPS RISES (Streaming Storm's real, previously-missing contribution to her
 // Heavy-DMG-dominant kit — 89.3% of her real damage per her own dump's Damage Profile — outweighs the
 // removed leak).
+// Yuanwu's `legacyRawDps`/`engineDps` updated 2026-09-09 (full-kit audit): 609 -> 591/591; stat-panel
+// `avgCrit` 1.025 -> 1.04525 (`score` 833 -> 772). Two combined causes, both real data-layer fixes, not
+// engine regressions: (1) `bestWeapon` was corrected from 'Abyss Surges' to 'Originite: Type IV' — his
+// own dump splits Best Weapons into two build contexts and is explicit that Abyss Surges only matters
+// for his personal-damage build (explicitly "fully skippable" per his own Endgame Stat Targets note),
+// while Originite: Type IV is the weapon that actually activates his real recommended Rejuvenating Glow
+// echo set (already his own #1 bestEchoes pick) — this alone changes his solo weapon-stat baseline
+// (hence a real DPS/avgCrit shift here, a golden-appropriate data correction, not a bug). (2)
+// RESONANCE_CHAIN_DATA['Yuanwu'].s6 ("nearby team +32% DEF for 3s") was correctly zeroed under a
+// 2026-09-01 audit's reasoning that no team-DEF% stat category existed in the schema — that reasoning
+// went stale on 2026-09-05 when hpPct/defPct were wired into the engine (see
+// resolveHitComposedDps.js's own dated comment), and was never revisited for Yuanwu specifically. Added
+// as a new whole-team, refresh-stacking `yuanwu.chain.s6` block (defPct+32, triggered on each real
+// Thunder Wedge cast, duration approximated at Thunder Wedge's own 12s field lifetime as a documented
+// modeling judgment call for the kit's actual spatial condition, which this engine has no positional
+// model for) — since he's a DEF-scaler, this now correctly self-applies to boost his own damage too.
+// Measured directly: with S6 present vs. absent, his own hit-composed total rose materially (a real,
+// previously-uncredited self-buff, not double-counting anything RESONANCE_CHAIN_DATA already carried,
+// since that table's own s6 stays {} — see its own comment for why the legacy engine can't broadcast
+// this value anyway). RESONANCE_CHAIN_DATA/CHAR_BUFF_TABLE intentionally NOT updated for this (see
+// yuanwu.blocks.js's and characters.js's own 2026-09-09 comments) since Yuanwu is fully block-converted
+// and that legacy path is skipped entirely for his own DPS calc.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

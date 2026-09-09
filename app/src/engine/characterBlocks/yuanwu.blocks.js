@@ -17,6 +17,25 @@
 // Same fix applied to CHARACTER_DATA['Yuanwu'].statScaling (was 'ATK', corrected
 // to 'DEF') — this was a live-DPS-relevant bug, not cosmetic, same pattern as
 // Taoqi/Mornye (both already correctly carry basis: 'DEF' on every block).
+//
+// 2026-09-09 full-kit audit (independent re-audit, cross-checked every characters.js table fresh
+// against Data dump/Yuanwu/Yuanwu.md): 2 real fixes.
+//   1. S6 (Defender of All Realms: nearby team +32% DEF for 3s) was correctly zeroed under the
+//      2026-09-01 audit's own reasoning ("no team-DEF% stat category in this schema") — but that went
+//      stale on 2026-09-05 when hpPct/defPct were wired into the engine (resolveHitComposedDps.js's own
+//      dated comment). Added as a new whole-team, refresh-stacking block (defPct+32, triggered on each
+//      real Thunder Wedge cast, duration approximated at Thunder Wedge's own 12s field lifetime — a
+//      documented judgment call for the kit's real spatial condition, which this engine has no
+//      positional model for). Since Yuanwu is a DEF-scaler, this also self-applies to boost his own
+//      damage. Measured directly: materially raises his own hit-composed total. RESONANCE_CHAIN_DATA
+//      ['Yuanwu'].s6 deliberately stays {} (see its own comment) since applyResonanceChain() has no
+//      defPct branch or team-broadcast mechanism — this value only exists as a block.
+//   2. CHARACTER_DATA['Yuanwu'].bestWeapon was 'Abyss Surges', inconsistent with his own #1 bestEchoes
+//      pick (Rejuvenating Glow) — the dump's own Best Weapons section is explicit that Originite: Type
+//      IV, not Abyss Surges, is what actually activates that set for his real (only viable) use case.
+//      Corrected; Abyss Surges moved into weaponAlts.alt5.
+// Full suite verified green (1896/1896) after; golden fixtures regenerated (both fixes move his real
+// solo DPS/avgCrit) with the reason logged in phase3-parityGolden.test.js's own header comment.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -101,6 +120,26 @@ export const YUANWU_BLOCKS = [
     effects: [{ stat: 'libDmg', value: 50, source: 'self-kit' }],
     note: "Blazing Might's own DMG Multiplier +50% — cast-scoped (instant, no persistent duration), same single-hit-scoped pattern as Calcharo's S5.",
   },
-  // S6 correctly has NO block — nearby team gains DEF +32% for 3s, a team-wide DEF buff with no
-  // matching category in this schema.
+  {
+    // Fixed 2026-09-09 (full-kit audit): S6 was correctly zeroed under the 2026-09-01 audit's own
+    // reasoning ("no team-DEF% stat category in this schema"), but that reasoning went stale on
+    // 2026-09-05 when hpPct/defPct were wired into the engine-readiness pass (see
+    // resolveHitComposedDps.js's own dated comment on `stats.defPct` — a DEF-basis hit, which is every
+    // single one of Yuanwu's own damage blocks, now genuinely scales off it). Modeled as a whole-team,
+    // refresh-stacking buff triggered by each real Thunder Wedge cast, with duration set to Thunder
+    // Wedge's own real 12s field lifetime — a judgment call, not a sourced number: the kit text's actual
+    // condition is spatial ("while within Thunder Wedge's range"), which this engine has no positional
+    // model for, so the existing convention for this class of "near a persistent field" effect is used
+    // (approximate real uptime via the field's own lifespan, refreshed on each re-summon, exactly
+    // matching the 2 real Thunder Wedge casts in CHARACTER_ROTATIONS['Yuanwu']) rather than inventing a
+    // shorter/longer number with no basis. Uncertainty flagged explicitly per project convention rather
+    // than silently guessing a duration.
+    id: 'yuanwu.chain.s6',
+    source: SOURCE, kind: 'buff', section: 'Chain',
+    trigger: { type: 'cast', on: 'Skill:Thunder Wedge' },
+    timing: { duration: 12, stacking: 'refresh' },
+    target: { scope: 'whole-team' },
+    effects: [{ stat: 'defPct', value: 32, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Defender of All Realms: nearby team members gain DEF +32% for 3s while within Thunder Wedge\'s range — modeled as a whole-team buff refreshed by each Thunder Wedge cast, approximated at the Wedge\'s own 12s field lifetime (see comment above for the spatial-vs-duration modeling caveat).',
+  },
 ];

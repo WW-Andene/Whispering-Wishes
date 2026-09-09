@@ -1266,8 +1266,19 @@ const CHARACTER_DATA = {
     skills: ['Leihuangquan', 'Leihuang Master', 'Blazing Might', 'Unassuming Blade'],
     ascension: { boss: 'Hidden Thunder Tacet Core', common: 'Ring', specialty: 'Terraspawn Fungus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
-    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Moonlit Clouds 5pc'], bestWeapon: 'Abyss Surges',
-    weaponAlts: { alt4: ['Amity Accord', 'Stonard'], alt3: ['Guardian Gauntlets', 'Gauntlets of Voyager', 'Originite: Type IV'] },
+    // bestWeapon corrected 2026-09-09 (full-kit audit): was 'Abyss Surges', but the dump's own Best
+    // Weapons section splits into two build contexts and is explicit which one matters — "As a
+    // personal-damage DEF-scaler" (where Abyss Surges isn't even scored, listed "— (no % listed)")
+    // vs. "As a Support triggering Rejuvenating Glow: use Originite: Type IV — its self-heal-on-Basic-
+    // Attack... is specifically what activates the 5pc Rejuvenating Glow healing-triggered set." Since
+    // his personal damage is explicitly "fully skippable" (his own Endgame Stat Targets note) and
+    // Rejuvenating Glow is already his own #1 bestEchoes pick, Abyss Surges (which doesn't trigger that
+    // set's self-heal condition at all) was internally inconsistent with the app's own echo
+    // recommendation. Swapped to Originite: Type IV; Abyss Surges moved into weaponAlts.alt5 alongside
+    // Verity's Handle (both real 5★ options from the personal-damage table, for anyone building him for
+    // his own damage anyway, despite that not being his practical use case).
+    bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Moonlit Clouds 5pc'], bestWeapon: 'Originite: Type IV',
+    weaponAlts: { alt5: ["Verity's Handle", 'Abyss Surges'], alt4: ['Amity Accord', 'Stonard'], alt3: ['Guardian Gauntlets', 'Gauntlets of Voyager'] },
     teams: ['Yuanwu + Jinhsi + Verina', 'Yuanwu + Jinhsi + Shorekeeper'] },
   // corrected 2026-08-18 via the wiki's Mortefi/Combat page (Forte Details, rendered) + the source's Kit/
   // Build/Review/Gameplay tabs (previously only had a partial CHARACTER_DATA entry, no weaponAlts).
@@ -7877,7 +7888,19 @@ const RESONANCE_CHAIN_DATA = {
   // DEF-scaling bonus-hit addition, same unrepresentable class as other bonus-hit nodes this pass).
   // S4: casting Blazing Might grants a Shield equal to 200% of Yuanwu's DEF for 10s (shield, not DPS).
   // S6: nearby team gains DEF +32% for 3s (team-wide DEF buff, no matching category).
-  // TODO: needs Phase 2 schema for DEF%, attack-speed, shield, and DEF-scaling-bonus-hit mechanics.
+  // TODO: needs Phase 2 schema for attack-speed, shield, and DEF-scaling-bonus-hit mechanics (S1/S2/S3/S4).
+  // S6 revisited 2026-09-09 (full-kit audit): defPct WAS wired into the engine on 2026-09-05 (see
+  // resolveHitComposedDps.js's own dated comment), so "no matching category" above is now stale for S6
+  // specifically — but S6 stays {} HERE deliberately, not because it's unrepresentable: it's modeled as
+  // a real block instead (yuanwu.chain.s6, target: whole-team, defPct+32). applyResonanceChain() (this
+  // flat table's own consumer) has no 'defPct' branch in either its main-DPS or teammate-crediting path,
+  // and even a self-target 'defPct' entry has no home in legacyMainDpsStats.js's own isMain allowlist —
+  // this table is fundamentally self-only and has no team-broadcast mechanism a whole-team buff like
+  // this actually needs, unlike the block engine's own generic whole-team effect routing (which already
+  // works for it, verified via resolveHitComposedTeamDps.js reusing the same applyBuff() that has a real
+  // 'defPct' case). Since Yuanwu is fully block-converted, this table is never read for his own DPS calc
+  // anyway — leaving {} here avoids a dead, misleading entry rather than patching the legacy engine's
+  // core resonance-chain/team-buff functions for a value they still couldn't correctly broadcast anyway.
   'Yuanwu':       { s1: {}, s2: {}, s3: {}, s4: {}, s5: { libDmg: 50 }, s6: {} },
 };
 

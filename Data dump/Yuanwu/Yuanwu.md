@@ -223,3 +223,70 @@ Yuanwu has no fixed rotation — he's built around minimal field time. Guidance 
 ### Example Team ("Best Team")
 **Jinhsi + Yuanwu + {The Shorekeeper / Verina}**.
 Note: "Make sure to run Yuanwu on Rejuvenating Glow and your third party member on Moonlit Clouds for optimal DPS!"
+
+---
+
+## App Data Comparison (vs. `app/src/data/characters.js` + `yuanwu.blocks.js`) — full kit audit, 2026-09-09
+
+Independent re-audit (did not trust the prior 2026-09-01/2026-09-02 passes' own claims — re-read this
+dump, `yuanwu.blocks.js`, the existing test files, and every relevant `characters.js` table from
+scratch). Cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE` (all correctly empty — no real buffs in his
+base kit per this dump), `RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `CHARACTER_ROTATIONS`,
+`SKILL_ICONS`, and `SEQUENCE_NAMES` (real, unique chain names: Steaming Cup of Justice / Fierce Heart,
+Serene Mind / Upholder of Integrity / Retributive Knuckles / Neighborhood Protector / Defender of All
+Realms — confirmed NOT a copy-paste artifact, all cross-referenced consistently elsewhere in the file)
+against this dump.
+
+**2 real fixes found**:
+
+1. **`CHARACTER_DATA['Yuanwu'].bestWeapon` was `'Abyss Surges'`**, inconsistent with `bestEchoes`' own #1
+   pick (Rejuvenating Glow 5pc). This dump's own Best Weapons section splits into two build contexts and
+   is explicit which one is real: "As a Support triggering Rejuvenating Glow: use Originite: Type IV —
+   its self-heal-on-Basic-Attack... is specifically what activates the 5pc Rejuvenating Glow
+   healing-triggered set." Since his personal damage is explicitly "fully skippable" (his own Endgame
+   Stat Targets note) and Abyss Surges doesn't trigger that self-heal condition at all, `bestWeapon` was
+   corrected to `'Originite: Type IV'`; `Abyss Surges` moved into `weaponAlts.alt5` alongside `Verity's
+   Handle` (both real 5★ options from the personal-damage-scaler table, for anyone building him for his
+   own skippable damage anyway).
+2. **`RESONANCE_CHAIN_DATA['Yuanwu'].s6`/`yuanwu.blocks.js` S6 (Defender of All Realms — nearby team
+   +32% DEF for 3s) was correctly zeroed under the 2026-09-01 audit's own reasoning** ("no team-DEF%
+   stat category in this schema") — re-verified this reasoning is now STALE: `hpPct`/`defPct` were
+   wired into the engine on 2026-09-05 (an "engine-readiness pass" unrelated to Yuanwu specifically,
+   confirmed via `resolveHitComposedDps.js`'s own dated comment on `stats.defPct`), and nobody revisited
+   Yuanwu's own previously-zeroed nodes against that schema extension until now. Added a new
+   `yuanwu.chain.s6` block: whole-team, refresh-stacking `defPct+32`, triggered on each real Thunder
+   Wedge cast, with duration approximated at Thunder Wedge's own real 12s field lifetime — a documented
+   judgment call, not a sourced number, since the kit's actual condition is spatial ("while within
+   Thunder Wedge's range") and this engine has no positional model. Since Yuanwu is himself a
+   DEF-scaler, this also correctly self-applies to boost his own damage (measured directly: with vs.
+   without the block, his own hit-composed rotation total rose materially). `RESONANCE_CHAIN_DATA['
+   Yuanwu'].s6` deliberately stays `{}` — `applyResonanceChain()` has no `defPct` branch in either its
+   main-DPS or teammate-crediting path, and even a self-target `defPct` entry has no home in
+   `legacyMainDpsStats.js`'s own allowlist, so this value only exists as a block; documented inline in
+   both `characters.js` and `yuanwu.blocks.js` so a future auditor doesn't mistake the `{}` for an
+   unaddressed gap.
+
+**Re-confirmed as still correct, not re-litigated as new findings** (verified directly against the
+current schema/engine rather than trusting the prior audit's word):
+- Thunder Wedge's own Coordinated Attack (7.96% DEF, triggered by ANY on-field character's hits landing
+  in the field, capped at 1/1.2s) remains genuinely unmodeled — this needs a "periodic tick decoupled
+  from any specific cast label, keyed to elapsed time rather than a discrete step" simulation shape this
+  engine's `windowed-proc` trigger type doesn't support (that type is keyed to a SPECIFIC move's cast
+  label, not "any hit, any move, on an interval"). Building that would be new engine architecture, not a
+  single-character audit fix — correctly left as an honestly-documented gap, same treatment as Yinlin's
+  Lightning Execution cast-order dependency.
+- S1-S4 (attack-speed, pure utility, DEF-scaling bonus-hit, shield) genuinely have no representable
+  category in this schema even after the 2026-09-05 defPct extension (none of them are a DEF%
+  multiplier — S1 is attack speed, S2 is Energy, S3 is a flat bonus-hit addition, S4 is a shield) —
+  correctly still zeroed.
+- S5 (Liberation DMG Bonus +50% while Thunder Wedge is on field) still correctly matches
+  `RESONANCE_CHAIN_DATA.s5.libDmg`.
+- Blazing Might's own hit vs. its Thunder Wedge Detonation staying 2 separate blocks (libDmg vs.
+  skillDmg) — still correct per the dump's own dedicated "Thunder Wedge Detonation" row.
+
+3 new tests added/updated (`triggerEngine-yuanwu.test.js`: S6's new block shape, its real DPS
+contribution, and RESONANCE_CHAIN_DATA.s6 staying `{}` deliberately). Full suite green (1896/1896).
+Golden fixtures (`phase3-parity-golden.json`: 609→591/591; `phase3-statpanel-golden.json`: avgCrit
+1.025→1.04525, score 833→772) regenerated via the established `DUMP_GOLDEN` pattern — both fixes move
+his real solo DPS/avgCrit (the weapon swap changes his baseline stats; S6 adds a real, previously-
+uncredited self-buff) — reason logged in `phase3-parityGolden.test.js`'s own header-comment log.

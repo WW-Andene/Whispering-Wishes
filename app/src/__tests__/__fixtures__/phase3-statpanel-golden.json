@@ -379,10 +379,10 @@
   },
   "Yuanwu": {
     "effAtk": 1638,
-    "avgCrit": 1.025,
+    "avgCrit": 1.04525,
     "defMult": 0.5013192612137203,
     "resMult": 0.9,
-    "score": 833
+    "score": 772
   },
   "Zani": {
     "effAtk": 1148,
