@@ -161,3 +161,34 @@ Total: 1,983,070. Heavy 31.2% · Liberation 28.5% · Basic 22.8% · Outro 10.8% 
 No adjacent-sequence pair is byte-identical — every node has a real, distinct DPS contribution (S4→S5 is a small jump, consistent with S5's real effect being conditional/minor Skill-only and Sword Flight utility, not a large flag for a fabricated zero-DPS node).
 
 Calculation build used: Glint of Clouds (R1) + Heart of Evil's Purge 5pc + Calamity Effigy main echo; substats ATK 25.8% / Crit Rate 40.4% / Crit DMG 80.7% / Energy Regen 18.3%.
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the prior 2026-09-01/09-02/09-04 passes' own claims of
+completeness, per standing audit instruction) of `engine/characterBlocks/qingxiao.blocks.js` and
+`characters.js`'s Qingxiao tables against this dump. **No new bugs found** — this file was already in
+excellent shape from prior passes. Specifically re-verified, not just re-read:
+
+- **DPS tier** (`T0`/`T1`) matches this dump's own Review section exactly — no swapped-column bug like
+  the one found on Lupa/Phrolova this session.
+- **`dmgFocus`** (`['Heavy ATK', 'Liberation', 'Basic ATK', 'Outro']`) correctly reflects this dump's
+  own Damage Profile's 4 dominant buckets (all ≥10%), excluding Echo/Skill/Intro (all <5%).
+- **`CHARACTER_ROTATIONS`'s multi-stage step collapsing** (e.g. Mid-air Attack Stage 1-3 modeled as one
+  combined cast rather than 3 separate steps) verified mathematically lossless: `hitParser.js` treats
+  `→` and `+` separators identically, so a flat %ATK total is invariant to how many discrete hits it's
+  split into — no damage is lost by the collapsing.
+- **The apparent Mindlock double-count risk** — `CHAR_BUFF_TABLE['Qingxiao'].selfBuffs` still carries a
+  `totalMult: 65` entry describing the SAME real mechanic as `qingxiao.debuff.mindlock`'s enemy-side
+  `amplify: 65`, with an inline comment claiming it "was never applied to any real computed DPS number
+  either." Verified this claim directly rather than trusting it: temporarily removed the `selfBuffs`
+  entry and re-ran `calcTeamStats(['Qingxiao'], ...)` — `rawDps` was byte-identical (5895) with and
+  without it, confirming the legacy engine's `target:'team'`-only selfBuffs aggregation path genuinely
+  never reads this `target:'self'` entry for DPS purposes. Not a live bug; change reverted after
+  verification.
+- **S1's Juque Perdition proc** (25-charge resource, 1/s ICD, 400% ATK basicDmg hit) remains
+  genuinely unbuilt, exactly as already and correctly documented in both `qingxiao.blocks.js`'s own S1
+  note and `characters.js`'s RESONANCE_CHAIN_DATA comment — a real, sourced, DPS-contributing gap that
+  needs a windowed-proc-style block this session didn't build (correctly flagged as non-trivial by the
+  prior pass, not silently dropped).
+
+Full existing test suite for this character re-run and confirmed green (14/14) with no changes needed.
