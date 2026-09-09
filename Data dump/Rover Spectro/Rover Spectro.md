@@ -220,3 +220,44 @@ from `CHARACTER_DATA` (no duplicated copies of this data), so fixing `characters
 `roverspectro.blocks.js`'s TriggerBlocks engine was independently re-checked against this source and
 was already correct (S1/S2/S5/S6 modeled correctly, S3/S4 correctly have no block) — no change needed
 there.
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above — this
+time the TriggerBlocks engine was NOT already correct for S1/S6 despite the prior pass's claim; found
+4 real bugs):
+
+4. **S1 incorrect always-on passive**: `roverspectro.chain.s1`'s Crit Rate +15% was modeled as an
+   unconditional `trigger:{type:'passive'}` with no duration, but her own kit text is explicit this is
+   a real cast-scoped window ("Casting Resonating Slashes or Resonating Spin -> Crit Rate +15% for
+   7s"). Confirmed via direct measurement: with the old model, enabling S1 raised the Heavy ATK warm-up
+   combo's own hit damage — but that combo is the FIRST step in the modeled rotation, firing BEFORE
+   either Resonating Slashes or Resonating Spin has ever been cast. Fixed to a real 7s window anchored
+   to `Forte:Resonating Whirl` (the block modeling her actual Resonating Spin cast in this rotation,
+   since the base Skill is never used — see item 5).
+5. **S6 anchored to a move that never fires**: `roverspectro.chain.s6`'s Spectro RES Shred -10% was
+   anchored to `'Skill:Resonating Slashes'` — the block's own prior note already admitted this move
+   never appears in `CHARACTER_ROTATIONS['Rover: Spectro']` (the warm-up step is Heavy ATK, and Forte
+   auto-upgrades Skill straight to Resonating Spin), making this a confirmed no-op: direct measurement
+   showed sequence-5 and sequence-6 totals were byte-identical. S6's own kit text explicitly names BOTH
+   "Resonating Slashes/Resonating Spin hit" as valid triggers, so re-anchored to `Forte:Resonating
+   Whirl` (the real Resonating Spin cast that fires twice in the modeled rotation) — now a real, active
+   debuff for any S6 dupe owner running this rotation.
+6. **Comment/code mismatch — missing `damage.category`**: `roverspectro.intro.waveshock`'s header
+   comment already claimed "category added for Layer 4 schema migration", but the actual field was
+   never set — the same exact bug found on Rover: Aero's and Rover: Havoc's own Intro blocks earlier
+   this session. Fixed to `skillDmg`.
+7. **`dmgFocus` mislabeled-share bug**: the prior 2026-09-03 pass's own comment on `dmgFocus` claimed
+   Basic ATK's share was "4.6%" and excluded it as "low single digits" — but per this dump's own Damage
+   Profile line ("Intro 4.6% (9,326)"), that 4.6% actually belongs to Intro, not Basic ATK. Basic's real
+   share is 7,811/120,893 = 6.46% (already correctly `basicDmg`-categorized), comparable to Heavy's own
+   already-included 9.2%. Fixed by adding `'Basic ATK'` to `dmgFocus`.
+
+**Also fixed**: `CHARACTER_DATA['Rover: Spectro'].teams`' 3rd entry named `'Rover: Spectro + Shorekeeper
++ Camellya'` — Camellya never appears anywhere in this source (her kit doesn't exploit Spectro Frazzle
+at all, the mechanic this character's entire kit revolves around). Replaced with `'Phoebe + Rover:
+Spectro + Ciaccona'`, matching this source's own explicitly-named "great Frazzle-team partner"
+(Synergies section) and "Premium Phoebe Teams" (Example Teams section).
+
+Verified all fixes via direct measurement with `resolveHitComposedDps()`: S1 no longer inflates the
+Heavy ATK combo before it should activate; S6 now produces a real, nonzero damage delta between
+sequence 5 and 6. 6 new tests added, full suite green (1887/1887). No parity-golden regression (measured
+at sequence 0, where S1/S6 are inactive).

@@ -9,6 +9,17 @@
 // selfBuffs entry is explicitly chain-gated (S6-conditional, "not innate") —
 // modeled once via S6 below, not duplicated. Its Frazzle-stack debuff has no
 // matching stat key in this schema (same class as Chisa's), not modeled.
+//
+// Full kit audit 2026-09-09: fixed a comment/code mismatch on the Intro block (a
+// stale comment claimed its category was already set; it wasn't). Fixed S1 (was
+// an unconditional always-on passive instead of the real cast-scoped 7s window
+// her own kit text specifies — confirmed via direct measurement it was incorrectly
+// boosting the Heavy ATK warm-up combo, which fires before any real Resonating
+// Slashes/Spin cast) and S6 (was anchored to 'Skill:Resonating Slashes', which
+// never fires in the modeled rotation — a confirmed no-op debuff, verified via
+// direct measurement that seq5/seq6 totals were byte-identical). Both re-anchored
+// to Forte:Resonating Whirl, the real cast event modeling her enhanced Resonating
+// Spin in this rotation.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -35,10 +46,12 @@ export const ROVER_SPECTRO_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Waveshock' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category added for Layer 4 schema migration (validate.js requires damage.category on every
-    // damage block) — no override text names a different category, same default-to-skillDmg
-    // convention used throughout this migration sweep for uncategorized Intro casts.
-    damage: { hits: parseSkillMultiplierHits('168.99%'), basis: 'ATK' },
+    // Fixed 2026-09-09 (full-kit audit): the header comment already claimed "category added for
+    // Layer 4 schema migration", but the actual field was never set — a stale/aspirational comment
+    // vs. code mismatch (the same bug found on Rover: Aero's and Rover: Havoc's own Intro blocks
+    // earlier this session). No override text names a different category for this Intro cast, same
+    // default-to-skillDmg convention actually applied on Sanhua/Baizhi/Taoqi's equivalent fixes.
+    damage: { hits: parseSkillMultiplierHits('168.99%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Adds a bit more Diminutive Sound.',
   },
   {
@@ -110,10 +123,20 @@ export const ROVER_SPECTRO_BLOCKS = [
   {
     id: 'roverspectro.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    // Fixed 2026-09-09 (full-kit audit): was an unconditional `trigger:{type:'passive'}` with no
+    // duration — S1's own kit text is explicit this is a real cast-scoped window ("Casting Resonating
+    // Slashes or Resonating Spin -> Crit Rate +15% for 7s"), not a permanent passive. Confirmed via
+    // direct measurement: with the old always-on model, enabling S1 raised
+    // roverspectro.heavy.standard-resonance-aftertune's own hit damage — but that Heavy ATK combo is
+    // the FIRST step in the real modeled rotation, firing BEFORE either Resonating Slashes or
+    // Resonating Spin has ever been cast, so S1's Crit Rate bonus should not be active yet at that
+    // point. The real modeled rotation never casts plain Resonating Slashes (CHARACTER_ROTATIONS'
+    // only Skill-family step is Forte:Resonating Whirl, the enhanced Resonating Spin + Whirl combo,
+    // same anchor already used for chain.s6 below), so anchored here to that same real cast event.
+    trigger: { type: 'cast', on: 'Forte:Resonating Whirl' },
+    timing: { duration: 7 }, target: { scope: 'self' },
     effects: [{ stat: 'critRate', value: 15, source: 'self-kit' }],
-    note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
+    note: 'Casting Resonating Slashes or Resonating Spin grants self Crit Rate +15% for 7s — anchored to the real Resonating Spin cast (Forte:Resonating Whirl) in the modeled rotation.',
   },
   {
     id: 'roverspectro.chain.s2',
@@ -137,10 +160,19 @@ export const ROVER_SPECTRO_BLOCKS = [
   {
     id: 'roverspectro.chain.s6',
     source: SOURCE, kind: 'debuff', section: 'Chain',
-    trigger: { type: 'cast', on: 'Skill:Resonating Slashes' },
+    // Fixed 2026-09-09 (full-kit audit): was anchored to 'Skill:Resonating Slashes', which — per this
+    // block's OWN prior note — never fires in the real modeled CHARACTER_ROTATIONS (the warm-up step
+    // is Heavy ATK, and Forte auto-upgrades Skill straight to Resonating Spin), so this debuff was a
+    // real, confirmed no-op: verified via direct measurement that seq5 and seq6 totals were byte-
+    // identical (S6 contributed zero). S6's own kit text explicitly names BOTH "Resonating Slashes/
+    // Resonating Spin hit" as valid triggers — the real rotation always casts the enhanced Resonating
+    // Spin (modeled as Forte:Resonating Whirl, same real cast event already anchoring chain.s1 above)
+    // — re-anchored there so the debuff actually fires in the modeled rotation, matching the real game
+    // behavior of a Rover: Spectro dupe owner.
+    trigger: { type: 'cast', on: 'Forte:Resonating Whirl' },
     timing: { duration: 20 },
     target: { scope: 'all-enemies' },
     effects: [{ stat: 'resShred', value: 10 }],
-    note: "S6 (5 copies): Resonating Slashes/Spin hit -> Spectro RES Shred -10% (20s) — chain-gated, not innate to base kit (per CHAR_BUFF_TABLE's own note); modeled anchored to Resonating Slashes' own cast label, but her real CHARACTER_ROTATIONS never uses the base Skill (the warm-up step is Heavy ATK, and Forte auto-upgrades Skill straight to Resonating Spin), so this block is present but does not fire in the standard rotation.",
+    note: "S6 (5 copies): Resonating Slashes/Spin hit -> Spectro RES Shred -10% (20s, no stacking) — chain-gated, not innate to base kit (per CHAR_BUFF_TABLE's own note); anchored to the real Resonating Spin cast (Forte:Resonating Whirl) that actually fires in the modeled rotation.",
   },
 ];

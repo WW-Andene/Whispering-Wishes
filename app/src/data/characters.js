@@ -34,7 +34,13 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Emerald of Genesis',
     weaponAlts: { alt5: ['Blazing Brilliance'], alt4: ['Lunar Cutter', 'Endless Collapse'], alt3: ['Sword of Night'] },
-    teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Rover: Spectro + Shorekeeper + Camellya'] },
+    // teams' 3rd entry fixed 2026-09-09 (full-kit audit): was 'Rover: Spectro + Shorekeeper +
+    // Camellya' — Camellya never appears anywhere in this source (her kit doesn't exploit Spectro
+    // Frazzle at all, which this character's entire kit revolves around). Replaced with Ciaccona, this
+    // source's own explicitly-named "great Frazzle-team partner" (Synergies section), matching the
+    // Example Teams section's "Premium Phoebe Teams" naming (Ciaccona named as Absolution Phoebe's
+    // best/only real partner, best paired with Shorekeeper specifically).
+    teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Phoebe + Rover: Spectro + Ciaccona'] },
   // Fixed 2026-09-03 against a real browser snapshot, superseding the 2026-08-18 note below
   // where they conflict. bestEchoes named 'Impermanence Heron' — never mentioned anywhere in this
   // source (that's Rover: Aero's/Rover: Spectro's echo); the source's only Main Echo option for Havoc
@@ -1539,10 +1545,15 @@ const CHARACTER_DATA = {
   // dmgFocus gained 'Heavy ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her own dump's
   // Damage Profile: Heavy is a genuine 9.2% (15,731) share, comparable to already-included categories
   // elsewhere (contrast the "low single digits" exclusion precedent on Lucy's dropped Liberation focus)
-  // — was silently rejecting a real teammate Heavy ATK DMG Bonus. Basic ATK (4.6%) and the equipped
-  // Echo's own damage (5.5%, not her own kit's Echo Skill button — a different character shape
-  // entirely, e.g. Sigrika/Galbrena) both stay excluded, consistent with that same precedent.
-  ['Rover: Spectro', ['Skill', 'Liberation', 'Heavy ATK'], [],                                 ['Frazzle']],
+  // — was silently rejecting a real teammate Heavy ATK DMG Bonus. The equipped Echo's own damage (7.7%,
+  // 9,346/120,893 — not her own kit's Echo Skill button, a different character shape entirely, e.g.
+  // Sigrika/Galbrena) stays excluded, consistent with that same precedent.
+  // dmgFocus gained 'Basic ATK' 2026-09-09 (full-kit audit): the prior comment above mislabeled Basic
+  // ATK's share as "4.6%" — that 4.6% actually belongs to Intro per the dump's own Damage Profile line
+  // ("Intro 4.6% (9,326)"); Basic's real share is 7,811/120,893 = 6.46% (already correctly
+  // basicDmg-categorized in roverspectro.blocks.js), comparable to Heavy's own already-included 9.2% —
+  // was silently rejecting a real teammate Basic ATK DMG Bonus.
+  ['Rover: Spectro', ['Skill', 'Liberation', 'Heavy ATK', 'Basic ATK'], [],                     ['Frazzle']],
   // dmgFocus gained 'Liberation'/'Skill' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against her
   // own dump's Damage Profile: Liberation is a genuine 26.2% (113,642) share — her 2nd-LARGEST damage
   // bucket, entirely missing — and Skill is a real 10.9% (80,530), both correctly libDmg/skillDmg-
