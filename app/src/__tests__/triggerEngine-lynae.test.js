@@ -46,4 +46,22 @@ describe('triggerEngine parity — Lynae', () => {
     expect(fired.has('lynae.forte.visual-impact')).toBe(true);
     expect(fired.has('lynae.outro.lets-hit-the-road')).toBe(true);
   });
+
+  // Added 2026-09-09 (full-kit audit, independent re-verification): Inherent Skill Adaptive Optics'
+  // +25% Spectro DMG for 9s on casting Intro had NO representation anywhere (CHAR_BUFF_TABLE's
+  // selfBuffs was empty, no block existed) despite being a real, unconditional, sourced base-kit
+  // passive with a genuine DPS component.
+  it('Inherent Skill Adaptive Optics (+25% Spectro DMG for 9s on Intro cast) is modeled and measurably applied', () => {
+    const block = LYNAE_BLOCKS.find(b => b.id === 'lynae.buff.inherent-adaptive-optics');
+    expect(block).toBeTruthy();
+    expect(block.trigger).toEqual({ type: 'cast', on: 'Intro:Time to Show Some Colors!' });
+    expect(block.timing.duration).toBe(9);
+    expect(block.effects[0]).toMatchObject({ stat: 'elemDmg', value: 25 });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lynae'], LYNAE_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withBuff = resolveHitComposedDps(LYNAE_BLOCKS, steps, ctx, 3000, 'spectro', 'Sub DPS', null, 0).totalDamage;
+    const withoutBuff = resolveHitComposedDps(LYNAE_BLOCKS.filter(b => b.id !== 'lynae.buff.inherent-adaptive-optics'), steps, ctx, 3000, 'spectro', 'Sub DPS', null, 0).totalDamage;
+    expect(withBuff).toBeGreaterThan(withoutBuff);
+  });
 });

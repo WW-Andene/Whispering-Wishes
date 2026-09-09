@@ -124,6 +124,21 @@ export const LYNAE_BLOCKS = [
     note: 'Also ends Kaleidoscopic Parade and grants the incoming Resonator buffs (see lynae.outro.lets-hit-the-road-buff below).',
   },
 
+  // Added 2026-09-09 (full-kit audit, independent re-verification): Inherent Skill "Adaptive Optics:
+  // Everyday Applications" ("casting Intro grants +25% Spectro DMG for 9s") — a real, sourced,
+  // unconditional base-kit passive with a genuine DPS component — had NO representation anywhere:
+  // `CHAR_BUFF_TABLE['Lynae'].selfBuffs` was an empty array, and no block existed for it. Modeled as a
+  // real cast-anchored 9s window on the real Intro cast (the modeled rotation's own first step).
+  {
+    id: 'lynae.buff.inherent-adaptive-optics',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Intro:Time to Show Some Colors!' },
+    timing: { duration: 9 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 25, source: 'self-kit' }],
+    note: 'Inherent Skill Adaptive Optics: Everyday Applications: casting Intro grants +25% Spectro DMG for 9s (confirmed exact). Optic Camo half (out-of-combat stealth utility) not modeled, no DPS component.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'lynae.outro.lets-hit-the-road-buff',

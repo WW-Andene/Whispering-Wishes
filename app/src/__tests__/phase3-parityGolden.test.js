@@ -497,6 +497,13 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // before/after the fix: effAtk/avgCrit/defMult/resMult unchanged, only score (which folds in
 // rawDps) moved.
 //
+// Lynae's `legacyRawDps`/`engineDps` (3578 -> 4160) and stat-panel `score` (1153 -> 1304) updated
+// 2026-09-09 (full re-audit): Inherent Skill Adaptive Optics' "+25% Spectro DMG for 9s on casting
+// Intro" had NO representation anywhere (CHAR_BUFF_TABLE['Lynae'].selfBuffs was empty) despite being a
+// real, unconditional, sourced base-kit passive with a genuine DPS component — added as a new
+// cast-anchored block. effAtk is unaffected (elemDmg doesn't feed effAtk) — confirmed via a direct
+// calcTeamStats(['Lynae'], ...) call; avgCrit/defMult/resMult also unchanged.
+//
 // Luuk Herssen's `legacyRawDps`/`engineDps` (2674 -> 3246) and stat-panel `effAtk`/`score`
 // (1176 -> 1398, 1338 -> 1591) updated 2026-09-09 (full re-audit): the Inherent Skill Uncaused
 // Diagnosis ATK+25%-on-Shifting buff (added in a 2026-09-04 pass) reacts to `ally-action`/`shifting`,

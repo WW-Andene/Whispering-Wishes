@@ -181,3 +181,32 @@ Key mechanics: manages 3 Forte resources (Overflow → Lumiflow via Spark Collis
 Buff recap: Outro — 15% All DMG + 25% Liberation DMG Amp to next (expires on swap); Ultimate — 24% party-wide All DMG Bonus; Visual Impact — 40 Tune Break Boost party-wide; Echo set — 30% ATK + 10% All DMG Bonus to next via Outro; Signature — up to 24% party-wide All DMG Bonus. Totals 58% DMG Bonus + 30% ATK + 15% All-type + 25% Liberation Amp to one character; even on Static Mist (no Signature), trades 24% DMG Bonus for 10% ATK — a negligible loss.
 
 Meta position: one of the strongest characters ever released — flagship generalist Hybrid, best-in-slot for numerous top-tier DPS (Aemeath, Luuk, Hiyuki, Iuno) while also working excellently with Carlotta, Phoebe, Camellya, Augusta, and even Phrolova. Reminiscent of Shorekeeper's universality, but as a Hybrid buffer.
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the extensive prior 2026-09-02 pass's own claims of completeness,
+per standing audit instruction) of `engine/characterBlocks/lynae.blocks.js` and `characters.js`'s
+Lynae tables against this dump.
+
+**1 real bug found and fixed**: Inherent Skill "Adaptive Optics: Everyday Applications" — "casting
+Intro grants +25% Spectro DMG for 9s" (line 88 above) — a real, sourced, unconditional base-kit
+passive with a genuine DPS component — had NO representation anywhere: `CHAR_BUFF_TABLE['Lynae']
+.selfBuffs` was an empty array, and no block existed for it in `lynae.blocks.js` despite the file's
+own extensive prior audit history covering nearly everything else in her kit. Added
+`lynae.buff.inherent-adaptive-optics`: a real cast-anchored 9s `elemDmg:25` window on the real Intro
+cast (the modeled rotation's own first step). Measured directly: adds +11994 DPS-equivalent to the
+modeled solo rotation (~+19.6%) — a significant, previously entirely missing contribution, not a
+marginal correction.
+
+**Verification**: `legacyRawDps`/`engineDps` golden snapshots updated (3578 → 4160) and stat-panel
+`score` (1153 → 1304) via the established DUMP_GOLDEN pattern and a direct `calcTeamStats()` call;
+`effAtk` confirmed unaffected (elemDmg doesn't feed effAtk), `avgCrit`/`defMult`/`resMult` also
+unchanged. 1 new positive-verification test added to `triggerEngine-lynae.test.js`. Full test suite
+re-run and green (1869/1869).
+
+**Everything else re-verified this pass, found already correct**: the mode-gated `appliesTags`
+mechanism and its `confirmedWinningStance` resolution (Tune Rupture mode), all 6 Resonance Chain
+nodes' mechanics/scoping (including S6's correct zeroing for the unreached S6-only alternate
+rotation), the Outro/libBuff pairing against `CHAR_BUFF_TABLE`, the `tuneBreak` sub-object's mode
+exclusivity fix, `dmgFocus`, and `SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/`CHARACTER_DATA` entries
+generally.
