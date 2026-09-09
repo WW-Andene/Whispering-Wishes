@@ -227,3 +227,31 @@ Rotation time: 6.35s. Build: Emerald Sentence R1, 3pc Law of Harmony + 2pc Sierr
 | S4 | 251,252 | 39,567 | 168.36% |
 | S5 | 272,134 | 42,855 | 182.35% |
 | S6 | 311,462 | 49,049 | 208.70% |
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the prior 2026-09-04 pass's own claims of completeness, per
+standing audit instruction) of `engine/characterBlocks/qiuyuan.blocks.js` and `characters.js`'s
+Qiuyuan tables against this dump — despite that prior pass already fixing 6+ significant bugs (5 wrong/
+missing damage categories, the fully-unmodeled Bamboo's Shade base-kit buff, S3's dead/missing second
+component, the entirely-missing Straw Cape in Drizzly Rain move, S6's missing exit-Inksplash damage
+effect). **No new bugs found** this pass.
+
+Specifically re-verified, not just re-read:
+- **DPS tier** (`T0`/`T0`) and **`dmgFocus`** (`['Heavy ATK', 'Echo']`) both match this dump exactly.
+- **Every damage block's category** cross-checked individually against this dump's own "counted as
+  Heavy/Echo Skill DMG" kit text and its Damage-Type Breakdown table (0% Basic/Skill/Liberation/Intro/
+  Outro, 60.8% Heavy, 39.2% Echo) — all correct.
+- **`qiuyuan.buff.bamboos-shade`'s trigger** (`resource-threshold`, anchored to the Inkwash Stage 3-4
+  cast rather than the Intro cast) examined closely: Intro alone grants 400/600 Forte per its own note
+  and the dump's own "+400 from Intro Skill" text — meaning the 400-Soliloquy threshold is technically
+  crossed one step earlier than where the block anchors it. Confirmed via direct measurement this has
+  ZERO DPS impact in the modeled rotation (Inkwash Stage 3-4 is literally the very next step with no
+  intervening echoDmg-categorized hit of Qiuyuan's own to miss), so left as-is rather than churning a
+  cosmetic-only anchor change. Also confirmed the buff fires and contributes real, non-zero damage
+  (+4889 in the test enemy-config) — not a dead block.
+- **S3's `totalMult` double-scoping** (Sundering Strike +500%, To Teach +600%, both via independent
+  `scopedToBlockId` entries on the same node) verified as correctly isolated, no cross-contamination.
+
+Full existing test suite for this character re-run and confirmed green (11/11) with no changes needed;
+full project suite also green (1873/1873).
