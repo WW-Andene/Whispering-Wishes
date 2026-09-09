@@ -295,3 +295,35 @@ With her signature weapon specifically (Lethean Elegy): S6 — 2,763,617 DMG / 2
 4. **Phoebe Dual DPS**: Phoebe + Phrolova + Rover: Spectro — same concept as the Jiyan pairing, with
    Spectro Rover as the support; one of Phoebe's best teams assuming Phrolova has her Signature weapon.
 5. **F2P Team**: Phrolova + Danjin + Shorekeeper / Rover: Havoc / Buling.
+
+## App Data Comparison (vs. `app/src/data/characters.js` + `phrolova.blocks.js`)
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the prior 2026-09-02/09-04 passes' own claims of completeness, per
+standing audit instruction) of `engine/characterBlocks/phrolova.blocks.js` and `characters.js`'s
+Phrolova tables against this dump — despite this file's own extensive documented prior work (Forte
+follow-up gap, Hecate-attack gap, unscoped-totalMult fix on S1, all previously found and fixed).
+
+**1 real bug found and fixed**: the DPS tier table had Phrolova at `T0.5`/`T0` (ToA/WW), but this
+dump's own Review section is explicit: "DPS tier: T0.5 (ToA, standard) / T0.5 (WW, standard) — T1
+(ToA, Value list) / T0 (WW, Value list)" — the stored WW value (`T0`) had been swapped in from the
+Value list column instead of the standard list. Fixed to `T0.5`/`T0.5`.
+
+**Deliberately re-confirmed, not changed**: `phrolova.liberation.hecate-attack`'s "one representative
+tick" modeling of Hecate's real repeating off-field Maestro attacks (Echo = 43.9% of her total damage
+per this dump's own profile) was re-examined against the same "rate-cap saturation" technique used
+this session to fix Mortefi's Burning Rhapsody proc. Concluded the technique does NOT transfer here:
+Mortefi's mechanic has an exact, confident rate ("max 1 proc per 0.35s"); Phrolova's own dump text
+gives only an approximate range ("repeating auto-attack every ~1.2-1.5s"), and the mechanic is
+additionally gated by cross-character behavior (Echo Skill casts from OTHER teammates, capped at
+10/Maestro) this solo-character rotation model has no way to simulate. Deriving a specific hit-count
+from an admittedly approximate range would itself be a fabrication this project's "zero, don't guess"
+rule forbids — left as the already-documented, reasoned approximation rather than force-fit.
+
+**Everything else re-verified this pass, found already correct**: all 6 Resonance Chain nodes'
+mechanics and scoping (S1's totalMult scoping, S2's skillDmg categorization, S3/S4/S6's team/self
+scoping, S5's correct zero-block treatment), the Forte follow-up's 3-occurrence firing, the S6
+Apparition proc, the Aftersound self-buff's flat-cap modeling, the Outro/CHAR_BUFF_TABLE pairing, and
+`SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/`CHARACTER_DATA`/weapon/echo data generally. Full test suite
+re-run and green (1873/1873) — no golden fixture changes needed (pure data correction, no DPS impact).

@@ -2169,7 +2169,11 @@ const CHARACTER_DATA = {
   ['Denia',         'T0',   'T0.5'],
   ['Rebecca',       'T0.5', 'T1'],
   ['Lucy',          'T1',   'T2'],
-  ['Phrolova',      'T0.5', 'T0'],
+  // tier corrected 2026-09-09 (full-kit audit): was 'T0.5'/'T0' — the fresh dump's own Review section
+  // is explicit: "DPS tier: T0.5 (ToA, standard) / T0.5 (WW, standard) — T1 (ToA, Value list) / T0 (WW,
+  // Value list)" — the standard list is T0.5/T0.5; the stored WW value (T0) had been swapped in from
+  // the Value list column instead.
+  ['Phrolova',      'T0.5', 'T0.5'],
   // toa corrected 2026-09-02 (final Augusta audit pass): was 'T0.5' — the fresh the source dump's Review
   // tab states T1 for BOTH DPS tiers (Tower of Adversity and Whimpering Wastes) and BOTH the regular
   // and "Value" tier lists, all four saying T1 — no T0.5 anywhere in that source.
