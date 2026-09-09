@@ -81,6 +81,31 @@ export const MORNYE_BLOCKS = [
     note: 'Replaces the Syntony Field with a stronger High Syntony Field for 25s (+20% team DEF, +40% Healing Multiplier on top of the base field, neither modeled).',
   },
 
+  // Added 2026-09-09 (full-kit audit, independent re-verification): Critical Protocol's OWN base-kit
+  // text (not chain-gated at all) — "For every 1% of Mornye's Energy Regen over 100%, gains +0.5% Crit
+  // Rate (cap +80%) and +1% Crit DMG (cap +160%)" — had NO representation anywhere:
+  // CHAR_BUFF_TABLE['Mornye'].selfBuffs was an empty array, and no block existed for it in this file
+  // despite the file's own extensive prior audit history covering S1-S6 in detail. Modeled at the
+  // documented cap (reached at exactly 260% ER) rather than the literal per-point scaling formula,
+  // matching the established precedent for this exact "scales with own final ER stat, no per-point
+  // scaling primitive in this schema" class of effect (see suisui.blocks.js's own
+  // suisui.buff.roaming-transcendent-alldmg note) — this dump's own Endgame Stat Targets section
+  // separately confirms 260% ER (240% before Echo/Passive + the 10%+10% from her Inherent
+  // Skill/Main Echo) as her real, intended meta target, so the cap isn't an arbitrary assumption.
+  // Cast-scoped (instant, no persistent duration) to the same Liberation hit, same
+  // single-hit-scoped pattern as her own S5/S6 chain nodes below.
+  {
+    id: 'mornye.selfbuff.critical-protocol-crit',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Liberation:Critical Protocol' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'critRate', value: 80, source: 'self-kit' },
+      { stat: 'critDmg', value: 160, source: 'self-kit' },
+    ],
+    note: 'Critical Protocol: for every 1% ER over 100%, +0.5% Crit Rate (cap +80%) and +1% Crit DMG (cap +160%) — modeled at the documented cap (reached at 260% ER, her real sourced meta target), cast-scoped to the same Liberation hit.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'mornye.outro.recursion',

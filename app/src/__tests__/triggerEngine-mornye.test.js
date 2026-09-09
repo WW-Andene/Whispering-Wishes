@@ -68,4 +68,26 @@ describe('triggerEngine parity — Mornye', () => {
     // ('Wide Field Observation Mode Stage 1-3') must actually fire a damage block now.
     expect(fired.has('mornye.basic.wide-field-stage1-3')).toBe(true);
   });
+
+  // Added 2026-09-09 (full-kit audit, independent re-verification): Critical Protocol's own base-kit
+  // ER-scaling Crit self-buff ("for every 1% ER over 100%, +0.5% Crit Rate cap +80%, +1% Crit DMG cap
+  // +160%") had NO representation anywhere (CHAR_BUFF_TABLE's selfBuffs was empty) despite being real,
+  // unconditional (not chain-gated), and a significant contributor to her own Liberation hit.
+  it('Critical Protocol\'s own ER-scaling Crit self-buff is modeled at the documented cap and measurably applied', () => {
+    const block = MORNYE_BLOCKS.find(b => b.id === 'mornye.selfbuff.critical-protocol-crit');
+    expect(block).toBeTruthy();
+    expect(block.trigger).toEqual({ type: 'cast', on: 'Liberation:Critical Protocol' });
+    expect(block.effects).toEqual(expect.arrayContaining([
+      expect.objectContaining({ stat: 'critRate', value: 80 }),
+      expect.objectContaining({ stat: 'critDmg', value: 160 }),
+    ]));
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Mornye'], MORNYE_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const libDamage = (blocks) => {
+      const { hitLog } = resolveHitComposedDps(blocks, steps, ctx, { def: 2200 }, 'fusion', 'Healer', null, 0);
+      return hitLog.filter(h => h.blockId === 'mornye.liberation.critical-protocol').reduce((s, h) => s + h.damage, 0);
+    };
+    expect(libDamage(MORNYE_BLOCKS)).toBeGreaterThan(libDamage(MORNYE_BLOCKS.filter(b => b.id !== 'mornye.selfbuff.critical-protocol-crit')));
+  });
 });

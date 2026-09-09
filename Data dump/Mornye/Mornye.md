@@ -218,3 +218,37 @@ Additional tips: Wide Field Basic 3 becomes cancellable as soon as the attack st
 - **Lynae + Mornye**: Aemeath / Hiyuki / Iuno / Yangyang: Xuanling + Lynae + Mornye — any non-Negative-Status DPS (and Hiyuki) works in the 1st slot, fully interchangeable, though Lynae+Mornye slightly favor Liberation damage teams; Tune Strain DPS also fits well.
 - **Tune Strain Team**: Qingxiao / Luuk Herssen / Denia + Mornye.
 - **Mono Fusion**: Aemeath / Galbrena / Brant / Encore + Lupa + Mornye.
+
+## App Data Comparison (vs. `app/src/data/characters.js` + `mornye.blocks.js`)
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting the extensive prior 2026-09-02/09-04 passes' own claims of
+completeness, per standing audit instruction) of `engine/characterBlocks/mornye.blocks.js` and
+`characters.js`'s Mornye tables against this dump.
+
+**1 real bug found and fixed**: Critical Protocol's OWN base-kit text (not chain-gated at all) — "For
+every 1% of Mornye's Energy Regen over 100%, gains +0.5% Crit Rate (cap +80%) and +1% Crit DMG (cap
++160%)" (line 57 above) — a real, unconditional, significant self-buff on her Liberation cast — had NO
+representation anywhere: `CHAR_BUFF_TABLE['Mornye'].selfBuffs` was an empty array, and no block
+existed for it, despite the file's own extensive prior audit history covering S1-S6 and multiple other
+dimensions in detail. Modeled at the documented cap (reached at exactly 260% ER) rather than the
+literal per-point scaling formula this schema has no primitive for — matching the established
+precedent for this exact class of effect (`suisui.blocks.js`'s own ER-scaling self-buff note). This
+isn't an arbitrary assumption: this dump's own Endgame Stat Targets and "Key mechanics" sections
+separately and repeatedly confirm 260% ER as her real, intended meta target (10% Inherent Skill + 10%
+Main Echo + 240% from gear).
+
+**Verification**: measured directly — the new self-buff makes her Liberation hit's own damage 2.72x
+higher when isolated (critRate 80/critDmg 160 vs. base 5/150). `legacyRawDps`/`engineDps` golden
+snapshot updated (840 → 1376) via the established DUMP_GOLDEN pattern; stat-panel
+`effAtk`/`avgCrit`/`score` confirmed unaffected (that projection's own path doesn't route through this
+specific cast-scoped buff). 1 new positive-verification test added to `triggerEngine-mornye.test.js`.
+Full test suite re-run and green (1870/1870).
+
+**Everything else re-verified this pass, found already correct**: the DEF-basis convention across all
+damage blocks, S1/S3/S4's correct zero-block treatment (genuine zero-DPS utility per their own kit
+text), S2/S5/S6's mechanics and cast-scoping, S5's own documented Tune Rupture Response - Particle Jet
+schema gap (correctly flagged rather than force-fit), the Outro pairing against `CHAR_BUFF_TABLE`, the
+`tuneBreak` sub-object's mode-exclusivity handling, and `SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/
+`CHARACTER_DATA` entries generally.

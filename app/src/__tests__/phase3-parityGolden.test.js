@@ -497,6 +497,15 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // before/after the fix: effAtk/avgCrit/defMult/resMult unchanged, only score (which folds in
 // rawDps) moved.
 //
+// Mornye's `legacyRawDps`/`engineDps` (840 -> 1376) updated 2026-09-09 (full re-audit): Critical
+// Protocol's own base-kit ER-scaling Crit self-buff ("for every 1% ER over 100%, +0.5% Crit Rate cap
+// +80%, +1% Crit DMG cap +160%") had NO representation anywhere (CHAR_BUFF_TABLE's selfBuffs was
+// empty) despite being real, unconditional (not chain-gated), and a major contributor to her own
+// Liberation hit (2.72x multiplier when isolated). Modeled at the documented cap (reached at exactly
+// 260% ER, her own dump-confirmed real meta target), same established pattern as suisui.blocks.js's
+// own ER-scaling self-buff. Stat-panel `effAtk`/`avgCrit`/`score` confirmed unaffected (this
+// projection's own path doesn't route through this specific cast-scoped buff).
+//
 // Lynae's `legacyRawDps`/`engineDps` (3578 -> 4160) and stat-panel `score` (1153 -> 1304) updated
 // 2026-09-09 (full re-audit): Inherent Skill Adaptive Optics' "+25% Spectro DMG for 9s on casting
 // Intro" had NO representation anywhere (CHAR_BUFF_TABLE['Lynae'].selfBuffs was empty) despite being a
