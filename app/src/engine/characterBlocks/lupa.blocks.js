@@ -98,6 +98,21 @@ export const LUPA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('75.63%+56.72%×4+453.75%'), category: 'libDmg', basis: 'ATK' },
     note: 'Forte finisher at 2 Wolfaith while in Burning Matchpoint, consumes both Wolfaith, removes Burning Matchpoint; considered Resonance Liberation DMG. Always the variant her real rotation uses — the weaker base Dance With the Wolf (no Burning Matchpoint requirement) is never actually cast in her modeled rotation per the source dump\'s own text.',
   },
+  // Added 2026-09-09 (full-kit audit, completeness pass): a real, sourced SKILL_MULTIPLIERS row with
+  // no block anywhere in this file — same "add unused base kit for completeness" convention already
+  // used for Lucy/Lucilla's own unused-in-rotation rows. Genuinely unreachable in the modeled
+  // rotation (requires Wild Hunt, which needs 2 TEAMMATE Intro casts within Pack Hunt's window — her
+  // solo-modeled CHARACTER_ROTATIONS has no way to reach it, same class as Jiyan's S6/Finale), so this
+  // block is present but inert here — chain.s3's own cast-scoped buff (below) now has a real block to
+  // scope onto if a future team-aware rotation ever fires it.
+  {
+    id: 'lupa.liberation.nowhere-to-run',
+    source: SOURCE, kind: 'damage', section: 'Liberation',
+    trigger: { type: 'cast', on: 'Liberation:Nowhere to Run!' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('793.57%+49.60%×4'), category: 'libDmg', basis: 'ATK' },
+    note: 'Replaces the next Intro Skill only in Wild Hunt state (2 teammate Intro casts within Pack Hunt\'s window); considered Resonance Liberation DMG; removes Pack Hunt/Glory on cast (not modeled). Unused in the modeled rotation — see this file\'s header comment.',
+  },
   {
     id: 'lupa.outro.stand-by-me-warrior',
     source: SOURCE, kind: 'buff', section: 'Outro',
@@ -144,13 +159,23 @@ export const LUPA_BLOCKS = [
   // ── Resonance Chain blocks (from RESONANCE_CHAIN_DATA — see its own 2026-09-01 re-audit comment for
   //    each node's real mechanic) ──
   {
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): was `trigger:{type:'passive'}`
+    // PLUS `timing:{duration:10}` — the "duration is dead metadata on a passive trigger" bug class
+    // already found and fixed this session on Baizhi/Brant/Ciaccona/Denia/Galbrena/Jinhsi/Lucilla
+    // (resolveHitComposedDps.js's `passiveBlocks` filter only checks `trigger.type === 'passive'` and
+    // applies unconditionally, ignoring `timing.duration` entirely). The old note claimed "no specific
+    // cast anchor sourced" — but the dump's own S1 text is explicit: "Casting Fire-Kissed Glory...
+    // grants +20% Crit Rate for 10s" — a real, sourced cast anchor that was simply missed. Measured
+    // directly: her real Intro cast (which fires BEFORE Fire-Kissed Glory in the modeled rotation) was
+    // silently getting this Crit Rate too — removing the block dropped Intro's own damage from 3021.15
+    // to 2752.60 (a ~9.8% drop, confirming the pre-cast leak). Retargeted to the real Liberation cast.
     id: 'lupa.chain.s1',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
+    trigger: { type: 'cast', on: 'Liberation:Fire-Kissed Glory' },
     timing: { duration: 10 },
     target: { scope: 'self' },
     effects: [{ stat: 'critRate', value: 20, source: 'self-kit' }],
-    note: 'Crit Rate +20% for 10s (confirmed exact, corrected from an earlier wrong elemDmg categorization) — no specific cast anchor sourced beyond the flat value/duration, kept passive.',
+    note: 'Crit Rate +20% for 10s on casting Fire-Kissed Glory (confirmed exact) — now correctly gated to start on that real cast instead of an unconditional passive that was silently active for her pre-Liberation Intro hit too.',
   },
   {
     id: 'lupa.chain.s2',
@@ -201,20 +226,54 @@ export const LUPA_BLOCKS = [
     damage: { hits: parseSkillMultiplierHits('945.325%'), category: 'libDmg', basis: 'ATK' },
     note: "S4: Dance With the Wolf: Climax's own DMG Multiplier +125% (confirmed exact — also fixes a stale prior data bug where an earlier version of this file stored totalMult:25 instead of the sourced 125, a factor-of-5 error). Modeled as a proportional second hit at the same instant as lupa.liberation.dance-with-the-wolf-climax (945.325% = 125% of that block's own 756.26% base total), not a buff effect — see this block's own header comment for why a buff-shaped version can't actually apply here.",
   },
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): was a single unconditional
+  // `trigger:{type:'passive'}` block — the dump's own S5 text is explicit: "Casting Intro Skill (Try
+  // Focusing, Eh? OR Nowhere to Run!) grants +15% Resonance Liberation DMG Bonus for 10s" — a real
+  // cast-anchored window, not an always-on passive. Measured: in the current ~8.14s modeled rotation
+  // (where Intro fires as literally the first step), a 10s window from Intro already covers every
+  // later libDmg-categorized hit (Fire-Kissed Glory, Dance With the Wolf: Climax) regardless of
+  // anchoring, so this fix produces NO measurable DPS change today — but the old shape would have been
+  // a real, silent bug the moment a longer rotation, a delayed Intro, or a 2nd-loop rotation entered
+  // the picture (exactly the "dead duration on unconditional passive" bug class already fixed on
+  // chain.s1 above and on Baizhi/Brant/Ciaccona/Denia/Galbrena/Jinhsi/Lucilla this session). Split into
+  // 2 blocks (one per real trigger cast, same "one block per anchor" pattern as Lumi's Expediting).
   {
-    id: 'lupa.chain.s5',
+    id: 'lupa.chain.s5-try-focusing',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'passive' },
-    timing: {}, target: { scope: 'self' },
+    trigger: { type: 'cast', on: 'Intro:Try Focusing, Eh?' },
+    timing: { duration: 10 },
+    target: { scope: 'self' },
     effects: [{ stat: 'libDmg', value: 15, source: 'self-kit' }],
-    note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
+    note: 'Casting Intro Skill (Try Focusing, Eh?) grants +15% Resonance Liberation DMG Bonus for 10s (confirmed exact) — now correctly gated to start on that real cast.',
   },
   {
+    id: 'lupa.chain.s5-nowhere-to-run',
+    source: SOURCE, kind: 'buff', section: 'Chain',
+    trigger: { type: 'cast', on: 'Liberation:Nowhere to Run!' },
+    timing: { duration: 10 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'libDmg', value: 15, source: 'self-kit' }],
+    note: 'Same real mechanic as lupa.chain.s5-try-focusing above, anchored to the other real trigger cast (Nowhere to Run! itself counts as the "Intro Skill" slot when in Wild Hunt state). Unused in the modeled rotation, same as lupa.liberation.nowhere-to-run above.',
+  },
+  {
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): was UNSCOPED — the dump's own S6
+    // text names exactly 3 moves ("Dance With the Wolf: Climax, Fire-Kissed Glory, AND Nowhere to
+    // Run! all ignore 30% target DEF"), but `defIgnore` is NOT category-gated in
+    // resolveHitComposedDps.js (applied unconditionally via `calcDefMult` to every hit resolved at
+    // that instant, unlike basicDmg/skillDmg/etc which only apply to matching-category hits) — so the
+    // unscoped effect was leaking onto her entire kit, including moves S6 never names (Foebreaker,
+    // Mid-air Attacks, Firestrike, Wolf's Claw). Measured directly: Foebreaker's own damage (S6 has
+    // nothing to do with it) rose from 7914.28 to 9306.58 with the unscoped block present — confirming
+    // a real, active over-crediting bug, same class as Lumi's own chain.s2 defIgnore leak this session.
     id: 'lupa.chain.s6',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'defIgnore', value: 30, source: 'self-kit' }],
-    note: 'Confirmed exact value/category, no further scope detail sourced beyond the flat value — kept passive.',
+    effects: [{ stat: 'defIgnore', value: 30, scopedToBlockId: [
+      'lupa.liberation.fire-kissed-glory',
+      'lupa.liberation.dance-with-the-wolf-climax',
+      'lupa.liberation.nowhere-to-run',
+    ], source: 'self-kit' }],
+    note: 'Dance With the Wolf: Climax, Fire-Kissed Glory, and Nowhere to Run! all ignore 30% target DEF (confirmed exact) — now correctly scoped to only those 3 named moves instead of leaking onto her whole kit.',
   },
 ];

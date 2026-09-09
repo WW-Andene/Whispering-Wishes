@@ -301,3 +301,58 @@ Notes on real-game rotation mechanics:
 3. **Chixia Best Team**: Chixia + Brant + Lupa.
 4. **Encore F2P Team**: Encore + Lupa + Shorekeeper/Chixia — rotate Lupa first with Chixia on the team,
    otherwise rotate Shorekeeper first.
+
+## App Data Comparison (vs. `app/src/data/characters.js` + `lupa.blocks.js`)
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (this is the first pass with an "App Data Comparison" section — prior work on
+this file, per its own header comments, was real and extensive, but never checkpointed into this
+dump) of `engine/characterBlocks/lupa.blocks.js` and `characters.js`'s Lupa tables against this dump.
+
+**3 real bugs found and fixed** — all instances of bug classes already found/fixed on other characters
+this session, confirming the value of not trusting prior "already audited" claims:
+
+1. **`chain.s1`: dead duration on an unconditional passive.** Was `trigger:{type:'passive'}` PLUS
+   `timing:{duration:10}` — the real S1 text ("Casting Fire-Kissed Glory... grants +20% Crit Rate for
+   10s", line 122 above) names a real cast anchor that was simply missed (the old note even said "no
+   specific cast anchor sourced"). Measured directly: her Intro cast (which fires BEFORE Fire-Kissed
+   Glory in the modeled rotation) was silently getting the Crit Rate too — Intro's own damage dropped
+   from 3021.15 to 2752.60 once correctly gated. Retargeted to the real `Liberation:Fire-Kissed Glory`
+   cast.
+2. **`chain.s6`: unscoped `defIgnore` leaking onto the whole kit.** The real text names exactly 3 moves
+   ("Dance With the Wolf: Climax, Fire-Kissed Glory, AND Nowhere to Run! all ignore 30% target DEF",
+   line 132) but `defIgnore` isn't category-gated (applied unconditionally via `calcDefMult`), so the
+   unscoped effect was boosting Foebreaker, Mid-air Attacks, Firestrike, and Wolf's Claw too — none of
+   which S6 names. Measured directly: Foebreaker's own damage dropped from 9306.58 to 7914.28 once
+   correctly scoped via `scopedToBlockId`.
+3. **`chain.s5`: same dead-duration-on-passive class as S1.** Real text: "Casting Intro Skill (Try
+   Focusing, Eh? OR Nowhere to Run!) grants +15% Resonance Liberation DMG Bonus for 10s" (line 130) —
+   was modeled as an unconditional passive. Split into 2 real cast-anchored blocks (one per Intro
+   variant). Measured: NO change to output in the current ~8.14s modeled rotation (a 10s window from
+   the very first step already covers every later libDmg hit regardless of anchoring) — fixed anyway
+   since the old shape was a real, silent bug waiting to surface the moment a longer/looped rotation or
+   delayed Intro entered the picture.
+
+**1 completeness addition**: `Liberation:Nowhere to Run!` (793.57%+49.60%×4, `libDmg`) had a real
+SKILL_MULTIPLIERS row but no block anywhere — added `lupa.liberation.nowhere-to-run` for kit
+completeness, matching the same convention already used for Lucy/Lucilla's own unused-in-rotation
+rows. Genuinely unreachable in the modeled solo rotation (needs Wild Hunt via 2 teammate Intro casts,
+same class as Jiyan's S6/Finale), so it fires in no test but is now present for a future team-aware
+rotation.
+
+**1 unrelated data bug found and fixed**: the DPS tier table had Lupa at `T0`/`T0.5` (ToA/WW) but this
+dump's own Review section is explicit: "Hybrid tier: T0.5 (ToA, standard) / T1 (WW, standard)" — fixed
+to `T0.5`/`T1`.
+
+**Verification**: all 3 chain-node fixes and the tier fix measured/cross-checked directly via a
+temporary script (deleted after use). The parity-golden DPS snapshot for Lupa is computed at Sequence
+0, where none of S1/S5/S6 (all Sequence-gated) apply at all — confirmed no golden fixture update
+needed. 6 new positive-verification tests added to `triggerEngine-lupa.test.js`. Full test suite
+re-run and green (1865/1865).
+
+**Everything else re-verified this pass, found already correct**: S2/S3/S4's mechanics (including the
+prior pass's real fix converting S4 from a dead buff-shaped block into a real proportional damage
+block), the Climax-vs-base Forte finisher rotation fix, the Outro/libBuff/selfBuff/debuff pairings
+against `CHAR_BUFF_TABLE`, `dmgFocus`, and `SKILL_MULTIPLIERS`/`CHARACTER_ROTATIONS`/`CHARACTER_DATA`
+entries generally.

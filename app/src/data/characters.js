@@ -2149,7 +2149,9 @@ const CHARACTER_DATA = {
   // Review section lists "T0.5 (ToA, standard) / T1 (WW, standard)", not T0/T1 (that pairing matches the
   // dump's Value Tier List instead, T1.5/T1.5, not the standard list this table otherwise follows).
   ['Ciaccona',      'T0.5', 'T1'],
-  ['Lupa',          'T0',   'T0.5'],
+  // tier corrected 2026-09-09 (full-kit audit): was 'T0'/'T0.5' — the fresh dump's own Review section
+  // ("Hybrid tier: T0.5 (ToA, standard) / T1 (WW, standard)") clearly states T0.5/T1, not T0/T0.5.
+  ['Lupa',          'T0.5', 'T1'],
   // tier corrected 2026-09-02 against a fresh the source dump: Whimpering Wastes was 'T0.5' — the dump's
   // own Ratings section clearly lists T0 (ToA) / T1 (WW), matched exactly by its Value Tier List too.
   ['Lynae',         'T0',   'T1'],

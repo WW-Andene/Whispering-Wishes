@@ -22,7 +22,8 @@ describe('triggerEngine parity — Lupa', () => {
   it('S1/S5/S6 match RESONANCE_CHAIN_DATA exactly', () => {
     const rc = RESONANCE_CHAIN_DATA['Lupa'];
     expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s1').effects[0].value).toBe(rc.s1.critRate);
-    expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s5').effects[0].value).toBe(rc.s5.libDmg);
+    expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s5-try-focusing').effects[0].value).toBe(rc.s5.libDmg);
+    expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s5-nowhere-to-run').effects[0].value).toBe(rc.s5.libDmg);
     expect(LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s6').effects[0].value).toBe(rc.s6.defIgnore);
   });
 
@@ -129,5 +130,66 @@ describe('triggerEngine parity — Lupa', () => {
     expect(CHARACTER_DATA['Lupa'].dmgFocus).toContain('Heavy ATK');
     expect(CHARACTER_DATA['Lupa'].dmgFocus).toContain('Liberation');
     expect(CHARACTER_DATA['Lupa'].dmgFocus).toContain('Skill');
+  });
+
+  // Fixed 2026-09-09 (full-kit audit, independent re-verification): S1 was `trigger:{type:'passive'}`
+  // PLUS `timing:{duration:10}` — dead duration on an unconditional passive, same bug class as
+  // Baizhi/Brant/Ciaccona/Denia/Galbrena/Jinhsi/Lucilla this session. Her real S1 anchor ("Casting
+  // Fire-Kissed Glory... grants +20% Crit Rate for 10s") was silently active for her pre-Liberation
+  // Intro hit too.
+  it('S1 is gated to the real Liberation:Fire-Kissed Glory cast, not an unconditional passive', () => {
+    const s1 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s1');
+    expect(s1.trigger).toEqual({ type: 'cast', on: 'Liberation:Fire-Kissed Glory' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lupa'], LUPA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const introDamage = (blocks) => {
+      const { hitLog } = resolveHitComposedDps(blocks, steps, ctx, 3000, 'fusion', 'Sub DPS', null, 1);
+      return hitLog.filter(h => h.blockId === 'lupa.intro.try-focusing-eh').reduce((s, h) => s + h.damage, 0);
+    };
+    // Intro fires BEFORE Fire-Kissed Glory — removing S1 must have NO effect on its damage now.
+    expect(introDamage(LUPA_BLOCKS)).toBeCloseTo(introDamage(LUPA_BLOCKS.filter(b => b.id !== 'lupa.chain.s1')), 5);
+  });
+
+  // Fixed 2026-09-09: S6's defIgnore was UNSCOPED — defIgnore isn't category-gated (applied
+  // unconditionally via calcDefMult), so the kit-text-named "Dance With the Wolf: Climax, Fire-Kissed
+  // Glory, AND Nowhere to Run!" scoping was silently leaking onto her whole kit (Foebreaker, Mid-air
+  // Attacks, Firestrike, Wolf's Claw), same class as Lumi's own chain.s2 defIgnore leak this session.
+  it("S6's defIgnore is scoped to only the 3 named moves, not leaking onto the rest of her kit", () => {
+    const s6 = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s6');
+    expect(s6.effects[0].scopedToBlockId).toEqual(expect.arrayContaining([
+      'lupa.liberation.fire-kissed-glory', 'lupa.liberation.dance-with-the-wolf-climax', 'lupa.liberation.nowhere-to-run',
+    ]));
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lupa'], LUPA_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const foeDamage = (blocks) => {
+      const { hitLog } = resolveHitComposedDps(blocks, steps, ctx, 3000, 'fusion', 'Sub DPS', null, 6);
+      return hitLog.filter(h => h.blockId === 'lupa.skill.foebreaker').reduce((s, h) => s + h.damage, 0);
+    };
+    // Foebreaker isn't one of the 3 named moves — removing S6 must have NO effect on its damage now.
+    expect(foeDamage(LUPA_BLOCKS)).toBeCloseTo(foeDamage(LUPA_BLOCKS.filter(b => b.id !== 'lupa.chain.s6')), 5);
+  });
+
+  // Fixed 2026-09-09: same "dead duration on unconditional passive" bug class as S1 — real anchor is
+  // "Casting Intro Skill (Try Focusing, Eh? OR Nowhere to Run!)". Split into 2 cast-anchored blocks.
+  it('S5 is gated to the real Intro casts, not an unconditional passive (no measurable DPS change in this rotation, but correct on principle)', () => {
+    const s5a = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s5-try-focusing');
+    const s5b = LUPA_BLOCKS.find(b => b.id === 'lupa.chain.s5-nowhere-to-run');
+    expect(s5a.trigger).toEqual({ type: 'cast', on: 'Intro:Try Focusing, Eh?' });
+    expect(s5b.trigger).toEqual({ type: 'cast', on: 'Liberation:Nowhere to Run!' });
+    expect(s5a.timing.duration).toBe(10);
+  });
+
+  // Added 2026-09-09 (full-kit audit, completeness pass): a real, sourced SKILL_MULTIPLIERS row
+  // (793.57%+49.60%×4) with no block anywhere — genuinely unreachable in the modeled solo rotation
+  // (needs Wild Hunt via 2 teammate Intro casts), same "add unused base kit for completeness"
+  // convention as Lucy/Lucilla's own unused rows.
+  it('Nowhere to Run! is modeled as a real damage block, even though unreachable in the modeled solo rotation', () => {
+    const block = LUPA_BLOCKS.find(b => b.id === 'lupa.liberation.nowhere-to-run');
+    expect(block).toBeTruthy();
+    expect(block.damage.category).toBe('libDmg');
+    const total = block.damage.hits.reduce((s, h) => s + h.atkPct, 0);
+    expect(total).toBeCloseTo(793.57 + 49.60 * 4, 1);
   });
 });
