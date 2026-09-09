@@ -226,3 +226,42 @@ Icons (dimension 9) already confirmed present in a prior pass.
 6 new/updated tests, full suite green (1442/1442). Total simulated damage roughly halved from the S5
 fix (removing the 2x overcount) while the Glare fix partially offsets it — net real, more accurate
 number either way.
+
+## Full kit audit (2026-09-09)
+
+Independent re-audit (not trusting either prior pass's own claims of completeness, per standing audit
+instruction) of `engine/characterBlocks/lumi.blocks.js`, `characters.js`'s Lumi tables, and this dump.
+
+**2 real bugs found and fixed**:
+
+1. **Both Inherent Skills entirely unmodeled**: "Pathfinding" (Electro DMG Bonus+10% while in Red
+   Light Mode) and "Expediting" (casting Energized Pounce or Energized Rebound grants ATK+10% for 5s)
+   — real, sourced, unconditional base-kit passives (line 78-79 above) with a genuine DPS component —
+   had NO representation anywhere: `CHAR_BUFF_TABLE['Lumi'].selfBuffs` was an empty array, and no block
+   existed for either. Added as 3 new blocks: `lumi.buff.inherent-skill-expediting-pounce`/`-rebound`
+   (cast-triggered, real 5s ATK% window, one per anchor cast) and
+   `lumi.buff.inherent-skill-pathfinding` (Electro DMG scoped to exactly the 2 blocks that
+   unambiguously execute while already in Red Light/Red Spotlight Mode — her own Active Skills text is
+   explicit that casting Pounce/Energized Pounce is what SWITCHES her INTO Red Mode, i.e. the cast
+   itself still happens from Yellow Mode, so Energized Pounce is deliberately excluded from Pathfinding's
+   scope; Energized Rebound and Red Spotlight: Basic Attack are both genuinely cast/executed from
+   within Red Mode, so both are included).
+2. **`chain.s2`'s `defIgnore` was unscoped, silently leaking onto her entire kit**: the real kit text
+   ("Energized Pounce and Energized Rebound ignore 20% of the target's DEF") names 2 specific moves,
+   but `defIgnore` is NOT category-gated in `resolveHitComposedDps.js` (applied unconditionally via
+   `calcDefMult` to every hit resolved at that instant, unlike `basicDmg`/`skillDmg`/etc which only
+   apply to matching-category hits) — so the unscoped effect was boosting Intro, Glare, and every other
+   move in her kit too. Measured directly: Intro's own damage (unrelated to S2) dropped from 2604.31 to
+   2344.57 when the block was correctly scoped — confirming the leak was real and active. Fixed via
+   `scopedToBlockId: ['lumi.forte.energized-pounce', 'lumi.forte.energized-rebound']`.
+
+**Verification**: both fixes measured directly before/after via a temporary script (deleted after use).
+`legacyRawDps`/`engineDps` golden snapshots updated (1379 → 1536) and stat-panel `effAtk`/`score`
+(925 → 1004, 536 → 582) via the established DUMP_GOLDEN pattern and a direct `calcTeamStats()` call —
+`avgCrit`/`defMult`/`resMult` confirmed byte-identical. 4 new positive-verification tests added to
+`triggerEngine-lumi.test.js`. Full test suite re-run and green (1861/1861).
+
+**Everything else re-verified this pass, found already correct**: S1/S3/S4/S5/S6's mechanics and
+conditions (including the prior pass's own S5 removal and Glare 6-hit fix), the Energized Pounce
+firing-twice rotation shape, Outro/`CHAR_BUFF_TABLE` pairing, and `SKILL_MULTIPLIERS`/
+`CHARACTER_ROTATIONS`/`CHARACTER_DATA`/`RESONANCE_CHAIN_DATA` entries generally.

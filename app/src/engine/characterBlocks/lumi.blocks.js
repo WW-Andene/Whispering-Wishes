@@ -83,6 +83,51 @@ export const LUMI_BLOCKS = [
     note: "Yellow Spotlight Mode: replaces Glitter with a higher DMG Multiplier after Energized Rebound; the real 6-Glare Channelled Dash (channelled dash), not a single hit.",
   },
 
+  // Added 2026-09-09 (full-kit audit, independent re-verification): BOTH of her Inherent Skills
+  // ("Pathfinding": Electro DMG Bonus+10% while in Red Light Mode; "Expediting": casting Energized
+  // Pounce/Rebound grants ATK+10% for 5s) had NO representation anywhere — not CHAR_BUFF_TABLE
+  // (selfBuffs: []), not a block, despite both being unconditional base-kit passives with a real DPS
+  // component (same class of gap this session's Lucilla/Lucy audits found for their own Forte/Inherent
+  // Skill passives).
+  //
+  // Pathfinding scoping: her own Active Skills text is explicit that casting Pounce/Energized Pounce
+  // is what SWITCHES her INTO Red Light/Red Spotlight Mode (i.e. the cast happens from within Yellow
+  // Mode, transitioning afterward) — so Energized Pounce's own hit does not yet qualify. Energized
+  // Rebound is the inverse: it's Red Mode's OWN Resonance Skill replacement (built via Red Light Spark,
+  // which only accrues from attacks made WHILE in Red Light/Red Spotlight Mode), cast from within Red
+  // Mode before switching back to Yellow — so its own hit DOES qualify. Scoped to exactly the 2 blocks
+  // unambiguously executing while already in Red Light/Red Spotlight Mode: Red Spotlight: Basic Attack
+  // and Energized Rebound.
+  {
+    id: 'lumi.buff.inherent-skill-pathfinding',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [{ stat: 'elemDmg', value: 10, scopedToBlockId: [
+      'lumi.forte.red-spotlight-basic-attack',
+      'lumi.forte.energized-rebound',
+    ], source: 'self-kit' }],
+    note: 'Inherent Skill Pathfinding: Electro DMG Bonus +10% while in Red Light Mode (confirmed exact) — scoped to the 2 blocks that unambiguously execute while already in Red Light/Red Spotlight Mode (not Energized Pounce, which is cast FROM Yellow Mode and only switches to Red afterward — see comment above).',
+  },
+  {
+    id: 'lumi.buff.inherent-skill-expediting-pounce',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Forte:Energized Pounce' },
+    timing: { duration: 5 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 10, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Inherent Skill Expediting: casting Energized Pounce grants ATK+10% for 5s (confirmed exact) — real duration-windowed buff, bleeds into whichever real attacks land within the following 5s.',
+  },
+  {
+    id: 'lumi.buff.inherent-skill-expediting-rebound',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Forte:Energized Rebound' },
+    timing: { duration: 5 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'atkPct', value: 10, stacking: 'refresh', source: 'self-kit' }],
+    note: 'Inherent Skill Expediting: casting Energized Rebound grants ATK+10% for 5s (confirmed exact) — same real mechanic as lumi.buff.inherent-skill-expediting-pounce above, anchored to the other real trigger cast.',
+  },
+
   // ── Buff blocks (from CHAR_BUFF_TABLE) ──
   {
     id: 'lumi.outro.escorting',
@@ -99,12 +144,25 @@ export const LUMI_BLOCKS = [
   //    component per the audit's own zeroing) ──
   // S1 correctly has NO block — after Energized Rebound, +60 STA restore within 3s, pure utility.
   {
+    // Fixed 2026-09-09 (full-kit audit, independent re-verification): was an UNSCOPED `defIgnore`
+    // effect — the note claimed "applies to both blocks above" but `defIgnore` is NOT category-gated
+    // (resolveHitComposedDps.js applies it via `calcDefMult(enemyDef, stats.defShred, stats.defIgnore)`
+    // unconditionally to every hit resolved at that instant, unlike basicDmg/skillDmg/etc which only
+    // apply to matching-category hits) — so this was silently leaking +20% DEF Ignore onto her ENTIRE
+    // kit (Intro, Glare, every Basic/Forte move), not just the 2 moves the kit text names ("Energized
+    // Pounce and Energized Rebound ignore 20% of the target's DEF"). Measured directly: Intro's own
+    // damage (a move S2 has nothing to do with) rose from 2344.57 to 2604.31 with the unscoped block
+    // present — confirmed real over-crediting. Fixed via `scopedToBlockId`, same fix class as Changli's
+    // own per-move-scoped `defIgnore` effects.
     id: 'lumi.chain.s2',
     source: SOURCE, kind: 'buff', section: 'Chain',
     trigger: { type: 'passive' },
     timing: {}, target: { scope: 'self' },
-    effects: [{ stat: 'defIgnore', value: 20, source: 'self-kit' }],
-    note: 'Energized Pounce/Rebound ignore 20% target DEF (confirmed exact) — kept passive, applies to both blocks above.',
+    effects: [{ stat: 'defIgnore', value: 20, scopedToBlockId: [
+      'lumi.forte.energized-pounce',
+      'lumi.forte.energized-rebound',
+    ], source: 'self-kit' }],
+    note: 'Energized Pounce/Rebound ignore 20% target DEF (confirmed exact) — kept passive, now correctly scoped to only those 2 named blocks instead of leaking onto her whole kit.',
   },
   {
     id: 'lumi.chain.s3',

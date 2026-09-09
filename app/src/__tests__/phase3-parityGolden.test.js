@@ -497,6 +497,19 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // before/after the fix: effAtk/avgCrit/defMult/resMult unchanged, only score (which folds in
 // rawDps) moved.
 //
+// Lumi's `legacyRawDps`/`engineDps` (1379 -> 1536) and stat-panel `effAtk`/`score` (925 -> 1004,
+// 536 -> 582) updated 2026-09-09 (full re-audit): 2 real, sourced fixes. (1) Both Inherent Skills
+// (Pathfinding: +10% Electro DMG in Red Light Mode; Expediting: +10% ATK for 5s on Energized
+// Pounce/Rebound) had NO representation anywhere (CHAR_BUFF_TABLE['Lumi'].selfBuffs was empty)
+// despite being real, unconditional base-kit passives — added as new blocks. Expediting's real ATK%
+// window raises the stat-panel's time-averaged effAtk (this projection folds in real, time-weighted
+// self-kit buff uptime, not a static base stat) — avgCrit/defMult/resMult confirmed unchanged via a
+// direct calcTeamStats(['Lumi'], ...) call. (2) chain.s2's `defIgnore` was UNSCOPED — defIgnore isn't
+// category-gated (applied unconditionally via calcDefMult), so it was silently leaking onto her
+// ENTIRE kit instead of just the 2 named moves (Energized Pounce/Rebound) the kit text specifies;
+// fixed via scopedToBlockId. Verified via direct measurement: Intro's own damage (unrelated to S2)
+// was strictly lower before the fix.
+//
 // Lucy's `legacyRawDps`/`engineDps` updated 2026-09-09 (full re-audit): 2329 -> 2727. Root cause: the
 // base-kit Forte Circuit mechanic "Multi-threading: with SQL, +270% DMG Multiplier" — named in
 // lucy.heavy.multi-threading's OWN note, in SKILL_MULTIPLIERS' own row annotation, and in
