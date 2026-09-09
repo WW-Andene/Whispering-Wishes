@@ -1555,7 +1555,12 @@ const CHARACTER_DATA = {
   // dump's Damage Profile: Liberation is a genuine 18.9% (21,860) share — her 2nd-largest damage
   // bucket, already correctly libDmg-categorized in roveraero.blocks.js — was silently rejecting a
   // real teammate Liberation DMG Bonus.
-  ['Rover: Aero',    ['Skill', 'Liberation'],         ['Heal', 'Erosion Cap Buff'],            []],
+  // dmgFocus gained 'Basic ATK' 2026-09-09 (full-kit audit) against the same dump's Damage Profile:
+  // Basic is a genuine 5% (5,732) share (her Mid-air Plunging Attack, roveraero.midair.plunging-attack,
+  // already correctly basicDmg-categorized) — same "real, already-categorized, non-negligible share"
+  // standard already applied at comparable-or-smaller percentages elsewhere in this table (e.g. ~6.5%,
+  // ~8.3%) — was silently rejecting a real teammate Basic ATK DMG Bonus.
+  ['Rover: Aero',    ['Skill', 'Liberation', 'Basic ATK'], ['Heal', 'Erosion Cap Buff'],       []],
   ['Rover: Electro', ['Skill', 'Liberation'],        ['ATK Buff', 'All DMG Amp'],             ['Electro Flare']],
   // dmgFocus gained 'Liberation'/'Heavy ATK' 2026-09-03 (Phase A audit, REMAINING_WORK.md 1c) against
   // her own dump's Damage Profile: Liberation is a genuine 14.3% (51,751) share and Heavy ATK a real
@@ -1842,7 +1847,11 @@ const CHARACTER_DATA = {
 [
   ['Rover: Spectro', 11400, 375, 1369, 125],
   ['Rover: Havoc',   10825, 413, 1259, 125],
-  ['Rover: Aero',    10775, 438, 1137, 150],
+  // maxEnergy corrected 2026-09-09 (full-kit audit) against the source's own Stats section: was 150 —
+  // the dump's Stats section states Max Energy 125; 150 is actually her Liberation Omega Storm's own
+  // Resonance Cost figure ("Resonance Cost | 150"), same miscopy bug class already found/fixed on
+  // Shorekeeper's and Mornye's maxEnergy rows above.
+  ['Rover: Aero',    10775, 438, 1137, 125],
   ['Rover: Electro', 10775, 438, 1137, 125],
   ['Jiyan',         10488, 438, 1186, 125],
   ['Calcharo',      10500, 438, 1186, 125],

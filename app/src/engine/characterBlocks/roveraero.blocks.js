@@ -16,6 +16,13 @@
 // itself previously fabricated these under a 'totalMult' key (fixed 2026-09-02),
 // and this file never used them to begin with, to avoid injecting a false DMG
 // bonus.
+// Full re-audit 2026-09-09: re-verified all of the above still holds. Fixed a
+// comment/code mismatch on the Intro block (a stale comment claimed its category
+// was already set; it wasn't — added category:'skillDmg'). Also fixed 2 bugs
+// outside this file: CHARACTER_DATA.dmgFocus was missing 'Basic ATK' despite a
+// genuine 5% Basic ATK damage share via the Mid-air Plunging Attack block below,
+// and BASE_STATS' maxEnergy row stored 150 (Omega Storm's own Resonance Cost,
+// miscopied) instead of the real 125 — see Rover Aero.md's 2026-09-09 section.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -30,10 +37,12 @@ export const ROVER_AERO_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Relentless Squall' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // category added for Layer 4 schema migration (validate.js requires damage.category on every
-    // damage block) — no override text names a different category, same default-to-skillDmg
-    // convention used throughout this migration sweep for uncategorized Intro casts.
-    damage: { hits: parseSkillMultiplierHits('79.53%+119.29%'), basis: 'ATK' },
+    // Fixed 2026-09-09 (full-kit audit): the header comment already claimed "category added for
+    // Layer 4 schema migration", but the actual field was never set — a stale/aspirational comment
+    // vs. code mismatch, confirmed by direct inspection. No override text names a different category
+    // for this Intro cast, same default-to-skillDmg convention actually applied on Sanhua/Baizhi/
+    // Taoqi's equivalent uncategorized-Intro fixes. Fixed to skillDmg.
+    damage: { hits: parseSkillMultiplierHits('79.53%+119.29%'), category: 'skillDmg', basis: 'ATK' },
     note: 'Launches into the air, grants 20 Windstring.',
   },
   {

@@ -94,4 +94,27 @@ describe('triggerEngine parity — Rover: Aero', () => {
     const d = CHARACTER_DATA['Rover: Aero'];
     expect(d.weaponAlts.alt5).not.toContain(d.bestWeapon);
   });
+
+  // Fixed 2026-09-09 (full-kit audit): the header comment already claimed "category added for Layer 4
+  // schema migration", but the field was never actually set on this block — comment/code mismatch.
+  it('Intro Relentless Squall is skillDmg-categorized (was silently uncategorized)', () => {
+    const intro = ROVER_AERO_BLOCKS.find(b => b.id === 'roveraero.intro.relentless-squall');
+    expect(intro.damage.category).toBe('skillDmg');
+  });
+
+  // Fixed 2026-09-09 (full-kit audit): dmgFocus was missing 'Basic ATK' despite the dump's own Damage
+  // Profile showing a genuine 5% (5,732) Basic ATK share (her Mid-air Plunging Attack, already
+  // correctly basicDmg-categorized) — was silently rejecting a real teammate Basic ATK DMG Bonus,
+  // same bug class already fixed for 'Liberation' on this same row.
+  it("dmgFocus includes 'Basic ATK' (5% of her real damage profile via Mid-air Plunging Attack)", () => {
+    expect(CHARACTER_DATA['Rover: Aero'].dmgFocus).toEqual(expect.arrayContaining(['Skill', 'Liberation', 'Basic ATK']));
+  });
+
+  // Fixed 2026-09-09 (full-kit audit): BASE_STATS' maxEnergy row stored 150 (her Liberation's own
+  // Resonance Cost figure, miscopied), not the source's real Max Energy 125 — same bug class already
+  // found on Shorekeeper/Mornye. calcEngine.js's energy-cycle calc reads this directly as the
+  // Liberation cast's resource cost, so the wrong value understated her real Liberation cast frequency.
+  it('maxEnergy is 125 (the real Max Energy stat), not 150 (Omega Storm\'s Resonance Cost)', () => {
+    expect(CHARACTER_DATA['Rover: Aero'].maxEnergy).toBe(125);
+  });
 });

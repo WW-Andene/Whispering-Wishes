@@ -575,6 +575,18 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // damage exactly 3.70x (1+270/100) with the new block vs. without it. effAtk/avgCrit/defMult/resMult/
 // score (a Sequence-0, non-rotation-dependent formula for Lucy) are unaffected — verified via direct
 // calcTeamStats(['Lucy'], ...) call before/after, byte-identical.
+//
+// Rover: Aero's `legacyRawDps`/`engineDps` updated 2026-09-09 (full re-audit): 1087 -> 1094/1094.
+// Root cause: BASE_STATS's own maxEnergy row for her (characters.js) stored 150, but the source's own
+// Stats section states Max Energy 125 — 150 is actually her Liberation Omega Storm's own Resonance
+// Cost figure ("Resonance Cost | 150" in the same dump), the same miscopy bug class already found/
+// fixed on Shorekeeper's and Mornye's maxEnergy rows (both also a copied-from-elsewhere-on-the-page
+// value, not the real Max Energy stat). calcEngine.js's energy-cycle calc reads maxEnergy directly as
+// `m.d.maxEnergy || 125` (the Liberation cast's own resource cost for ER-uptime cycling), so the wrong
+// 150 was silently understating her real Liberation cast frequency. Corrected to 125; both DPS numbers
+// rose by the same small amount as a real, direct consequence of more frequent Liberation casts, not
+// a coincidental drift — verified by re-running the exact same measurement before/after the one-line
+// data fix.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {

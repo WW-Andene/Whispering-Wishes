@@ -223,3 +223,40 @@ already matched this source exactly. Several real bugs found and fixed:
    (Augusta's S3 over-crediting fix pattern).
 
 7 new/rewritten tests, full suite green (1319/1319).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the pass above —
+re-verified all 7 prior fixes still hold; cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, `SEQUENCE_NAMES`, and `CHARACTER_ROTATIONS`
+for Rover: Aero against this dump fresh). Found 3 more real bugs:
+
+8. **Comment/code mismatch — missing `damage.category`**: `roveraero.intro.relentless-squall`'s header
+   comment already claimed "category added for Layer 4 schema migration... same default-to-skillDmg
+   convention", but the actual `damage.category` field was never set on the block — a stale/aspirational
+   comment that never matched the code, confirmed by direct inspection. Fixed to `skillDmg`, matching
+   the convention actually applied on Sanhua/Baizhi/Taoqi's equivalent uncategorized-Intro fixes.
+9. **`dmgFocus` missing a genuine damage-share type**: `CHARACTER_DATA['Rover: Aero'].dmgFocus` was
+   `['Skill', 'Liberation']`, omitting `'Basic ATK'` despite this dump's own Damage Profile showing a
+   genuine 5% (5,732) Basic ATK share via her Mid-air Plunging Attack — already correctly
+   `basicDmg`-categorized in `roveraero.blocks.js` — silently rejecting a real teammate Basic ATK DMG
+   Bonus buff. Same bug class as the already-fixed 'Liberation' omission on this same row. Fixed by
+   adding `'Basic ATK'`.
+10. **`maxEnergy` miscopy**: `BASE_STATS`'s row for Rover: Aero stored `maxEnergy: 150`, but this dump's
+    own Stats section states "Max Energy 125" — 150 is actually Liberation Omega Storm's own Resonance
+    Cost figure ("Resonance Cost | 150"), the same miscopy bug class already found and fixed on
+    Shorekeeper's and Mornye's `maxEnergy` rows. `calcEngine.js` reads `maxEnergy` directly as the
+    Liberation cast's resource cost for its ER-uptime cycling calc, so the wrong value understated her
+    real Liberation cast frequency. Fixed to 125. Verified via direct before/after measurement of the
+    real `phase3-parityGolden.test.js` calc: `legacyRawDps`/`engineDps` rose from 1087 to 1094/1094
+    (+~0.6%), a real and expected consequence of more frequent Liberation casts — golden fixture updated
+    with a cited reason in `phase3-parityGolden.test.js`'s own header-comment log.
+
+No other cross-checked dimension showed drift: `CHAR_BUFF_TABLE` (empty outroBuffs/libBuffs/selfBuffs/
+debuffs, matching the non-DPS nature of her Outro/Liberation mechanics), `SKILL_MULTIPLIERS`,
+`SKILL_ICONS`, `SEQUENCE_NAMES`, `CHARACTER_ROTATIONS`, and the DPS tier table all still match this
+dump exactly. The cross-character Aero Erosion stack-cap interaction with Cartethyia/Ciaccona remains
+correctly unmodeled (no stateful cross-character stack-tracking mechanism exists in this engine —
+consistent with the same limitation already documented and accepted for every other character's
+comparable cross-character mechanic this session, e.g. Roccia's Reality Recreation investigation).
+
+3 new tests added in `triggerEngine-roveraero.test.js` (Intro category, dmgFocus Basic ATK inclusion,
+maxEnergy value). Full suite green (1879/1879).
