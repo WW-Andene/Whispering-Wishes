@@ -74,6 +74,17 @@
  * `engineDps`/`legacyRawDps` (4661 -> 6213) and the stat-panel `effAtk`/`avgCrit`/`score`
  * (1025/1.1479/1062 -> 1228/1.2482/1383) moved up together for genuinely more complete/accurate
  * values — not a regression. No EXPECTED_DIVERGENCES entry needed (ratio stays ~1.00).
+ *
+ * Golden fixtures refreshed again 2026-09-09 (Lingyang, full kit audit): CHARACTER_ROTATIONS
+ * ['Lingyang'] previously modeled only 1 Basic ATK + 1 Skill cast where the source's own Sample
+ * Rotation lists 5 Basic (Feral Gyrate, alternating genuinely-different-valued Part 1/Part 2) + 4
+ * Skill (Mountain Roamer) casts — rebuilt to the real 9-cast sequence, with Feral Gyrate split into 2
+ * blocks (Part 2's own 31.77%×6 had no block at all before). Also added the previously-entirely-
+ * missing Minor Fortes block. `engineDps`/`legacyRawDps` moved only slightly (2436 -> 2444) since DPS
+ * is a rate — the added steps consume proportionally more simulated time too — but the stat-panel
+ * `effAtk`/`score` (1398/1018 -> 1521/1147, avgCrit unaffected since Minor Fortes here is
+ * elemDmg/atkPct only) moved up from the new Minor Fortes contribution. Not a regression. No
+ * EXPECTED_DIVERGENCES entry needed.
  */
 import { describe, it, expect, beforeAll } from 'vitest';
 import { calcTeamStats } from '../features/teams/calcTeamStats.js';

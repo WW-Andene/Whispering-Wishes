@@ -8,6 +8,16 @@
 // zero DPS component, per the audit's own zeroing. S5 is modeled as a real proc-
 // style damage block using the source's own "200% of ATK" figure instead of the
 // flat totalMult approximation the table itself carried.
+//
+// Full-kit audit, 2026-09-09: 3 real bugs found and fixed. (1) Feral Gyrate's own
+// "Part 1"/"Part 2" (genuinely different multipliers) were being modeled as ONE
+// block using only Part 1's value — the dump's own Sample Rotation proves these
+// are 2 SEPARATE alternating casts (with a Mountain Roamer cast between each),
+// not one combined combo. Split into lingyang.basic.feral-gyrate-p1/p2, with
+// CHARACTER_ROTATIONS['Lingyang'] rebuilt to the real 5-Basic/4-Skill alternating
+// sequence (was silently only 1 Basic + 1 Skill, dropping 80% of the real
+// rotation). (2) Diligent Practice split into 2 matching P1/P2-anchored blocks for
+// the same reason. (3) Minor Fortes had no block at all.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -64,15 +74,28 @@ export const LINGYANG_BLOCKS = [
     note: "At full Lion's Spirit, HOLD Heavy Attack for Glorious Plunge and enter the airborne Striding Lion state.",
   },
   {
-    id: 'lingyang.basic.majestic-fists',
+    // Found 2026-09-09 (full-kit audit): was ONE block using only Feral Gyrate's "Part 1" multiplier
+    // (87.08%×2+116.11%) — Part 2 (31.77%×6), a genuinely different value from its own dump table row,
+    // was entirely missing. The dump's own Sample Rotation text proves these are 2 SEPARATE
+    // alternating casts ("Basic: Feral Gyrate P1 → Skill: Mountain Roamer → Basic: Feral Gyrate P2 →
+    // ..."), not one combined combo — see SKILL_MULTIPLIERS['Lingyang']'s own split-row comment for
+    // the full reasoning (including why hitParser.js's own "→" semantics would have been wrong to
+    // combine them into one cast). Split into 2 blocks matching CHARACTER_ROTATIONS' now-real
+    // alternating P1/P2/P1/P2/P1 step sequence.
+    id: 'lingyang.basic.feral-gyrate-p1',
     source: SOURCE, kind: 'damage', section: 'BasicATK',
-    trigger: { type: 'cast', on: 'Basic ATK:Majestic Fists' },
+    trigger: { type: 'cast', on: 'Basic ATK:Majestic Fists P1' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // CHARACTER_ROTATIONS' own note says this step is the 2-hit Feral Gyrate while in Striding Lion
-    // (alternating with the Skill step below) — that segment of the Forte row is used, not the
-    // standalone 'Majestic Fists Stage 1-5' Basic ATK row (not used outside Striding Lion in this rotation).
     damage: { hits: parseSkillMultiplierHits('87.08%×2+116.11%'), category: 'basicDmg', basis: 'ATK' },
-    note: "Feral Gyrate (Striding Lion Basic ATK replacement). Once Lion's Spirit drops below 10, this becomes the 8-hit+finisher Stormy Kicks instead (36.03%×8+192.15%, not separately modeled here).",
+    note: "Feral Gyrate Part 1 (Striding Lion Basic ATK replacement, 1st of 2 alternating parts). Once Lion's Spirit drops below 10, this becomes the 8-hit+finisher Stormy Kicks instead (36.03%×8+192.15%, see lingyang.basic.stormy-kicks below).",
+  },
+  {
+    id: 'lingyang.basic.feral-gyrate-p2',
+    source: SOURCE, kind: 'damage', section: 'BasicATK',
+    trigger: { type: 'cast', on: 'Basic ATK:Majestic Fists P2' },
+    timing: {}, target: { scope: 'self' }, effects: [],
+    damage: { hits: parseSkillMultiplierHits('31.77%×6'), category: 'basicDmg', basis: 'ATK' },
+    note: 'Feral Gyrate Part 2 (Striding Lion Basic ATK replacement, 2nd of 2 alternating parts — cycles back to Part 1 on the next tap).',
   },
   {
     id: 'lingyang.skill.ancient-arts',
@@ -129,13 +152,44 @@ export const LINGYANG_BLOCKS = [
     // source's own Rotation section. Scoped to lingyang.skill.ancient-arts (Mountain Roamer) only via
     // scopedToBlockId, avoiding over-crediting Feral Gyrate or any other skillDmg-categorized hit —
     // same "over-crediting" caution as Augusta's S3 fix.
-    id: 'lingyang.selfbuff.diligent-practice',
+    //
+    // Split into 2 blocks 2026-09-09 (full-kit audit): the real trigger is "each Basic Attack"
+    // regardless of which Feral Gyrate part lands, but CHARACTER_ROTATIONS' now-real alternating
+    // P1/P2/P1/P2/P1 sequence (see lingyang.basic.feral-gyrate-p1/p2's own retargeting comment) means
+    // a single 'Basic ATK:Majestic Fists' trigger label no longer matches anything. Verified no
+    // double-counting risk: each Basic cast's own 3s window only needs to survive until the ONE
+    // Skill cast that immediately follows it (~1.5s later in the coarse step model) — by the time the
+    // NEXT Basic cast (P1 or P2) opens its own window ~3s later, the prior window has already closed,
+    // so at most one window is ever active at a time.
+    id: 'lingyang.selfbuff.diligent-practice-p1',
     source: SOURCE, kind: 'buff', section: 'Buff',
-    trigger: { type: 'cast', on: 'Basic ATK:Majestic Fists' },
+    trigger: { type: 'cast', on: 'Basic ATK:Majestic Fists P1' },
     timing: { duration: 3 },
     target: { scope: 'self' },
     effects: [{ stat: 'totalMult', value: 150, scopedToBlockId: 'lingyang.skill.ancient-arts', source: 'self-kit' }],
     note: "Inherent Skill Diligent Practice: in Striding Lion state, within 3s after each Basic Attack (Feral Gyrate), the next Mountain Roamer deals an additional 150% of its own damage, considered Resonance Skill DMG.",
+  },
+  {
+    id: 'lingyang.selfbuff.diligent-practice-p2',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'cast', on: 'Basic ATK:Majestic Fists P2' },
+    timing: { duration: 3 },
+    target: { scope: 'self' },
+    effects: [{ stat: 'totalMult', value: 150, scopedToBlockId: 'lingyang.skill.ancient-arts', source: 'self-kit' }],
+    note: 'Inherent Skill Diligent Practice, same real effect as the Part 1 version above — anchored separately since Feral Gyrate Part 2 is a distinct cast label.',
+  },
+  // Added 2026-09-09 (full-kit audit): Minor Fortes had no block anywhere in this file — a real,
+  // previously-missed completeness gap, unlike every other character audited this session.
+  {
+    id: 'lingyang.buff.minor-fortes',
+    source: SOURCE, kind: 'buff', section: 'Buff',
+    trigger: { type: 'passive' },
+    timing: {}, target: { scope: 'self' },
+    effects: [
+      { stat: 'elemDmg', value: 12, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ],
+    note: 'Minor Fortes: Glacio DMG+12%, ATK%+12% (Data dump/Lingyang/Lingyang.md line 99-100). Unconditional, always active.',
   },
   {
     id: 'lingyang.selfbuff.strive',

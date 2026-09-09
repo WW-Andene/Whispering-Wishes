@@ -49,12 +49,20 @@ describe('triggerEngine parity — Lingyang', () => {
     expect(self.timing.duration).toBe(legacy.selfBuffs[0].duration);
   });
 
-  it('Diligent Practice matches CHAR_BUFF_TABLE and is scoped to Mountain Roamer only (no over-crediting)', () => {
+  // Split 2026-09-09 (full-kit audit) into 2 blocks (P1/P2) since Feral Gyrate's own Part 1/Part 2
+  // are now modeled as distinct alternating casts (see lingyang.blocks.js's own header comment) —
+  // "each Basic Attack" applies to both.
+  it('Diligent Practice matches CHAR_BUFF_TABLE and is scoped to Mountain Roamer only (no over-crediting), for both Feral Gyrate parts', () => {
     const legacy = CHAR_BUFF_TABLE['Lingyang'];
-    const diligent = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.selfbuff.diligent-practice');
-    expect(diligent.effects[0].value).toBe(legacy.selfBuffs[1].value);
-    expect(diligent.timing.duration).toBe(legacy.selfBuffs[1].duration);
-    expect(diligent.effects[0].scopedToBlockId).toBe('lingyang.skill.ancient-arts');
+    const p1 = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.selfbuff.diligent-practice-p1');
+    const p2 = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.selfbuff.diligent-practice-p2');
+    for (const diligent of [p1, p2]) {
+      expect(diligent.effects[0].value).toBe(legacy.selfBuffs[1].value);
+      expect(diligent.timing.duration).toBe(legacy.selfBuffs[1].duration);
+      expect(diligent.effects[0].scopedToBlockId).toBe('lingyang.skill.ancient-arts');
+    }
+    expect(p1.trigger.on).toBe('Basic ATK:Majestic Fists P1');
+    expect(p2.trigger.on).toBe('Basic ATK:Majestic Fists P2');
   });
 
   it('real CHARACTER_ROTATIONS data produces a real, non-zero hit-composed total', () => {
@@ -116,5 +124,57 @@ describe('triggerEngine parity — Lingyang', () => {
     const fired = new Set(hitLog.map(h => h.blockId));
     expect(fired.has('lingyang.basic.stormy-kicks')).toBe(true);
     expect(fired.has('lingyang.midair.tail-strike')).toBe(true);
+  });
+
+  // Found 2026-09-09 (full-kit audit): CHARACTER_ROTATIONS['Lingyang'] previously had only 1 Basic ATK
+  // + 1 Skill step total, silently dropping 80% of the real rotation — the dump's own Sample Rotation
+  // text explicitly lists 5 Basic Attack casts (Feral Gyrate, alternating Part 1/Part 2) and 4 Skill
+  // casts (Mountain Roamer), matching its own separately-stated "9 independent attacks fit within the
+  // Ultimate's duration." Also, Feral Gyrate's own Part 1 (87.08%×2+116.11%) and Part 2 (31.77%×6)
+  // are genuinely different values — Part 2 had no block at all before this pass.
+  it('CHARACTER_ROTATIONS now has the real 9-cast alternating sequence (5 Basic Feral Gyrate P1/P2 + 4 Skill Mountain Roamer), not the old 1+1', () => {
+    const rotation = CHARACTER_ROTATIONS['Lingyang'];
+    const basicSteps = rotation.filter(s => s.type === 'Basic ATK' && s.skill.startsWith('Majestic Fists'));
+    const skillSteps = rotation.filter(s => s.type === 'Skill' && s.skill === 'Ancient Arts');
+    expect(basicSteps).toHaveLength(5);
+    expect(skillSteps).toHaveLength(4);
+    // Real alternation: P1, P2, P1, P2, P1.
+    expect(basicSteps.map(s => s.skill)).toEqual([
+      'Majestic Fists P1', 'Majestic Fists P2', 'Majestic Fists P1', 'Majestic Fists P2', 'Majestic Fists P1',
+    ]);
+  });
+
+  it('Feral Gyrate Part 1 and Part 2 are modeled as 2 separate blocks with genuinely different %ATK values, both firing in the real rotation', () => {
+    const p1 = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.basic.feral-gyrate-p1');
+    const p2 = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.basic.feral-gyrate-p2');
+    expect(p1.damage.hits).toEqual([{ atkPct: 87.08 }, { atkPct: 87.08 }, { atkPct: 116.11 }]);
+    expect(p2.damage.hits).toEqual([{ atkPct: 31.77 }, { atkPct: 31.77 }, { atkPct: 31.77 }, { atkPct: 31.77 }, { atkPct: 31.77 }, { atkPct: 31.77 }]);
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lingyang'], LINGYANG_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(LINGYANG_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'glacio', 'Main DPS');
+    const fired = new Set(hitLog.map(h => h.blockId));
+    expect(fired.has('lingyang.basic.feral-gyrate-p1')).toBe(true);
+    expect(fired.has('lingyang.basic.feral-gyrate-p2')).toBe(true);
+    // 3 real P1 casts x 3 sub-hits + 2 real P2 casts x 6 sub-hits.
+    const p1Hits = hitLog.filter(h => h.blockId === 'lingyang.basic.feral-gyrate-p1');
+    const p2Hits = hitLog.filter(h => h.blockId === 'lingyang.basic.feral-gyrate-p2');
+    expect(p1Hits).toHaveLength(9);
+    expect(p2Hits).toHaveLength(12);
+  });
+
+  it('Mountain Roamer (Skill:Ancient Arts) fires all 4 real times, not just once', () => {
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Lingyang'], LINGYANG_BLOCKS);
+    const { hitLog } = resolveHitComposedDps(LINGYANG_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'glacio', 'Main DPS');
+    const mountainRoamerHits = hitLog.filter(h => h.blockId === 'lingyang.skill.ancient-arts');
+    // Each cast is 2 sub-hits (82.88%×2) — 4 real casts x 2 sub-hits = 8 logged hits.
+    expect(mountainRoamerHits).toHaveLength(8);
+  });
+
+  it('Minor Fortes (Glacio DMG+12%/ATK%+12%) is now present', () => {
+    const mf = LINGYANG_BLOCKS.find(b => b.id === 'lingyang.buff.minor-fortes');
+    expect(mf.effects).toEqual([
+      { stat: 'elemDmg', value: 12, source: 'self-kit' },
+      { stat: 'atkPct', value: 12, source: 'self-kit' },
+    ]);
   });
 });

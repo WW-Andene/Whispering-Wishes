@@ -4614,6 +4614,18 @@ const SKILL_MULTIPLIERS = {
     ['Dodge Counter', 'Standard', '126.05%×2'],
     ['Skill', 'Ancient Arts → Furious Punches', '132.61% → 76.25%×2', 'Basic ATK 3-5 or Feral Roars swaps Skill to Furious Punches; no cooldown, doesn\'t reset the Basic ATK cycle.'],
     ['Forte', 'Unification of Spirits (Striding Lion)', '172.37% (Glorious Plunge) · 87.08%×2+116.11%→31.77%×6 (Feral Gyrate) · 82.88%×2 (Mountain Roamer) · 36.03%×8+192.15% (Stormy Kicks) · 174.96%×2 (Tail Strike)', 'At full Lion\'s Spirit, Heavy ATK casts Glorious Plunge and enters Striding Lion — an airborne enhanced-attack state.'],
+    // Split out 2026-09-09 (full-kit audit): Feral Gyrate's own "Part 1"/"Part 2" rows in the source's
+    // Forte Circuit table carry GENUINELY DIFFERENT multiplier values (87.08%×2+116.11% vs 31.77%×6),
+    // and the source's own Sample Rotation text lists them as SEPARATE alternating casts with a
+    // Mountain Roamer (Skill) cast between each — "Basic: Feral Gyrate P1 → Skill: Mountain Roamer →
+    // Basic: Feral Gyrate P2 → Skill: Mountain Roamer → ..." — not one combined multi-stage combo (the
+    // Forte row's own "→" between them, combined above with other unrelated moves via "·" separators,
+    // is a display artifact of that row, not a real single-cast sequence — hitParser.js's own header
+    // confirms "→" is meant for one skill's own combo, and treating P1+P2 as one 9-sub-hit cast would
+    // contradict the sample rotation's own explicit alternation with intervening Skill casts). Split
+    // into their own rows matching the step names lingyang.blocks.js/CHARACTER_ROTATIONS now use.
+    ['Basic ATK', 'Majestic Fists P1 (Feral Gyrate)', '87.08%×2+116.11%', "Striding Lion Basic ATK replacement (1st of 2 alternating parts) — considered Resonance Skill DMG per the Forte's own kit text is NOT stated here; kept basicDmg, matching the button actually pressed."],
+    ['Basic ATK', 'Majestic Fists P2 (Feral Gyrate)', '31.77%×6', 'Striding Lion Basic ATK replacement (2nd of 2 alternating parts, cycles back to Part 1 on the next tap).'],
     ['Liberation', "Strive: Lion's Vigor", '397.62%', "Also grants self Glacio DMG Bonus +50% for 14s. 20s cooldown."],
     ['Intro', 'Lion Awakens', '99.41%×2'],
     ['Outro', 'Frosty Marks', '587.94% ATK AoE', 'Pure-damage swap-out finisher — no team buff baseline (S4 chain grants team Glacio DMG +20%/30s).'],
@@ -5470,8 +5482,24 @@ const CHARACTER_ROTATIONS = {
     { type: 'Intro', skill: 'Lion Awakens', note: "Swap into him to fire this automatically — deals Glacio DMG and is one of three casts (with Furious Punches and Strive: Lion's Vigor) that restore the 100-cap Lion's Spirit gauge; exact restore amount per trigger not published by source." },
     { type: 'Liberation', skill: "Strive: Lion's Vigor", duration: 14, note: "Press Liberation — grants self +50% Glacio DMG Bonus for 14s (20s cooldown, 125 Resonance Energy) and also restores Lion's Spirit. While this buff is active, Striding Lion's Lion's Spirit drain is halved, extending the state from 5s up to 10s." },
     { type: 'Forte', skill: 'Unification of Spirits', note: "At 100/100 Lion's Spirit, HOLD Heavy Attack for Glorious Plunge and enter the airborne Striding Lion state (also enterable via Basic ATK right after Lion Awakens or Strive: Lion's Vigor if Lion's Spirit is already full)." },
-    { type: 'Basic ATK', skill: 'Majestic Fists', note: "While in Striding Lion, tap Basic Attack for the 2-hit Feral Gyrate — alternate with the Skill step below (never repeat the same input twice in a row). Once Lion's Spirit drops below 10, Basic Attack becomes the 8-hit+finisher Stormy Kicks instead, which unlocks the Tail Strike Mid-air Attack." },
-    { type: 'Skill', skill: 'Ancient Arts', note: "Press Skill for Mountain Roamer while airborne in Striding Lion — alternating Basic Attack/Skill taps like this maximizes hits landed before Lion's Spirit runs out (drains to 0 within 5s, or 10s under Strive: Lion's Vigor)." },
+    // Rebuilt 2026-09-09 (full-kit audit): was a single Basic ATK + single Skill step, silently
+    // dropping 80% of the real rotation. The source's own "Sample rotation" text explicitly lists 9
+    // alternating casts before Stormy Kicks ("Basic: Feral Gyrate P1 → Skill: Mountain Roamer → Basic:
+    // Feral Gyrate P2 → Skill: Mountain Roamer → Basic: Feral Gyrate P1 → Skill: Mountain Roamer →
+    // Basic: Feral Gyrate P2 → Skill: Mountain Roamer → Basic: Feral Gyrate P1"), matching its own
+    // separately-stated "9 independent attacks fit within the Ultimate's duration" under ideal
+    // execution. Feral Gyrate's own Part 1/Part 2 have genuinely different multipliers (see
+    // SKILL_MULTIPLIERS['Lingyang']'s own split-row comment) and alternate every OTHER Basic Attack
+    // tap, cycling P1→P2→P1→P2→P1 across the 5 real Basic Attack casts.
+    { type: 'Basic ATK', skill: 'Majestic Fists P1', note: "While in Striding Lion, tap Basic Attack for the 2-hit Feral Gyrate Part 1 — alternate with the Skill step below (never repeat the same input twice in a row)." },
+    { type: 'Skill', skill: 'Ancient Arts', note: "Press Skill for Mountain Roamer while airborne in Striding Lion." },
+    { type: 'Basic ATK', skill: 'Majestic Fists P2', note: 'Basic Attack now lands Feral Gyrate Part 2 (6-hit) instead of Part 1 — the two parts alternate every tap.' },
+    { type: 'Skill', skill: 'Ancient Arts', note: 'Mountain Roamer again — Diligent Practice (within 3s of the prior Basic Attack) empowers this cast.' },
+    { type: 'Basic ATK', skill: 'Majestic Fists P1', note: 'Back to Feral Gyrate Part 1.' },
+    { type: 'Skill', skill: 'Ancient Arts', note: 'Mountain Roamer again.' },
+    { type: 'Basic ATK', skill: 'Majestic Fists P2', note: 'Feral Gyrate Part 2 again.' },
+    { type: 'Skill', skill: 'Ancient Arts', note: "Mountain Roamer again — alternating Basic Attack/Skill taps like this maximizes hits landed before Lion's Spirit runs out (drains to 0 within 5s, or 10s under Strive: Lion's Vigor)." },
+    { type: 'Basic ATK', skill: 'Majestic Fists P1', note: "5th and final Feral Gyrate cast (Part 1) before Lion's Spirit drops below 10 and Basic Attack becomes Stormy Kicks instead, which unlocks the Tail Strike Mid-air Attack." },
     // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the source's own sample rotation
     // explicitly ends the Striding Lion loop with these two named hits ("Basic: Feral Gyrate P1 →
     // Basic: Stormy Kicks → Mid-Air Attack: Tail Strike → Outro") once Lion's Spirit drops below 10 —

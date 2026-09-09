@@ -287,3 +287,63 @@ it) — both were added:
 
 4 new/updated tests (2 new: block/rotation presence + real-firing-in-simulated-rotation), full suite
 green (1473/1473).
+
+## Full kit audit (2026-09-09)
+
+Full, independent re-verification of `lingyang.blocks.js` against this dump, `characters.js`
+(CHAR_BUFF_TABLE, RESONANCE_CHAIN_DATA, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, full CHARACTER_DATA
+entry), and the engine's actual resolver code — per the same rigor applied to Augusta through Jiyan
+this session, and NOT trusting any of the 3 prior passes' own claims of completeness. Two real bugs
+found and fixed, one of them substantial.
+
+**Bug 1 — CHARACTER_ROTATIONS silently modeled only 1/5 of the real Basic Attack/Skill loop.** The
+dump's own "Sample rotation" text explicitly lists 9 alternating casts during Striding Lion — "Basic:
+Feral Gyrate P1 → Skill: Mountain Roamer → Basic: Feral Gyrate P2 → Skill: Mountain Roamer → Basic:
+Feral Gyrate P1 → Skill: Mountain Roamer → Basic: Feral Gyrate P2 → Skill: Mountain Roamer → Basic:
+Feral Gyrate P1" — matching its own separately-stated "9 independent attacks fit within the Ultimate's
+duration." But `CHARACTER_ROTATIONS['Lingyang']` had only ONE Basic ATK step and ONE Skill step total
+(all 3 prior audit passes, including the explicit "third pass, independent re-derivation from scratch,"
+claimed CHARACTER_ROTATIONS "matching this source exactly" — this was wrong, and none of them re-counted
+the actual real cast sequence against the dump's own numbered claim). Compounding this: Feral Gyrate's
+own "Part 1" (87.08%×2+116.11%) and "Part 2" (31.77%×6) rows in the dump's Forte Circuit table carry
+GENUINELY DIFFERENT multiplier values, and the sample rotation text shows them as 2 SEPARATE alternating
+casts (with a Mountain Roamer cast between each) — not one combined multi-stage combo. The single
+existing `lingyang.basic.majestic-fists` block only ever used Part 1's value; Part 2's real 31.77%×6 had
+no block anywhere. Fixed by:
+- Rebuilding `CHARACTER_ROTATIONS['Lingyang']` to the real 9-cast sequence (5 Basic: P1,P2,P1,P2,P1 + 4
+  Skill: Mountain Roamer).
+- Splitting `SKILL_MULTIPLIERS['Lingyang']`'s combined Forte-row Feral Gyrate segment into 2 real rows
+  ("Majestic Fists P1 (Feral Gyrate)"/"Majestic Fists P2 (Feral Gyrate)") matching the new step names.
+- Splitting the engine block into `lingyang.basic.feral-gyrate-p1`/`-p2`, and Diligent Practice into
+  matching `-p1`/`-p2` anchored copies (verified no double-counting: each Basic cast's own 3s window
+  only needs to survive until the ONE Skill cast immediately following it, and the next Basic cast's
+  window doesn't open until ~3s later, after the prior one has already closed — confirmed by direct
+  measurement that every real Mountain Roamer hit gets the identical, single +150% boost, not a
+  compounded one).
+
+**Bug 2 — Minor Fortes (Glacio DMG+12%/ATK%+12%) had no block anywhere.** Same completeness gap already
+found on Jiyan just before this in the same session; every other character audited this session has one.
+Added.
+
+**Verified, no bug found:**
+- `statScaling`/`basis`: `CHARACTER_DATA['Lingyang'].statScaling` is `'ATK'`; every damage block uses
+  `basis: 'ATK'` — no mismatch.
+- DOT/dotApplier completeness: Lingyang's kit applies no cross-character DOT status anywhere in his
+  real kit text — correctly has no `dotApplier` tags anywhere in the file.
+- `chain.s6`'s "next Basic Attack only" scoping approximation (a flat 3s window instead of exactly one
+  hit) re-examined given the newly-real 5-Basic-cast sequence — confirmed harmless in practice, since
+  the rotation's own strict Basic/Skill alternation means at most one real Basic Attack ever lands
+  within any given 3s post-Mountain-Roamer window.
+- `CHAR_BUFF_TABLE['Lingyang']`, the full `CHARACTER_DATA['Lingyang']` entry (desc, bestWeapon,
+  weaponAlts, bestEchoes, teams, dmgFocus, base stats, DPS tier), and every other RESONANCE_CHAIN_DATA
+  node all cross-checked against this dump and matched exactly beyond the two bugs above.
+
+**Re-measurement:** both fixes moved real output. `phase3-parityGolden.test.js` fixture updated:
+`engineDps`/`legacyRawDps` only moved slightly (2435.93/2436 → 2444.33/2444) since DPS is a *rate* — the
+added real steps consume proportionally more simulated time too, so total damage per rotation increased
+far more than the per-second rate did. `phase3-statpanel-golden.json`'s `effAtk`/`score` also updated
+(1398/1018 → 1521/1147, from the new Minor Fortes contribution; `avgCrit` unaffected since Lingyang's
+Minor Fortes is elemDmg/atkPct only, no Crit Rate). Both cited inline in
+`phase3-parityGolden.test.js`'s own header comment. Tests added for the real 9-cast rotation sequence,
+the Feral Gyrate P1/P2 split (including exact hit counts), Mountain Roamer firing 4x not 1x, and Minor
+Fortes. Full suite: 1855/1855 passing.
