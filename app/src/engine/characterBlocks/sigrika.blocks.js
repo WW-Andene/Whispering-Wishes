@@ -21,6 +21,23 @@
 // CHARACTER_ROTATIONS — the dump's own Standard Rotation text never calls them (Divergent/Convergent
 // routes her generated Runes into the Basic - Elucidated / Forte Heavy path instead), so adding them
 // to the rotation would fabricate play the source doesn't document.
+//
+// Full kit audit 2026-09-09 (re-verified all prior fixes above still hold; no new
+// numeric bugs found). Flagged, not fixed — a real, sourced, currently-unmodeled
+// base-kit mechanic: "Innate Gift?" (cap 2, gained via Heavy ATK: Schemata of Runes
+// at >=30 Soliskin Vitality) grants Runic Outburst/Chain Whip/Soliskin/Learn My True
+// Name +30% DMG Amplification PER STACK (up to +60% at 2 stacks) — a real, sizable
+// bonus on top of everything already modeled here. Not modeled because its gain
+// condition is itself gated behind Soliskin Vitality (a resource that accumulates
+// from OTHER teammates' unique-named Echo Skill casts, cap 60, +10 per unique
+// applier), a genuinely stateful, teammate-composition-dependent resource-threshold
+// mechanic this file has no existing block for (distinct from chain.s4's simpler
+// flat "any Echo cast -> team buff" ally-action pattern) — building it would require
+// new engine capability (a resource accumulator fed by ally-actions, gating a
+// threshold-crossing bonus scoped to 4 specific damage blocks), out of scope for a
+// single-character fix. Same restraint already applied to Encapsulated and
+// Divergent/Convergent elsewhere in this file — documented here explicitly since no
+// prior pass's comments named this specific gap.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';

@@ -165,3 +165,38 @@ Total: 1,739,844. Echo 89.9% · Outro 4.8% · Basic 4.6% · Intro 0.8%.
 No adjacent-sequence pair is byte-identical — every node has a real, distinct DPS contribution.
 
 Calculation build used: Solsworn Ciphers (R1) + Sound of True Name 5pc + Nameless Explorer main echo; substats ATK 45% / Crit Rate 42% / Crit DMG 84%.
+
+## App Data Comparison — 2026-09-09 full kit audit
+
+Independent re-derivation, zero deference to the 3 prior audit passes documented in this app's own
+`sigrika.blocks.js`/test-file history (2026-09-02, 2026-09-04, and the standalone `sigrikaAuditFix.test.js`
+pass) — re-verified all of their fixes still hold: base ATK/DEF (438/1137), dmgFocus (`['Echo']`, Heavy
+correctly excluded at a genuine 0% real share), Runic Chain Whip/Outburst both echoDmg, S5 echoDmg (not
+libDmg), S6 amplify:30 (not the unsourced defIgnore:15), chain.s1's 4-way scopedToBlockId at the real
+un-averaged 70%, and the 3 previously-missing damage blocks (BIG BOOMY BOOM!, Soliskin to the Aid, Dodge
+Counter - Decipher) all still correct. Cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, `SEQUENCE_NAMES`, `CHARACTER_ROTATIONS`, and
+`teams` fresh against this dump — all still match exactly. No new numeric bugs found this pass.
+
+**Investigated dmgFocus's 4.6% Basic ATK share** (this dump's own Damage Profile): confirmed correctly
+EXCLUDED, not a gap — this codebase's own established convention (documented at `characters.js`'s Jiyan/
+Calcharo dmgFocus comments) explicitly treats a 4.6%/5.5%-range share as its own worked "exclude" example
+(vs. a 6.8%+ "include" threshold), and Sigrika's Basic sits exactly at that cited 4.6% boundary. `dmgFocus:
+['Echo']` stays correct as-is.
+
+**Flagged, not fixed — a real, sourced, currently-unmodeled base-kit mechanic**: "Innate Gift?" (cap 2,
+gained via Heavy ATK: Schemata of Runes at ≥30 Soliskin Vitality) grants Runic Outburst/Chain Whip/
+Soliskin/Learn My True Name +30% DMG Amplification PER STACK (up to +60% at 2 stacks) — a real, sizable
+bonus that isn't modeled anywhere in `sigrika.blocks.js` or `CHAR_BUFF_TABLE`. Not a numeric bug to
+"fix" in the usual sense — its gain condition is itself gated behind Soliskin Vitality, a resource that
+accumulates from OTHER teammates' unique-named Echo Skill casts (cap 60, +10 per unique applier), a
+genuinely stateful, teammate-composition-dependent resource-threshold mechanic this engine has no
+existing block shape for (distinct from chain.s4's simpler flat "any Echo cast → team buff" ally-action
+pattern already modeled). Building it would require new engine capability — a resource accumulator fed
+by ally-actions, gating a threshold-crossing bonus scoped to 4 specific damage blocks — out of scope for
+a single-character audit. Same restraint already applied to Encapsulated and Divergent/Convergent
+elsewhere in this file; documented explicitly in `sigrika.blocks.js`'s header comment since no prior
+pass had named this specific gap.
+
+No code changes this pass beyond the above documentation. Full suite green (1888/1888, unchanged from
+before this pass since no logic/values were touched).
