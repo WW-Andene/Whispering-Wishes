@@ -293,3 +293,33 @@ Revamp/Decipher/Divergence/Law of Reigns/Pivot-Impale) and all 6 CHAIN_NODE_ICON
 correctly wired.
 
 2 new tests added, full suite green (1435/1435).
+
+**2026-09-09 full kit audit** (independent re-derivation, zero deference to the passes above — this
+time resolving the trigger-mismatch this file's own prior comment had flagged but never actually fixed).
+Re-verified all previously-documented fixes still hold; cross-checked `CHARACTER_DATA`, `CHAR_BUFF_TABLE`,
+`RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `SKILL_ICONS`, `CHARACTER_ROTATIONS`, `dmgFocus`, and
+`teams` fresh against this dump — all still match exactly. Found 1 real bug, flagged 1 more:
+
+1. **S3's trigger mismatch, left unresolved by a prior pass**: `xianglyao.chain.s3`'s own comment
+   already admitted "S3's dump text ('Casting Cogitation Model'...) doesn't match the block's trigger
+   (Divergence, not Cogitation Model)" — but that prior pass only resolved the SEPARATE
+   stacking-vs-refresh ambiguity ("triggerable up to 5 times") and never actually corrected the trigger
+   source itself. Confirmed via direct measurement this is NOT cosmetic: `resolveHitComposedDps`
+   time-averages a windowed buff's uptime across the WHOLE rotation, so anchoring the window's start
+   later (Divergence, the 4th rotation step) instead of earlier (Cogitation Model/Liberation, the 3rd
+   step, which precedes Divergence) measurably understated its average contribution — total damage rose
+   from 81,367.51 to 90,035.39 (+~10.7%) at sequence 3 once re-anchored to the real trigger. Fixed.
+2. **S2's second valid trigger, flagged not fixed**: the kit text names TWO valid triggers for Crit
+   DMG +30%/8s — "Resonance Skill" cast OR Cogitation Model — but only Cogitation Model is modeled.
+   Confirmed via direct measurement this is a real, if modest, undercount (~0.73% at sequence 3 when
+   Divergence's own re-triggers are added). NOT fixed by adding a second sibling block for the same
+   stat, though: this schema's `trigger.on` accepts only one string per block, and two separate blocks
+   sharing the same stat would each independently compute and apply their own average-uptime multiplier
+   — additively stacking (double-counting) during any period both windows overlap, a real bug class this
+   project is careful to avoid elsewhere. Since real play refreshes this buff near-continuously (Skill-
+   slot casts happen throughout the whole Intuition window), no single 8s anchor can fully capture it
+   without a genuine multi-trigger-single-window schema feature — documented as a known limitation,
+   left anchored to the earliest real trigger (Cogitation Model) as the best available approximation.
+
+Verified fix #1 via direct before/after measurement; no parity-golden regression (measured at sequence
+0, where S3/S2 are both inactive). 1 new test added. Full suite green (1889/1889).

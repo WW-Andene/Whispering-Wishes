@@ -64,6 +64,24 @@ describe('triggerEngine parity — Xiangli Yao', () => {
     ]);
   });
 
+  // Fixed 2026-09-09 (full-kit audit): S3 was anchored to 'Skill:Intuition: Divergence', but the kit
+  // text is explicit the real trigger is casting Cogitation Model (Liberation) — a mismatch the file's
+  // own prior audit note had flagged but never corrected. This engine time-averages a windowed buff's
+  // uptime across the whole rotation, so anchoring later measurably understated its contribution.
+  it("S3 is anchored to the real trigger (Cogitation Model cast), not Divergence — verified via direct measurement", () => {
+    const s3 = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.chain.s3');
+    expect(s3.trigger).toEqual({ type: 'cast', on: 'Liberation:Cogitation Model' });
+
+    const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Xiangli Yao'], XIANGLI_YAO_BLOCKS);
+    const ctx = { enemyDef: 792 + 8 * 90, enemyRes: 10 };
+    const withCorrectAnchor = resolveHitComposedDps(XIANGLI_YAO_BLOCKS, steps, ctx, 2000, 'electro', 'Main DPS', null, 3);
+    const wrongAnchorBlocks = XIANGLI_YAO_BLOCKS.map(b => b.id === 'xianglyao.chain.s3' ? { ...b, trigger: { type: 'cast', on: 'Skill:Intuition: Divergence' } } : b);
+    const withWrongAnchor = resolveHitComposedDps(wrongAnchorBlocks, steps, ctx, 2000, 'electro', 'Main DPS', null, 3);
+    // Anchoring earlier (the real Cogitation Model cast, which precedes Divergence in the rotation)
+    // must yield strictly more total damage than the old, later Divergence anchor.
+    expect(withCorrectAnchor.totalDamage).toBeGreaterThan(withWrongAnchor.totalDamage);
+  });
+
   it('Intro is skillDmg-categorized (was uncategorized)', () => {
     const intro = XIANGLI_YAO_BLOCKS.find(b => b.id === 'xianglyao.intro.principle');
     expect(intro.damage.category).toBe('skillDmg');

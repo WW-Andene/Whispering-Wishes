@@ -10,6 +10,18 @@
 // not a computed number), so the source table's own zeroing is kept rather than
 // guessing a derivation. S5's Outro Chain Rule +222% DMG Multiplier portion is
 // similarly not represented (no matching category exists).
+//
+// Full kit audit 2026-09-09: fixed S3, which a prior pass's own comment had
+// flagged as trigger-mismatched against the kit text (anchored to Divergence
+// instead of the real trigger, Cogitation Model) but never actually corrected.
+// This engine time-averages a windowed buff's uptime across the whole rotation,
+// so the wrong, later anchor measurably understated its contribution — confirmed
+// via direct measurement (+~10.7% total damage once fixed). Also flagged (not
+// fixed, to avoid introducing a double-counting bug) S2's own second valid
+// trigger (Resonance Skill cast, in addition to Cogitation Model) — this
+// schema's single-trigger-per-block design can't add a second anchor for the
+// same stat without risking additive double-application during any window
+// overlap; documented as a known, modest (~0.73%) undercount instead.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -99,16 +111,39 @@ export const XIANGLI_YAO_BLOCKS = [
   {
     id: 'xianglyao.chain.s2',
     source: SOURCE, kind: 'buff', section: 'Chain',
+    // Flagged 2026-09-09 (full-kit audit): the real kit text names TWO valid triggers — "Casting
+    // Resonance Skill OR Cogitation Model" — but only Cogitation Model is anchored here. In the real
+    // modeled rotation, Divergence (Resonance Skill's Intuition replacement) casts twice more and would
+    // also legitimately re-trigger/refresh this buff. Confirmed via direct measurement this is a real,
+    // if modest, undercount: adding a second trigger anchor for Divergence raised total damage by
+    // ~0.73% at sequence 3. NOT fixed by adding a second sibling block for the same effect, though —
+    // this schema's trigger.on only accepts one string, and two separate blocks sharing the same stat
+    // would each independently compute and apply their own average-uptime multiplier, ADDITIVELY
+    // stacking during any time both windows overlap (a real double-counting bug this project is careful
+    // to avoid elsewhere) rather than correctly refreshing a single conceptual buff. In real play this
+    // buff is refreshed near-continuously (Skill-slot casts, including Law of Reigns, happen throughout
+    // the whole Intuition window), so no single 8s anchor fully captures it — left anchored to the
+    // earliest real trigger (Cogitation Model) as the best available single-trigger approximation,
+    // rather than risk a double-counted fix without a real multi-trigger-single-window schema feature.
     trigger: { type: 'cast', on: 'Liberation:Cogitation Model' },
     timing: { duration: 8 },
     target: { scope: 'self' },
     effects: [{ stat: 'critDmg', value: 30, source: 'self-kit' }],
-    note: 'Crit DMG +30% for 8s, triggered by casting Resonance Skill OR Resonance Liberation Cogitation Model (confirmed exact) — modeled anchored to the Cogitation Model cast used in her real rotation.',
+    note: 'Crit DMG +30% for 8s, triggered by casting Resonance Skill OR Resonance Liberation Cogitation Model (confirmed exact) — modeled anchored to the earliest real trigger (Cogitation Model) in her real rotation; the Resonance Skill/Divergence re-triggers are a known, documented undercount (see comment above).',
   },
   {
     id: 'xianglyao.chain.s3',
     source: SOURCE, kind: 'buff', section: 'Chain',
-    trigger: { type: 'cast', on: 'Skill:Intuition: Divergence' },
+    // Fixed 2026-09-09 (full-kit audit): was anchored to 'Skill:Intuition: Divergence' — but the kit
+    // text is explicit the real trigger is "Casting Cogitation Model" (Liberation), a mismatch this
+    // file's own prior App Data Comparison note already flagged but never actually corrected (it only
+    // resolved the separate stacking-vs-refresh ambiguity, leaving the trigger source itself wrong).
+    // Confirmed this is NOT cosmetic: this engine time-averages a windowed buff's uptime across the
+    // WHOLE rotation, so anchoring the window's start later (at Divergence, the 4th step) instead of
+    // earlier (at Cogitation Model/Liberation, the 3rd step) measurably understates its average
+    // contribution — verified via direct measurement that re-anchoring to the real trigger raised the
+    // rotation's total damage from 81367.51 to 90035.39 (+~10.7%) at sequence 3.
+    trigger: { type: 'cast', on: 'Liberation:Cogitation Model' },
     timing: { duration: 24 },
     target: { scope: 'self' },
     // Fixed 2026-09-03: added the missing libDmg effect. The real buff covers BOTH Skill-type moves
@@ -119,7 +154,7 @@ export const XIANGLI_YAO_BLOCKS = [
       { stat: 'skillDmg', value: 63, source: 'self-kit' },
       { stat: 'libDmg', value: 63, source: 'self-kit' },
     ],
-    note: "DMG of Decipher/Deduction/Divergence/Law of Reigns +63% for 24s, up to 5 stacks (corrected from a wrong value of 40) — both the Skill-type portion (skillDmg) and the Law of Reigns portion (libDmg) are now captured.",
+    note: "DMG of Decipher/Deduction/Divergence/Law of Reigns +63% for 24s, re-triggerable up to 5 times (refreshes the window, not a x5 stack — confirmed via the project's own no-stacking-field default, matching every other Resonance Chain node's realistic total-value range) — both the Skill-type portion (skillDmg) and the Law of Reigns portion (libDmg) are captured, anchored to the real trigger (Cogitation Model cast) per the kit text.",
   },
   {
     id: 'xianglyao.chain.s4',
