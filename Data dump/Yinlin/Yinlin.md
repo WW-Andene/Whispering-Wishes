@@ -197,3 +197,61 @@ No app data was ever changed based on the bad read.
 
 4 tests updated (parity assertions rebalanced for the corrected S3 category and the new Deadly Focus
 blocks), full suite green (1337/1337).
+
+## Full kit audit — 2026-09-09
+
+Independent re-audit (did not trust the 2026-09-03 pass's own claims — re-read this dump, `yinlin.blocks.js`,
+every relevant `characters.js` table, and the existing test files from scratch). Cross-checked
+`CHARACTER_DATA`, `CHAR_BUFF_TABLE`, `RESONANCE_CHAIN_DATA`, `SKILL_MULTIPLIERS`, `CHARACTER_ROTATIONS`,
+`SKILL_ICONS`, and `SEQUENCE_NAMES` for Yinlin against this dump — all already consistent, no drift found.
+
+**2 real bugs found and fixed** (both in `yinlin.blocks.js`, verified via direct before/after measurement,
+never assumed):
+
+1. **`yinlin.intro.raging-storm` was missing `damage.category`** despite its own adjacent comment claiming
+   "category/basis added for Layer 4 migration... same default-to-skillDmg convention applied project-wide" —
+   the exact same comment/code-mismatch bug class already found and fixed 3× this session (Rover: Aero/Havoc/
+   Spectro's own Intro blocks). Measured: with the category missing, Raging Storm's damage was completely
+   unaffected by any active skillDmg-category buff (S1's own +70% made zero difference to it, before or after
+   fix #2 below). Fixed by adding `category: 'skillDmg'`.
+2. **`yinlin.chain.s1-moralitys-crossroad`'s `skillDmg:70` was unscoped**, despite its own kit text naming
+   exactly two moves ("Magnetic Roar and Lightning Execution deal 70% more damage"). Furious Thunder (S6's own
+   proc, per its kit text "considered Resonance Skill DMG" — also `skillDmg`-categorized) would have
+   incorrectly inherited this +70% at sequence 6+ had it ever fired. Measured directly: in the real, sourced
+   `CHARACTER_ROTATIONS['Yinlin']` data, Furious Thunder never actually procs at all — its `trigger.on`
+   requires a "Basic ATK:Zapstring's Dance Stage 1-4" step within the post-Liberation window, but the real
+   rotation's only post-Liberation Basic ATK step is a single "Stage 1" tap, a different label
+   (already an independently-documented finding in `rotationSimulator.test.js`'s own
+   "postLiberationBasic correctly does NOT get triesProc" case — not something this pass changed or
+   discovered). So this specific leak had zero numeric effect on the currently-modeled rotation. Fixed anyway
+   per root-cause discipline (a genuinely different rotation/loadout at sequence 6+ that lands a full 4-stage
+   Basic ATK combo within 30s of Thundering Wrath would otherwise still over-credit Furious Thunder): scoped
+   via `scopedToBlockId: ['yinlin.skill.magnetic-roar', 'yinlin.skill.lightning-execution']`, the same
+   array-scoping mechanism already used for Yangyang: Xuanling's Streaming Storm fix.
+
+**Investigated and confirmed NOT bugs** (verified via measurement, not assumed):
+
+- `yinlin.selfbuff.deadly-focus-dmg`'s and `yinlin.chain.s5-resounding-will`'s `condition.requiresStance`
+  clauses are architecturally decorative/unenforced on a plain passive block (per `block.schema.js` — a
+  `condition` only gates behavior through the `appliesTags`/exclusive-mode-pair mechanisms, not as a general-
+  purpose runtime check). Measured both blocks' actual contribution against the real rotation: both are
+  correctly "unconditionally on" here because the real rotation always has the relevant mark (Sinner's Mark /
+  Punishment Mark) up by the time Lightning Execution and Thundering Wrath respectively cast — Magnetic Roar
+  and the Intro (Raging Storm) both apply Sinner's Mark earlier in the same rotation, and Thundering Wrath
+  re-applies it on its own cast. No incorrect over-crediting found; left as-is.
+- The long-flagged, not-modeled Lightning Execution cast-order dependency (only castable for free as the
+  immediate follow-up to Magnetic Roar, otherwise a separate cooldown) — re-examined given newer schema
+  capabilities (`requires-prior-cast`, used elsewhere for Camellya's Ephemeral→Twining). Not applicable here:
+  the gap is about a *cooldown* branch on mistimed play, not a conditional damage bonus, and the single-pass
+  modeled rotation already executes the two casts in the correct, intended order every time — there is no
+  repeated-loop cooldown interaction for this simplification to break in the current model. Left as a
+  documented, honest gap (same conclusion as every prior pass).
+
+Full test suite verified green after fixes: 1893/1893. 2 existing tests updated to reflect the corrected S1
+scoping (`resolveHitComposedDps.test.js`, `resolveSimulatedRotation.test.js`, `resolveSimulatedTeamRotation.test.js`
+— S1's skillDmg+70 is now correctly EXCLUDED from the flat, non-per-block stat accumulators the same way
+Deadly Focus's scoped effect already was). No golden fixture (`phase3-parity-golden.json`) update was needed:
+measured that neither fix moved Yinlin's `engineDps`/`legacyRawDps` outside the existing 0.5% `GOLDEN_TOLERANCE`
+(raging-storm's new category has no live skillDmg buff to apply to it currently, since both S1 and Deadly
+Focus are scoped elsewhere; S1's rescoping had zero effect since Furious Thunder never fires in this rotation
+regardless, as established above).

@@ -51,7 +51,10 @@ describe('resolveHitComposedDps — a passive buff correctly boosts only its own
     const basicBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.basic.zapstrings-dance');
     const magneticRoarBlock = YINLIN_BLOCKS.find(b => b.id === 'yinlin.skill.magnetic-roar');
     const s1 = YINLIN_BLOCKS.find(b => b.id === 'yinlin.chain.s1-moralitys-crossroad');
-    expect(s1.effects[0]).toEqual({ stat: 'skillDmg', value: 70, source: 'self-kit' });
+    // Fixed 2026-09-09 (full-kit audit): S1 is now scoped to exactly the two moves its own kit text
+    // names (Magnetic Roar, Lightning Execution) via a scopedToBlockId array, so it no longer risks
+    // leaking into Furious Thunder (S6's own skillDmg-categorized proc) — see yinlin.blocks.js's note.
+    expect(s1.effects[0]).toEqual({ stat: 'skillDmg', value: 70, scopedToBlockId: ['yinlin.skill.magnetic-roar', 'yinlin.skill.lightning-execution'], source: 'self-kit' });
 
     const relevantBlocks = [basicBlock, magneticRoarBlock, s1];
     const baseAtk = 1000;

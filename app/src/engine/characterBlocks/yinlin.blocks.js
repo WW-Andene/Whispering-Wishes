@@ -29,6 +29,27 @@
 // __tests__/triggerEngine-yinlin.test.js, and the windowed-proc trigger type's
 // real evaluation (success/cap-forfeit/expiry cases) by
 // __tests__/rotationSimulator.test.js.
+//
+// 2026-09-09 full-kit audit (independent re-audit, cross-checked against Yinlin.md and every
+// characters.js table fresh — not trusting the prior 2026-09-03 pass's own claims): 2 real bugs
+// found and fixed.
+//   1. yinlin.intro.raging-storm was missing `damage.category` despite its own adjacent comment
+//      claiming "category/basis added for Layer 4 migration" — measured directly (0 damage
+//      difference with/without a skillDmg buff active) before fixing. Now category:'skillDmg'.
+//   2. yinlin.chain.s1-moralitys-crossroad's skillDmg:70 was unscoped despite its own kit text
+//      naming exactly two moves (Magnetic Roar, Lightning Execution) — a latent leak into Furious
+//      Thunder (S6's own skillDmg-categorized proc) at sequence 6+. Measured: zero effect on the
+//      currently-modeled rotation (Furious Thunder never actually procs against her real
+//      CHARACTER_ROTATIONS data — a separate, already-documented finding in
+//      rotationSimulator.test.js, not something this pass changed), but fixed anyway via a
+//      scopedToBlockId array per root-cause discipline, since a different rotation/sequence build
+//      would otherwise over-credit it. Full test suite (1893/1893) verified green after; no golden
+//      fixture change was needed since neither fix moved Yinlin's computed engineDps/legacyRawDps
+//      outside GOLDEN_TOLERANCE (confirmed by measurement, not assumed).
+// Also independently re-verified as NOT bugs this pass: the `condition.requiresStance` clauses on
+// yinlin.selfbuff.deadly-focus-dmg and yinlin.chain.s5-resounding-will are architecturally
+// decorative on a plain passive block (per block.schema.js), but measured to have no incorrect
+// effect here — the real rotation always has the relevant mark up by the time each cast lands.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -100,10 +121,16 @@ export const YINLIN_BLOCKS = [
     timing: {},
     target: { scope: 'self' },
     effects: [],
-    // category/basis added for Layer 4 migration — were entirely missing. No override text names a
-    // different category, same default-to-skillDmg convention applied project-wide for a generically
-    // labeled opener hit.
-    damage: { hits: parseSkillMultiplierHits('14.32%×10'), basis: 'ATK' },
+    // Fixed 2026-09-09 (full-kit audit): the comment here already claimed "category/basis added for
+    // Layer 4 migration... same default-to-skillDmg convention applied project-wide", but `category`
+    // was never actually set on the `damage` object below — a real comment/code mismatch (same class
+    // already found and fixed 3x this session on Rover: Aero/Havoc/Spectro's own Intro blocks).
+    // Measured directly: with the category missing, Raging Storm's damage was completely unaffected
+    // by S1 Morality's Crossroad's own +70% skillDmg buff (0 difference with the S1 block present vs.
+    // removed) — an opener that should get the same skillDmg-category bonuses as her other Skill-
+    // categorized hits was silently exempt from all of them. category/basis added for Layer 4
+    // migration — was previously entirely missing.
+    damage: { hits: parseSkillMultiplierHits('14.32%×10'), category: 'skillDmg', basis: 'ATK' },
     note: 'Swap into her — fires automatically, hits a large area and applies Sinner\'s Mark.',
   },
   {
@@ -243,7 +270,19 @@ export const YINLIN_BLOCKS = [
     trigger: { type: 'passive' },
     timing: {},
     target: { scope: 'self' },
-    effects: [{ stat: 'skillDmg', value: 70, source: 'self-kit' }],
+    // Fixed 2026-09-09 (full-kit audit): was unscoped skillDmg:70, but the kit text names exactly
+    // two moves (Magnetic Roar, Lightning Execution) — Furious Thunder (S6's own proc) is ALSO
+    // skillDmg-categorized ("considered Resonance Skill DMG" per its own kit text) and would
+    // incorrectly inherit this +70% too without scoping, at sequence 6+. Measured: in the real,
+    // sourced CHARACTER_ROTATIONS['Yinlin'] rotation, Furious Thunder never actually procs at all
+    // (its trigger.on requires a "Basic ATK:Zapstring's Dance Stage 1-4" step within the post-
+    // Liberation window, but the real rotation's only post-Liberation Basic ATK step is Stage 1 only
+    // — already a documented, deliberate finding in rotationSimulator.test.js's own "postLiberationBasic
+    // correctly does NOT get triesProc" case), so this leak has zero effect on the currently-modeled
+    // DPS profile. Scoping anyway per root-cause discipline (§1.4): the block as originally written
+    // would still incorrectly inflate Furious Thunder the moment a different rotation/build actually
+    // lands a 4-stage Basic ATK combo inside the 30s post-Liberation window.
+    effects: [{ stat: 'skillDmg', value: 70, scopedToBlockId: ['yinlin.skill.magnetic-roar', 'yinlin.skill.lightning-execution'], source: 'self-kit' }],
     note: 'Magnetic Roar and Lightning Execution deal 70% more damage.',
   },
   {

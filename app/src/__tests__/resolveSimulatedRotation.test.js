@@ -143,13 +143,15 @@ describe('resolveSimulatedRotation — end-to-end against REAL CHARACTER_ROTATIO
       targetElementLower: 'electro', targetRole: 'Sub DPS',
     });
     expect(totalTime).toBeGreaterThan(0);
-    // S1 (skillDmg 70, passive) always applies in full regardless of timing. Inherent Skill Deadly
-    // Focus's scopedToBlockId skillDmg+10 (Lightning Execution only) is correctly EXCLUDED here
-    // (fixed 2026-09-05 — this flat accumulator has no per-block granularity, same reasoning as
-    // perHitScopedBlockIds). S3 was fixed 2026-09-03 from a skillDmg miscategorization to
-    // coordDmg+55, matching Judgment Strike's real Coordinated Attack type (see coordDmg assertion
-    // below).
-    expect(stats.skillDmg).toBe(70);
+    // S1 (skillDmg 70, passive) was fixed 2026-09-09 (full-kit audit) to scopedToBlockId:
+    // ['yinlin.skill.magnetic-roar', 'yinlin.skill.lightning-execution'] — its kit text names only
+    // those two moves, and it was previously leaking unscoped into any other skillDmg-categorized
+    // hit (a latent risk for Furious Thunder, S6's own skillDmg proc, at sequence 6+). Like Inherent
+    // Skill Deadly Focus's scopedToBlockId skillDmg+10 below, it is now correctly EXCLUDED here
+    // (this flat accumulator has no per-block granularity, same reasoning as perHitScopedBlockIds).
+    // S3 was fixed 2026-09-03 from a skillDmg miscategorization to coordDmg+55, matching Judgment
+    // Strike's real Coordinated Attack type (see coordDmg assertion below).
+    expect(stats.skillDmg).toBe(0);
     expect(stats.coordDmg).toBe(55);
     // Yinlin's own kit has no duration-less 'cast'-triggered damage-modifier block (S6 Furious
     // Thunder is a 'windowed-proc', not a plain 'cast' block, so it isn't scanned for per-hit-scoped
