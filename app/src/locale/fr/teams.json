@@ -101,7 +101,7 @@
     "teamBuffs": "Buffs d'équipe",
     "enemyDebuffs": "Debuffs ennemis",
     "damageOutput": "Dégâts produits",
-    "rawStatScore": "Score Brut",
+    "rawStatScore": "Dégâts Bruts (Stats)",
     "rawStatScoreDetail": "base + équipement + séquence, bonus inconditionnels uniquement — sans rotation",
     "mainDpsBuffUplift": "Gain de buffs (DPS principal)",
     "mainDpsBuffUpliftDetail": "sortie de {{name}}, rotation complète + buffs d'équipe vs. stats brutes seules",
@@ -115,7 +115,7 @@
     "sourceEcho": "Écho",
     "sourceDot": "DOT / Réactions",
     "damageDistribution": "Répartition des dégâts",
-    "footerNote": "DPS d'équipe : rotation complète incluant compétences, échos, DOT, réactions. Score Brut : base + équipement + séquence, bonus inconditionnels uniquement, sans rotation. Gain de buffs (DPS principal) : combien de plus le DPS principal produit avec la rotation/les buffs d'équipe complets vs. les stats brutes seules.",
+    "footerNote": "DPS d'équipe : rotation complète incluant compétences, échos, DOT, réactions. Dégâts Bruts (Stats) : base + équipement + séquence, bonus inconditionnels uniquement, sans rotation. Gain de buffs (DPS principal) : combien de plus le DPS principal produit avec la rotation/les buffs d'équipe complets vs. les stats brutes seules.",
     "resonanceChainNote": "Les bonus de chaîne de résonance sont inclus dans le DPS ci-dessus, mais s'appliquent directement aux statistiques — ils n'ont pas de fenêtre sur le terrain, donc ils ne sont pas affichés comme des barres sur la chronologie."
   },
   "dpsCompare": {
