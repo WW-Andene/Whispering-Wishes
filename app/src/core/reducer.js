@@ -101,6 +101,10 @@ const initialState = {
   planner: {
     dailyAstrite: 60, luniteSubCount: 0,
     goalModifier: 1,
+    // Direct user request: revert the Goal Progress Target back to the original flat
+    // Base-Convenes dropdown (80/160/240) × Multiplier formula, instead of the later
+    // pity-aware worstCasePulls-based Target.
+    goalPulls: HARD_PITY,
     // Direct user request: the Goal Progress card's target (banner/copies/pity/guaranteed),
     // AND its char/weapon allocation split, are independent from the Calculator tab by
     // default — assuming a fixed 50/50 split — with linkedToCalc (the header's persistent

@@ -14,7 +14,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Link2, Minus, Plus, Search, Star, Unlink2, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -255,7 +255,12 @@ function PlannerTab({
     const probNow = nowStats.successRate;
     const probByEnd = endStats.successRate;
 
-    const targetPulls = Math.max(1, nowStats.worstCasePulls * state.planner.goalModifier);
+    // Target — reverted to the original flat Base-Convenes-per-copy × Multiplier × Copies
+    // formula (direct user request), instead of the later pity-aware worstCasePulls Target.
+    // The success-rate tiles above still use the real pity-aware goalStats(), so a
+    // guaranteed-100%-success goal can once again show as "under Target" — that's the
+    // known, explicitly-requested tradeoff of this revert.
+    const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
     const targetAstrite = targetPulls * ASTRITE_PER_PULL;
     // Availability in PULLS first (tides included), THEN converted to an Astrite shortfall —
     // converting currentAstrite alone (an earlier approach) silently dropped every tide from
@@ -267,7 +272,7 @@ function PlannerTab({
     const goalNeeded = Math.max(0, targetPulls - availablePulls) * ASTRITE_PER_PULL;
     const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
     const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
-    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, worstCasePulls: nowStats.worstCasePulls, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
   }, [state.calc, state.planner, bannerEndDate, dailyIncome]);
 
   // Collapsible section toggle
@@ -546,30 +551,49 @@ function PlannerTab({
               )}
             </div>
           </div>
-          <div>
-            <label className="kuro-label">{t('planner.multiplier')}</label>
-            <KuroSelect
-              value={state.planner.goalModifier}
-              onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +v })}
-              options={[
-                { value: 1, label: '×1' },
-                { value: 2, label: '×2' },
-                { value: 3, label: '×3' },
-              ]}
-              className="w-full"
-              ariaLabel={t('planner.multiplier')}
-              small
-            />
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="kuro-label">{t('planner.baseConvenes')}</label>
+              <KuroSelect
+                value={state.planner.goalPulls}
+                onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +v })}
+                options={[
+                  { value: HARD_PITY, label: t('planner.hardPityLabel', { n: HARD_PITY }) },
+                  { value: HARD_PITY * 2, label: t('planner.guaranteedLabel', { n: HARD_PITY * 2 }) },
+                  { value: 240, label: t('planner.charSignatureLabel') },
+                ]}
+                className="w-full"
+                ariaLabel={t('planner.baseConvenes')}
+                small
+              />
+            </div>
+            <div>
+              <label className="kuro-label">{t('planner.multiplier')}</label>
+              <KuroSelect
+                value={state.planner.goalModifier}
+                onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +v })}
+                options={[
+                  { value: 1, label: '×1' },
+                  { value: 2, label: '×2' },
+                  { value: 3, label: '×3' },
+                ]}
+                className="w-full"
+                ariaLabel={t('planner.multiplier')}
+                small
+              />
+            </div>
           </div>
           <div className="p-2 bg-white/5 rounded-lg text-sm text-gray-400 text-center">
             {t('planner.goalSummaryPrefix')}<span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> {t('planner.copiesLabel')}
           </div>
           <div className="text-sm text-gray-500 text-center py-1">
-            <span title={t('planner.worstCaseTooltip')} className="underline decoration-dotted cursor-help">{t('planner.worstCase')}</span>
+            <span title={t('planner.baseConvenesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.baseConvenes')}</span>
             {' × '}
             <span title={t('planner.multiplierTooltip')} className="underline decoration-dotted cursor-help">{t('planner.multiplier')}</span>
+            {' × '}
+            <span title={t('planner.copiesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.copiesLabel')}</span>
             {' = '}
-            <span className="text-gray-400">{planData.worstCasePulls} × {state.planner.goalModifier} = {planData.targetPulls}</span>
+            <span className="text-gray-400">{state.planner.goalPulls} × {state.planner.goalModifier} × {planData.goalCopies} = {planData.targetPulls}</span>
           </div>
           <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
             <div className="flex justify-between text-md mb-2">
