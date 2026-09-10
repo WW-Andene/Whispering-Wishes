@@ -10,6 +10,7 @@ import { getSetIcon, getElementIcon } from '../../shared/utils/elementVisuals.js
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import MonsterCard from '../../shared/components/MonsterCard.jsx';
+import { TargetInput } from '../../shared/components/TargetInput.jsx';
 import { t } from '../../utils/i18n.js';
 
 // Every echo-dropping enemy the app tracks (1-cost commons through 4-cost bosses) is a legitimate
@@ -96,12 +97,11 @@ export default function EnemyEchoSelectorModal({
               onChange={e => setEnemyLevel?.(Number(e.target.value))}
               className="flex-1 accent-red-500"
             />
-            <input
-              type="number" min={1} max={120} value={enemyLevel ?? 90}
-              onFocus={e => e.target.select()}
-              onChange={e => { const n = parseInt(e.target.value, 10); if (!Number.isNaN(n)) setEnemyLevel?.(Math.max(1, Math.min(120, n))); }}
-              onBlur={e => { if (e.target.value === '' || Number.isNaN(parseInt(e.target.value, 10))) setEnemyLevel?.(90); }}
+            <TargetInput
+              value={enemyLevel ?? 90} min={1} max={120}
+              onChange={v => setEnemyLevel?.(v)}
               className="kuro-input w-14 text-sm px-1 py-0.5 text-center shrink-0"
+              ariaLabel={t('teams.enemyEcho.enemyLevel')}
             />
           </div>
           <div className="flex gap-1.5">

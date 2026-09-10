@@ -106,7 +106,7 @@ const getActiveEvents = (date) => {
   return result;
 };
 
-function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote, toast }) {
+function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote, deadlinePin, onSetDeadlinePin, toast }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
   const [noteInput, setNoteInput] = useState('');
@@ -410,15 +410,16 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                 if (!d) return <div key={`e${ci}`} role="gridcell" style={{ aspectRatio: '1', borderRadius: 'var(--radius-sm)', background: 'var(--bg-stat)', opacity: 0.3 }} />;
                 const isSel = selectedDay === d.dateKey;
                 const isGreen = d.isDailyDone;
+                const isPinned = deadlinePin === d.dateKey;
                 return (
                   <button key={d.day} type="button" role="gridcell" data-day={d.day} onClick={() => handleTap(d)}
                     className="active:scale-95 transition-transform"
-                    aria-label={`${formatDate(d.date, { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? t('planner.calendar.todaySuffix') : ''}${d.note ? t('planner.calendar.noteSuffix') : ''}`}
+                    aria-label={`${formatDate(d.date, { weekday: 'long', month: 'short', day: 'numeric' })}${d.isToday ? t('planner.calendar.todaySuffix') : ''}${d.note ? t('planner.calendar.noteSuffix') : ''}${isPinned ? t('planner.calendar.deadlinePinSuffix') : ''}`}
                     style={{
                       aspectRatio: '1', borderRadius: 'var(--radius-sm)', overflow: 'hidden', position: 'relative',
                       background: isGreen ? 'linear-gradient(to top, rgba(34,197,94,0.24), rgba(34,197,94,0.08))' : d.isBanner ? 'linear-gradient(to top, rgba(237,175,24,0.10), rgba(237,175,24,0.03))' : 'var(--bg-stat)',
-                      border: d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isBanner ? '1px solid rgba(237,175,24,0.15)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
-                      boxShadow: isSel ? (d.isToday ? '0 0 10px rgba(237,175,24,0.3)' : '0 0 8px rgba(255,255,255,0.15)') : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
+                      border: isPinned ? '2px solid #ef4444' : d.isToday ? '2px solid #edaf18' : isSel ? '2px solid rgba(255,255,255,0.6)' : isGreen ? '1px solid rgba(34,197,94,0.4)' : d.isBanner ? '1px solid rgba(237,175,24,0.15)' : d.isPast ? '1px solid transparent' : '1px solid var(--border-subtle)',
+                      boxShadow: isPinned ? '0 0 10px rgba(239,68,68,0.35)' : isSel ? (d.isToday ? '0 0 10px rgba(237,175,24,0.3)' : '0 0 8px rgba(255,255,255,0.15)') : isGreen ? 'inset 0 0 8px rgba(34,197,94,0.12)' : 'none',
                       transition: 'all var(--transition-fast)',
                     }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
@@ -442,6 +443,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--banner" />{t('planner.calendar.bannerLegend')}</span>
           <span className="flex items-center gap-1"><span className="kuro-legend-swatch kuro-legend-swatch--dailies" />{t('planner.calendar.dailiesLegend')}</span>
           <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#edaf18', display: 'inline-block' }} />{t('planner.calendar.noteLegend')}</span>
+          {deadlinePin && <span className="flex items-center gap-1"><span style={{ width: '8px', height: '8px', borderRadius: 'var(--radius-micro)', border: '2px solid #ef4444', display: 'inline-block' }} />{t('planner.calendar.deadlinePinLegend')}</span>}
         </div>
 
         {/* Detail panel */}
@@ -496,6 +498,21 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
                 {/* U6-08: Full read-only on past days — no delete button */}
                 {!sel.isPast && <button onClick={deleteNote} className="flex-shrink-0 flex items-center justify-center bg-red-500/80 text-white opacity-60 hover:opacity-100 transition-opacity" style={{ width: 'var(--space-xl)', height: 'var(--space-xl)', borderRadius: 'var(--radius-sm)' }} aria-label={t('planner.calendar.deleteNoteAria')}><X size={12} /></button>}
               </div>
+            )}
+
+            {/* Direct user request: a single deadline pin — overrides the banner end date used
+                by the Plan tab's "Chance by banner end" for THIS day instead. Only one at a
+                time; pinning a new day replaces any previous pin. Not offered on past days. */}
+            {!sel.isPast && onSetDeadlinePin && (
+              deadlinePin === sel.dateKey ? (
+                <button onClick={() => onSetDeadlinePin(null)} className="w-full mt-2 kuro-btn active-emerald" style={{ fontSize: 'var(--font-sm)', padding: '6px 12px' }}>
+                  {t('planner.calendar.removeDeadlinePin')}
+                </button>
+              ) : (
+                <button onClick={() => { onSetDeadlinePin(sel.dateKey); toast?.addToast?.(t('planner.calendar.deadlinePinSetToast'), 'success'); }} className="w-full mt-2 kuro-btn" style={{ fontSize: 'var(--font-sm)', padding: '6px 12px' }}>
+                  {t('planner.calendar.addDeadlinePin')}
+                </button>
+              )
             )}
           </div>
         )}

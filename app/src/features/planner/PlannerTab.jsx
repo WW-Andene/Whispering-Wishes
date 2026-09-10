@@ -13,8 +13,8 @@
 // state with the rest of this file.
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Calendar, Check, ChevronDown, Minus, Plus, Search, Star, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { Calendar, Check, ChevronDown, Minus, Plus, RefreshCcw, Search, Star, X } from 'lucide-react';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -28,9 +28,12 @@ import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
+import { TargetInput } from '../../shared/components/TargetInput.jsx';
 import { AstriteCalendar } from './AstriteCalendar.jsx';
 import EchoFarmPlanner from './EchoFarmPlanner.jsx';
 import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
+import { calcStats } from '../../core/calcStats.js';
+import { computePullAllocation } from '../../core/pullAllocation.js';
 
 
 // Computes the full material/shell/EXP-potion requirement for one Ascension Planner target.
@@ -98,6 +101,39 @@ function computeFarmMaterials(ftg) {
   return { mats, potions, shell };
 }
 
+// Real success-rate-to-get-all-targets for the Goal Progress card — replaces a previous
+// crude Poisson approximation that ignored the user's actual pity, ignored their tides
+// entirely, and collapsed a "Both" goal into a single target instead of modeling two
+// independent successes (direct user report 2026-09-10). Reuses computePullAllocation
+// (the exact same per-banner pull split the Calculator tab uses) and calcStats (the
+// exact same DP/Monte Carlo engine) so this card can never again disagree with the
+// Calculator tab about the same goal. `calc` is state.calc, optionally with astrite
+// overridden to a projected total (for the "by banner end" variant).
+function goalSuccessRate(calc) {
+  const alloc = computePullAllocation(calc);
+  const isFeatured = calc.bannerCategory === 'featured';
+  const isChar = calc.selectedBanner === 'char';
+  const isWeap = calc.selectedBanner === 'weap';
+
+  let pChar = 1, pWeap = 1;
+  if (!isWeap) {
+    const pulls = isFeatured ? alloc.charTotal : alloc.stdCharTotal;
+    const copies = isFeatured ? Math.max(1, +calc.charCopies || 1) : Math.max(1, +calc.stdCharCopies || 1);
+    const pity = isFeatured ? (+calc.charPity || 0) : (+calc.stdCharPity || 0);
+    const guaranteed = isFeatured ? !!calc.charGuaranteed : false; // standard banners have no 50/50
+    const stats = calcStats(pulls, pity, guaranteed, true, copies, 0, isFeatured);
+    pChar = parseFloat(stats.successRate) / 100;
+  }
+  if (!isChar) {
+    const pulls = isFeatured ? alloc.weapTotal : alloc.stdWeapTotal;
+    const copies = isFeatured ? Math.max(1, +calc.weapCopies || 1) : Math.max(1, +calc.stdWeapCopies || 1);
+    const pity = isFeatured ? (+calc.weapPity || 0) : (+calc.stdWeapPity || 0);
+    const stats = calcStats(pulls, pity, false, false, copies, 0, isFeatured); // weapons: no 50/50
+    pWeap = parseFloat(stats.successRate) / 100;
+  }
+  return pChar * pWeap * 100;
+}
+
 // [SECTION:PLANNER] ── PlannerTab main component ─────────────────────────────
 function PlannerTab({
   state,
@@ -128,67 +164,80 @@ function PlannerTab({
   const [collapsed, setCollapsed] = useState({});
 
   const dailyIncome = useMemo(() => {
-    return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
-  }, [state.planner.dailyAstrite, state.planner.luniteActive]);
+    // Direct user request: the Lunite Subscription is stackable in the real game (you can run
+    // multiple concurrent 30-day subs at once), so this is a count, not a single on/off toggle.
+    return (state.planner.dailyAstrite || 0) + (state.planner.luniteSubCount || 0) * LUNITE_DAILY_ASTRITE;
+  }, [state.planner.dailyAstrite, state.planner.luniteSubCount]);
 
   const planData = useMemo(() => {
     const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
-    const bannerEnd = new Date(bannerEndDate);
+    // Deadline: the pinned date if one is set, else the actual banner end date (direct user
+    // request — "chance by banner end should be obviously by the banner end by default,
+    // unless i pin a marker in the calendar").
+    const deadline = state.planner.deadlinePin ? new Date(state.planner.deadlinePin) : new Date(bannerEndDate);
     const now = new Date();
-    const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
+    const daysLeft = Math.max(0, Math.ceil((deadline - now) / 86400000));
     const incomeByEnd = dailyIncome * daysLeft;
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
-    const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + (
-      state.calc.bannerCategory === 'featured'
-        ? (state.calc.selectedBanner === 'both'
-            ? (+state.calc.radiant || 0) + (+state.calc.forging || 0)
-            : state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
-        : (+state.calc.lustrous || 0)
-    );
-    const isFeatured = state.calc.bannerCategory === 'featured';
-    const isChar = state.calc.selectedBanner === 'char';
-    const isWeap = state.calc.selectedBanner === 'weap';
+
+    // Target — fully independent from the Calculator tab (direct user request: "the plan
+    // target should not be link to calc target unless click on a small button"). Only
+    // SYNC_PLANNER_GOAL_FROM_CALC (the header's sync button) overwrites these from Calc.
+    const isFeatured = state.planner.goalBannerCategory === 'featured';
+    const isChar = state.planner.goalSelectedBanner === 'char';
+    const isWeap = state.planner.goalSelectedBanner === 'weap';
     let goalCopies = 1;
     let goalBannerLabel = '';
     if (isFeatured) {
-      if (isChar) { goalCopies = Math.max(1, state.calc.charCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.resonatorLabel')}`; }
-      else if (isWeap) { goalCopies = Math.max(1, state.calc.weapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.weaponLabel')}`; }
-      else { goalCopies = Math.max(1, state.calc.charCopies || 1, state.calc.weapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.bothLabel')}`; }
+      if (isChar) { goalCopies = Math.max(1, state.planner.goalCharCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, state.planner.goalWeapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, state.planner.goalCharCopies || 1, state.planner.goalWeapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.bothLabel')}`; }
     } else {
-      if (isChar) { goalCopies = Math.max(1, state.calc.stdCharCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.resonatorLabel')}`; }
-      else if (isWeap) { goalCopies = Math.max(1, state.calc.stdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
-      else { goalCopies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
+      if (isChar) { goalCopies = Math.max(1, state.planner.goalStdCharCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, state.planner.goalStdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, state.planner.goalStdCharCopies || 1, state.planner.goalStdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
     }
+
+    // Tides (Radiant/Forging/Lustrous) relevant to the GOAL's own banner selection — the
+    // resource AMOUNTS are still shared/read from state.calc (only the target decoupled), but
+    // which of them count toward THIS goal depends on the goal's own selection, not whatever
+    // Calc currently happens to be showing.
+    const relevantTides = isFeatured
+      ? (isChar ? (+state.calc.radiant || 0) : isWeap ? (+state.calc.forging || 0) : (+state.calc.radiant || 0) + (+state.calc.forging || 0))
+      : (+state.calc.lustrous || 0);
+    const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
     const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
     const targetAstrite = targetPulls * ASTRITE_PER_PULL;
-    const goalNeeded = Math.max(0, targetAstrite - currentAstrite);
+    // Availability in PULLS first (tides included), THEN converted to an Astrite shortfall —
+    // converting currentAstrite alone (the previous approach) silently dropped every tide from
+    // the "still needed" figure, overstating it by relevantTides * ASTRITE_PER_PULL (direct user
+    // report 2026-09-10, confirmed against the app's own numbers: 47 Radiant + 38 Forging tides
+    // were worth 85 * 160 = 13,600 Astrite that never got credited).
+    const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL) + relevantTides;
+    const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
+    const goalNeeded = Math.max(0, targetPulls - availablePulls) * ASTRITE_PER_PULL;
     const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
-    const goalProgress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
-    // Quick probability estimate: what's the chance of getting the target with available pulls?
-    const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL);
-    const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL);
-    // Simplified probability model: P(5★ in N pulls) using soft pity integral
-    const calcProb = (pulls, copies, has5050) => {
-      if (pulls <= 0 || copies <= 0) return 0;
-      // Expected pulls per 5★ (accounting for soft pity): ~62 avg with soft pity ramp
-      const avgPer5Star = 62;
-      const pullsPerFeatured = has5050 ? avgPer5Star * 1.5 : avgPer5Star; // 50/50 = 1.5x avg
-      const expectedCopies = pulls / pullsPerFeatured;
-      // Poisson CDF approximation for P(copies >= target)
-      if (expectedCopies >= copies * 2) return 99.9;
-      let prob = 0;
-      let term = Math.exp(-expectedCopies);
-      for (let k = 0; k < copies; k++) {
-        prob += term;
-        term *= expectedCopies / (k + 1);
-      }
-      return Math.min(99.9, Math.max(0.1, (1 - prob) * 100));
+    const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
+    // Real success-rate-to-get-all-targets (direct user request 2026-09-10, replacing a crude
+    // Poisson approximation that ignored actual pity and tides, and collapsed a "Both" goal into
+    // one target instead of modeling two independent successes) — see goalSuccessRate's own
+    // comment. Resources come from Calc (shared); the target comes from Planner's own
+    // decoupled goal fields. "By end" reruns the same allocation with astrite/lunite bumped to
+    // the projected total (tides don't accrue via dailyIncome, so they stay as-is).
+    const goalCalcLike = {
+      astrite: state.calc.astrite, lunite: state.calc.lunite, radiant: state.calc.radiant,
+      forging: state.calc.forging, lustrous: state.calc.lustrous,
+      allocPriority: state.calc.allocPriority, stdAllocPriority: state.calc.stdAllocPriority,
+      bannerCategory: state.planner.goalBannerCategory, selectedBanner: state.planner.goalSelectedBanner,
+      charCopies: state.planner.goalCharCopies, charPity: state.planner.goalCharPity, charGuaranteed: state.planner.goalCharGuaranteed,
+      weapCopies: state.planner.goalWeapCopies, weapPity: state.planner.goalWeapPity,
+      stdCharCopies: state.planner.goalStdCharCopies, stdCharPity: state.planner.goalStdCharPity,
+      stdWeapCopies: state.planner.goalStdWeapCopies, stdWeapPity: state.planner.goalStdWeapPity,
     };
-    const has5050 = isFeatured && state.planner.goalBanner === 'featuredChar';
-    const probNow = calcProb(availablePulls, goalCopies, has5050);
-    const probByEnd = calcProb(pullsByEnd, goalCopies, has5050);
-    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
-  }, [state.calc, state.planner.goalPulls, state.planner.goalModifier, bannerEndDate, dailyIncome]);
+    const probNow = goalSuccessRate(goalCalcLike);
+    const probByEnd = goalSuccessRate({ ...goalCalcLike, astrite: totalAstriteByEnd, lunite: 0 });
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
+  }, [state.calc, state.planner, bannerEndDate, dailyIncome]);
 
   // Collapsible section toggle
   const toggleSection = useCallback((key) => setCollapsed(p => ({ ...p, [key]: !p[key] })), []);
@@ -206,7 +255,7 @@ function PlannerTab({
         </div>
         {!collapsed.calendar && (
           <CardBody className="space-y-3">
-            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} toast={toast} />
+            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} deadlinePin={state.planner.deadlinePin} onSetDeadlinePin={(dateKey) => dispatch({ type: 'SET_PLANNER', field: 'deadlinePin', value: dateKey })} toast={toast} />
           </CardBody>
         )}
       </Card>
@@ -223,7 +272,7 @@ function PlannerTab({
           <CardBody className="space-y-3">
             <div>
               <label className="kuro-label" title={t('planner.dailyAstriteTooltip')}>{t('planner.dailyAstriteLabel')}</label>
-              <input type="number" value={state.planner.dailyAstrite} onChange={e => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: Math.max(0, Math.floor(+e.target.value || 0)) })} className="kuro-input w-full" aria-label={t('planner.dailyAstriteAriaLabel')} />
+              <TargetInput value={state.planner.dailyAstrite} min={0} max={MAX_ASTRITE} onChange={v => dispatch({ type: 'SET_PLANNER', field: 'dailyAstrite', value: v })} className="kuro-input w-full" ariaLabel={t('planner.dailyAstriteAriaLabel')} />
               <div className="text-gray-500 text-sm mt-1">{t('planner.dailyAstriteHint')}</div>
             </div>
             <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
@@ -248,23 +297,30 @@ function PlannerTab({
         {showIncomePanel && (
           <CardBody className="space-y-2">
             <div className="kuro-label">{t('planner.subscriptions')}</div>
-            <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={t('planner.luniteSubAriaLabel', { status: state.planner.luniteActive ? t('planner.luniteSubActive') : t('planner.luniteSubInactive') })} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
+            <div className={`kuro-btn w-full text-left ${state.planner.luniteSubCount > 0 ? 'active-emerald' : ''}`}>
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
-                  <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
-                    {state.planner.luniteActive && <Check size={12} />}
+                  <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteSubCount > 0 ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteSubCount ? { background: 'var(--bg-btn)' } : undefined}>
+                    {state.planner.luniteSubCount > 0 && <Check size={12} />}
                   </span>
                   <div>
-                    <div className={`text-base font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>{t('planner.luniteSubTitle')}</div>
+                    <div className={`text-base font-medium ${state.planner.luniteSubCount > 0 ? 'text-emerald-400' : 'text-gray-200'}`}>{t('planner.luniteSubTitle')}</div>
                     <div className="text-gray-300 text-sm">{t('planner.luniteSubDesc', { daily: SUBSCRIPTIONS.lunite.daily, duration: SUBSCRIPTIONS.lunite.duration })}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-emerald-400 text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
-                  {state.planner.luniteActive && <div className="text-emerald-400 text-sm">{t('planner.plusPerDay')}</div>}
+                <div className="text-right flex items-center gap-2">
+                  <div>
+                    <span className="text-emerald-400 text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
+                    {state.planner.luniteSubCount > 0 && <div className="text-emerald-400 text-sm">{t('planner.plusPerDay', { n: state.planner.luniteSubCount * SUBSCRIPTIONS.lunite.daily })}</div>}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteSubCount', value: Math.max(0, (state.planner.luniteSubCount || 0) - 1) })} disabled={!state.planner.luniteSubCount} className="text-red-400 min-w-[48px] min-h-[48px] flex items-center justify-center disabled:opacity-30" aria-label={t('planner.luniteSubRemoveAriaLabel')}><Minus size={12} /></button>
+                    <span className="text-gray-100 w-4 text-center kuro-number">{state.planner.luniteSubCount || 0}</span>
+                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteSubCount', value: (state.planner.luniteSubCount || 0) + 1 })} className="text-yellow-400 min-w-[48px] min-h-[48px] flex items-center justify-center" aria-label={t('planner.luniteSubAddAriaLabel')}><Plus size={12} /></button>
+                  </div>
                 </div>
               </div>
-            </button>
+            </div>
             <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(t('planner.addedToast', { name: SUBSCRIPTIONS.weekly.name }), 'success'); }} className="kuro-btn w-full text-left">
               <div className="flex items-center justify-between w-full">
                 <div><div className="text-gray-200 text-base font-medium">{SUBSCRIPTIONS.weekly.name}</div><div className="text-gray-300 text-sm">{SUBSCRIPTIONS.weekly.desc}</div></div>
@@ -338,10 +394,11 @@ function PlannerTab({
               ))}
             </div>
             )}
-            {state.planner.luniteActive && (
+            {state.planner.luniteSubCount > 0 && (
               <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
                 <span className="text-emerald-400 text-base">{t('planner.monthlySub')}</span>
-                <span className="text-emerald-400 font-bold text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
+                <span className="text-emerald-400 font-bold text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price * state.planner.luniteSubCount })}</span>
+                {state.planner.luniteSubCount > 1 && <span className="text-emerald-400 text-sm"> ({t('planner.luniteSubCountSuffix', { n: state.planner.luniteSubCount })})</span>}
               </div>
             )}
           </CardBody>
@@ -384,12 +441,67 @@ function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('goal')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('goal'); } }} aria-expanded={!collapsed.goal}>
           <CardHeader action={<>
+            {/* Direct user request: the goal target is independent from the Calculator tab by
+                default — this button is the ONLY way it gets overwritten from Calc. stopPropagation
+                so clicking it doesn't also toggle this card's own collapse (the whole header row
+                has its own onClick above). */}
+            <button onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SYNC_PLANNER_GOAL_FROM_CALC' }); toast?.addToast?.(t('planner.syncedFromCalcToast'), 'success'); }} className="text-gray-400 hover:text-gray-200 min-w-[48px] min-h-[48px] flex items-center justify-center -my-2" title={t('planner.syncFromCalcTooltip')} aria-label={t('planner.syncFromCalcAriaLabel')}>
+              <RefreshCcw size={14} />
+            </button>
             <span className="text-gray-400 text-sm">{planData.goalProgress.toFixed(0)}%</span>
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.goal ? '' : 'rotate-180'}`} />
           </>}>{t('planner.goalProgressTitle')}</CardHeader>
         </div>
         {!collapsed.goal && (
         <CardBody className="space-y-3">
+          {/* Target — independent from the Calculator tab (direct user request). */}
+          <div className="space-y-2 p-2 bg-white/5 rounded-lg">
+            <div className="grid grid-cols-2 gap-2">
+              {[['featured', t('planner.featuredLabel')], ['standard', t('planner.standardLabel')]].map(([v, label]) => (
+                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalBannerCategory', value: v })} aria-pressed={state.planner.goalBannerCategory === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalBannerCategory === v ? 'active-gold' : ''}`}>{label}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[['char', t('planner.resonatorLabel')], ['weap', t('planner.weaponLabel')], ['both', t('planner.bothLabel')]].map(([v, label]) => (
+                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalSelectedBanner', value: v })} aria-pressed={state.planner.goalSelectedBanner === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalSelectedBanner === v ? 'active-emerald' : ''}`}>{label}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {!planData.isWeap && (
+                <div>
+                  <label className="kuro-label text-xs">{t('planner.goalCharTargetLabel')}</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalCharCopies : state.planner.goalStdCharCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharCopies' : 'goalStdCharCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.copiesLabel')} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalCharPity : state.planner.goalStdCharPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharPity' : 'goalStdCharPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.pityLabel')} />
+                    </div>
+                  </div>
+                  {planData.isFeatured && (
+                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalCharGuaranteed', value: !state.planner.goalCharGuaranteed })} aria-pressed={state.planner.goalCharGuaranteed} className={`kuro-btn kuro-btn-sm w-full mt-1 ${state.planner.goalCharGuaranteed ? 'active-emerald' : ''}`}>{state.planner.goalCharGuaranteed ? t('calculator.guaranteed') : t('calculator.5050active')}</button>
+                  )}
+                </div>
+              )}
+              {!planData.isChar && (
+                <div>
+                  <label className="kuro-label text-xs">{t('planner.goalWeapTargetLabel')}</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapCopies : state.planner.goalStdWeapCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapCopies' : 'goalStdWeapCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.copiesLabel')} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapPity : state.planner.goalStdWeapPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapPity' : 'goalStdWeapPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.pityLabel')} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="kuro-label">{t('planner.baseConvenes')}</label>
@@ -423,7 +535,7 @@ function PlannerTab({
             </div>
           </div>
           <div className="p-2 bg-white/5 rounded-lg text-sm text-gray-400 text-center">
-            {t('planner.usingCalculator')}<span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> {t('planner.copiesLabel')}
+            {t('planner.goalSummaryPrefix')}<span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> {t('planner.copiesLabel')}
           </div>
           <div className="text-sm text-gray-500 text-center py-1">
             <span title={t('planner.baseConvenesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.baseConvenes')}</span>
@@ -443,7 +555,7 @@ function PlannerTab({
               <div className={`h-full transition-[width] duration-300 ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
             </div>
             <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-400">{t('planner.convenesProgress', { current: Math.floor(planData.currentAstrite / ASTRITE_PER_PULL), target: planData.targetPulls })}</span>
+              <span className="text-gray-400">{t('planner.convenesProgress', { current: planData.availablePulls, target: planData.targetPulls })}</span>
               <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
             </div>
           </div>
@@ -455,7 +567,7 @@ function PlannerTab({
             </div>
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probByEnd >= 80 ? 'text-emerald-400' : planData.probByEnd >= 50 ? 'text-yellow-400' : planData.probByEnd >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEnd.toFixed(1)}%</div>
-              <div className="text-gray-500 text-xs">{t('planner.chanceByEnd', { pulls: planData.pullsByEnd })}</div>
+              <div className="text-gray-500 text-xs">{t(state.planner.deadlinePin ? 'planner.chanceByDeadlinePin' : 'planner.chanceByEnd', { pulls: planData.pullsByEnd, date: state.planner.deadlinePin ? formatDate(new Date(state.planner.deadlinePin), { month: 'short', day: 'numeric' }) : undefined })}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">

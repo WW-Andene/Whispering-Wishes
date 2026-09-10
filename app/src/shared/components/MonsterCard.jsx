@@ -10,6 +10,7 @@ import { Skull } from 'lucide-react';
 import { getElementIcon, getStatIcon } from '../utils/elementVisuals.js';
 import { t } from '../../utils/i18n.js';
 import { hideOnError } from '../utils/imageHelpers.js';
+import { TargetInput } from './TargetInput.jsx';
 import { getEnemyStatsAtLevel, getEnemyStaggerStatsAtLevel } from '../../data/echoes.js';
 
 const ELEMENT_ORDER = ['physical', 'glacio', 'fusion', 'electro', 'aero', 'spectro', 'havoc'];
@@ -108,12 +109,11 @@ function MonsterCard({
           {showLevelControl && enemyStats ? (
             <div className="flex items-center gap-1 mt-0.5" onClick={e => e.stopPropagation()}>
               <button type="button" onClick={() => stepLevel(-1)} className="w-4 h-4 flex items-center justify-center rounded bg-white/5 hover:bg-white/15 text-gray-400 text-2xs leading-none">−</button>
-              <input
-                type="number" min={1} max={120} value={level}
-                onFocus={e => e.target.select()}
-                onChange={e => { const n = parseInt(e.target.value, 10); if (!Number.isNaN(n)) setLevel?.(clampLevel(n)); }}
-                onBlur={e => { if (e.target.value === '' || Number.isNaN(parseInt(e.target.value, 10))) setLevel?.(90); }}
+              <TargetInput
+                value={level} min={1} max={120}
+                onChange={v => setLevel?.(v)}
                 className="w-12 text-2xs text-center bg-transparent text-gray-400 border border-[var(--border-subtle)] rounded px-0.5 py-px"
+                ariaLabel={t('teams.enemyEcho.enemyLevel')}
               />
               <button type="button" onClick={() => stepLevel(1)} className="w-4 h-4 flex items-center justify-center rounded bg-white/5 hover:bg-white/15 text-gray-400 text-2xs leading-none">+</button>
               <span className="text-2xs text-gray-500">/ 120</span>
