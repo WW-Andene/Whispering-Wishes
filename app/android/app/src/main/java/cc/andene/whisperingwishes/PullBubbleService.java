@@ -1305,7 +1305,18 @@ public class PullBubbleService extends Service {
         // that entire class of race instead of trying to out-guess window-manager ordering —
         // container is now the actual window content, sized for the flash's bloom; root (the
         // circular icon) and flash are both its children, centered inside it.
-        int flashSizePx = (int) (popSizePx * 1.15f);
+        // Direct user report 2026-09-10: the flash/spark burst looked "very small, on fire
+        // inside the bubble" instead of a big radiant burst. Root cause: the window itself
+        // (params/container below) was sized to exactly flashSizePx — flash's own RESTING
+        // size — but flash then animates up past that (now 2x), and the spark streaks are
+        // even longer than flashSizePx to begin with. Both got clipped at the window's own surface
+        // edge (the same class of bug as the icon-clipping fix above, just for the burst this
+        // time), so only the small unclipped center fraction was ever visible. burstWindowSizePx
+        // is now sized to comfortably contain the FULLY EXPANDED burst instead of flash's
+        // resting size, and flash/spark's own sizes are bumped up for a bigger effect on top of
+        // that fix.
+        int flashSizePx = (int) (popSizePx * 1.6f);
+        int burstWindowSizePx = (int) (flashSizePx * 2.5f);
         int centerX = dm.widthPixels / 2;
         int centerY = dm.heightPixels / 2;
 
@@ -1351,12 +1362,12 @@ public class PullBubbleService extends Service {
         // through the main bubble's already-proven touch handling instead of making this
         // rapidly-added/removed window itself touchable.
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                flashSizePx, flashSizePx, overlayType,
+                burstWindowSizePx, burstWindowSizePx, overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        params.x = centerX - flashSizePx / 2;
-        params.y = centerY - flashSizePx / 2;
+        params.x = centerX - burstWindowSizePx / 2;
+        params.y = centerY - burstWindowSizePx / 2;
 
         // Direct user report 2026-09-10 (still broken after the single-window fix above): the
         // icon flashes fully-formed for ~1 frame, then snaps/glitches into its hidden state for
@@ -1398,7 +1409,7 @@ public class PullBubbleService extends Service {
         // to 240ms alongside the hold-time reduction, so the burst still reads as a distinct
         // "flash then settle" beat instead of dragging through a noticeably larger fraction of
         // the now much shorter 1.5s hold.
-        flash.animate().scaleX(1.6f).scaleY(1.6f).alpha(0f).setDuration(240).start();
+        flash.animate().scaleX(2f).scaleY(2f).alpha(0f).setDuration(240).start();
         for (View spark : sparks) {
             spark.animate().scaleX(1f).alpha(0f).setDuration(240)
                     .setInterpolator(new android.view.animation.DecelerateInterpolator())
@@ -1433,8 +1444,8 @@ public class PullBubbleService extends Service {
                         // gets clipped at any point.
                         float shrinkTo = (float) sizePx / popSizePx;
                         int startX = params.x, startY = params.y;
-                        int endX = finalParams.x + sizePx / 2 - flashSizePx / 2;
-                        int endY = finalParams.y + sizePx / 2 - flashSizePx / 2;
+                        int endX = finalParams.x + sizePx / 2 - burstWindowSizePx / 2;
+                        int endY = finalParams.y + sizePx / 2 - burstWindowSizePx / 2;
                         android.animation.ValueAnimator slide = android.animation.ValueAnimator.ofFloat(0f, 1f);
                         slide.setDuration(POP_SHRINK_DURATION_MS);
                         slide.setInterpolator(new android.view.animation.DecelerateInterpolator());
@@ -1475,8 +1486,10 @@ public class PullBubbleService extends Service {
     private static final int SPARK_COUNT = 6;
     private List<View> addSparkStreaks(FrameLayout container, int flashSizePx) {
         List<View> sparks = new ArrayList<>();
-        int sparkLengthPx = (int) (flashSizePx * 1.35f);
-        int sparkThicknessPx = Math.max(2, flashSizePx / 40);
+        // Direct user request: was reading as "very small, on fire inside the bubble" — bumped
+        // up alongside fixing the window-clipping bug (see this method's header comment).
+        int sparkLengthPx = (int) (flashSizePx * 2.2f);
+        int sparkThicknessPx = Math.max(3, flashSizePx / 22);
         for (int i = 0; i < SPARK_COUNT; i++) {
             GradientDrawable streak = new GradientDrawable(
                     GradientDrawable.Orientation.LEFT_RIGHT,
