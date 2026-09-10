@@ -1069,19 +1069,24 @@ public class PullBubbleService extends Service {
             }
         }
 
-        Runnable reveal = () -> {
-            addResultIcon(result, assetMap, index);
-            playItemStep(results, index + 1, assetMap);
-        };
+        // Direct user request 2026-09-10: stop firing through the whole sequence automatically
+        // — mirrors ConvenePullSimModal.jsx's own flow, where EVERY item (video or not) pauses
+        // at its own reveal and only advances to the next one on a tap (handleItemTap), rather
+        // than auto-continuing after a fixed delay. addResultIcon no longer advances the
+        // sequence itself; it now takes this onAdvance callback and only invokes it once its own
+        // pop-reveal is tapped (see addPopReveal's own comment) — the same callback either way,
+        // whether this item had a video first or not, matching the web reference exactly.
+        Runnable onAdvance = () -> playItemStep(results, index + 1, assetMap);
+        Runnable reveal = () -> addResultIcon(result, assetMap, onAdvance);
         if (videos.isEmpty()) {
-            // No video for this item — still waits its turn in the sequence, just paced by a
-            // short stagger instead, so the whole reveal reads as one continuous wave rather
-            // than "some items pop in after a video, the rest dump in instantly". Direct user
-            // request 2026-09-10: play the same drop/chime sound the web pull simulator plays
-            // for its own no-video item reveal (ConvenePullSimModal.jsx's playItemRevealChime,
-            // fired exactly on its own !hasVideo branch) — mirrors that same condition here so
-            // the two surfaces stay in sync, and stays silent for anything that already has its
-            // own convene clip rather than layering a second sound over it.
+            // No video for this item — still waits its turn, just paced by a short stagger
+            // before its own pop-in starts rather than "some items pop in after a video, the
+            // rest dump in instantly". Direct user request 2026-09-10: play the same drop/chime
+            // sound the web pull simulator plays for its own no-video item reveal
+            // (ConvenePullSimModal.jsx's playItemRevealChime, fired exactly on its own !hasVideo
+            // branch) — mirrors that same condition here so the two surfaces stay in sync, and
+            // stays silent for anything that already has its own convene clip rather than
+            // layering a second sound over it.
             playDropSound();
             handler.postDelayed(reveal, WAVE_STAGGER_MS);
         } else {
@@ -1135,7 +1140,7 @@ public class PullBubbleService extends Service {
     private final Map<View, android.animation.ObjectAnimator> tileGlowAnimators = new HashMap<>();
     private final Runnable autoArchiveRunnable = this::autoArchiveAllTiles;
 
-    private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, int revealIndexUnused) {
+    private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, Runnable onAdvance) {
         allPulledResults.add(result);
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
@@ -1182,7 +1187,7 @@ public class PullBubbleService extends Service {
         // pop-reveal hands off to it, so there's exactly one visible copy of the icon at a time.
         newTile.setAlpha(0f);
         pendingReveal.add(newTile);
-        addPopReveal(result, assetMap, finalParams, sizePx, newTile);
+        addPopReveal(result, assetMap, finalParams, sizePx, newTile, onAdvance);
     }
 
     // See addResultIcon's own comment for why this exists. A WindowManager overlay window is a
@@ -1197,14 +1202,16 @@ public class PullBubbleService extends Service {
     // (already sitting correctly positioned and invisible) and removes this temporary one.
     private static final float POP_SCALE = 2.4f;
     private static final int POP_GROW_DURATION_MS = 200;
-    // Direct user report 2026-09-10: the pop reveal moved from grow straight into shrink with
-    // no pause, reading as "too quick" — hold the big reveal on screen for a beat before the
-    // shrink-to-slot animation starts.
-    private static final int POP_HOLD_DURATION_MS = 1000;
+    // Direct user request 2026-09-10: the popped item holds at full size until either tapped
+    // (see the tap listener below) or 3s pass, whichever comes first — a tap advances
+    // immediately, an untapped item still moves the sequence along on its own rather than
+    // waiting indefinitely.
+    private static final int POP_AUTO_ADVANCE_MS = 3000;
     private static final int POP_SHRINK_DURATION_MS = 380;
 
     private void addPopReveal(WidgetPullSimulator.PullResult result, JSONObject assetMap,
-                               WindowManager.LayoutParams finalParams, int sizePx, View realTile) {
+                               WindowManager.LayoutParams finalParams, int sizePx, View realTile,
+                               Runnable onAdvance) {
         android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
         int popSizePx = (int) (sizePx * POP_SCALE);
         int centerX = dm.widthPixels / 2;
@@ -1228,9 +1235,12 @@ public class PullBubbleService extends Service {
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
+        // FLAG_NOT_TOUCHABLE dropped (was on both flags before) — this window now needs to
+        // receive the user's tap to continue. FLAG_NOT_FOCUSABLE stays: it never needs keyboard
+        // focus, just a click.
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 popSizePx, popSizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
         params.x = centerX - popSizePx / 2;
@@ -1242,6 +1252,7 @@ public class PullBubbleService extends Service {
             pendingReveal.remove(realTile);
             tileRevealedAt.put(realTile, System.currentTimeMillis());
             realTile.setAlpha(1f); // this pop window failed — still reveal the real tile plainly
+            onAdvance.run();
             return;
         }
 
@@ -1261,17 +1272,31 @@ public class PullBubbleService extends Service {
                     root.setTranslationX(-dxWindow);
                     root.setTranslationY(-dyWindow);
                     float shrinkTo = (float) sizePx / popSizePx;
-                    root.animate().translationX(0).translationY(0).scaleX(shrinkTo).scaleY(shrinkTo)
-                            .setStartDelay(POP_HOLD_DURATION_MS)
-                            .setDuration(POP_SHRINK_DURATION_MS)
-                            .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                            .withEndAction(() -> {
-                                pendingReveal.remove(realTile);
-                                tileRevealedAt.put(realTile, System.currentTimeMillis());
-                                realTile.setAlpha(1f);
-                                try { windowManager.removeView(root); } catch (Exception ignored) {}
-                            })
-                            .start();
+
+                    // Guards against a tap and the safety timeout racing each other — whichever
+                    // fires first wins, the other is a no-op.
+                    boolean[] advancing = {false};
+                    Runnable shrinkAndAdvance = () -> {
+                        if (advancing[0]) return;
+                        advancing[0] = true;
+                        root.setOnClickListener(null);
+                        root.animate().translationX(0).translationY(0).scaleX(shrinkTo).scaleY(shrinkTo)
+                                .setDuration(POP_SHRINK_DURATION_MS)
+                                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                                .withEndAction(() -> {
+                                    pendingReveal.remove(realTile);
+                                    tileRevealedAt.put(realTile, System.currentTimeMillis());
+                                    realTile.setAlpha(1f);
+                                    try { windowManager.removeView(root); } catch (Exception ignored) {}
+                                    onAdvance.run();
+                                })
+                                .start();
+                    };
+                    root.setOnClickListener(v -> {
+                        handler.removeCallbacks(shrinkAndAdvance);
+                        shrinkAndAdvance.run();
+                    });
+                    handler.postDelayed(shrinkAndAdvance, POP_AUTO_ADVANCE_MS);
                 })
                 .start();
     }
