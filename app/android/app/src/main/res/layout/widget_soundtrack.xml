@@ -90,29 +90,45 @@
 
              Third real-device round (same day): text was no longer clipped, but the user
              pointed out a legible flat white panel just below the reel graphic (the one this
-             text was sitting ON TOP of) and asked for the title there instead — pixel-scanned
-             that screenshot's own brightness (a clear jump to near-white, ~(244,255,246), at
-             ~67-74% vertical / ~50-77% horizontal) and refit these weights to center on that
-             panel: 65/10/25 vertical, 46/35/19 horizontal. -->
+             text was sitting ON TOP of) and asked for the title there instead. That round's fix
+             was fit from a SCREENSHOT again (65/10/25) — the same category of mistake as the
+             very first round: that particular screenshot included status-bar chrome above the
+             actual widget bounds, so treating the whole screenshot as 0-100% of the widget
+             squeezed/shifted every fraction, and the user reported the title still not on the
+             white space.
+
+             Fourth round: went back to the SOURCE PHOTO itself (not a screenshot of it, which
+             can include chrome outside the widget's real bounds) and pixel-scanned it directly
+             for the actual white drawer panel below the reel window — a distinctly brighter
+             white than the cream panel above it, at y 72-84% / x 47-81% of the 1858x1017
+             photo. That panel's bottom (84%) overlaps the button row's own top (81%, see Row
+             2/3 below) — only y 72-81% (9%) is actually clear of both the cream panel above and
+             the button row below. The second round's fix used an 18%-tall cell to stop 14sp
+             bold text from clipping; 18% doesn't fit in a 9%-tall clear band. Rather than
+             re-risk clipping by cramming a too-short cell in again, dropped the text to 12sp
+             (still bold, still legible, needs a shorter cell to render without clipping) and
+             sized the cell to the clear band itself: 73/8/19 vertical, 47/34/19 horizontal
+             (horizontal unchanged from the panel measurement — only the vertical band was
+             ever the problem). -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="65" />
+            android:layout_weight="73" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="10"
+            android:layout_weight="8"
             android:orientation="horizontal"
             android:clipChildren="false">
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="46" />
+                android:layout_weight="47" />
             <LinearLayout
                 android:id="@+id/widget_soundtrack_track_name"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="35"
+                android:layout_weight="34"
                 android:gravity="center"
                 android:clipChildren="false">
                 <TextView
@@ -120,7 +136,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#3D2817"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:maxLines="1"
                     android:ellipsize="end" />
@@ -133,7 +149,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="25" />
+            android:layout_weight="19" />
 
         <!-- Row 2/3 (vertical weights 81/13/6 ≈ photo's y 824-957 of 1017) — the 4 real
              physical button labels, horizontal weights 33/11/12/14/13/17 ≈ their real x
