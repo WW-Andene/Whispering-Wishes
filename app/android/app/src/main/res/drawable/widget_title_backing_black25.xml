@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backing for the Frequency Cassette widget's title text only — black at 25% opacity
+     (alpha 0x40 = 64/255 ~= 25%), rounded to match the existing selected-state pill's 10dp
+     radius. Replaces Android's default click-highlight, which was rendering as a pale rounded
+     box behind the title (every OTHER clickable view in this file explicitly sets a
+     transparent background to suppress that default; the title's wrapper never did, until
+     this fix), recolored to the user's explicit black-25%-opacity request, 2026-09-10. -->
+
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#40000000" />
+    <corners android:radius="10dp" />
+</shape>
