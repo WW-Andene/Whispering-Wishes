@@ -1167,7 +1167,7 @@ const CHARACTER_DATA = {
   // weapon, so the widely-obtainable standard 5★ is kept as the primary recommendation (see
   // weaponAlts below for the full spread).
   'Yangyang': { rarity: 4, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
-    desc: 'Free Midnight Rangers outrider, Concerto Efficiency/Traction/Liberation Regen Hybrid. Aero sub-DPS who groups enemies via Resonance Skill and Liberation, builds up to 3 Melody stacks for a mid-air Feather Release burst, and funnels Resonance Energy to the next character via her Outro — one of the fastest, most quickswap-friendly rotations in the game.',
+    desc: 'Free Midnight Rangers outrider, Concerto Efficiency/Traction/Liberation Regen Hybrid. Aero sub-DPS who groups enemies and builds Melody stacks for a quick mid-air burst before funneling Resonance Energy to the next character — one of the fastest, most quickswap-friendly rotations in the game.',
     skills: ['Feather as Blade', 'Zephyr Domain', 'Wind Spirals', 'Echoing Feathers'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Ring', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
@@ -1306,7 +1306,7 @@ const CHARACTER_DATA = {
   // a third "Mortefi Team" card exists on the source but lists no partner DPS in its caption text, so it's
   // left out rather than guessed a third member.
   'Youhu': { rarity: 4, element: 'Glacio', weapon: 'Gauntlets', role: 'Support',
-    desc: 'Whimsical antique appraiser who trusts her luck in all things. Glacio support who heals the team via Resonance Skill/Forte and grants the incoming Coordinated ATK dealer a massive +100% Coordinated ATK DMG Amp through her Outro (Timeless Classics) — one of the single biggest sources of damage amplification for any attack type in the game.',
+    desc: 'Whimsical antique appraiser who trusts her luck in all things. Glacio support who heals the team and grants the incoming Coordinated ATK dealer a massive DMG amplification through her Outro — one of the biggest sources of Coordinated ATK damage amplification in the game.',
     skills: ['Frosty Punches', 'Scroll Divination', 'Fortune\'s Favor', 'Poetic Essence'],
     ascension: { boss: 'Topological Confinement', common: 'Ring', specialty: 'Violet Coral' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Cadence' },
@@ -1337,7 +1337,7 @@ const CHARACTER_DATA = {
   // itself name for these two team cards (Verina/Shorekeeper are listed only as generic healer options,
   // not tied to a specific named team card).
   'Lumi': { rarity: 4, element: 'Electro', weapon: 'Broadblade', role: 'Sub DPS',
-    desc: 'Lollo Logistics navigator who charts paths through thundering skies. Electro Hybrid buffer who alternates ranged Yellow Light and melee Red Light combat stances, dealing Electro DMG considered Basic Attack DMG through most of her kit, and amplifies the next character\'s Resonance Skill DMG by 38% for 10s through her Outro (Escorting) — one of the only sources of Resonance Skill DMG Amp in the game.',
+    desc: 'Lollo Logistics navigator who charts paths through thundering skies. Electro Hybrid buffer who alternates ranged Yellow Light and melee Red Light combat stances, dealing Basic Attack-type Electro DMG, and amplifies the next character\'s Resonance Skill DMG through her Outro — one of the only sources of Resonance Skill DMG Amp in the game.',
     skills: ['Navigation Support', 'Searchlight Service', 'Squeakie Express', 'Signal Light'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Howler Core', specialty: 'Terraspawn Fungus' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
@@ -1378,7 +1378,7 @@ const CHARACTER_DATA = {
   // Return, the source's actually-preferred pick) as an orphaned row with no set at all. Fixed by
   // repeating the set name for each alt main echo, the same fix pattern as Sanhua's reversed-order bug.
   'Buling': { rarity: 4, element: 'Electro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Black Shores Consultant and Taoist "Spiritchaser Taoist" fortune-teller who wanders investigating the strange and mysterious, selling talismans and divination to fund her travels. Electro healer who generates Trigrams off her Basic ATK/Skill/Mid-air Attack to unlock an enhanced Liberation that deploys Electro Flare and ramps team Resonance Skill DMG Bonus on ally Intro casts, while her Outro heals the active character and Amplifies nearby team DMG by 15% for 30s.',
+    desc: 'Black Shores Consultant and Taoist "Spiritchaser Taoist" fortune-teller who wanders investigating the strange and mysterious, selling talismans and divination to fund her travels. Electro healer who builds Trigrams through normal combat to unlock an enhanced Liberation that ramps team Resonance Skill DMG on ally Intro casts, while her Outro heals the active character and amplifies nearby team DMG.',
     skills: ['Hexagram Calls, Lightning Falls', 'In Shadow Thunder Stirs', 'Flashing Thunder Spell', 'Thunder Begets Life'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Helix' },
