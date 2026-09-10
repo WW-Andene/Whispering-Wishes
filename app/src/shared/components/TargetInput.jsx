@@ -27,7 +27,11 @@ import React, { useState } from 'react';
 // any digit can be typed. draft is local, separate from the value prop —
 // it's what's actually displayed while focused; blurring drops it back to
 // showing the (by then already-clamped, already-committed) prop value.
-function TargetInput({ value, min, max, onChange, ariaLabel, className }) {
+// onClamp (optional): called with the input element when a typed value actually exceeded
+// max/min and got clamped — lets a caller add its own one-shot visual feedback (e.g. the
+// Calculator tab's astrite/lunite fields briefly flashing an error border) without this
+// component needing to know anything about that effect itself.
+function TargetInput({ value, min, max, onChange, onClamp, ariaLabel, className, placeholder }) {
   const [draft, setDraft] = useState(null);
   return (
     <input
@@ -41,10 +45,15 @@ function TargetInput({ value, min, max, onChange, ariaLabel, className }) {
         const raw = e.target.value;
         setDraft(raw);
         const v = parseInt(raw, 10);
-        if (Number.isFinite(v)) onChange(Math.max(min, Math.min(max, v)));
+        if (Number.isFinite(v)) {
+          const clamped = Math.max(min, Math.min(max, v));
+          if (clamped !== v) onClamp?.(e.target);
+          onChange(clamped);
+        }
       }}
       className={className}
       aria-label={ariaLabel}
+      placeholder={placeholder}
     />
   );
 }

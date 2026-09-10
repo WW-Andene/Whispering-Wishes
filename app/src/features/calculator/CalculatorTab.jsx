@@ -14,6 +14,7 @@ import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/consta
 import { haptic } from '../../utils/haptics.js';
 import { calcStats } from '../../core/calcStats.js';
 import { computePullAllocation } from '../../core/pullAllocation.js';
+import { TargetInput } from '../../shared/components/TargetInput.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -218,7 +219,7 @@ function CalculatorTab({ state, dispatch }) {
               <CardBody className="space-y-3">
                   <div>
                     <label className="kuro-label"><img src={getCurrencyIcon('Astrite')} alt="" className="inline w-4 h-4 -mt-0.5 mr-1" onError={hideOnError} />{t('calculator.astrite')}</label>
-                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.astrite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('astrite', clamped); }} className="kuro-input" placeholder={t('calculator.astritePlaceholder')} aria-label={t('calculator.astriteAmountAria')} />
+                    <TargetInput value={state.calc.astrite} min={0} max={MAX_ASTRITE} onChange={v => setCalc('astrite', v)} onClamp={flashClamp} className="kuro-input" ariaLabel={t('calculator.astriteAmountAria')} placeholder={t('calculator.astritePlaceholder')} />
                     <span className="text-gray-600 text-sm">{t('calculator.maxHint', { max: formatNumber(MAX_ASTRITE) })}</span>
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,t('calculator.convenePlural1')], [ASTRITE_PER_PULL*5,t('calculator.convenesN', { n: 5 })], [ASTRITE_PER_PULL*10,t('calculator.convenesN', { n: 10 })], [ASTRITE_PER_PULL*20,t('calculator.convenesN', { n: 20 })]].map(([amt, tip]) => (
@@ -229,7 +230,7 @@ function CalculatorTab({ state, dispatch }) {
                   </div>
                   <div>
                     <label className="kuro-label"><img src={getCurrencyIcon('Lunite')} alt="" className="inline w-4 h-4 -mt-0.5 mr-1" onError={hideOnError} />{t('calculator.lunite')} <span className="text-gray-500 font-normal">{t('calculator.luniteConvertHint')}</span></label>
-                    <input type="number" min="0" max={MAX_ASTRITE} value={state.calc.lunite} onChange={e => { const v = +e.target.value || 0; const clamped = Math.max(0, Math.min(MAX_ASTRITE, v)); if (v > MAX_ASTRITE) flashClamp(e.target); setCalc('lunite', clamped); }} className="kuro-input" placeholder="0" aria-label={t('calculator.luniteAmountAria')} />
+                    <TargetInput value={state.calc.lunite} min={0} max={MAX_ASTRITE} onChange={v => setCalc('lunite', v)} onClamp={flashClamp} className="kuro-input" ariaLabel={t('calculator.luniteAmountAria')} placeholder="0" />
                     <div className="flex gap-1 mt-2 flex-wrap">
                       {[[ASTRITE_PER_PULL,t('calculator.convenePlural1')], [ASTRITE_PER_PULL*5,t('calculator.convenesN', { n: 5 })], [ASTRITE_PER_PULL*10,t('calculator.convenesN', { n: 10 })], [ASTRITE_PER_PULL*20,t('calculator.convenesN', { n: 20 })]].map(([amt, tip]) => (
                         <button key={amt} onClick={() => setCalc('lunite', String(Math.min(MAX_ASTRITE, (+state.calc.lunite || 0) + amt)))} className="kuro-btn kuro-btn-sm active-cyan" style={{ paddingLeft: 8, paddingRight: 8 }} title={tip} aria-label={t('calculator.addLuniteAria', { amt: formatNumber(amt), tip })}>+{formatNumber(amt)}<span className="text-cyan-600 ml-0.5 text-sm">({tip.split(' ')[0]})</span></button>
@@ -249,7 +250,7 @@ function CalculatorTab({ state, dispatch }) {
                       {(state.calc.selectedBanner === 'char' || state.calc.selectedBanner === 'both') && (
                         <div>
                           <label className="text-base mb-2 flex items-center gap-1 font-medium text-yellow-400"><img src={getCurrencyIcon('Radiant Tide')} alt="" className="w-4 h-4" onError={hideOnError} />{t('calculator.radiantTides')}</label>
-                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.radiant} onChange={e => setCalc('radiant', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.radiantTides')} />
+                          <TargetInput value={state.calc.radiant} min={0} max={MAX_CALC_PULLS} onChange={v => setCalc('radiant', v)} className="kuro-input" ariaLabel={t('calculator.radiantTides')} placeholder="0" />
                           <div className="flex items-center justify-between gap-1 mt-1.5">
                             <div className="flex gap-1 flex-wrap">
                               {[1, 5, 10].map(amt => (
@@ -263,7 +264,7 @@ function CalculatorTab({ state, dispatch }) {
                       {(state.calc.selectedBanner === 'weap' || state.calc.selectedBanner === 'both') && (
                         <div>
                           <label className="text-base mb-2 flex items-center gap-1 font-medium text-pink-400"><img src={getCurrencyIcon('Forging Tide')} alt="" className="w-4 h-4" onError={hideOnError} />{t('calculator.forgingTides')}</label>
-                          <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.forging} onChange={e => setCalc('forging', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.forgingTides')} />
+                          <TargetInput value={state.calc.forging} min={0} max={MAX_CALC_PULLS} onChange={v => setCalc('forging', v)} className="kuro-input" ariaLabel={t('calculator.forgingTides')} placeholder="0" />
                           <div className="flex items-center justify-between gap-1 mt-1.5">
                             <div className="flex gap-1 flex-wrap">
                               {[1, 5, 10].map(amt => (
@@ -281,7 +282,7 @@ function CalculatorTab({ state, dispatch }) {
                   {state.calc.bannerCategory === 'standard' && (
                     <div>
                       <label className="text-base mb-2 flex items-center gap-1 font-medium text-cyan-400"><img src={getCurrencyIcon('Lustrous Tide')} alt="" className="w-4 h-4" onError={hideOnError} />{t('calculator.lustrousTides')}</label>
-                      <input type="number" min="0" max={MAX_CALC_PULLS} value={state.calc.lustrous} onChange={e => setCalc('lustrous', Math.max(0, Math.min(MAX_CALC_PULLS, +e.target.value || 0)))} className="kuro-input" placeholder="0" aria-label={t('calculator.lustrousTides')} />
+                      <TargetInput value={state.calc.lustrous} min={0} max={MAX_CALC_PULLS} onChange={v => setCalc('lustrous', v)} className="kuro-input" ariaLabel={t('calculator.lustrousTides')} placeholder="0" />
                       <div className="flex gap-1 mt-1.5">
                         {[1, 5, 10].map(amt => (
                           <button key={amt} onClick={() => setCalc('lustrous', String(Math.min(MAX_CALC_PULLS, (+state.calc.lustrous || 0) + amt)))} aria-label={t('calculator.addLustrousAria', { amt, plural: amt > 1 ? 's' : '' })} className="kuro-btn kuro-btn-sm active-cyan" style={{ paddingLeft: 8, paddingRight: 8 }}>+{amt}</button>
