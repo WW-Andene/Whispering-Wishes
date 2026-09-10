@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ZoomIn, ZoomOut } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import { t, getLocale } from '../../utils/i18n.js';
@@ -33,7 +33,13 @@ export const STAT_LABELS = {
   skillDmg: 'Skill', critRate: 'CR', critDmg: 'CD', resShred: 'RES↓', defShred: 'DEF↓',
   coordDmg: 'Coord', glacioDmg: 'Glacio', fusionDmg: 'Fusion', electroDmg: 'Electro',
   aeroDmg: 'Aero', spectroDmg: 'Spectro', havocDmg: 'Havoc',
+  frazzle: 'Frazzle', erosion: 'Erosion', fusionBurst: 'Fusion Burst', electroFlare: 'Electro Flare',
 };
+
+// Which element a DOT reaction's own RES lookup uses (dotReactions.js: Spectro/Havoc/Fusion/Electro
+// respectively) — reused here only to pick a themed bar color via ELEMENT_COLORS below, not a claim
+// the reaction itself deals that element's DMG type for any other calculation.
+const DOT_MECHANIC_ELEMENT = { frazzle: 'Spectro', erosion: 'Havoc', fusionBurst: 'Fusion', electroFlare: 'Electro' };
 
 // Full words — for the Rotation Guide's Inherits/Own kit/Hands-off badges, which have room to spell
 // things out and are exactly the kind of "help text" a player shouldn't have to decode abbreviations
@@ -104,6 +110,14 @@ export default function RotationTimeline({ rotationTimeline }) {
   // Collapsed state persists per-tab-session, same convention as the Team Overview card's own
   // collapse toggle in DamageCalculator.jsx.
   const [collapsed, setCollapsed] = useSessionState('ww-rotation-timeline-collapsed', false);
+  // Zoom (2026-09-10, direct user request): scales the chart's own pixel width — every bar stays
+  // exactly proportional to time (it's the same leftPct/widthPct math either way), just rendered
+  // larger/smaller. Persisted the same way collapsed is, since a player comparing several teams in
+  // one session likely wants to keep whatever zoom they picked.
+  const [zoom, setZoom] = useSessionState('ww-rotation-timeline-zoom', 1);
+  const ZOOM_MIN = 0.5, ZOOM_MAX = 3, ZOOM_STEP = 0.25;
+  const zoomIn = () => setZoom(z => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
+  const zoomOut = () => setZoom(z => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
   if (!rotationTimeline || !rotationTimeline.segments?.length || !rotationTimeline.totalTime) return null;
 
   const { segments, buffs, totalTime, steps } = rotationTimeline;
@@ -118,6 +132,16 @@ export default function RotationTimeline({ rotationTimeline }) {
     rows.push({ label: seg.name, start: seg.start, duration: seg.duration, color: ELEMENT_COLORS[seg.element] || '#6b7280', type: 'field', detail: `${seg.duration}s` });
   });
   buffs.forEach(buff => {
+    // DOT reaction rows (Frazzle/Erosion/Fusion Burst/Electro Flare — added 2026-09-10, calcTeamStats.js's
+    // rotationTimeline.buffs): no owning character segment (a DOT is a team-wide reaction, not any one
+    // member's own buff), so they skip the owner/echo/triggerStep handling below entirely and go
+    // straight into `rows` with their own themed color and kind.
+    if (buff.type === 'dot') {
+      const mechanic = buff.stat;
+      const color = ELEMENT_COLORS[DOT_MECHANIC_ELEMENT[mechanic]] || '#6b7280';
+      if (buff.duration > 0) rows.push({ label: STAT_LABELS[mechanic] || mechanic, start: buff.start, duration: buff.duration, color, type: 'dot', detail: `${STAT_LABELS[mechanic] || mechanic} DOT` });
+      return;
+    }
     // owner field links echo/weapon buffs back to their character
     const ownerName = buff.owner || buff.source;
     const color = ELEMENT_COLORS[segments.find(s => s.name === ownerName)?.element] || ELEMENT_COLORS[segments.find(s => s.name === buff.source)?.element] || '#6b7280';
@@ -130,13 +154,20 @@ export default function RotationTimeline({ rotationTimeline }) {
     // owner's own skillSequence has a matching step, snap the buff's displayed start to that specific
     // action chip's equal-slice position instead, so the buff bar visually lines up with the action
     // that caused it rather than just the nearest segment edge.
+    //
+    // Uses the LAST matching action, not the first (fixed 2026-09-10, direct user report the timeline
+    // didn't line up with the real triggering action): a character with TWO actions of the matching
+    // type in their own skillSequence (e.g. Aemeath's Overdrive AND Finale both being 'Liberation')
+    // always resolved to the FIRST one, so an Outro/Liberation-triggered team buff — which in every
+    // real rotation this app models fires on that action's LAST occurrence (the character doesn't
+    // recast it after) — was snapped to the wrong, earlier cast.
     let start = buff.start;
     if (buff.triggerStep) {
       const ownerSeg = segments.find(s => s.name === ownerName);
       const ownerActions = stepByName.get(ownerName)?.skillSequence;
       if (ownerSeg && ownerActions?.length) {
         const matchTypes = buff.triggerStep === 'Liberation' ? ['Liberation', 'Ultimate'] : [buff.triggerStep];
-        const idx = ownerActions.findIndex(a => matchTypes.includes(a.type));
+        const idx = ownerActions.findLastIndex(a => matchTypes.includes(a.type));
         if (idx >= 0) start = ownerSeg.start + (ownerSeg.duration / ownerActions.length) * idx;
       }
     }
@@ -166,6 +197,10 @@ export default function RotationTimeline({ rotationTimeline }) {
     myBuffs.forEach(b => { usedBuffIdx.add(b._idx); ordered.push(b); });
   });
   rows.forEach((r, i) => { if (r.type === 'buff' && !usedBuffIdx.has(i)) ordered.push(r); });
+  // DOT rows have no owning segment (team-wide reactions) — appended last, sorted by their own
+  // earliest-applier start time, rather than dropped (they matched neither the 'field' nor 'buff'
+  // branches above).
+  rows.filter(r => r.type === 'dot').sort((a, b) => a.start - b.start).forEach(r => ordered.push(r));
 
   // Ticks
   const tickInterval = maxEnd <= 10 ? 1 : 5;
@@ -180,7 +215,7 @@ export default function RotationTimeline({ rotationTimeline }) {
     if (actionCount <= 1 || seg.duration <= 0) return max;
     return Math.max(max, (MIN_ACTION_PX * actionCount) / seg.duration);
   }, PX_PER_SECOND);
-  const chartWidth = Math.max(maxEnd * requiredPxPerSecond, MIN_CHART_WIDTH);
+  const chartWidth = Math.max(maxEnd * requiredPxPerSecond, MIN_CHART_WIDTH) * zoom;
 
   return (
     <Card>
@@ -191,11 +226,28 @@ export default function RotationTimeline({ rotationTimeline }) {
       </div>
       {!collapsed && (
       <CardBody>
+        {/* Zoom controls — scale chartWidth below; every bar's position stays exactly proportional
+            to time either way (leftPct/widthPct are percentages of maxEnd, unaffected by zoom). */}
+        <div className="flex items-center justify-end gap-1 mb-1">
+          <button type="button" onClick={zoomOut} disabled={zoom <= ZOOM_MIN} aria-label={t('teams.rotation.zoomOut')} title={t('teams.rotation.zoomOut')}
+            className="p-1 rounded border border-white/10 text-gray-400 hover:text-gray-200 hover:border-white/25 disabled:opacity-30 disabled:hover:text-gray-400">
+            <ZoomOut size={14} />
+          </button>
+          <button type="button" onClick={() => setZoom(1)} aria-label={t('teams.rotation.zoomReset')} title={t('teams.rotation.zoomReset')}
+            className="text-2xs text-gray-500 hover:text-gray-300 px-1 min-w-[36px] text-center">
+            {Math.round(zoom * 100)}%
+          </button>
+          <button type="button" onClick={zoomIn} disabled={zoom >= ZOOM_MAX} aria-label={t('teams.rotation.zoomIn')} title={t('teams.rotation.zoomIn')}
+            className="p-1 rounded border border-white/10 text-gray-400 hover:text-gray-200 hover:border-white/25 disabled:opacity-30 disabled:hover:text-gray-400">
+            <ZoomIn size={14} />
+          </button>
+        </div>
         {/* Scrollable in both directions: the action sub-bars added below each field segment need
             real pixel width to stay legible (a Basic/Heavy/Skill/Liberation chip strip squeezed into
             a percentage-of-card width becomes unreadable on anything but a 1-member rotation), and a
             3-member team with several buff rows can run taller than the card wants to be by default.
-            PX_PER_SECOND/MIN_CHART_WIDTH are both PerfectSuite values (32, 512). */}
+            PX_PER_SECOND/MIN_CHART_WIDTH are both PerfectSuite values (32, 512); `zoom` scales the
+            final chartWidth on top of that base. */}
         <div className="overflow-x-auto overflow-y-auto max-h-[384px]">
           <div style={{ position: 'relative', width: chartWidth, minWidth: '100%' }}>
             {ordered.map((row, i) => {
@@ -205,6 +257,7 @@ export default function RotationTimeline({ rotationTimeline }) {
               const widthPct = Math.min((row.duration / maxEnd) * 100, 100 - leftPct);
               const isField = row.type === 'field';
               const isEcho = row.buffKind === 'echo';
+              const isDot = row.type === 'dot';
               // Action sub-bars — the verified skill-by-skill sequence (same data the Rotation Guide
               // card lists) rendered as a second strip under the field bar. There's no real per-action
               // timing in this data (only an ordered sequence), so each action gets an equal slice of
@@ -221,20 +274,20 @@ export default function RotationTimeline({ rotationTimeline }) {
                       style={{ left: `${(tick / maxEnd) * 100}%` }} />
                   ))}
                   {/* Label */}
-                  <span className={`absolute text-2xs ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : 'text-gray-500'}`}
+                  <span className={`absolute text-2xs ${isField ? 'font-bold text-gray-300' : isEcho ? 'text-gray-400' : isDot ? 'text-gray-400' : 'text-gray-500'}`}
                     style={hasActions
                       ? { left: 0, top: 14, width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }
                       : { left: 0, top: '50%', transform: 'translateY(-50%)', width: leftPct > 8 ? `${leftPct - 1}%` : undefined, textAlign: 'right', paddingRight: 4, zIndex: 2 }}>
-                    {leftPct > 8 ? (isField ? row.label : isEcho ? '◆' : '↳') : ''}
+                    {leftPct > 8 ? (isField ? row.label : isEcho ? '◆' : isDot ? '~' : '↳') : ''}
                   </span>
                   {/* Bar */}
                   <div className={`absolute flex items-center ${isField ? 'rounded rotation-segment' : 'rounded-sm buff-bar'}`}
                     style={{
                       left: `${leftPct}%`, width: `${Math.max(widthPct, 1)}%`,
                       top: 2, ...(hasActions ? { height: 24 } : { bottom: 2 }),
-                      background: `${row.color}${isField ? '30' : isEcho ? '14' : '18'}`,
-                      border: `1px solid ${row.color}${isField ? '60' : isEcho ? '30' : '35'}`,
-                      borderStyle: isEcho ? 'dashed' : 'solid',
+                      background: `${row.color}${isField ? '30' : isEcho ? '14' : isDot ? '22' : '18'}`,
+                      border: `1px solid ${row.color}${isField ? '60' : isEcho ? '30' : isDot ? '45' : '35'}`,
+                      borderStyle: isEcho ? 'dashed' : isDot ? 'dotted' : 'solid',
                     }}>
                     <span className={`truncate px-1 ${isField ? 'text-2xs font-bold' : 'text-2xs'}`}
                       style={{ color: row.color }}>{isField ? `${row.label} ${row.detail}` : row.detail}</span>
@@ -272,14 +325,21 @@ export default function RotationTimeline({ rotationTimeline }) {
         </div>
 
         {/* Legend */}
-        {ordered.some(r => r.buffKind === 'echo') && (
+        {(ordered.some(r => r.buffKind === 'echo') || ordered.some(r => r.type === 'dot')) && (
           <div className="flex items-center gap-3 mt-3 pt-2 border-t border-white/5">
             <span className="text-2xs text-gray-500 flex items-center gap-1">
               <span className="inline-block w-3 h-[6px] rounded-sm border border-white/30 bg-white/15" /> {t('teams.rotation.legendChar')}
             </span>
-            <span className="text-2xs text-gray-500 flex items-center gap-1">
-              <span className="inline-block w-3 h-[6px] rounded-sm border border-dashed border-white/25 bg-white/10" /> {t('teams.rotation.legendEcho')}
-            </span>
+            {ordered.some(r => r.buffKind === 'echo') && (
+              <span className="text-2xs text-gray-500 flex items-center gap-1">
+                <span className="inline-block w-3 h-[6px] rounded-sm border border-dashed border-white/25 bg-white/10" /> {t('teams.rotation.legendEcho')}
+              </span>
+            )}
+            {ordered.some(r => r.type === 'dot') && (
+              <span className="text-2xs text-gray-500 flex items-center gap-1">
+                <span className="inline-block w-3 h-[6px] rounded-sm border border-dotted border-white/40 bg-white/15" /> {t('teams.rotation.legendDot')}
+              </span>
+            )}
           </div>
         )}
       </CardBody>
