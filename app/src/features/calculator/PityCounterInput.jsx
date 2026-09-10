@@ -3,46 +3,11 @@
 // PityCounterInput component
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { memo, useState } from 'react';
+import React, { memo } from 'react';
 import { PityRing } from './PityRing.jsx';
 import { SOFT_PITY_START } from '../../data/constants.js';
 import { t } from '../../utils/i18n.js';
-
-// Clears the field to blank the instant it's focused, rather than trying to
-// select() the existing value so the next keystroke overwrites it — two
-// earlier attempts at that (type="number" + select(), then type="text" +
-// a setTimeout-deferred select()) both still lost to real-device timing:
-// typing fast enough after tapping in landed the keystroke before the
-// selection actually took effect, so it inserted next to the old digit
-// instead of replacing it (typing "3" into an existing "1" produced "13",
-// which then clamped to this field's max — "1 then 3 = 13, clamped to
-// max" was the exact reported symptom). Clearing on focus needs no browser
-// selection API and no timing window to race at all: there's simply
-// nothing left in the field for a keystroke to combine with by the time
-// any digit can be typed. draft is local, separate from the value prop —
-// it's what's actually displayed while focused; blurring drops it back to
-// showing the (by then already-clamped, already-committed) prop value.
-function TargetInput({ value, min, max, onChange, ariaLabel, className }) {
-  const [draft, setDraft] = useState(null);
-  return (
-    <input
-      type="text"
-      inputMode="numeric"
-      pattern="[0-9]*"
-      value={draft !== null ? draft : value}
-      onFocus={() => setDraft('')}
-      onBlur={() => setDraft(null)}
-      onChange={(e) => {
-        const raw = e.target.value;
-        setDraft(raw);
-        const v = parseInt(raw, 10);
-        if (Number.isFinite(v)) onChange(Math.max(min, Math.min(max, v)));
-      }}
-      className={className}
-      aria-label={ariaLabel}
-    />
-  );
-}
+import { TargetInput } from '../../shared/components/TargetInput.jsx';
 
 // P8-FIX: HIGH-15 — Extracted pity counter input component (eliminates ~120 lines of duplication across 4 banners)
 const PityCounterInput = memo(({ label, pity, onPityChange, copies, maxCopies, onCopiesChange, fourStarCopies, maxFourStar, onFourStarChange, color, softColor, softGlow, sliderClass, softPityClass, SoftPityIcon, ariaPrefix }) => (
