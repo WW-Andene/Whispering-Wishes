@@ -32,10 +32,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 // Chat-heads-style persistent floating bubble — replaces PulseBannerWidget's old ×1/×10
 // pull-sim pills entirely (requested explicitly in place of them). Once toggled on from the
@@ -93,15 +91,6 @@ public class PullBubbleService extends Service {
     private View hiddenTab;
     private final List<View> subBubbles = new ArrayList<>();
     private final List<View> resultIcons = new ArrayList<>();
-    // Tiles currently mid pop-reveal (spawned invisible, alpha=0f, waiting on addPopReveal's
-    // grow->hold->shrink chain to hand off visibility — see addResultIcon/addPopReveal). Real
-    // device bug fixed 2026-09-10: evictTileToPocket() calls windowManager.removeView(tile),
-    // tearing the window down outright. If the overflow cap (MAX_TOTAL_TILE_WINDOWS) or the
-    // autoArchiveAllTiles timer evicted a tile still in this set, its window was gone before
-    // addPopReveal's withEndAction ever called realTile.setAlpha(1f) — so the icon never
-    // rendered anywhere, on the big pop OR the real tile. Both eviction paths below now skip a
-    // pending tile instead of tearing it down mid-reveal.
-    private final Set<View> pendingReveal = new HashSet<>();
     private WindowManager.LayoutParams mainBubbleParams;
     private ImageView mainBubbleIcon; // kept so pin changes can swap the currency icon in place
     private boolean expanded = false;
@@ -1107,18 +1096,7 @@ public class PullBubbleService extends Service {
 
         int individualCap = (pocketIcon != null) ? MAX_TOTAL_TILE_WINDOWS - 1 : MAX_TOTAL_TILE_WINDOWS;
         while (resultIcons.size() > individualCap) {
-            // Skip past any tile still mid pop-reveal (pendingReveal) — evicting it here would
-            // tear its window down before addPopReveal's own withEndAction hands off visibility,
-            // leaving the icon permanently invisible (see pendingReveal's own comment). Oldest
-            // non-pending tile is evicted instead; if every tile is currently pending (a burst of
-            // near-simultaneous pulls), the cap is left temporarily exceeded rather than eating a
-            // tile mid-animation — it resolves itself as each reveal completes.
-            View oldestEvictable = null;
-            for (View v : resultIcons) {
-                if (!pendingReveal.contains(v)) { oldestEvictable = v; break; }
-            }
-            if (oldestEvictable == null) break;
-            evictTileToPocket(oldestEvictable, sizePx);
+            evictTileToPocket(resultIcons.get(0), sizePx);
             individualCap = MAX_TOTAL_TILE_WINDOWS - 1;
         }
         if (pocketIcon != null) updatePocketBadge();
@@ -1131,143 +1109,10 @@ public class PullBubbleService extends Service {
             addGlowBurst(finalParams, sizePx, rarityHex(result.rarity));
             addPersistentHalo(newTile, finalParams, sizePx, result.rarity);
         }
-        // Direct user request 2026-09-10: pop in the middle of the screen with a holographic
-        // flash, then shrink down while moving to its slot — every item, not just 4★/5★ (the
-        // glow burst/halo above stay a SEPARATE, additional effect for those). The real tile
-        // (newTile, already at its correct final slot window) stays invisible until the
-        // pop-reveal hands off to it, so there's exactly one visible copy of the icon at a time.
-        newTile.setAlpha(0f);
-        pendingReveal.add(newTile);
-        addPopReveal(result, assetMap, finalParams, sizePx, newTile);
-    }
-
-    // See addResultIcon's own comment for why this exists. A WindowManager overlay window is a
-    // fixed-size surface — scaling a View bigger than its OWN window clips at the surface edge,
-    // so the "big" pop can't just be newTile scaled up past 1x inside its already-small slot
-    // window. Instead this creates its own temporary window sized for the big pop (POP_SCALE ×
-    // the normal tile size), centered on screen, plays the flash + a small grow-in there, then
-    // shrinks THAT window's own content back down to normal size while jumping the window
-    // itself onto the tile's real slot position (the same instant-jump + view-translate-
-    // compensate trick animateTileToSlot already uses elsewhere in this file, since WindowManager
-    // has no animated move/resize API of its own) — and only then reveals the real tile
-    // (already sitting correctly positioned and invisible) and removes this temporary one.
-    private static final float POP_SCALE = 2.4f;
-    private static final int POP_GROW_DURATION_MS = 200;
-    // Direct user report 2026-09-10: the pop reveal moved from grow straight into shrink with
-    // no pause, reading as "too quick" — hold the big reveal on screen for a beat before the
-    // shrink-to-slot animation starts.
-    private static final int POP_HOLD_DURATION_MS = 1000;
-    private static final int POP_SHRINK_DURATION_MS = 380;
-
-    private void addPopReveal(WidgetPullSimulator.PullResult result, JSONObject assetMap,
-                               WindowManager.LayoutParams finalParams, int sizePx, View realTile) {
-        android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
-        int popSizePx = (int) (sizePx * POP_SCALE);
-        int centerX = dm.widthPixels / 2;
-        int centerY = dm.heightPixels / 2;
-
-        FrameLayout root = new FrameLayout(this);
-        root.setBackground(circleDrawable("#40000000", rarityHex(result.rarity)));
-        clipToCircle(root);
-        String assetPath = result.name != null ? assetMap.optString(result.name, null) : null;
-        Bitmap bitmap = assetPath != null ? WidgetAssetUtils.decodeAsset(this, assetPath, RESULT_ICON_PX) : null;
-        if (bitmap != null) {
-            FrameLayout mask = new FrameLayout(this);
-            mask.setBackgroundColor(Color.parseColor("#80000000"));
-            root.addView(mask, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-            ImageView img = new ImageView(this);
-            img.setImageBitmap(bitmap);
-            img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        }
-
-        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                popSizePx, popSizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.TOP | Gravity.START;
-        params.x = centerX - popSizePx / 2;
-        params.y = centerY - popSizePx / 2;
-
-        try {
-            windowManager.addView(root, params);
-        } catch (Exception e) {
-            pendingReveal.remove(realTile);
-            realTile.setAlpha(1f); // this pop window failed — still reveal the real tile plainly
-            return;
-        }
-
-        addHolographicFlash(centerX, centerY, popSizePx);
-
-        root.setScaleX(0.5f);
-        root.setScaleY(0.5f);
-        root.setAlpha(0f);
-        root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(POP_GROW_DURATION_MS)
-                .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
-                .withEndAction(() -> {
-                    int dxWindow = (finalParams.x + sizePx / 2) - (params.x + popSizePx / 2);
-                    int dyWindow = (finalParams.y + sizePx / 2) - (params.y + popSizePx / 2);
-                    params.x += dxWindow;
-                    params.y += dyWindow;
-                    try { windowManager.updateViewLayout(root, params); } catch (Exception ignored) {}
-                    root.setTranslationX(-dxWindow);
-                    root.setTranslationY(-dyWindow);
-                    float shrinkTo = (float) sizePx / popSizePx;
-                    root.animate().translationX(0).translationY(0).scaleX(shrinkTo).scaleY(shrinkTo)
-                            .setStartDelay(POP_HOLD_DURATION_MS)
-                            .setDuration(POP_SHRINK_DURATION_MS)
-                            .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                            .withEndAction(() -> {
-                                pendingReveal.remove(realTile);
-                                realTile.setAlpha(1f);
-                                try { windowManager.removeView(root); } catch (Exception ignored) {}
-                            })
-                            .start();
-                })
-                .start();
-    }
-
-    // A short white/prismatic flash at the pop-reveal's screen-center point — "a little
-    // holographic flash," direct user request 2026-09-10. Distinct from addGlowBurst's
-    // rarity-tinted halo (only for 4★/5★, at the tile's SLOT position, unchanged) — this plays
-    // for every pull, at the pop-reveal's center. Genuinely just a radial-gradient burst
-    // (white-hot center through a faint cyan tint to transparent), not a real animated
-    // hologram shader — the plain Android Views/drawables available here have no access to one.
-    private void addHolographicFlash(int centerX, int centerY, int refSizePx) {
-        int flashSizePx = (int) (refSizePx * 1.15f);
-        FrameLayout flash = new FrameLayout(this);
-        GradientDrawable burst = new GradientDrawable();
-        burst.setShape(GradientDrawable.OVAL);
-        burst.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        burst.setGradientRadius(flashSizePx / 2f);
-        burst.setColors(new int[]{Color.parseColor("#F2FFFFFF"), Color.parseColor("#59B9E8FF"), Color.TRANSPARENT});
-        flash.setBackground(burst);
-
-        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                flashSizePx, flashSizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.TOP | Gravity.START;
-        params.x = centerX - flashSizePx / 2;
-        params.y = centerY - flashSizePx / 2;
-
-        try {
-            windowManager.addView(flash, params);
-        } catch (Exception e) {
-            return;
-        }
-        flash.setScaleX(0.4f);
-        flash.setScaleY(0.4f);
-        flash.setAlpha(0.95f);
-        flash.animate().scaleX(1.6f).scaleY(1.6f).alpha(0f).setDuration(320)
-                .withEndAction(() -> { try { windowManager.removeView(flash); } catch (Exception ignored) {} })
-                .start();
+        newTile.setScaleX(0.4f);
+        newTile.setScaleY(0.4f);
+        newTile.animate().scaleX(1f).scaleY(1f).setDuration(220)
+                .setInterpolator(new android.view.animation.OvershootInterpolator(2.5f)).start();
     }
 
     // Builds one result tile (rarity ring + dark mask + portrait), adds it to the window at a
@@ -1317,7 +1162,6 @@ public class PullBubbleService extends Service {
             removeTileGlow(root);
             try { windowManager.removeView(root); } catch (Exception ignored) {}
             resultIcons.remove(root);
-            pendingReveal.remove(root);
         });
 
         windowManager.addView(root, params);
@@ -1558,7 +1402,6 @@ public class PullBubbleService extends Service {
             try { windowManager.removeView(v); } catch (Exception ignored) {}
         }
         resultIcons.clear();
-        pendingReveal.clear();
         if (pocketIcon != null) {
             try { windowManager.removeView(pocketIcon); } catch (Exception ignored) {}
             pocketIcon = null;
@@ -1583,17 +1426,9 @@ public class PullBubbleService extends Service {
         if (resultIcons.isEmpty()) return;
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
-        // Snapshot first — evictTileToPocket mutates resultIcons as it iterates. Skip any tile
-        // still mid pop-reveal (see pendingReveal's own comment) — this is a one-shot Handler
-        // timer on the real wall clock, so it can fire while a reveal is still in flight (e.g.
-        // the app backgrounded mid-animation); tearing that tile's window down early would leave
-        // its icon permanently invisible. A skipped tile just stays as a normal individual result
-        // icon once its own reveal finishes — it isn't lost, just no longer auto-archived by this
-        // particular pass; the next overflow-cap check or settle picks it up normally.
+        // Snapshot first — evictTileToPocket mutates resultIcons as it iterates.
         List<View> toEvict = new ArrayList<>(resultIcons);
-        for (View tile : toEvict) {
-            if (!pendingReveal.contains(tile)) evictTileToPocket(tile, sizePx);
-        }
+        for (View tile : toEvict) evictTileToPocket(tile, sizePx);
         updatePocketBadge();
         renumberResultSlots(sizePx);
     }
