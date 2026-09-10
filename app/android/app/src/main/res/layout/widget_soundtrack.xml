@@ -131,25 +131,54 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="33" />
-            <!-- No icon — see file header ("Icon rendering fix"). Just an invisible tap zone
-                 over the photo's own printed button face. -->
-            <ImageButton
-                android:id="@+id/widget_soundtrack_prev"
+            <!-- Every control below uses the SAME fixed-size-icon-box pattern: a real icon in
+                 a FIXED dp square (layout_gravity="center"), not filling the outer weighted
+                 cell directly. The first icon pass (no icon at all, tap zone only over the
+                 photo's own printed — and, on a real device, hard-to-read — button face) fixed
+                 the collapse-to-invisible bug but over-corrected into controls with zero visual
+                 affordance; a user report of "buttons not visible enough" on 2026-09-10 is the
+                 same root cause from the other direction. This is the actual fix: a fixed-size
+                 icon can never be squashed by the outer cell's aspect ratio (the original bug),
+                 and unlike no icon at all, it's still visible against the photo. -->
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="11"
-                android:background="@android:color/transparent"
-                android:contentDescription="@string/widget_soundtrack_prev_aria" />
-            <ImageButton
-                android:id="@+id/widget_soundtrack_next"
+                android:layout_weight="11">
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_prev"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/widget_soundtrack_prev_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_media_previous"
+                    android:tint="#3D2817"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="12"
-                android:background="@android:color/transparent"
-                android:contentDescription="@string/widget_soundtrack_next_aria" />
+                android:layout_weight="12">
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_next"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/widget_soundtrack_next_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_media_next"
+                    android:tint="#3D2817"
+                    android:contentDescription="@null" />
+            </FrameLayout>
             <!-- Loop toggle. Selected-state overlay: RemoteViews can't runtime-swap a view's
-                 own background, so the "on" highlight is a second view toggled by visibility
-                 — that overlay tint is this button's only on/off indicator now (no icon). -->
+                 own background, so the "on" highlight is a second view toggled by visibility,
+                 layered under the fixed-size icon above. -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -166,12 +195,16 @@
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/widget_soundtrack_loop_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_loop_widget"
+                    android:contentDescription="@null" />
             </FrameLayout>
-            <!-- Play/Stop — the one control that needs a REAL icon (has to show playing vs
-                 paused; the static photo can't). Icon lives in a FIXED 22dp square centered
-                 inside the outer weighted cell, not filling it directly, so it can never be
-                 squashed by that cell's own aspect ratio the way a fitCenter-filled icon in a
-                 short weighted cell was (see file header). -->
+            <!-- Play/Stop — same fixed-size pattern (22dp, slightly larger since it's the
+                 primary action and has to show playing vs paused, which the static photo
+                 can't). -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -209,8 +242,8 @@
          its own independent weighted-positioner tree rooted at the full widget height rather
          than the transport row's — SoundtrackWidget.java toggles this id's visibility in
          lockstep with content_normal/content_compact so it doesn't float over the compact
-         layout too. No icon, same reasoning as Prev/Next/Loop above — the selected-overlay
-         tint is its only on/off indicator. -->
+         layout too. Same fixed-size-icon-box pattern as the transport row (see its own
+         comment) — a real icon, sized so it can't collapse. -->
     <LinearLayout
         android:id="@+id/widget_soundtrack_shuffle_dial_wrap"
         android:layout_width="match_parent"
@@ -239,6 +272,12 @@
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_shuffle_widget"
+                    android:contentDescription="@null" />
             </FrameLayout>
             <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="73" />
         </LinearLayout>

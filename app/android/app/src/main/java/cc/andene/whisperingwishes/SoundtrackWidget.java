@@ -45,13 +45,18 @@ import android.widget.RemoteViews;
 public class SoundtrackWidget extends AppWidgetProvider {
     private static final String PREFS_NAME = "CapacitorStorage";
     // Bundled Capacitor web asset (public/widgets/cassette-widget.png) — the user's own
-    // reference photo, alpha-cut around the device silhouette. Downsampled to ~480px on its
+    // reference photo, alpha-cut around the device silhouette. Downsampled to ~600px on its
     // longest side: RemoteViews.setImageViewBitmap() serializes the whole Bitmap into a Binder
     // IPC transaction with a combined ~1MB ceiling (past it, the launcher shows its generic
-    // "couldn't load this widget" placeholder) — 480×~274×4 bytes (ARGB_8888) ≈ 500KB, safely
-    // under that with headroom for the rest of the RemoteViews payload.
+    // "couldn't load this widget" placeholder) — 600×~328×4 bytes (ARGB_8888) ≈ 770KB, still
+    // under that ceiling but with much less headroom than the previous 480px (~500KB) target.
+    // Raised from 480 (2026-09-10, direct user report of blurry/illegible button labels on a
+    // real device) — a widget placed wide (common for this one, given its landscape photo)
+    // upscales a 480px-wide bitmap noticeably via fitXY. 600 is close to the practical ceiling
+    // for this asset without risking the Binder limit; if a device still reports blur at this
+    // size, the real fix is a smaller/cropped asset variant, not pushing this constant further.
     private static final String BG_ART_ASSET = "widgets/cassette-widget.png";
-    private static final int BG_ART_TARGET_PX = 480;
+    private static final int BG_ART_TARGET_PX = 600;
     // Below this, the normal stacked layout (screen panel + transport row) doesn't
     // fit at all — switches to widget_soundtrack_content_compact's single horizontal row
     // instead. Set just under soundtrack_widget_info.xml's own 2-cell minHeight (110dp), so
