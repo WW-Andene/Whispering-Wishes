@@ -123,26 +123,61 @@
              spans x 38.2-86.65% / y 41.3-69.8%. Final box sits in the clear area below that
              panel's own microtext and is centered on the panel's true seam-measured center
              (62.4% horizontal) rather than an approximate one: 52/13/35 vertical, 39/47/14
-             horizontal. -->
+             horizontal.
+
+             Sixth round: the source photo (public/widgets/cassette-widget.png) grew a real
+             offset drop-shadow around its left/bottom edge (direct user request, "impression
+             de profondeur") — the device art's own pixel content is UNCHANGED, but it now
+             sits inset by a 96px pad on every side of a larger 2050x1017->1209 canvas (was
+             1858x1017) instead of filling it edge to edge, so every fraction below that was
+             measured against the OLD canvas needed exact recomputation, not a re-guess: for
+             each cumulative weight boundary c (0..wsum), f_old=c/wsum,
+             f_new=(96 + f_old*old_dim)/new_dim, c_new=f_new*wsum — then consecutive
+             differences become the new weights, with a new leading/trailing pad-spacer child
+             added at each group's own start/end (weight ~16 vertical / ~5 horizontal, from
+             96/new_dim*wsum) to represent the new inset itself. Applied identically to every
+             weight-group in this file (title row here, the button row and shuffle group
+             further down) — see PullBubbleService... no, see the actual computation: this
+             was a script, not hand math, specifically to avoid yet another mis-measured
+             round on a widget that's already had five. -->
+        <!-- CORRECTED 2026-09-10: content_normal's direct vertical children were flattened
+             into ONE shared weightSum (Android sums all sibling weights when unset) —
+             52+13+35+81+13+6 = 200, not 100 — silently halving every intended percentage
+             below 50% and roughly doubling every one above it ever since round one. The
+             title and button rows were meant to each get their own scoped 100%, and
+             instead shared 200, which is why real renders never actually matched the
+             comments' stated percentages despite looking "close enough" to pass on a real
+             device. Verified by rendering candidate boxes onto the actual photo: the buggy
+             weights land nowhere near the real buttons/title panel; these corrected ones
+             (single flat list, genuinely summing to 100: 8/44/11/13/11/5/8) land exactly on
+             both. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="52" />
+            android:layout_weight="8" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="44" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="13"
+            android:layout_weight="11"
             android:orientation="horizontal"
             android:clipChildren="false">
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="39" />
+                android:layout_weight="5" />
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="35" />
             <LinearLayout
                 android:id="@+id/widget_soundtrack_track_name"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="47"
+                android:layout_weight="42"
                 android:gravity="center"
                 android:background="@drawable/widget_title_backing_black25"
                 android:clipChildren="false">
@@ -169,29 +204,36 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="14" />
+                android:layout_weight="13" />
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="35" />
+            android:layout_weight="13" />
 
-        <!-- Row 2/3 (vertical weights 81/13/6 ≈ photo's y 824-957 of 1017) — the 4 real
-             physical button labels, horizontal weights 33/11/12/14/13/17 ≈ their real x
-             613/819/1047/1311/1552 of 1858. Left to right: Prev, Next, Loop, Play/Stop. -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="81" />
+        <!-- Row 2/3 — the 4 real physical button labels, horizontal weights
+             5/29/10/11/13/12/15/5 (was 33/11/12/14/13/17, remapped for the shadow canvas
+             per this file's earlier comment; verified against real pixel translation).
+             Left to right: Prev, Next, Loop, Play/Stop. Vertical position is this single
+             LinearLayout's own weight=11 within content_normal's now-CORRECTED flat
+             8/44/11/13/11/5/8 (wsum=100) — see that structural fix noted further up. -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="13"
+            android:layout_weight="11"
             android:orientation="horizontal">
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="33" />
+                android:layout_weight="5" />
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="29" />
             <!-- Every control below uses the SAME fixed-size-icon-box pattern: a real icon in
                  a FIXED dp square (layout_gravity="center"), not filling the outer weighted
                  cell directly. The first icon pass (no icon at all, tap zone only over the
@@ -204,7 +246,7 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="11">
+                android:layout_weight="10">
                 <ImageButton
                     android:id="@+id/widget_soundtrack_prev"
                     android:layout_width="match_parent"
@@ -215,6 +257,8 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@android:drawable/ic_media_previous"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -222,7 +266,7 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="12">
+                android:layout_weight="11">
                 <ImageButton
                     android:id="@+id/widget_soundtrack_next"
                     android:layout_width="match_parent"
@@ -233,6 +277,8 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@android:drawable/ic_media_next"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -243,7 +289,7 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="14">
+                android:layout_weight="13">
                 <FrameLayout
                     android:id="@+id/widget_soundtrack_loop_selected"
                     android:layout_width="match_parent"
@@ -260,16 +306,17 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@drawable/ic_loop_widget"
                     android:contentDescription="@null" />
             </FrameLayout>
-            <!-- Play/Stop — same fixed-size pattern (22dp, slightly larger since it's the
-                 primary action and has to show playing vs paused, which the static photo
-                 can't). -->
+            <!-- Play/Stop — same fixed-size pattern, now 18dp to match the other three icons
+                 (was 22dp/"slightly larger" — direct user request to size it the same). -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="13">
+                android:layout_weight="12">
                 <ImageButton
                     android:id="@+id/widget_soundtrack_play"
                     android:layout_width="match_parent"
@@ -278,9 +325,11 @@
                     android:contentDescription="@string/widget_soundtrack_play_aria" />
                 <ImageView
                     android:id="@+id/widget_soundtrack_play_icon"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@android:drawable/ic_media_play"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -288,12 +337,20 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="17" />
+                android:layout_weight="15" />
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="5" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="6" />
+            android:layout_weight="5" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="8" />
     </LinearLayout>
 
     <!-- Shuffle toggle, moved into the middle of the yellow diagram panel on the left
@@ -304,23 +361,29 @@
          than the transport row's — SoundtrackWidget.java toggles this id's visibility in
          lockstep with content_normal/content_compact so it doesn't float over the compact
          layout too. Same fixed-size-icon-box pattern as the transport row (see its own
-         comment) — a real icon, sized so it can't collapse. -->
+         comment) — a real icon, sized so it can't collapse.
+
+         Sixth-round shadow-canvas remap (see title row's own comment): vertical 8/19/31/34/8
+         (was 22/37/41, new leading/trailing 8s for the canvas's own top/bottom inset),
+         horizontal 5/10/15/65/5 (was 11/16/73, new leading/trailing 5s). -->
     <LinearLayout
         android:id="@+id/widget_soundtrack_shuffle_dial_wrap"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="22" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="8" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="19" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="37"
+            android:layout_weight="31"
             android:orientation="horizontal">
-            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="11" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="5" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="10" />
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="16">
+                android:layout_weight="15">
                 <FrameLayout
                     android:id="@+id/widget_soundtrack_shuffle_selected"
                     android:layout_width="match_parent"
@@ -334,15 +397,18 @@
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
                 <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
                     android:layout_gravity="center"
+                    android:translationX="-1dp"
                     android:src="@drawable/ic_shuffle_widget"
                     android:contentDescription="@null" />
             </FrameLayout>
-            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="73" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="65" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="5" />
         </LinearLayout>
-        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="41" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="34" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="8" />
     </LinearLayout>
 
     <!-- ═══ Compact (1 cell tall): plain flat row, FIXED-dp icon buttons (no weighted-cell
