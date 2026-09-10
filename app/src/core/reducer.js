@@ -99,7 +99,7 @@ const initialState = {
     stdAllocPriority: 50, // Same for standard banners — independent control
   },
   planner: {
-    dailyAstrite: 60, luniteActive: false,
+    dailyAstrite: 60, luniteSubCount: 0,
     goalType: '5star', goalTarget: 1, goalPulls: HARD_PITY, goalModifier: 1,
     goal4StarTarget: 1, goal4StarType: 'featured',
     addedIncome: [],
@@ -221,7 +221,7 @@ const reducer = (state, action) => {
     }
     case ACTION.ADD_DAILY_INCOME: {
       const days = Math.max(0, Math.min(365, Number(action.days) || 0));
-      const dailyTotal = (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
+      const dailyTotal = (state.planner.dailyAstrite || 0) + (state.planner.luniteSubCount || 0) * LUNITE_DAILY_ASTRITE;
       const totalAstrite = dailyTotal * days;
       return { ...state, calc: { ...state.calc, astrite: String(Math.min(MAX_ASTRITE, (+state.calc.astrite || 0) + totalAstrite)) } }; // P12-FIX: Cap at MAX_ASTRITE (Step 14 — MEDIUM-10e)
     }

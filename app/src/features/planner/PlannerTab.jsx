@@ -164,8 +164,10 @@ function PlannerTab({
   const [collapsed, setCollapsed] = useState({});
 
   const dailyIncome = useMemo(() => {
-    return (state.planner.dailyAstrite || 0) + (state.planner.luniteActive ? LUNITE_DAILY_ASTRITE : 0);
-  }, [state.planner.dailyAstrite, state.planner.luniteActive]);
+    // Direct user request: the Lunite Subscription is stackable in the real game (you can run
+    // multiple concurrent 30-day subs at once), so this is a count, not a single on/off toggle.
+    return (state.planner.dailyAstrite || 0) + (state.planner.luniteSubCount || 0) * LUNITE_DAILY_ASTRITE;
+  }, [state.planner.dailyAstrite, state.planner.luniteSubCount]);
 
   const planData = useMemo(() => {
     const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
@@ -277,23 +279,30 @@ function PlannerTab({
         {showIncomePanel && (
           <CardBody className="space-y-2">
             <div className="kuro-label">{t('planner.subscriptions')}</div>
-            <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteActive', value: !state.planner.luniteActive })} aria-pressed={state.planner.luniteActive} aria-label={t('planner.luniteSubAriaLabel', { status: state.planner.luniteActive ? t('planner.luniteSubActive') : t('planner.luniteSubInactive') })} className={`kuro-btn w-full text-left ${state.planner.luniteActive ? 'active-emerald' : ''}`}>
+            <div className={`kuro-btn w-full text-left ${state.planner.luniteSubCount > 0 ? 'active-emerald' : ''}`}>
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
-                  <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteActive ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteActive ? { background: 'var(--bg-btn)' } : undefined}>
-                    {state.planner.luniteActive && <Check size={12} />}
+                  <span className={`w-4 h-4 rounded flex items-center justify-center ${state.planner.luniteSubCount > 0 ? 'bg-emerald-500 text-black' : ''}`} style={!state.planner.luniteSubCount ? { background: 'var(--bg-btn)' } : undefined}>
+                    {state.planner.luniteSubCount > 0 && <Check size={12} />}
                   </span>
                   <div>
-                    <div className={`text-base font-medium ${state.planner.luniteActive ? 'text-emerald-400' : 'text-gray-200'}`}>{t('planner.luniteSubTitle')}</div>
+                    <div className={`text-base font-medium ${state.planner.luniteSubCount > 0 ? 'text-emerald-400' : 'text-gray-200'}`}>{t('planner.luniteSubTitle')}</div>
                     <div className="text-gray-300 text-sm">{t('planner.luniteSubDesc', { daily: SUBSCRIPTIONS.lunite.daily, duration: SUBSCRIPTIONS.lunite.duration })}</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-emerald-400 text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
-                  {state.planner.luniteActive && <div className="text-emerald-400 text-sm">{t('planner.plusPerDay')}</div>}
+                <div className="text-right flex items-center gap-2">
+                  <div>
+                    <span className="text-emerald-400 text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
+                    {state.planner.luniteSubCount > 0 && <div className="text-emerald-400 text-sm">{t('planner.plusPerDay', { n: state.planner.luniteSubCount * SUBSCRIPTIONS.lunite.daily })}</div>}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteSubCount', value: Math.max(0, (state.planner.luniteSubCount || 0) - 1) })} disabled={!state.planner.luniteSubCount} className="text-red-400 min-w-[48px] min-h-[48px] flex items-center justify-center disabled:opacity-30" aria-label={t('planner.luniteSubRemoveAriaLabel')}><Minus size={12} /></button>
+                    <span className="text-gray-100 w-4 text-center kuro-number">{state.planner.luniteSubCount || 0}</span>
+                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteSubCount', value: (state.planner.luniteSubCount || 0) + 1 })} className="text-yellow-400 min-w-[48px] min-h-[48px] flex items-center justify-center" aria-label={t('planner.luniteSubAddAriaLabel')}><Plus size={12} /></button>
+                  </div>
                 </div>
               </div>
-            </button>
+            </div>
             <button onClick={() => { dispatch({ type: 'ADD_INCOME', income: { id: generateUniqueId(), astrite: SUBSCRIPTIONS.weekly.astrite, lunite: SUBSCRIPTIONS.weekly.lunite || 0, radiant: 0, lustrous: 0, label: SUBSCRIPTIONS.weekly.name, price: SUBSCRIPTIONS.weekly.price } }); toast?.addToast?.(t('planner.addedToast', { name: SUBSCRIPTIONS.weekly.name }), 'success'); }} className="kuro-btn w-full text-left">
               <div className="flex items-center justify-between w-full">
                 <div><div className="text-gray-200 text-base font-medium">{SUBSCRIPTIONS.weekly.name}</div><div className="text-gray-300 text-sm">{SUBSCRIPTIONS.weekly.desc}</div></div>
@@ -367,10 +376,11 @@ function PlannerTab({
               ))}
             </div>
             )}
-            {state.planner.luniteActive && (
+            {state.planner.luniteSubCount > 0 && (
               <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
                 <span className="text-emerald-400 text-base">{t('planner.monthlySub')}</span>
-                <span className="text-emerald-400 font-bold text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
+                <span className="text-emerald-400 font-bold text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price * state.planner.luniteSubCount })}</span>
+                {state.planner.luniteSubCount > 1 && <span className="text-emerald-400 text-sm"> ({t('planner.luniteSubCountSuffix', { n: state.planner.luniteSubCount })})</span>}
               </div>
             )}
           </CardBody>
