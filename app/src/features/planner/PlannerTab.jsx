@@ -13,7 +13,7 @@
 // state with the rest of this file.
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Calendar, Check, ChevronDown, Minus, Plus, Search, Star, X } from 'lucide-react';
+import { Calendar, Check, ChevronDown, Minus, Plus, RefreshCcw, Search, Star, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -171,34 +171,41 @@ function PlannerTab({
 
   const planData = useMemo(() => {
     const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
-    const bannerEnd = new Date(bannerEndDate);
+    // Deadline: the pinned date if one is set, else the actual banner end date (direct user
+    // request — "chance by banner end should be obviously by the banner end by default,
+    // unless i pin a marker in the calendar").
+    const deadline = state.planner.deadlinePin ? new Date(state.planner.deadlinePin) : new Date(bannerEndDate);
     const now = new Date();
-    const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
+    const daysLeft = Math.max(0, Math.ceil((deadline - now) / 86400000));
     const incomeByEnd = dailyIncome * daysLeft;
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
-    // Tides (Radiant/Forging/Lustrous) relevant to whichever banner(s) are selected — free
-    // pulls on top of Astrite/Lunite, not something that grows with dailyIncome, so the same
-    // count applies to both the "now" and "by end" figures below.
-    const relevantTides = state.calc.bannerCategory === 'featured'
-      ? (state.calc.selectedBanner === 'both'
-          ? (+state.calc.radiant || 0) + (+state.calc.forging || 0)
-          : state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
-      : (+state.calc.lustrous || 0);
-    const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
-    const isFeatured = state.calc.bannerCategory === 'featured';
-    const isChar = state.calc.selectedBanner === 'char';
-    const isWeap = state.calc.selectedBanner === 'weap';
+
+    // Target — fully independent from the Calculator tab (direct user request: "the plan
+    // target should not be link to calc target unless click on a small button"). Only
+    // SYNC_PLANNER_GOAL_FROM_CALC (the header's sync button) overwrites these from Calc.
+    const isFeatured = state.planner.goalBannerCategory === 'featured';
+    const isChar = state.planner.goalSelectedBanner === 'char';
+    const isWeap = state.planner.goalSelectedBanner === 'weap';
     let goalCopies = 1;
     let goalBannerLabel = '';
     if (isFeatured) {
-      if (isChar) { goalCopies = Math.max(1, state.calc.charCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.resonatorLabel')}`; }
-      else if (isWeap) { goalCopies = Math.max(1, state.calc.weapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.weaponLabel')}`; }
-      else { goalCopies = Math.max(1, state.calc.charCopies || 1, state.calc.weapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.bothLabel')}`; }
+      if (isChar) { goalCopies = Math.max(1, state.planner.goalCharCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, state.planner.goalWeapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, state.planner.goalCharCopies || 1, state.planner.goalWeapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.bothLabel')}`; }
     } else {
-      if (isChar) { goalCopies = Math.max(1, state.calc.stdCharCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.resonatorLabel')}`; }
-      else if (isWeap) { goalCopies = Math.max(1, state.calc.stdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
-      else { goalCopies = Math.max(1, state.calc.stdCharCopies || 1, state.calc.stdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
+      if (isChar) { goalCopies = Math.max(1, state.planner.goalStdCharCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, state.planner.goalStdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, state.planner.goalStdCharCopies || 1, state.planner.goalStdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
     }
+
+    // Tides (Radiant/Forging/Lustrous) relevant to the GOAL's own banner selection — the
+    // resource AMOUNTS are still shared/read from state.calc (only the target decoupled), but
+    // which of them count toward THIS goal depends on the goal's own selection, not whatever
+    // Calc currently happens to be showing.
+    const relevantTides = isFeatured
+      ? (isChar ? (+state.calc.radiant || 0) : isWeap ? (+state.calc.forging || 0) : (+state.calc.radiant || 0) + (+state.calc.forging || 0))
+      : (+state.calc.lustrous || 0);
+    const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
     const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
     const targetAstrite = targetPulls * ASTRITE_PER_PULL;
     // Availability in PULLS first (tides included), THEN converted to an Astrite shortfall —
@@ -214,12 +221,23 @@ function PlannerTab({
     // Real success-rate-to-get-all-targets (direct user request 2026-09-10, replacing a crude
     // Poisson approximation that ignored actual pity and tides, and collapsed a "Both" goal into
     // one target instead of modeling two independent successes) — see goalSuccessRate's own
-    // comment. "By end" reruns the same allocation with astrite/lunite bumped to the projected
-    // total (tides don't accrue via dailyIncome, so they stay as-is).
-    const probNow = goalSuccessRate(state.calc);
-    const probByEnd = goalSuccessRate({ ...state.calc, astrite: totalAstriteByEnd, lunite: 0 });
-    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
-  }, [state.calc, state.planner.goalPulls, state.planner.goalModifier, bannerEndDate, dailyIncome]);
+    // comment. Resources come from Calc (shared); the target comes from Planner's own
+    // decoupled goal fields. "By end" reruns the same allocation with astrite/lunite bumped to
+    // the projected total (tides don't accrue via dailyIncome, so they stay as-is).
+    const goalCalcLike = {
+      astrite: state.calc.astrite, lunite: state.calc.lunite, radiant: state.calc.radiant,
+      forging: state.calc.forging, lustrous: state.calc.lustrous,
+      allocPriority: state.calc.allocPriority, stdAllocPriority: state.calc.stdAllocPriority,
+      bannerCategory: state.planner.goalBannerCategory, selectedBanner: state.planner.goalSelectedBanner,
+      charCopies: state.planner.goalCharCopies, charPity: state.planner.goalCharPity, charGuaranteed: state.planner.goalCharGuaranteed,
+      weapCopies: state.planner.goalWeapCopies, weapPity: state.planner.goalWeapPity,
+      stdCharCopies: state.planner.goalStdCharCopies, stdCharPity: state.planner.goalStdCharPity,
+      stdWeapCopies: state.planner.goalStdWeapCopies, stdWeapPity: state.planner.goalStdWeapPity,
+    };
+    const probNow = goalSuccessRate(goalCalcLike);
+    const probByEnd = goalSuccessRate({ ...goalCalcLike, astrite: totalAstriteByEnd, lunite: 0 });
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
+  }, [state.calc, state.planner, bannerEndDate, dailyIncome]);
 
   // Collapsible section toggle
   const toggleSection = useCallback((key) => setCollapsed(p => ({ ...p, [key]: !p[key] })), []);
@@ -237,7 +255,7 @@ function PlannerTab({
         </div>
         {!collapsed.calendar && (
           <CardBody className="space-y-3">
-            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} toast={toast} />
+            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} deadlinePin={state.planner.deadlinePin} onSetDeadlinePin={(dateKey) => dispatch({ type: 'SET_PLANNER', field: 'deadlinePin', value: dateKey })} toast={toast} />
           </CardBody>
         )}
       </Card>
@@ -423,12 +441,67 @@ function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('goal')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('goal'); } }} aria-expanded={!collapsed.goal}>
           <CardHeader action={<>
+            {/* Direct user request: the goal target is independent from the Calculator tab by
+                default — this button is the ONLY way it gets overwritten from Calc. stopPropagation
+                so clicking it doesn't also toggle this card's own collapse (the whole header row
+                has its own onClick above). */}
+            <button onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SYNC_PLANNER_GOAL_FROM_CALC' }); toast?.addToast?.(t('planner.syncedFromCalcToast'), 'success'); }} className="text-gray-400 hover:text-gray-200 min-w-[48px] min-h-[48px] flex items-center justify-center -my-2" title={t('planner.syncFromCalcTooltip')} aria-label={t('planner.syncFromCalcAriaLabel')}>
+              <RefreshCcw size={14} />
+            </button>
             <span className="text-gray-400 text-sm">{planData.goalProgress.toFixed(0)}%</span>
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.goal ? '' : 'rotate-180'}`} />
           </>}>{t('planner.goalProgressTitle')}</CardHeader>
         </div>
         {!collapsed.goal && (
         <CardBody className="space-y-3">
+          {/* Target — independent from the Calculator tab (direct user request). */}
+          <div className="space-y-2 p-2 bg-white/5 rounded-lg">
+            <div className="grid grid-cols-2 gap-2">
+              {[['featured', t('planner.featuredLabel')], ['standard', t('planner.standardLabel')]].map(([v, label]) => (
+                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalBannerCategory', value: v })} aria-pressed={state.planner.goalBannerCategory === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalBannerCategory === v ? 'active-gold' : ''}`}>{label}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[['char', t('planner.resonatorLabel')], ['weap', t('planner.weaponLabel')], ['both', t('planner.bothLabel')]].map(([v, label]) => (
+                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalSelectedBanner', value: v })} aria-pressed={state.planner.goalSelectedBanner === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalSelectedBanner === v ? 'active-emerald' : ''}`}>{label}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {!planData.isWeap && (
+                <div>
+                  <label className="kuro-label text-xs">{t('planner.goalCharTargetLabel')}</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalCharCopies : state.planner.goalStdCharCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharCopies' : 'goalStdCharCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.copiesLabel')} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalCharPity : state.planner.goalStdCharPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharPity' : 'goalStdCharPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.pityLabel')} />
+                    </div>
+                  </div>
+                  {planData.isFeatured && (
+                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalCharGuaranteed', value: !state.planner.goalCharGuaranteed })} aria-pressed={state.planner.goalCharGuaranteed} className={`kuro-btn kuro-btn-sm w-full mt-1 ${state.planner.goalCharGuaranteed ? 'active-emerald' : ''}`}>{state.planner.goalCharGuaranteed ? t('calculator.guaranteed') : t('calculator.5050active')}</button>
+                  )}
+                </div>
+              )}
+              {!planData.isChar && (
+                <div>
+                  <label className="kuro-label text-xs">{t('planner.goalWeapTargetLabel')}</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapCopies : state.planner.goalStdWeapCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapCopies' : 'goalStdWeapCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.copiesLabel')} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapPity : state.planner.goalStdWeapPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapPity' : 'goalStdWeapPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.pityLabel')} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="kuro-label">{t('planner.baseConvenes')}</label>
@@ -462,7 +535,7 @@ function PlannerTab({
             </div>
           </div>
           <div className="p-2 bg-white/5 rounded-lg text-sm text-gray-400 text-center">
-            {t('planner.usingCalculator')}<span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> {t('planner.copiesLabel')}
+            {t('planner.goalSummaryPrefix')}<span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> {t('planner.copiesLabel')}
           </div>
           <div className="text-sm text-gray-500 text-center py-1">
             <span title={t('planner.baseConvenesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.baseConvenes')}</span>
@@ -494,7 +567,7 @@ function PlannerTab({
             </div>
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probByEnd >= 80 ? 'text-emerald-400' : planData.probByEnd >= 50 ? 'text-yellow-400' : planData.probByEnd >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEnd.toFixed(1)}%</div>
-              <div className="text-gray-500 text-xs">{t('planner.chanceByEnd', { pulls: planData.pullsByEnd })}</div>
+              <div className="text-gray-500 text-xs">{t(state.planner.deadlinePin ? 'planner.chanceByDeadlinePin' : 'planner.chanceByEnd', { pulls: planData.pullsByEnd, date: state.planner.deadlinePin ? formatDate(new Date(state.planner.deadlinePin), { month: 'short', day: 'numeric' }) : undefined })}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">

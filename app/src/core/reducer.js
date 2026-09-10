@@ -22,6 +22,7 @@ const ACTION = Object.freeze({
   REMOVE_INCOME: 'REMOVE_INCOME',
   CLEAR_ALL_INCOME: 'CLEAR_ALL_INCOME',
   ADD_DAILY_INCOME: 'ADD_DAILY_INCOME',
+  SYNC_PLANNER_GOAL_FROM_CALC: 'SYNC_PLANNER_GOAL_FROM_CALC',
   IMPORT_HISTORY: 'IMPORT_HISTORY',
   SET_UID: 'SET_UID',
   SET_USERNAME: 'SET_USERNAME',
@@ -100,8 +101,22 @@ const initialState = {
   },
   planner: {
     dailyAstrite: 60, luniteSubCount: 0,
-    goalType: '5star', goalTarget: 1, goalPulls: HARD_PITY, goalModifier: 1,
-    goal4StarTarget: 1, goal4StarType: 'featured',
+    goalPulls: HARD_PITY, goalModifier: 1,
+    // Direct user request: the Goal Progress card's target (banner/copies/pity/guaranteed)
+    // is its own independent state, decoupled from the Calculator tab's own target — it no
+    // longer silently mirrors whatever the Calc tab happens to be set to. Resources
+    // (Astrite/Lunite/tides) stay shared and are read from state.calc as before; only the
+    // target moved. SYNC_PLANNER_GOAL_FROM_CALC (dispatched from the Goal Progress header's
+    // sync button) is the only way these get overwritten from Calc.
+    goalBannerCategory: 'featured', goalSelectedBanner: 'both',
+    goalCharCopies: 1, goalCharPity: 0, goalCharGuaranteed: false,
+    goalWeapCopies: 1, goalWeapPity: 0,
+    goalStdCharCopies: 1, goalStdCharPity: 0,
+    goalStdWeapCopies: 1, goalStdWeapPity: 0,
+    // Single deadline pin (direct user request) — overrides the banner end date for the
+    // "Chance by end" calculation when set; null means "use the actual banner end date".
+    // Only one at a time: setting a new pin replaces any previous one.
+    deadlinePin: null,
     addedIncome: [],
   },
   bookmarks: [],
@@ -148,6 +163,28 @@ const _clampCalcField = (field, value) => {
   return Math.max(bounds.min, Math.min(bounds.max, Math.round(n)));
 };
 
+// Same defensive-bounds pattern as CALC_FIELD_BOUNDS above, for the Planner tab's own
+// decoupled goal-target fields (goalCharCopies etc.) — everything else SET_PLANNER touches
+// (dailyAstrite, luniteSubCount, deadlinePin, addedIncome, ...) is intentionally unbounded
+// or non-numeric, same as before this field existed.
+const PLANNER_FIELD_BOUNDS = Object.freeze({
+  goalCharPity:     { min: 0, max: 80 },
+  goalWeapPity:     { min: 0, max: 80 },
+  goalStdCharPity:  { min: 0, max: 80 },
+  goalStdWeapPity:  { min: 0, max: 80 },
+  goalCharCopies:      { min: 1, max: 50 },
+  goalWeapCopies:      { min: 1, max: 50 },
+  goalStdCharCopies:   { min: 1, max: 50 },
+  goalStdWeapCopies:   { min: 1, max: 50 },
+});
+const _clampPlannerField = (field, value) => {
+  const bounds = PLANNER_FIELD_BOUNDS[field];
+  if (!bounds) return value;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return bounds.min;
+  return Math.max(bounds.min, Math.min(bounds.max, Math.round(n)));
+};
+
 const reducer = (state, action) => {
   switch (action.type) {
     case ACTION.SET_SERVER: return { ...state, server: action.server };
@@ -156,7 +193,27 @@ const reducer = (state, action) => {
       const value = _clampCalcField(action.field, action.value);
       return { ...state, calc: { ...state.calc, [action.field]: value } };
     }
-    case ACTION.SET_PLANNER: return { ...state, planner: { ...state.planner, [action.field]: action.value } };
+    case ACTION.SET_PLANNER: {
+      const value = _clampPlannerField(action.field, action.value);
+      return { ...state, planner: { ...state.planner, [action.field]: value } };
+    }
+    case ACTION.SYNC_PLANNER_GOAL_FROM_CALC: {
+      // Direct user request: the only way the Goal Progress card's independent target
+      // fields get overwritten from the Calculator tab — an explicit action, not automatic.
+      const c = state.calc;
+      return {
+        ...state,
+        planner: {
+          ...state.planner,
+          goalBannerCategory: c.bannerCategory,
+          goalSelectedBanner: c.selectedBanner,
+          goalCharCopies: c.charCopies, goalCharPity: c.charPity, goalCharGuaranteed: c.charGuaranteed,
+          goalWeapCopies: c.weapCopies, goalWeapPity: c.weapPity,
+          goalStdCharCopies: c.stdCharCopies, goalStdCharPity: c.stdCharPity,
+          goalStdWeapCopies: c.stdWeapCopies, goalStdWeapPity: c.stdWeapPity,
+        },
+      };
+    }
     case ACTION.SET_SETTINGS: return { ...state, settings: { ...state.settings, [action.field]: action.value } };
     case ACTION.SET_EVENT_STATUS: {
       const newStatus = { ...state.eventStatus };
@@ -400,6 +457,10 @@ const reducer = (state, action) => {
       // P2-F005: Validate team array length (matches loadFromStorage validation)
       if (!Array.isArray(loaded.teams) || loaded.teams.length !== 5) loaded.teams = initialState.teams;
       loaded.activeTeamIndex = typeof loaded.activeTeamIndex === 'number' ? Math.max(0, Math.min(4, loaded.activeTeamIndex)) : 0;
+      // The top-level spread above is shallow — a saved `planner` object from before the
+      // decoupled goal fields (or luniteSubCount) existed would otherwise completely replace
+      // initialState.planner wholesale, leaving those fields undefined rather than defaulted.
+      loaded.planner = { ...initialState.planner, ...(loaded.planner || {}) };
       return loaded;
     }
     case ACTION.RESET: return initialState;
