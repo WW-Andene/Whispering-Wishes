@@ -79,7 +79,7 @@ const CHARACTER_DATA = {
   // Removed the duplicate; 'Laser Shearer' stays per the standing "unconfirmed, not contradicted"
   // decision above.
   'Rover: Aero': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Healer',
-    desc: "A wanderer who awoke with no memory on the shores of Solaris. Aero attunement: a healer/support whose Skyfall Severance strips Spectro Frazzle, Havoc Bane, Fusion Burst, Glacio Chafe, and Electro Flare stacks off a target and converts each into a stack of Aero Erosion, while Forte and Liberation both heal the team.",
+    desc: "A wanderer who awoke with no memory on the shores of Solaris. Aero attunement: a healer/support whose Skyfall Severance strips elemental debuff stacks off a target and converts them into Aero Erosion, while her Forte and Liberation both heal the team.",
     skills: ['Wind Cutter', 'Illusion Breaker', 'Cycle of Wind', 'Omega Storm'],
     ascension: { boss: 'Mysterious Code', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
@@ -109,7 +109,7 @@ const CHARACTER_DATA = {
     // both the empowered Windqueller (+20% DMG, costs 30 Resolve) and the Finale-vs-Prelude Liberation branch,
     // and exact Qingloong Mode entry/duration/cooldown/cost — none of this was documented with real numbers
     // before.
-    desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS whose Forte resource is Resolve (0-60 cap): gained when Basic Attack 'Lone Lance' or the Intro Skill 'Tactical Strike' hits a target, and it gradually decays if he goes 15s without landing a hit. At 30+ Resolve, casting Resonance Skill 'Windqueller' consumes 30 Resolve for +20% DMG (in Qingloong Mode this same +20% is free and costs no Resolve). Also at 30+ Resolve, pressing Resonance Liberation consumes 30 Resolve to cast the empowered 'Emerald Storm: Finale' (counted as Heavy ATK DMG, castable at low altitude mid-air) instead of the normal 'Emerald Storm: Prelude'; below 30 Resolve, Prelude is cast instead — it deals no direct damage itself but puts him into Qingloong Mode for 10s (16s cooldown, costs 125 Concerto Energy): increased Anti-interruption, with Basic Attack, Heavy Attack, and Dodge Counter all replaced by the 3-part Heavy Attack 'Lance of Qingloong' combo (counted as Heavy ATK DMG).",
+    desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS built around Resolve (0-60 cap, gained from Basic Attack and Intro Skill hits, decaying without a hit for 15s): at 30+ Resolve his Resonance Skill deals bonus DMG and his Resonance Liberation casts the stronger 'Emerald Storm: Finale', while below 30 Resolve it instead casts 'Prelude', entering Qingloong Mode — a buffed, high-interruption-resistance state with its Basic/Heavy/Dodge Counter replaced by the 'Lance of Qingloong' combo.",
     skills: ['Lone Lance', 'Windqueller', 'Qingloong at War', 'Emerald Storm: Prelude'],
     rotation: ['Echo', 'Intro', 'Liberation: Emerald Storm', 'Heavy: Lance of Qingloong 1 (cancel → Skill)', 'Skill', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Skill', 'Outro'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
@@ -139,7 +139,7 @@ const CHARACTER_DATA = {
     // Lv.10 — see SKILL_MULTIPLIERS.Calcharo), instead of his normal Intro "Wanted Outlaw" — reverting to
     // Wanted Outlaw again after that one use. S2/S5 Resonance Chain nodes both key off "casts Wanted Outlaw OR
     // Necessary Means", so this alternation matters for their uptime too.
-    desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS. Resonance Skill Extermination Order hits build "Cruelty" (cap 3, frozen while in Deathblade Gear); at 3 Cruelty, Heavy Attack becomes "Mercy" (consumes all 3, restores Energy). Resonance Liberation Phantom Etching (125 Energy) enters Deathblade Gear for 11s: Basic Attack becomes the 5-hit "Hounds Roar", Heavy Attack/Dodge Counter both upgrade to Liberation DMG, and the Forte Gauge becomes "Killing Intent" (cap 5, +1 per Hounds Roar hit) — at 5/5, Basic Attack becomes the Killing-Intent-fueled "Death Messenger" burst finisher (Liberation DMG, restores Energy). Once Deathblade Gear ends, his next Intro Skill cast is silently swapped to "Necessary Means" instead of his usual "Wanted Outlaw".',
+    desc: 'Phantom Hunter, leader of the "Ghost Hounds" international mercenary group — ruthless, vengeful, unforgiving; a potential client must be mindful of the price to pay before making him an offer. On-field Electro DPS who builds "Cruelty" from Resonance Skill hits to unlock an Energy-restoring Heavy Attack, then dumps into Deathblade Gear via his Resonance Liberation — a buffed state with an altered Basic Attack combo and its own "Killing Intent" gauge that caps in a hard-hitting finisher.',
     skills: ['Gnawing Fangs', 'Extermination Order', 'Hunting Mission', 'Phantom Etching'],
     rotation: ['Echo', 'Intro', 'Liberation', 'Heavy: Death Messenger', 'Basic: Hounds Roar 1-5', 'Heavy: Death Messenger', 'Basic: Hounds Roar 1-5', 'Heavy: Death Messenger', 'Outro'],
     ascension: { boss: 'Thundering Tacet Core', common: 'Ring', specialty: 'Iris' },
@@ -177,7 +177,7 @@ const CHARACTER_DATA = {
     // against the wiki/Encore/Combat's Forte/Resonance Chain text) for exact Mayhem
     // economy, Cosmos Rave entry/exit, and the Flaming Woolies → Energetic Welcome cast-order window — none of
     // this was previously documented with exact numbers.
-    desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem (caps at 100) toward an empowered Heavy Attack: every hit of Basic ATK Wooly Attack, Resonance Skill Flaming Woolies/Energetic Welcome, and Intro Skill Woolies Helpers restores some Mayhem. At 100/100, casting Heavy Attack consumes it all to enter a 70% DMG-reduction channel (surviving a swap-out — no forfeit on quickswap) that ends in a Cloudy Frenzy nuke, counted as Resonance Liberation DMG. Resonance Skill has its own 2-part cast-order window: Flaming Woolies (8-hit barrage) can be chained into a stronger Energetic Welcome finisher only by pressing Skill again immediately after Flaming Woolies ends — otherwise the chain resets. Resonance Liberation Cosmos Rave (125 Energy, 16s cooldown) swaps her whole kit — Basic ATK, Heavy ATK, Skill, and Dodge Counter all become enhanced 'Cosmos' Fusion versions — for a fixed 10s, during which any hit still restores Mayhem, so the same full-Mayhem/Heavy-ATK trigger inside the window instead casts Cosmos Rupture (also Liberation DMG). Inherent Skill Angry Cosmos adds +10% DMG dealt during Cosmos Rave whenever her HP is above 70%.",
+    desc: "Wooly-Counting Game, a girl of the Black Shores accompanied by one black and one white Wooly, who dreams of creating happy stories with candies, fairy tales, and her imagination. On-field Fusion DPS who builds Mayhem toward an empowered, DMG-reduction Heavy Attack nuke, and can swap her whole kit into an enhanced 'Cosmos' form for a fixed duration via her Resonance Liberation.",
     skills: ['Wooly Attack', 'Flaming Woolies', 'Black & White Woolies', 'Cosmos Rave'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Pecok Flower' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Helix' },
@@ -227,7 +227,7 @@ const CHARACTER_DATA = {
     // SKILL_MULTIPLIERS['Jianxin']'s own row note and CHARACTER_ROTATIONS['Jianxin']'s own step note
     // (2026-09-03 pass) — the dump's own kit text (line 55) is explicit: "hold Heavy Attack to cast
     // Primordial Chi Spiral." This desc field was missed by that earlier fix. Corrected.
-    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS: builds Chi (cap 120) from Basic ATK hits, Calming Air casts, Chi Counter/Chi Parry hits, and Intro Skill hits; at max Chi, holds Heavy Attack to cast Primordial Chi Spiral and enter Zhoutian Progress — a channeled state with +interrupt resistance and -50% DMG taken — ending in an HP-scaling shield (up to 5,539 + 238.78% HP at Lv.10 Major Zhoutian: Outer, +20% more via her 2nd Inherent Skill, 30s duration) that heals the active Resonator once every 6s while it persists. Groups enemies with Liberation Purification Force Field, which explodes on expiry, and grants the incoming Resonator +38% Resonance Liberation DMG via Outro.',
+    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who builds Chi from Basic Attacks and skills, then channels it into a defensive stance that ends in a large HP-scaling shield healing the active Resonator over time; her Liberation groups enemies for an AoE burst, and her Outro buffs the incoming ally\'s Liberation DMG.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
@@ -272,7 +272,7 @@ const CHARACTER_DATA = {
   // ATK swaps to Stormy Kicks specifically once Lion's Spirit drops below 10 (source doesn't publish the
   // per-trigger restore amounts, so those are omitted rather than guessed — see rotation TODO below).
   'Lingyang': { rarity: 5, element: 'Glacio', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: "Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou and the last living Suan'ni — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS whose Forte resource, Lion's Spirit (100 cap), is restored by casting Resonance Skill Furious Punches, Intro Skill Lion Awakens, or Resonance Liberation Strive: Lion's Vigor. At full Lion's Spirit, Heavy Attack casts Glorious Plunge and enters the airborne Striding Lion state (also enterable via Basic ATK right after Lion Awakens or Strive: Lion's Vigor if Lion's Spirit is already full); the state drains Lion's Spirit to 0 within 5s (10s if Strive: Lion's Vigor's buff is active, which halves the drain rate), swapping Basic ATK to the 2-hit Feral Gyrate and Resonance Skill to Mountain Roamer, with Basic ATK becoming the 8-hit+finisher Stormy Kicks (unlocking the Tail Strike Mid-air Attack) once Lion's Spirit drops below 10.",
+    desc: "Frosty Gusto, an enthusiastic and brave member of the Liondance Troupe in Jinzhou and the last living Suan'ni — a sincere, compassionate visitor of the human community with incredible physical abilities, who embodies the spirit of Liondance with his unique style. On-field Glacio DPS who builds Lion's Spirit from his Skill, Intro, and Liberation, then unleashes it via Heavy Attack into the airborne Striding Lion state — a timed enhanced-combo phase with altered Basic Attack and Skill moves.",
     skills: ['Majestic Fists', 'Ancient Arts', 'Unification of Spirits', "Strive: Lion's Vigor"],
     ascension: { boss: 'Sound-Keeping Tacet Core', common: 'Whisperin Core', specialty: 'Coriolus' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
@@ -298,27 +298,14 @@ const CHARACTER_DATA = {
   // Variation is already covered in alt4. alt5 reordered to lead with Stellar Symphony (confirmed by
   // both sources) over Boson Astrolabe (unconfirmed by either this audit, kept as a plausible ER pick).
   'Verina': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    // desc rewritten 2026-08-31 verbatim against the wiki/Verina/Combat (Chrome UA
-    // + google.com referer + jsRender; the page's Forte "Details" table omits an Outro Skill row entirely,
-    // so Blossom's own numbers are cross-sourced from the source/character/1503 and the source, which
-    // agree on both figures) and the source/wuthering-waves/characters/verina's Gameplay tab. Exact
-    // resource economy: Photosynthesis Energy caps at 4 stacks, gained 1 each from Basic Attack Stage 5
-    // on hit, Resonance Skill Botany Experiment on hit, and Intro Skill Verdant Growth on hit (the Intro
-    // is rated "unusable" by the source — it launches her airborne and lengthens her already-shortest rotation
-    // in the game, so it's skipped in practice and she swaps in cold, starting her Basic ATK combo at
-    // Stage 3 instead of Stage 1). Each stack is spent 1-for-1 on Heavy Attack: Starflower Blooms (Heavy
-    // ATK DMG) or Mid-air Attack: Starflower Blooms (Basic ATK DMG) — both heal the nearby team and refill
-    // 12 Concerto Energy per cast, no separate "enhanced state," just gauge-gated alt-casts with no
-    // duration/timer. Resonance Liberation Arboreal Flourish (175 Energy, 25s CD) heals the team (950 +
-    // 23.80% ATK at Lv.10) and applies a 12s Photosynthesis Mark; any nearby ally hitting a marked target
-    // triggers a Coordinated Attack (9.95% ATK DMG, 428 + 10.71% ATK heal), capped at 1/s. Cast-order note:
-    // Skill Botany Experiment can be swap-cancelled immediately by Liberation to skip its damage/Resonance
-    // Energy gain while still keeping its Concerto Energy gain — this is the standard rotation, not an edge
-    // case. Outro Blossom heals the incoming Resonator 19% of Verina\'s ATK/s for 6s and grants the whole
-    // nearby team +15% All DMG Amp for 30s (confirmed "Amplified," not Amplify, per the source\'s and this file\'s
-    // CHAR_BUFF_TABLE\'s existing sourcing — the source\'s own prose loosely says "Amplify" but its Skills tab
-    // multiplier text says "Amplified," matching the source verbatim). Inherent Skill Gift of Nature: casting
-    // Heavy/Mid-air Starflower Blooms, Liberation, or Outro grants the whole team +20% ATK for 20s.',
+    // desc restored 2026-09-10: this field had been accidentally left entirely commented
+    // out (every line of the prior rewrite prefixed with "//"), so CHARACTER_DATA.Verina carried no
+    // desc property at all. Re-added below, trimmed to a short gameplay summary per the
+    // lore/gameplay split convention used elsewhere in this file — full mechanical detail (exact
+    // Photosynthesis Energy economy, cast-order notes, buff numbers) remains sourced against the
+    // wiki/Verina/Combat and the source/wuthering-waves/characters/verina's Gameplay tab, and still
+    // lives in this file's other tables (CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS).
+    desc: "Nature Calling, endowed with extensive knowledge of botany, Verina is always considerate, always smiling, and always wishes for every flower to be blessed with the miracle of life. Spectro healer who builds Photosynthesis Energy from Basic Attacks and skills, then spends it on healing Heavy/Mid-air Attacks; her Resonance Liberation heals and marks enemies for Coordinated Attack procs, while her Outro heals the incoming ally and grants the team a DMG Amp buff.",
     skills: ['Cultivation', 'Botany Experiment', 'Starflower Blooms', 'Arboreal Flourish'],
     ascension: { boss: 'Elegy Tacet Core', common: 'Howler Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
