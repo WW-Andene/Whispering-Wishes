@@ -94,6 +94,9 @@ public class PullBubbleService extends Service {
     private View removeTarget;
     private View hiddenTab;
     private final List<View> subBubbles = new ArrayList<>();
+    // Set once per showXxxArc() call, before any addSubBubble/addBackButton/addHideButton calls
+    // for that arc — see adaptiveArcRadiusBoostPx's own comment for why.
+    private int currentArcRadiusBoostPx = 0;
     private final List<View> resultIcons = new ArrayList<>();
     // Tiles currently mid pop-reveal (spawned invisible, alpha=0f, waiting on addPopReveal's
     // grow->hold->shrink chain to hand off visibility — see addResultIcon/addPopReveal). Real
@@ -372,6 +375,9 @@ public class PullBubbleService extends Service {
 
     // Top level: banner picker (enters CATEGORY) / ×80 / ×10 / ×1 / hide.
     private void showRollArc() {
+        // Fixed 5-slot arc — doesn't route through midAngles(), so it must reset the adaptive
+        // boost itself (otherwise a busy banner-list arc's leftover boost would carry over here).
+        currentArcRadiusBoostPx = 0;
         float density = getResources().getDisplayMetrics().density;
         // 16dp — one PerfectSuite primary step down from the ~24dp the old 0.5x ratio produced.
         int iconPx = (int) (16 * density);
@@ -433,10 +439,11 @@ public class PullBubbleService extends Service {
     private static final int BOTH_PYRAMID_EXTRA_RADIUS_DP = 48;
 
     private void showBannerListArc(String category) {
-        addBackButton(() -> enterMode(ArcMode.CATEGORY));
         List<WidgetPullSimulator.BannerOption> options = WidgetPullSimulator.listBannerOptions(
                 getSharedPreferences(PREFS_NAME, MODE_PRIVATE), category);
         if (options.isEmpty()) {
+            currentArcRadiusBoostPx = 0; // no midAngles() call on this path — reset explicitly
+            addBackButton(() -> enterMode(ArcMode.CATEGORY));
             Toast.makeText(this, getString(R.string.pull_bubble_banner_picker_default), Toast.LENGTH_SHORT).show();
         } else {
             float density = getResources().getDisplayMetrics().density;
@@ -449,7 +456,11 @@ public class PullBubbleService extends Service {
             // keeps the original layout unchanged: "Both" stays inline, no "All" at all — "All"
             // is specifically the full historical CHARACTER roster, it has no weapon equivalent.
             int slotCount = options.size() + (isCharacter ? 1 : (showBoth ? 1 : 0));
+            // midAngles() below sets currentArcRadiusBoostPx for this arc's slotCount — called
+            // BEFORE addBackButton so the back button (and hide, at the very end) share the same
+            // boosted radius as every content bubble instead of sitting at a mismatched one.
             double[] angles = midAngles(slotCount);
+            addBackButton(() -> enterMode(ArcMode.CATEGORY));
             for (int i = 0; i < options.size(); i++) {
                 WidgetPullSimulator.BannerOption opt = options.get(i);
                 Bitmap icon = opt.artAsset == null ? null
@@ -510,11 +521,36 @@ public class PullBubbleService extends Service {
 
     // Evenly spaces `count` items strictly between the top (90°, reserved for the back/picker
     // button) and bottom (270°, reserved for hide) — e.g. count=3 gives 135/180/225, exactly
-    // the old fixed ×80/×10/×1 slots; count=2 gives 120/240; any count fits the same arc.
+    // the old fixed ×80/×10/×1 slots; count=2 gives 120/240; any count fits the same arc. Also
+    // sets currentArcRadiusBoostPx for this arc's `count` interior slots (see
+    // adaptiveArcRadiusBoostPx's own comment) — every showXxxArc() that places bubbles via
+    // midAngles() gets adaptive spacing for free; callers with their own fixed angle count
+    // (showRollArc, showStandardArc) set it directly instead.
     private double[] midAngles(int count) {
+        currentArcRadiusBoostPx = adaptiveArcRadiusBoostPx(count + 2, (int) (SUB_BUBBLE_SIZE_DP * getResources().getDisplayMetrics().density));
         double[] angles = new double[count];
         for (int i = 0; i < count; i++) angles[i] = 90 + (i + 1) * (180.0 / (count + 1));
         return angles;
+    }
+
+    // Direct user report: with 3 active banners, sub-bubbles on the Character/Weapon banner-list
+    // arc started overlapping — more bubbles packed into the same fixed 180° sweep at a fixed
+    // radius means less angular room per bubble, until neighbors' edges collide. The original
+    // 5-slot layout (banner-picker/×80/×10/×1/hide, or back/3-categories/hide) is the proven-good
+    // baseline spacing; this scales the radius up, proportionally to how much MORE cramped the
+    // current arc is than that baseline, so N bubbles always keep at least the baseline's own
+    // angular breathing room — never shrinks radius below the baseline itself, and does nothing
+    // for any arc that's at or under 5 total slots (every arc except a busy banner list).
+    private static final int BASELINE_ARC_SLOTS = 5;
+    private int adaptiveArcRadiusBoostPx(int totalArcSlots, int subSizePx) {
+        if (totalArcSlots <= BASELINE_ARC_SLOTS || mainBubbleParams == null) return 0;
+        float density = getResources().getDisplayMetrics().density;
+        int gap = (int) (10 * density);
+        int baseRadius = mainBubbleParams.width / 2 + gap + subSizePx / 2;
+        double baselineStep = 180.0 / (BASELINE_ARC_SLOTS - 1);
+        double actualStep = 180.0 / (totalArcSlots - 1);
+        double scaledRadius = baseRadius * (baselineStep / actualStep);
+        return (int) Math.max(0, Math.round(scaledRadius) - baseRadius);
     }
 
     private void addBackButton(Runnable action) {
@@ -711,9 +747,13 @@ public class PullBubbleService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        positionSubBubbleArc(params, angleDeg, mainBubbleParams.width, sizePx, extraRadiusPx);
+        // currentArcRadiusBoostPx (see its own comment) folded in here — every sub-bubble this
+        // call creates for the current arc gets it, on top of any bubble-specific extraRadiusPx
+        // (e.g. the Character list's pyramid-apex "Mix" bubble) it was already given.
+        int totalExtraRadiusPx = extraRadiusPx + currentArcRadiusBoostPx;
+        positionSubBubbleArc(params, angleDeg, mainBubbleParams.width, sizePx, totalExtraRadiusPx);
 
-        root.setTag(new SubBubbleTag(params, angleDeg, extraRadiusPx));
+        root.setTag(new SubBubbleTag(params, angleDeg, totalExtraRadiusPx));
         root.setOnClickListener(v -> onTap.run());
         if (onLongTap != null) {
             root.setOnLongClickListener(v -> { onLongTap.run(); return true; });
@@ -1097,7 +1137,13 @@ public class PullBubbleService extends Service {
         // pop-reveal is tapped (see addPopReveal's own comment) — the same callback either way,
         // whether this item had a video first or not, matching the web reference exactly.
         Runnable onAdvance = () -> playItemStep(results, index + 1, assetMap);
-        Runnable reveal = () -> addResultIcon(result, assetMap, onAdvance);
+        // Direct user request: when the item already had its own Convene Animation (a video —
+        // the 5★ reveal clip and/or the character/weapon's own convene footage), it shouldn't
+        // ALSO get the big screen-center pop-reveal afterward — that video already served as the
+        // reveal moment. Goes straight into its row/slot instead; items with no video keep the
+        // pop-reveal exactly as before.
+        boolean hasVideo = !videos.isEmpty();
+        Runnable reveal = () -> addResultIcon(result, assetMap, onAdvance, hasVideo);
         if (videos.isEmpty()) {
             // No video for this item — still waits its turn, just paced by a short stagger
             // before its own pop-in starts rather than "some items pop in after a video, the
@@ -1160,7 +1206,7 @@ public class PullBubbleService extends Service {
     private final Map<View, android.animation.ObjectAnimator> tileGlowAnimators = new HashMap<>();
     private final Runnable autoArchiveRunnable = this::autoArchiveAllTiles;
 
-    private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, Runnable onAdvance) {
+    private void addResultIcon(WidgetPullSimulator.PullResult result, JSONObject assetMap, Runnable onAdvance, boolean hasVideo) {
         allPulledResults.add(result);
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
@@ -1200,6 +1246,17 @@ public class PullBubbleService extends Service {
             addGlowBurst(finalParams, sizePx, rarityHex(result.rarity));
             addPersistentHalo(newTile, finalParams, sizePx, result.rarity);
         }
+        if (hasVideo) {
+            // Direct user request: this item already had its own Convene Animation (the 5★
+            // reveal clip and/or its own convene footage) right before this call — that already
+            // served as its reveal moment, so it shouldn't ALSO pop up center-screen. Straight
+            // into its row/slot instead, same as how a settled tile ends up after a no-video
+            // item's pop-reveal completes.
+            newTile.setAlpha(1f);
+            tileRevealedAt.put(newTile, System.currentTimeMillis());
+            onAdvance.run();
+            return;
+        }
         // Direct user request 2026-09-10: pop in the middle of the screen with a holographic
         // flash, then shrink down while moving to its slot — every item, not just 4★/5★ (the
         // glow burst/halo above stay a SEPARATE, additional effect for those). The real tile
@@ -1223,10 +1280,10 @@ public class PullBubbleService extends Service {
     private static final float POP_SCALE = 2.4f;
     private static final int POP_GROW_DURATION_MS = 200;
     // Direct user request 2026-09-10: the popped item holds at full size until either tapped
-    // (see the tap listener below) or 3s pass, whichever comes first — a tap advances
-    // immediately, an untapped item still moves the sequence along on its own rather than
-    // waiting indefinitely.
-    private static final int POP_AUTO_ADVANCE_MS = 3000;
+    // (see the tap listener below) or, per direct follow-up request, 1.5s pass (was 3s) —
+    // whichever comes first — a tap advances immediately, an untapped item still moves the
+    // sequence along on its own rather than waiting indefinitely.
+    private static final int POP_AUTO_ADVANCE_MS = 1500;
     private static final int POP_SHRINK_DURATION_MS = 380;
 
     private void addPopReveal(WidgetPullSimulator.PullResult result, JSONObject assetMap,
@@ -1280,6 +1337,11 @@ public class PullBubbleService extends Service {
         FrameLayout flash = new FrameLayout(this);
         flash.setBackground(burst);
         container.addView(flash, new FrameLayout.LayoutParams(flashSizePx, flashSizePx, Gravity.CENTER));
+        // Sparks — direct user follow-up request alongside the shorter hold: thin streaks of
+        // light radiating outward from the flash's own center, on top of it, for a more
+        // "holographic" burst than the plain radial gradient alone. Added after flash so they
+        // draw on top, same single-window/deterministic-z-order reasoning as flash itself.
+        List<View> sparks = addSparkStreaks(container, flashSizePx);
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -1313,6 +1375,12 @@ public class PullBubbleService extends Service {
         root.setScaleX(0.5f);
         root.setScaleY(0.5f);
         root.setAlpha(0f);
+        // Same "hidden state before addView" fix as flash/root above (see its own comment) —
+        // sparks need it too, or they'd get the identical one-frame-flash-then-glitch treatment.
+        for (View spark : sparks) {
+            spark.setScaleX(0.15f);
+            spark.setAlpha(0.9f);
+        }
 
         try {
             windowManager.addView(container, params);
@@ -1324,10 +1392,18 @@ public class PullBubbleService extends Service {
             return;
         }
 
-        // Flash burst — one-shot, independent of the icon's own grow/hold/shrink sequence
-        // below; it just fades out and is left alone (it's removed along with the rest of
-        // container at the very end, no need to tear it down separately).
-        flash.animate().scaleX(1.6f).scaleY(1.6f).alpha(0f).setDuration(320).start();
+        // Flash + spark burst — one-shot, independent of the icon's own grow/hold/shrink
+        // sequence below; both just fade out and are left alone (removed along with the rest of
+        // container at the very end, no need to tear them down separately). Shortened from 320ms
+        // to 240ms alongside the hold-time reduction, so the burst still reads as a distinct
+        // "flash then settle" beat instead of dragging through a noticeably larger fraction of
+        // the now much shorter 1.5s hold.
+        flash.animate().scaleX(1.6f).scaleY(1.6f).alpha(0f).setDuration(240).start();
+        for (View spark : sparks) {
+            spark.animate().scaleX(1f).alpha(0f).setDuration(240)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                    .start();
+        }
 
         root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(POP_GROW_DURATION_MS)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
@@ -1386,6 +1462,33 @@ public class PullBubbleService extends Service {
                     handler.postDelayed(shrinkAndAdvance, POP_AUTO_ADVANCE_MS);
                 })
                 .start();
+    }
+
+    // Direct user follow-up request: "holographic spark and flash" alongside the shorter hold —
+    // adds a handful of thin light streaks radiating outward from the flash's own center, on top
+    // of it, as children of the SAME container (see addPopReveal's own header comment for why
+    // that matters — no separate window, no cross-window z-order race). Each spark is a plain
+    // horizontal bar with a linear gradient (transparent → bright → transparent) so it reads as
+    // a thin streak of light rather than a flat rectangle, rotated to its own angle around the
+    // center. Returns the created views so the caller can set their initial hidden state before
+    // addView and animate them alongside flash's own burst.
+    private static final int SPARK_COUNT = 6;
+    private List<View> addSparkStreaks(FrameLayout container, int flashSizePx) {
+        List<View> sparks = new ArrayList<>();
+        int sparkLengthPx = (int) (flashSizePx * 1.35f);
+        int sparkThicknessPx = Math.max(2, flashSizePx / 40);
+        for (int i = 0; i < SPARK_COUNT; i++) {
+            GradientDrawable streak = new GradientDrawable(
+                    GradientDrawable.Orientation.LEFT_RIGHT,
+                    new int[]{Color.TRANSPARENT, Color.parseColor("#F2FFFFFF"), Color.TRANSPARENT});
+            View spark = new View(this);
+            spark.setBackground(streak);
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(sparkLengthPx, sparkThicknessPx, Gravity.CENTER);
+            spark.setRotation((360f / SPARK_COUNT) * i);
+            container.addView(spark, lp);
+            sparks.add(spark);
+        }
+        return sparks;
     }
 
     // Builds one result tile (rarity ring + dark mask + portrait), adds it to the window at a
