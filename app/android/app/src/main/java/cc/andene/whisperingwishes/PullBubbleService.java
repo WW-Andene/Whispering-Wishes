@@ -1130,6 +1130,10 @@ public class PullBubbleService extends Service {
     // (already sitting correctly positioned and invisible) and removes this temporary one.
     private static final float POP_SCALE = 2.4f;
     private static final int POP_GROW_DURATION_MS = 200;
+    // Direct user report 2026-09-10: the pop reveal moved from grow straight into shrink with
+    // no pause, reading as "too quick" — hold the big reveal on screen for a beat before the
+    // shrink-to-slot animation starts.
+    private static final int POP_HOLD_DURATION_MS = 1000;
     private static final int POP_SHRINK_DURATION_MS = 380;
 
     private void addPopReveal(WidgetPullSimulator.PullResult result, JSONObject assetMap,
@@ -1189,6 +1193,7 @@ public class PullBubbleService extends Service {
                     root.setTranslationY(-dyWindow);
                     float shrinkTo = (float) sizePx / popSizePx;
                     root.animate().translationX(0).translationY(0).scaleX(shrinkTo).scaleY(shrinkTo)
+                            .setStartDelay(POP_HOLD_DURATION_MS)
                             .setDuration(POP_SHRINK_DURATION_MS)
                             .setInterpolator(new android.view.animation.DecelerateInterpolator())
                             .withEndAction(() -> {
