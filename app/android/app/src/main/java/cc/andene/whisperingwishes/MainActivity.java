@@ -155,17 +155,10 @@ public class MainActivity extends BridgeActivity {
         // BitmapDrawable windowBackground instead, which only offers
         // default stretch/fill scaling — a different shape of the same
         // picture at that handoff, which is why it got reverted).
-        // boot_poster.png (drawable-nodpi, so it's never density-scaled)
-        // is just a PNG re-encode of boot-intro-poster.gif — that GIF is
-        // itself a single still frame (n_frames=1, not actually animated),
-        // so this isn't extracting anything out of an animation; it's the
-        // same picture in a format Android's ImageView can decode as a
-        // resource.
-        // boot_poster_mrover.gif (its MRover equivalent) is dropped in as-is instead — it's
-        // already a single-frame GIF (same n_frames=1 as the one above), and Android's
-        // BitmapFactory/ImageView decode a GIF resource as a plain static Bitmap (first frame
-        // only, no animation) same as any other drawable format, so there's no format
-        // conversion actually needed for this one.
+        // boot_poster.png / boot_poster_mrover.png (both drawable-nodpi, so neither is ever
+        // density-scaled) — replaced 2026-09-10 with the user's own 2K stills matching the 2K
+        // boot-intro videos (boot-intro.mp4/boot-intro-mrover.mp4), superseding the earlier
+        // lower-resolution GIF-derived versions (boot_poster_mrover.gif, since deleted).
         //
         // Coin flip between the default (female) Rover boot intro and its MRover (male Rover)
         // equivalent — decided once, here, before either the poster or the video ever renders,

@@ -100,21 +100,22 @@
     "damageStatsTooltip": "Inclut les modificateurs de buffs d'équipe actifs",
     "teamBuffs": "Buffs d'équipe",
     "enemyDebuffs": "Debuffs ennemis",
+    "damageOutput": "Dégâts produits",
+    "rawStatScore": "Score Brut",
+    "rawStatScoreDetail": "base + équipement + séquence, bonus inconditionnels uniquement — sans rotation",
+    "mainDpsBuffUplift": "Gain de buffs (DPS principal)",
+    "mainDpsBuffUpliftDetail": "sortie de {{name}}, rotation complète + buffs d'équipe vs. stats brutes seules",
     "teamDps": "DPS d'équipe",
     "teamDpsDetail": "compétences + échos + DOT + réactions",
     "timeToKill": "Temps pour éliminer",
     "timeToKillDetail": "{{enemy}} Nv.{{level}} PV {{hp}} ÷ DPS d'équipe",
     "rotationCycles": " · {{value}} cycles de rotation",
-    "soloDps": "DPS solo",
-    "soloDpsDetail": "sans buffs d'équipe",
-    "synergyUplift": "Gain de synergie",
-    "synergyUpliftDetail": "gain équipe vs solo",
     "damageSources": "Sources de dégâts",
     "sourceRotation": "Rotation",
     "sourceEcho": "Écho",
     "sourceDot": "DOT / Réactions",
     "damageDistribution": "Répartition des dégâts",
-    "footerNote": "DPS d'équipe : rotation complète incluant compétences, échos, DOT, réactions. DPS solo : équipement seul, sans buffs d'équipe. Gain de synergie : % réel de DPS gagné grâce à la composition d'équipe.",
+    "footerNote": "DPS d'équipe : rotation complète incluant compétences, échos, DOT, réactions. Score Brut : base + équipement + séquence, bonus inconditionnels uniquement, sans rotation. Gain de buffs (DPS principal) : combien de plus le DPS principal produit avec la rotation/les buffs d'équipe complets vs. les stats brutes seules.",
     "resonanceChainNote": "Les bonus de chaîne de résonance sont inclus dans le DPS ci-dessus, mais s'appliquent directement aux statistiques — ils n'ont pas de fenêtre sur le terrain, donc ils ne sont pas affichés comme des barres sur la chronologie."
   },
   "dpsCompare": {
@@ -154,7 +155,11 @@
   "rotation": {
     "header": "Rotation ({{time}}s)",
     "legendChar": "↳ Perso/Set/Arme",
-    "legendEcho": "◆ Compétence d'Écho"
+    "legendEcho": "◆ Compétence d'Écho",
+    "legendDot": "~ Réaction DOT",
+    "zoomIn": "Zoomer",
+    "zoomOut": "Dézoomer",
+    "zoomReset": "Réinitialiser le zoom"
   },
   "rotationGuide": {
     "title": "Guide de rotation",

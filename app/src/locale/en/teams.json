@@ -100,21 +100,22 @@
     "damageStatsTooltip": "Includes active team buff modifiers",
     "teamBuffs": "Team Buffs",
     "enemyDebuffs": "Enemy Debuffs",
+    "damageOutput": "Damage Output",
+    "rawStatScore": "Raw Stat Score",
+    "rawStatScoreDetail": "base + gear + sequence, unconditional buffs only — no rotation",
+    "mainDpsBuffUplift": "Main DPS Buff Uplift",
+    "mainDpsBuffUpliftDetail": "{{name}}'s own output, full rotation + team buffs vs. raw stats alone",
     "teamDps": "Team DPS",
     "teamDpsDetail": "skills + echoes + DOTs + reactions",
     "timeToKill": "Time to Kill",
     "timeToKillDetail": "{{enemy}} Lv.{{level}} HP {{hp}} ÷ Team DPS",
     "rotationCycles": " · {{value}} rotation cycles",
-    "soloDps": "Solo DPS",
-    "soloDpsDetail": "no team buffs",
-    "synergyUplift": "Synergy Uplift",
-    "synergyUpliftDetail": "team vs solo gain",
     "damageSources": "Damage Sources",
     "sourceRotation": "Rotation",
     "sourceEcho": "Echo Skill",
     "sourceDot": "DOT / Reactions",
     "damageDistribution": "Damage Distribution",
-    "footerNote": "Team DPS: full rotation including skills, echoes, DOTs, reactions. Solo DPS: equipment only, no team buffs. Synergy Uplift: actual % DPS gained from team composition.",
+    "footerNote": "Team DPS: full rotation including skills, echoes, DOTs, reactions. Raw Stat Score: base + gear + sequence, unconditional buffs only, no rotation. Main DPS Buff Uplift: how much more the Main DPS deals with the full rotation/team buffs vs. raw stats alone.",
     "resonanceChainNote": "Resonance Chain bonuses are included in the DPS number above but apply directly to stats — they don't have an on-field window, so they aren't drawn as bars on the timeline."
   },
   "dpsCompare": {
@@ -154,7 +155,11 @@
   "rotation": {
     "header": "Rotation ({{time}}s)",
     "legendChar": "↳ Char/Set/Weapon",
-    "legendEcho": "◆ Echo Skill"
+    "legendEcho": "◆ Echo Skill",
+    "legendDot": "~ DOT Reaction",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Reset zoom"
   },
   "rotationGuide": {
     "title": "Rotation Guide",

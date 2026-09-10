@@ -96,7 +96,10 @@ const BANNER_HISTORY = [
   // official "Where Santu Beckons" Featured Resonator Convene banner (user-supplied).
   // weaponBannerArt added 2026-08-18: real official Featured Weapon Convene banner for Thousandfold
   // Deliverance (Jingran's signature Broadblade), user-supplied.
-  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: './banners/history/v3-6-p2/mCc8yv6J-show-76.png', weaponBannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg', predicted: true },
+  // bannerArt replaced 2026-09-10 with Jingran's official solo reveal splash
+  // (user-supplied Jingran_Banner_Art.jpg, stored as Banner_Jingran.webp per its
+  // real encoding), superseding the earlier fan-composited convene mockup.
+  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: './banners/_shared/Banner_Jingran.webp', weaponBannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg', predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
   // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used the wiki's
   // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt was a
@@ -971,6 +974,11 @@ CHARACTER_THEMES.sort((a, b) => {
 // pinned here too rather than joining the sorted list above with a banner
 // that isn't really hers alone.
 CHARACTER_THEMES.unshift({ id: 'qingxiao', name: 'Qingxiao', element: 'Aero', bannerArt: './banners/_shared/8nvgqZKC-e7478-17840855867105-1920.jpg', pos: { header: '50% 31%', nav: '50% 31%', bg: '60% 50%' } });
+// Jingran now has his own solo splash art (Banner_Jingran.webp, same asset used for
+// the v3.6-p2 convene banner above), so unlike Qingxiao he could join the sorted list
+// on that basis alone — but he's pinned here instead, between Hsin and Qingxiao, per
+// explicit request.
+CHARACTER_THEMES.unshift({ id: 'jingran', name: 'Jingran', element: 'Fusion', bannerArt: './banners/_shared/Banner_Jingran.webp', pos: { header: '50% 30%', nav: '50% 30%', bg: '60% 50%' } });
 // Hsin isn't released yet — no CHARACTER_DATA/RELEASE_ORDER entry to sort her
 // by rarity/release order like every other theme above (and she doesn't get
 // a fabricated one here just to satisfy that sort — CHARACTER_DATA feeds
