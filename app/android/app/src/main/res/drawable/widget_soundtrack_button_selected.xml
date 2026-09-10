@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Selected overlay for the Frequency Cassette widget's Loop/Shuffle toggles — same fill/
+     stroke treatment as widget_target_selected_emerald.xml, but with a much smaller corner
+     radius. That shared drawable's 10dp radius reads fine on the wider cells it was built
+     for (CalculatorWidget's "Both" choice), but on this widget's much narrower button cells
+     a 10dp radius is a large fraction of the cell's own width, rendering as an oval/pill that
+     visibly overhangs the real photographed button's actual rectangular face — direct user
+     report 2026-09-10 ("the icon zone doesn't follow the button shape"). A dedicated
+     drawable (not a shared-radius edit) since widget_calculator.xml still needs the original
+     wider radius on its own wider cell. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#2e22c55e" />
+    <stroke android:width="1.5dp" android:color="#b322c55e" />
+    <corners android:radius="3dp" />
+</shape>
