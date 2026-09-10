@@ -69,6 +69,9 @@ final class SoundtrackTracks {
     static final boolean DEFAULT_LOOP = true; // matches this widget's original always-loop behavior
     static final String PREF_SHUFFLE_KEY = "widget_soundtrack_shuffle";
     static final boolean DEFAULT_SHUFFLE = false;
+    // Ticker scroll position for a title too long to fit the normal layout's title box —
+    // see SoundtrackPlaybackService's scroll ticker and SoundtrackWidget.buildTickerText().
+    static final String PREF_SCROLL_OFFSET_KEY = "widget_soundtrack_scroll_offset";
 
     private SoundtrackTracks() {}
 

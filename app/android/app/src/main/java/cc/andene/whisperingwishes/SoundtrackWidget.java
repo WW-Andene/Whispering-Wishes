@@ -130,8 +130,15 @@ public class SoundtrackWidget extends AppWidgetProvider {
         boolean shuffle = prefs.getBoolean(SoundtrackTracks.PREF_SHUFFLE_KEY, SoundtrackTracks.DEFAULT_SHUFFLE);
         SoundtrackTracks.Track track = SoundtrackTracks.byKey(trackKey);
         String trackLabel = context.getString(track.labelResId);
+        int scrollOffset = prefs.getInt(SoundtrackTracks.PREF_SCROLL_OFFSET_KEY, 0);
 
-        renderControls(context, views, appWidgetId, NORMAL_IDS, trackLabel, playing, looping, shuffle);
+        // Only the normal (photo-mapped) title box is narrow enough to need scrolling — see
+        // buildTickerText()'s own header. The compact row's title has its own flexible-weight
+        // TextView (fills whatever space is left next to the fixed-dp icons) and already
+        // handles a long label the ordinary way (maxLines=1 + ellipsize=end), so it keeps the
+        // plain label untouched.
+        String tickerLabel = buildTickerText(trackLabel, scrollOffset, playing);
+        renderControls(context, views, appWidgetId, NORMAL_IDS, tickerLabel, playing, looping, shuffle);
         renderControls(context, views, appWidgetId, COMPACT_IDS, trackLabel, playing, looping, shuffle);
 
         // No per-widget-size crop/round-corners pass — see the file header's own explanation
@@ -158,6 +165,33 @@ public class SoundtrackWidget extends AppWidgetProvider {
         views.setViewVisibility(R.id.widget_soundtrack_content_compact, compact ? View.VISIBLE : View.GONE);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);
+    }
+
+    // Ticker window for the normal layout's title box — direct user request 2026-09-10 ("can
+    // the title slowly move to the left when playing like real player?"). RemoteViews text has
+    // no native way to animate reliably in a home-screen widget (real marquee ellipsize only
+    // scrolls once the view has focus, which a widget host never grants — so
+    // widget_soundtrack_track_name_text also sets those attributes as a free extra, but they
+    // are not what actually moves this text). This instead returns a fixed-width WINDOW into
+    // the label, shifted by one character each time SoundtrackPlaybackService's scroll ticker
+    // calls requestUpdate() — a plain periodic text change, not an animation, so it works on
+    // every launcher the same way any other widget re-render does.
+    //
+    // 16, not a round/guessed number — checked by rendering real 12sp-bold text at this box's
+    // actual measured pixel width (873px in the source photo's own coordinate space) with a
+    // PIL proxy font: 16 characters (819px) fits with margin, 17 (875px) already overflows.
+    // RemoteViews itself can't measure real rendered text width, so this constant has to be
+    // picked conservatively up front rather than computed at render time.
+    private static final int TICKER_VISIBLE_CHARS = 16;
+    private static final String TICKER_SEPARATOR = "     •     ";
+
+    private static String buildTickerText(String label, int scrollOffset, boolean playing) {
+        if (!playing || label.length() <= TICKER_VISIBLE_CHARS) return label;
+        String loop = label + TICKER_SEPARATOR;
+        int period = loop.length();
+        int start = scrollOffset % period;
+        StringBuilder doubled = new StringBuilder(loop).append(loop); // covers any wrap-around window
+        return doubled.substring(start, start + TICKER_VISIBLE_CHARS);
     }
 
     private void renderControls(Context context, RemoteViews views, int appWidgetId, ControlIds ids,

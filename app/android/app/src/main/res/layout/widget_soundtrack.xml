@@ -109,48 +109,72 @@
              (still bold, still legible, needs a shorter cell to render without clipping) and
              sized the cell to the clear band itself: 73/8/19 vertical, 47/34/19 horizontal
              (horizontal unchanged from the panel measurement — only the vertical band was
-             ever the problem). -->
+             ever the problem).
+
+             Fifth round: that "white drawer panel" the fourth round found was actually the
+             thin DIAGONAL scrub-bar ledge, not a real flat panel — a rectangular weighted box
+             can never cleanly fit a tapering diagonal shape, which is why every attempt to
+             land fully on it kept overhanging onto the reel art or the button row. The real
+             flat panel is the bigger rectangular slab directly ABOVE that ledge (it has its
+             own faint printed placeholder microtext near its top, visible in the source
+             photo) — found by rendering candidate boxes directly onto the source photo and
+             checking them against it, not by re-deriving fractions from another screenshot.
+             Confirmed edges via sharp seam/color-transition scans on the real photo: panel
+             spans x 38.2-86.65% / y 41.3-69.8%. Final box sits in the clear area below that
+             panel's own microtext and is centered on the panel's true seam-measured center
+             (62.4% horizontal) rather than an approximate one: 52/13/35 vertical, 39/47/14
+             horizontal. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="73" />
+            android:layout_weight="52" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="8"
+            android:layout_weight="13"
             android:orientation="horizontal"
             android:clipChildren="false">
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="47" />
+                android:layout_weight="39" />
             <LinearLayout
                 android:id="@+id/widget_soundtrack_track_name"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="34"
+                android:layout_weight="47"
                 android:gravity="center"
                 android:background="@drawable/widget_title_backing_black25"
                 android:clipChildren="false">
+                <!-- ellipsize/marqueeRepeatLimit/focusable* below are the NATIVE Android
+                     marquee attempt — direct user request ("both") alongside the manual
+                     ticker SoundtrackWidget.buildTickerText() actually drives. Real marquee
+                     only animates once a view has focus, which a home-screen widget host
+                     never grants, so this is expected to sit inert in practice; it's free to
+                     leave in and does nothing if it doesn't fire. -->
                 <TextView
                     android:id="@+id/widget_soundtrack_track_name_text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="#3D2817"
                     android:textSize="12sp"
+                    android:singleLine="true"
+                    android:ellipsize="marquee"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:textStyle="bold"
-                    android:maxLines="1"
-                    android:ellipsize="end" />
+                    android:maxLines="1" />
             </LinearLayout>
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="19" />
+                android:layout_weight="14" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="19" />
+            android:layout_weight="35" />
 
         <!-- Row 2/3 (vertical weights 81/13/6 ≈ photo's y 824-957 of 1017) — the 4 real
              physical button labels, horizontal weights 33/11/12/14/13/17 ≈ their real x
