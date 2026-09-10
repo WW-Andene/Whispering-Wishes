@@ -227,7 +227,7 @@ const CHARACTER_DATA = {
     // SKILL_MULTIPLIERS['Jianxin']'s own row note and CHARACTER_ROTATIONS['Jianxin']'s own step note
     // (2026-09-03 pass) — the dump's own kit text (line 55) is explicit: "hold Heavy Attack to cast
     // Primordial Chi Spiral." This desc field was missed by that earlier fix. Corrected.
-    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who builds Chi from Basic Attacks and skills, then channels it into a defensive stance that ends in a large HP-scaling shield healing the active Resonator over time; her Liberation groups enemies for an AoE burst, and her Outro buffs the incoming ally\'s Liberation DMG.',
+    desc: 'Guiding Starlance, a Taoist monk and successor of Fengyiquan who has dedicated her life to mastering the ultimate martial art — with the power to harness and transform environmental Chi, she creates protective barriers that purify both body and mind. Shield support/sub-DPS who builds Chi from Basic Attacks and skills, then holds Heavy Attack to cast Primordial Chi Spiral and enter a defensive stance ending in a large HP-scaling shield that heals the active Resonator over time; her Liberation groups enemies for an AoE burst, and her Outro buffs the incoming ally\'s Liberation DMG.',
     skills: ['Fengyiquan', 'Calming Air', 'Primordial Chi Spiral', 'Purification Force Field'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Whisperin Core', specialty: 'Lanternberry' },
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Cadence' },
