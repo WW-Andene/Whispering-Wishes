@@ -67,23 +67,30 @@ public class SoundtrackWidget extends AppWidgetProvider {
         // that's a weighted-positioner LinearLayout wrapping the actual TextView
         // (trackNameText), since setTextViewText() requires a TextView target specifically;
         // in the compact block they're the same plain TextView (no wrapper needed there).
-        final int trackName, trackNameText, play, prev, next, loop, loopSelected, shuffle, shuffleSelected;
-        ControlIds(int trackName, int trackNameText, int play, int prev, int next, int loop, int loopSelected, int shuffle, int shuffleSelected) {
-            this.trackName = trackName; this.trackNameText = trackNameText; this.play = play; this.prev = prev;
+        // playIcon is likewise separate from play (added 2026-09-10, icon-rendering fix): in
+        // the normal block, `play` is now an invisible tap-target ImageButton with no src at
+        // all, and playIcon is the sibling fixed-22dp ImageView that actually shows the
+        // playing/paused glyph (see widget_soundtrack.xml's own header for why) — in the
+        // compact block they're the same ImageButton (its icon was never squished, no split
+        // needed there).
+        final int trackName, trackNameText, play, playIcon, prev, next, loop, loopSelected, shuffle, shuffleSelected;
+        ControlIds(int trackName, int trackNameText, int play, int playIcon, int prev, int next, int loop, int loopSelected, int shuffle, int shuffleSelected) {
+            this.trackName = trackName; this.trackNameText = trackNameText; this.play = play; this.playIcon = playIcon; this.prev = prev;
             this.next = next; this.loop = loop; this.loopSelected = loopSelected;
             this.shuffle = shuffle; this.shuffleSelected = shuffleSelected;
         }
     }
 
     private static final ControlIds NORMAL_IDS = new ControlIds(
-        R.id.widget_soundtrack_track_name, R.id.widget_soundtrack_track_name_text, R.id.widget_soundtrack_play, R.id.widget_soundtrack_prev,
+        R.id.widget_soundtrack_track_name, R.id.widget_soundtrack_track_name_text, R.id.widget_soundtrack_play, R.id.widget_soundtrack_play_icon, R.id.widget_soundtrack_prev,
         R.id.widget_soundtrack_next, R.id.widget_soundtrack_loop, R.id.widget_soundtrack_loop_selected,
         R.id.widget_soundtrack_shuffle, R.id.widget_soundtrack_shuffle_selected);
-    // trackName and trackNameText are the SAME id here — the compact block's track name is a
-    // single plain TextView (no separate click-target wrapper the way the photo-mapped normal
-    // block needs), so it serves as both the click target and the setTextViewText() target.
+    // trackName/trackNameText and play/playIcon are each the SAME id here — the compact
+    // block's track name is a single plain TextView, and its play button's icon was never
+    // squished (fixed dp size, not a weighted cell), so neither needed the normal block's
+    // split.
     private static final ControlIds COMPACT_IDS = new ControlIds(
-        R.id.widget_soundtrack_track_name_compact_text, R.id.widget_soundtrack_track_name_compact_text, R.id.widget_soundtrack_play_compact, R.id.widget_soundtrack_prev_compact,
+        R.id.widget_soundtrack_track_name_compact_text, R.id.widget_soundtrack_track_name_compact_text, R.id.widget_soundtrack_play_compact, R.id.widget_soundtrack_play_compact, R.id.widget_soundtrack_prev_compact,
         R.id.widget_soundtrack_next_compact, R.id.widget_soundtrack_loop_compact, R.id.widget_soundtrack_loop_selected_compact,
         R.id.widget_soundtrack_shuffle_compact, R.id.widget_soundtrack_shuffle_selected_compact);
 
@@ -151,7 +158,7 @@ public class SoundtrackWidget extends AppWidgetProvider {
     private void renderControls(Context context, RemoteViews views, int appWidgetId, ControlIds ids,
                                  String trackLabel, boolean playing, boolean looping, boolean shuffle) {
         views.setTextViewText(ids.trackNameText, trackLabel);
-        views.setImageViewResource(ids.play,
+        views.setImageViewResource(ids.playIcon,
             playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play);
         views.setContentDescription(ids.play,
             context.getString(playing ? R.string.widget_soundtrack_pause_aria : R.string.widget_soundtrack_play_aria));
