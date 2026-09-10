@@ -140,10 +140,21 @@
              further down) — see PullBubbleService... no, see the actual computation: this
              was a script, not hand math, specifically to avoid yet another mis-measured
              round on a widget that's already had five. -->
+        <!-- CORRECTED 2026-09-10: content_normal's direct vertical children were flattened
+             into ONE shared weightSum (Android sums all sibling weights when unset) —
+             52+13+35+81+13+6 = 200, not 100 — silently halving every intended percentage
+             below 50% and roughly doubling every one above it ever since round one. The
+             title and button rows were meant to each get their own scoped 100%, and
+             instead shared 200, which is why real renders never actually matched the
+             comments' stated percentages despite looking "close enough" to pass on a real
+             device. Verified by rendering candidate boxes onto the actual photo: the buggy
+             weights land nowhere near the real buttons/title panel; these corrected ones
+             (single flat list, genuinely summing to 100: 8/44/11/13/11/5/8) land exactly on
+             both. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="16" />
+            android:layout_weight="8" />
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -202,19 +213,14 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="29" />
+            android:layout_weight="13" />
 
-        <!-- Row 2/3 (vertical weights 81/13/6 ≈ photo's y 824-957 of 1017) — the 4 real
-             physical button labels, horizontal weights 33/11/12/14/13/17 ≈ their real x
-             613/819/1047/1311/1552 of 1858. Left to right: Prev, Next, Loop, Play/Stop.
-             Sixth-round shadow-canvas remap (see title row's own comment above) applied here
-             too: vertical 68/11/5 (was 81/13/6, no separate leading/trailing pad needed here
-             since this group sits between two already-padded neighbors), horizontal
-             5/29/10/11/13/12/15/5 (was 33/11/12/14/13/17, with new leading/trailing 5s). -->
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="68" />
+        <!-- Row 2/3 — the 4 real physical button labels, horizontal weights
+             5/29/10/11/13/12/15/5 (was 33/11/12/14/13/17, remapped for the shadow canvas
+             per this file's earlier comment; verified against real pixel translation).
+             Left to right: Prev, Next, Loop, Play/Stop. Vertical position is this single
+             LinearLayout's own weight=11 within content_normal's now-CORRECTED flat
+             8/44/11/13/11/5/8 (wsum=100) — see that structural fix noted further up. -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -337,7 +343,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="16" />
+            android:layout_weight="8" />
     </LinearLayout>
 
     <!-- Shuffle toggle, moved into the middle of the yellow diagram panel on the left
