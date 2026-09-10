@@ -216,6 +216,13 @@ function PlannerTab({
       else if (isWeap) { goalCopies = Math.max(1, goalStdWeapCopiesField || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
       else { goalCopies = Math.max(1, goalStdCharCopiesField || 1, goalStdWeapCopiesField || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
     }
+    // Direct user report: the Multiplier dropdown fed into the Target pull-count formula
+    // (goalPulls × goalCopies × goalModifier) but NOT into the success-rate tiles, which read
+    // charCopies/weapCopies directly — so "×3" on the Multiplier moved the Target bar to 720
+    // pulls while the success-rate tiles still modeled only 1 copy. effModifier folds the
+    // Multiplier into the copies actually simulated by goalStats() below, so both numbers are
+    // always describing the same goal (N copies × the Multiplier), never two different ones.
+    const effModifier = Math.max(1, +state.planner.goalModifier || 1);
 
     // Tides (Radiant/Forging/Lustrous) relevant to the GOAL's own banner selection — the
     // resource AMOUNTS are still shared/read from state.calc (only the target decoupled), but
@@ -245,10 +252,10 @@ function PlannerTab({
       allocPriority: linked ? state.calc.allocPriority : 50,
       stdAllocPriority: linked ? state.calc.stdAllocPriority : 50,
       bannerCategory: goalBannerCategoryField, selectedBanner: goalSelectedBannerField,
-      charCopies: goalCharCopiesField, charPity: linked ? state.calc.charPity : state.planner.goalCharPity, charGuaranteed: linked ? state.calc.charGuaranteed : state.planner.goalCharGuaranteed,
-      weapCopies: goalWeapCopiesField, weapPity: linked ? state.calc.weapPity : state.planner.goalWeapPity,
-      stdCharCopies: goalStdCharCopiesField, stdCharPity: linked ? state.calc.stdCharPity : state.planner.goalStdCharPity,
-      stdWeapCopies: goalStdWeapCopiesField, stdWeapPity: linked ? state.calc.stdWeapPity : state.planner.goalStdWeapPity,
+      charCopies: (goalCharCopiesField || 1) * effModifier, charPity: linked ? state.calc.charPity : state.planner.goalCharPity, charGuaranteed: linked ? state.calc.charGuaranteed : state.planner.goalCharGuaranteed,
+      weapCopies: (goalWeapCopiesField || 1) * effModifier, weapPity: linked ? state.calc.weapPity : state.planner.goalWeapPity,
+      stdCharCopies: (goalStdCharCopiesField || 1) * effModifier, stdCharPity: linked ? state.calc.stdCharPity : state.planner.goalStdCharPity,
+      stdWeapCopies: (goalStdWeapCopiesField || 1) * effModifier, stdWeapPity: linked ? state.calc.stdWeapPity : state.planner.goalStdWeapPity,
     };
     const nowStats = goalStats(goalCalcLike);
     const endStats = goalStats({ ...goalCalcLike, astrite: totalAstriteByEnd, lunite: 0 });
