@@ -184,7 +184,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
       {enemyTargetModal}
     </>
   );
-  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawStatScore, soloDps, teamDps, synergyUplift, dmgSources, warnings, memberDps, rotationTimeline, rotTime } = stats;
+  const { members, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, atkPct, defShred, resShred, defIgnore, avgCrit, score, rawStatScore, teamDps, dmgSources, warnings, memberDps, rotationTimeline, rotTime } = stats;
   const roleColors = { 'Main DPS': { text: 'text-red-400', bg: 'bg-red-500/10', border: 'border-red-500/30' }, 'Sub DPS': { text: 'text-orange-400', bg: 'bg-orange-500/10', border: 'border-orange-500/30' }, Support: { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30' }, Healer: { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30' } };
 
   return (
@@ -731,13 +731,37 @@ const DamageCalculator = forwardRef(function DamageCalculator({
               </div>
             )}
 
-            {/* DPS Tiers */}
+            {/* DPS Tiers — each tile compares against a clearly different, named baseline: raw
+                stats alone -> Main DPS's own buffed output -> the whole team's real DPS. Previously
+                this section had no heading (confusing directly under "Enemy Debuffs" above) and
+                "Solo DPS"/"Synergy Uplift" silently compared TEAM-WIDE totals (including teammates'
+                own large unbuffed damage) against each other, so a Main DPS getting buffed +40% could
+                still show a misleadingly tiny team-wide "+11%" — reworked 2026-09-10 per direct user
+                report that the numbers "made no sense" relative to what the engine actually computes. */}
+            <div className="kuro-label">{t('teams.damageCalc.damageOutput')}</div>
             <div className="grid grid-cols-2 gap-2">
               <div className="kuro-stat p-2 text-center col-span-2">
                 <div className="text-gray-400 text-sm">{t('teams.damageCalc.rawStatScore')}</div>
                 <div className="text-2xl font-bold text-white kuro-number">{formatNumber(rawStatScore)}</div>
                 <div className="text-gray-500 text-sm">{t('teams.damageCalc.rawStatScoreDetail')}</div>
               </div>
+              {(() => {
+                // Main DPS Buff Uplift: score (their own real stat panel, WITH the full simulated
+                // rotation and every team/self buff it receives) vs. rawStatScore (the SAME
+                // character's base+gear+sequence with only unconditional passives, no rotation) —
+                // both already Main-DPS-only, so this answers "how much more does MY main DPS deal
+                // with the full rotation/team active" instead of diluting it across the whole team's
+                // (including teammates' own large, buff-independent) damage the way the old
+                // team-total-based Synergy Uplift did.
+                const buffUplift = rawStatScore > 0 ? Math.round((score / rawStatScore - 1) * 100) : 0;
+                return (
+                  <div className={`kuro-stat ${buffUplift >= 80 ? 'kuro-stat-emerald' : buffUplift >= 40 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center col-span-2`}>
+                    <div className="text-gray-400 text-sm">{t('teams.damageCalc.mainDpsBuffUplift')}</div>
+                    <div className={`text-2xl font-bold kuro-number ${buffUplift >= 80 ? 'text-emerald-400 synergy-high' : buffUplift >= 40 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${buffUplift >= 80 ? 'rgba(34,197,94,0.5)' : buffUplift >= 40 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>+{buffUplift}%</div>
+                    <div className="text-gray-500 text-sm">{t('teams.damageCalc.mainDpsBuffUpliftDetail', { name: mainDps?.name })}</div>
+                  </div>
+                );
+              })()}
               <div className="kuro-stat kuro-stat-cyan p-2 text-center col-span-2">
                 <div className="text-gray-400 text-sm">{t('teams.damageCalc.teamDps')}</div>
                 <div className="text-2xl font-bold text-cyan-400 kuro-number kuro-tshadow-glow-cyan">{formatNumber(teamDps)}/s</div>
@@ -756,16 +780,6 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                   </div>
                 );
               })()}
-              <div className="kuro-stat kuro-stat-emerald p-2 text-center">
-                <div className="text-gray-400 text-sm">{t('teams.damageCalc.soloDps')}</div>
-                <div className="text-lg font-bold text-emerald-400 kuro-number kuro-tshadow-glow-emerald">{formatNumber(soloDps)}/s</div>
-                <div className="text-gray-500 text-sm">{t('teams.damageCalc.soloDpsDetail')}</div>
-              </div>
-              <div className={`kuro-stat ${synergyUplift >= 80 ? 'kuro-stat-emerald' : synergyUplift >= 40 ? 'kuro-stat-gold' : 'kuro-stat-red'} p-2 text-center`}>
-                <div className="text-gray-400 text-sm">{t('teams.damageCalc.synergyUplift')}</div>
-                <div className={`text-lg font-bold kuro-number ${synergyUplift >= 80 ? 'text-emerald-400 synergy-high' : synergyUplift >= 40 ? 'text-amber-400' : 'text-red-400'}`} style={{ textShadow: `0 0 10px ${synergyUplift >= 80 ? 'rgba(34,197,94,0.5)' : synergyUplift >= 40 ? 'rgba(245,158,11,0.5)' : 'rgba(239,68,68,0.5)'}` }}>+{synergyUplift}%</div>
-                <div className="text-gray-500 text-sm">{t('teams.damageCalc.synergyUpliftDetail')}</div>
-              </div>
             </div>
 
             {/* DPS Breakdown per character */}
