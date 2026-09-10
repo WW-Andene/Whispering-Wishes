@@ -107,7 +107,9 @@ const BANNER_HISTORY = [
   // lands the real end between 2026-09-28T21:40Z and 2026-09-29T21:40Z, which matches
   // 2026-09-29T08:00:00Z (this file's own confirmed 08:00 UTC version-boundary convention —
   // see EVENTS.ifDreamsStillReverberate's already-correct currentEnd of the same date) exactly.
-  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-29', bannerArt: './banners/_shared/Banner_Jingran.webp', weaponBannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg', predicted: true },
+  // Direct user request 2026-09-10: character/weapon featured 4★s — see getCurrentBannerAuto's
+  // own comment for why these live here now (previously silently inherited phase-1's list).
+  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-29', bannerArt: './banners/_shared/Banner_Jingran.webp', weaponBannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg', characterFeatured4Stars: ['Yuanwu', 'Mortefi', 'Aalto'], weaponFeatured4Stars: ['Discord', 'Novaburst', 'Waning Redshift'], predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
   // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used the wiki's
   // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt was a
@@ -1034,6 +1036,7 @@ const WEAPON_THEMES = [
   { id: 'stellar-symphony',      name: 'Stellar Symphony',      bannerArt: './banners/_shared/DPBF1H0Q-stellar-symphony-banner.jpg' },
   { id: 'stringmaster',          name: 'Stringmaster',          bannerArt: './banners/_shared/zhnR2MRT-stringmaster-banner.jpg' },
   { id: 'the-last-dance',        name: 'The Last Dance',        bannerArt: './banners/_shared/k20XT27x-the-last-dance-banner.jpg' },
+  { id: 'thousandfold-deliverance', name: 'Thousandfold Deliverance', bannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg' }, // Jingran
   { id: 'thunderflare-dominion', name: 'Thunderflare Dominion', bannerArt: './banners/_shared/8QxTXtL-thunderflare-dominion-banner.jpg' },
   { id: 'tragicomedy',           name: 'Tragicomedy',           bannerArt: './banners/_shared/xKwWBBBZ-tragicomedy-banner.jpg' },
   { id: 'unflickering-valor',    name: 'Unflickering Valor',    bannerArt: './banners/_shared/5XP6J2XM-unflickering-valor-banner.jpg' },
@@ -1513,6 +1516,15 @@ export function getCurrentBannerAuto(now = Date.now()) {
     }
     return false;
   };
+  // Direct user correction 2026-09-10: this always fell back to CURRENT_BANNERS' own (phase-1)
+  // featured4Stars regardless of which phase was actually active — BANNER_HISTORY entries never
+  // carried their own 4★ data at all, so every auto-derived phase silently inherited phase-1's
+  // list. v3.6-p2's real 4★s are Yuanwu/Mortefi/Aalto (character banner) and Discord/Novaburst/
+  // Waning Redshift (weapon banner) — confirmed by the user, distinct from phase-1's Baizhi/
+  // Yangyang/Sanhua and Variation/Endless Collapse/Relativistic Jet. Reads the active
+  // BANNER_HISTORY entry's own characterFeatured4Stars/weaponFeatured4Stars when present, only
+  // falling back to CURRENT_BANNERS' phase-1 list for an entry that hasn't been given its own
+  // (matching the previous, always-wrong-past-phase-1 behavior for those).
   const characters = active.characters.map(name => {
     const cd = CHARACTER_DATA[name] || {};
     const theme = CHARACTER_THEMES.find(t => t.name === name);
@@ -1523,7 +1535,7 @@ export function getCurrentBannerAuto(now = Date.now()) {
       element: cd.element || '',
       weaponType: cd.weapon || '',
       isNew: isFirstAppearance(name),
-      featured4Stars: CURRENT_BANNERS.characters[0]?.featured4Stars || [],
+      featured4Stars: active.characterFeatured4Stars || CURRENT_BANNERS.characters[0]?.featured4Stars || [],
       imageUrl: theme?.bannerArt || active.bannerArt || PLACEHOLDER_IMAGE,
       ...(theme?.pos?.header ? { imagePosition: theme.pos.header } : {}),
     };
@@ -1539,7 +1551,7 @@ export function getCurrentBannerAuto(now = Date.now()) {
       forCharacter,
       element: cd.element || '',
       isNew: isFirstAppearance(forCharacter),
-      featured4Stars: CURRENT_BANNERS.weapons[0]?.featured4Stars || [],
+      featured4Stars: active.weaponFeatured4Stars || CURRENT_BANNERS.weapons[0]?.featured4Stars || [],
       imageUrl: theme?.bannerArt || active.weaponBannerArt || PLACEHOLDER_IMAGE,
     };
   });
