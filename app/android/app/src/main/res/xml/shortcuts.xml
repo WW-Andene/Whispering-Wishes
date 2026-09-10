@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Home-screen long-press App Shortcuts. Both use @mipmap/ic_launcher_round rather than
-     @mipmap/ic_launcher — a static XML-declared shortcut's icon isn't reliably re-masked
-     into the launcher's own adaptive shape the way a dynamic ShortcutManager icon is on
-     every launcher, so pointing at the launcher's own SQUARE mipmap left these rendering
-     with visibly square corners in the long-press menu; ic_launcher_round is the
-     pre-clipped circular variant Android Studio's icon tooling already generates
-     alongside it, and needs no new art. -->
+<!-- Home-screen long-press App Shortcuts. Quick Calc keeps @mipmap/ic_launcher_round (no
+     distinct art of its own); the other two use per-shortcut mipmap sets
+     (ic_shortcut_pocket_convene, ic_shortcut_cassette) generated directly from the app's
+     existing Radiant Tide header emblem (app-title-icon/WW-Radiant-Tide.png.png) and the
+     Frequency Cassette widget's own product photo (widgets/cassette-widget.png) — plain
+     uniform-scaled resize into each density bucket, no crop/mask/effects, so the launcher's
+     long-press menu shows the actual icon rather than the generic app icon for these two. -->
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Toggles the floating pull bubble on/off via PullBubbleShortcutActivity's trampoline,
          without needing to open the app or find PulseBannerWidget's own toggle button first. -->
     <shortcut
         android:shortcutId="toggle_pull_bubble"
         android:enabled="true"
-        android:icon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/ic_shortcut_pocket_convene"
         android:shortcutShortLabel="@string/pull_bubble_shortcut_short_label"
         android:shortcutLongLabel="@string/pull_bubble_shortcut_long_label">
         <intent
@@ -42,7 +42,7 @@
     <shortcut
         android:shortcutId="quick_soundtrack"
         android:enabled="true"
-        android:icon="@mipmap/ic_launcher_round"
+        android:icon="@mipmap/ic_shortcut_cassette"
         android:shortcutShortLabel="@string/quick_soundtrack_shortcut_short_label"
         android:shortcutLongLabel="@string/quick_soundtrack_shortcut_long_label">
         <intent

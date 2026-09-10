@@ -5,52 +5,52 @@
      Convene) via SoundtrackPlaybackService, a genuine foreground MediaPlayer service so
      playback survives the widget/app not being on screen.
 
-     Restyled a second time the same day: the user supplied an actual product photo
-     (Cassette_Widget.png, alpha-cutout around the device's own irregular silhouette —
-     bundled as a Capacitor web asset at public/widgets/cassette-widget.png, decoded/scaled
-     by SoundtrackWidget.java the same way the old "Log 2.0" background art was) and asked
-     for the widget to look like THAT specific device, not the shape-drawable
-     reinterpretation from the first pass (that attempt's widget_cassette_background/
-     widget_cassette_screen_bg/ic_cassette_reel/ic_cassette_waveform/
-     widget_cassette_button_bg/widget_cassette_play_bg are all deleted — the real photo
-     supersedes every one of them, and layering the old hand-drawn reel/waveform/screen-panel
-     decorations on TOP of a real photo that already has its own reel/screen/scrub-bar art
-     would look cluttered, not additive).
+     Restyled to use the user's own product photo (public/widgets/cassette-widget.png,
+     alpha-cutout around the device's own irregular silhouette, decoded by
+     SoundtrackWidget.java) rather than a hand-drawn reinterpretation — see that class's own
+     header for why decodeAsset + this file's scaleType="fitXY" (not fitCenter/centerCrop) is
+     required for the fractional overlay positions below to track the photo's real button
+     positions at any widget size.
 
-     The root background is genuinely transparent now (@android:color/transparent) — the
-     photo's own alpha cutout IS the widget's visible edge, matching the "uneven border" the
-     user asked about (a rectangle can't do that; an alpha-cutout silhouette always could).
-
-     Track name text and the 4 real transport buttons are positioned as FRACTIONS of the
-     photo's own pixel layout (measured directly against the 1840×1050 source: the blank
-     cream panel at x 700-1550/y 430-520 for text, the 4 physical button labels at
-     x 596-1526/y 860-980 for controls), built from nested weighted LinearLayouts (RemoteViews
+     Track name text and the transport controls are positioned as FRACTIONS of the photo's
+     own measured pixel layout (currently a 1858×1017 source: the blank cream panel inside
+     the tape-reel window at x 725-1580/y 417-519 for text; the 4 physical button labels at
+     x 613-1552/y 824-957 for controls; the yellow diagram panel at roughly x 204-501/
+     y 224-596 for the shuffle toggle), built from nested weighted LinearLayouts (RemoteViews
      has no percentage-margin attribute, so weight-sum spacers are the standard substitute).
-     This holds up under resize ONLY because the background ImageView uses scaleType="fitXY"
-     (stretches non-uniformly to exactly fill the widget) rather than fitCenter/centerCrop —
-     both axes scale by the exact same widget-width/height factors the fractional weights are
-     already expressed in, so the overlay tracks the photo's real button positions at any
-     size. A uniform-scale mode would NOT compose with this: it'd letterbox and drift the
-     overlay off the real buttons as soon as the widget's cell aspect ratio differs from the
-     photo's own 1840:1050.
+     Re-measured and the button mapping corrected 2026-09-10 per direct user review of a
+     debug overlay image (see PHASE/commit history — this is the SECOND numeric pass; the
+     first pass's positions were confirmed accurate by the same overlay method, but its
+     button-to-action mapping was wrong) — the real mapping, left to right on the 4 physical
+     buttons: Prev, Next, Loop, Play/Stop. Shuffle didn't fit anywhere in that row and was
+     moved into the middle of the yellow diagram panel on the left instead, per the user's
+     own direction.
 
-     Only 4 real button positions exist in the photo, but the kit has 5 transport actions
-     (shuffle/prev/play/next/loop) — mapped prev/play/next onto the 3 middle real buttons
-     (the ones a "transport row" reads as), the left real button onto loop (closest visual
-     fit — Off-Tune... no, just the nearest slot), and shuffle onto the round dial in the
-     photo's top-right corner (visually already knob-shaped, a reasonable second control
-     zone) rather than dropping it. This mapping is a judgment call, not a measured fact the
-     way the button/text positions above are — flagged here for anyone tuning it further.
+     Icon rendering fix (same day, direct user report of "glitched or invisible" button
+     icons): every control below except Play/Stop now renders NO icon at all — just an
+     invisible tap zone over the photo's own already-printed button face, plus the existing
+     selected-overlay tint for Loop/Shuffle's on/off state. Root cause: a button's weighted
+     cell height is a FRACTION OF THE WIDGET'S OWN HEIGHT (~13% for the button row), and
+     since home-screen widgets are typically wide-and-short (e.g. a 3×2-cell placement is
+     roughly 250×110dp), that fraction can collapse to under 15dp tall — an icon with
+     scaleType="fitCenter" inside a cell that short scales down to near-nothing, which is
+     what "invisible" was. Play/Stop is the one control that genuinely needs a live icon (it
+     has to show playing vs paused, which the static photo can't), so it keeps one — but
+     wrapped in its own FIXED-size inner box (22dp square, gravity="center") instead of
+     filling the outer weighted cell directly, so its aspect ratio can never collapse no
+     matter how short that outer cell gets.
 
-     TWO alternate content blocks, not one — widget_soundtrack_content_normal (the
-     photo-mapped layout above) reads fine down to 2 cells tall, but doesn't fit in a
-     1-cell-tall placement at all (the photo would be squeezed into an unrecognizable
-     sliver); widget_soundtrack_content_compact falls back to a plain flat row — text +
-     small icon buttons, no photo-position mapping attempted — which SoundtrackWidget.java
-     switches to below its own height threshold, same compact-mode pattern
-     PulseBannerWidget.java already uses for its own short placements. Both blocks' data/
-     PendingIntents are applied identically every render; only whichever one is actually
-     visible matters.
+     The root background is genuinely transparent (@android:color/transparent) — the photo's
+     own alpha cutout is the widget's real visible edge.
+
+     TWO alternate content blocks — widget_soundtrack_content_normal (the photo-mapped
+     layout above) reads fine down to 2 cells tall, but doesn't fit in a 1-cell-tall
+     placement at all (the photo would be squeezed into an unrecognizable sliver);
+     widget_soundtrack_content_compact falls back to a plain flat row — text + small FIXED-dp
+     icon buttons (not weighted, so they don't have this same squish problem at all) — which
+     SoundtrackWidget.java switches to below its own height threshold, same compact-mode
+     pattern PulseBannerWidget.java already uses. Both blocks' data/PendingIntents are
+     applied identically every render; only whichever one is actually visible matters.
 
      No plain <View> anywhere (RemoteViews' allowlist doesn't include it) — spacer/positioner
      layers use empty FrameLayouts instead. -->
@@ -73,27 +73,33 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Row 1/3 (vertical weights 41/9/50 ≈ the photo's y 430-520 of 1050) — track name,
-             centered in the cream panel right of the tape reels. Tap to cycle to the next
-             track, same interaction as the Calculator widget's own copy-target pill. -->
+        <!-- Row 1/3 — track name. Re-measured 2026-09-10 directly against a real-device
+             screenshot (not just the source photo) after a user report that the title
+             rendered cut/overlapping the reel art: pixel-scanning that screenshot for the
+             actual dark-text row found "Convene" sitting at ~24-33% of the widget's height,
+             not the 41-51% these weights previously computed from the source photo's blank
+             panel alone — that photo-only measurement never actually confirmed where the
+             TextView renders relative to the widget's real total height, only that the panel
+             existed at that fraction of the photo. Weights below (24/10/66 vertical,
+             35/45/20 horizontal) are fit to the screenshot's measured text position instead. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="41" />
+            android:layout_weight="24" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="9"
+            android:layout_weight="10"
             android:orientation="horizontal">
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="38" />
+                android:layout_weight="35" />
             <LinearLayout
                 android:id="@+id/widget_soundtrack_track_name"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="46"
+                android:layout_weight="45"
                 android:gravity="center">
                 <TextView
                     android:id="@+id/widget_soundtrack_track_name_text"
@@ -108,36 +114,81 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="16" />
+                android:layout_weight="20" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="50" />
+            android:layout_weight="66" />
 
-        <!-- Row 2/3 (vertical weights 82/11/7 ≈ the photo's y 860-980 of 1050) — the 4 real
-             physical button labels, horizontal weights 32/11/12/14/13/18 ≈ their real x
-             596/794/1022/1286/1526 of 1840. -->
+        <!-- Row 2/3 (vertical weights 81/13/6 ≈ photo's y 824-957 of 1017) — the 4 real
+             physical button labels, horizontal weights 33/11/12/14/13/17 ≈ their real x
+             613/819/1047/1311/1552 of 1858. Left to right: Prev, Next, Loop, Play/Stop. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="82" />
+            android:layout_weight="81" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="11"
+            android:layout_weight="13"
             android:orientation="horizontal">
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="32" />
-            <!-- Loop toggle on the leftmost real button (nearest available slot — see file
-                 header). Selected-state overlay: RemoteViews can't runtime-swap a view's own
-                 background, so the "on" highlight is a second view toggled by visibility. -->
+                android:layout_weight="33" />
+            <!-- Every control below uses the SAME fixed-size-icon-box pattern: a real icon in
+                 a FIXED dp square (layout_gravity="center"), not filling the outer weighted
+                 cell directly. The first icon pass (no icon at all, tap zone only over the
+                 photo's own printed — and, on a real device, hard-to-read — button face) fixed
+                 the collapse-to-invisible bug but over-corrected into controls with zero visual
+                 affordance; a user report of "buttons not visible enough" on 2026-09-10 is the
+                 same root cause from the other direction. This is the actual fix: a fixed-size
+                 icon can never be squashed by the outer cell's aspect ratio (the original bug),
+                 and unlike no icon at all, it's still visible against the photo. -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="11">
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_prev"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/widget_soundtrack_prev_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_media_previous"
+                    android:tint="#3D2817"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="12">
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_next"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/widget_soundtrack_next_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_media_next"
+                    android:tint="#3D2817"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+            <!-- Loop toggle. Selected-state overlay: RemoteViews can't runtime-swap a view's
+                 own background, so the "on" highlight is a second view toggled by visibility,
+                 layered under the fixed-size icon above. -->
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="14">
                 <FrameLayout
                     android:id="@+id/widget_soundtrack_loop_selected"
                     android:layout_width="match_parent"
@@ -149,78 +200,72 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
-                    android:src="@drawable/ic_loop_widget"
-                    android:scaleType="fitCenter"
-                    android:padding="6dp"
                     android:contentDescription="@string/widget_soundtrack_loop_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_loop_widget"
+                    android:contentDescription="@null" />
             </FrameLayout>
-            <ImageButton
-                android:id="@+id/widget_soundtrack_prev"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="12"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_media_previous"
-                android:tint="#3D2817"
-                android:scaleType="fitCenter"
-                android:padding="4dp"
-                android:contentDescription="@string/widget_soundtrack_prev_aria" />
-            <ImageButton
-                android:id="@+id/widget_soundtrack_play"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="14"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_media_play"
-                android:tint="#3D2817"
-                android:scaleType="fitCenter"
-                android:padding="4dp"
-                android:contentDescription="@string/widget_soundtrack_play_aria" />
-            <ImageButton
-                android:id="@+id/widget_soundtrack_next"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="13"
-                android:background="@android:color/transparent"
-                android:src="@android:drawable/ic_media_next"
-                android:tint="#3D2817"
-                android:scaleType="fitCenter"
-                android:padding="4dp"
-                android:contentDescription="@string/widget_soundtrack_next_aria" />
+            <!-- Play/Stop — same fixed-size pattern (22dp, slightly larger since it's the
+                 primary action and has to show playing vs paused, which the static photo
+                 can't). -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="18" />
+                android:layout_weight="13">
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_play"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/widget_soundtrack_play_aria" />
+                <ImageView
+                    android:id="@+id/widget_soundtrack_play_icon"
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:src="@android:drawable/ic_media_play"
+                    android:tint="#3D2817"
+                    android:contentDescription="@null" />
+            </FrameLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="17" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="7" />
+            android:layout_weight="6" />
     </LinearLayout>
 
-    <!-- Shuffle toggle on the photo's own round dial, top-right corner (horizontal weights
-         90/8/2 ≈ x 1650-1790 of 1840; vertical weights 9/23/68 ≈ y 90-330 of 1050) — see file
-         header for why shuffle didn't fit into the 4-button row. A SIBLING of
-         widget_soundtrack_content_normal (not nested inside it) only because it needed its
-         own independent weighted-positioner tree rooted at the full widget height rather than
-         the transport row's — SoundtrackWidget.java toggles this id's visibility in lockstep
-         with content_normal/content_compact so it doesn't float over the compact layout too. -->
+    <!-- Shuffle toggle, moved into the middle of the yellow diagram panel on the left
+         (horizontal weights 11/16/73 ≈ x 204-501 of 1858; vertical weights 22/37/41 ≈
+         y 224-596 of 1017) — per direct user direction (it didn't fit in the 4-button row).
+         A SIBLING of widget_soundtrack_content_normal (not nested inside it) since it needs
+         its own independent weighted-positioner tree rooted at the full widget height rather
+         than the transport row's — SoundtrackWidget.java toggles this id's visibility in
+         lockstep with content_normal/content_compact so it doesn't float over the compact
+         layout too. Same fixed-size-icon-box pattern as the transport row (see its own
+         comment) — a real icon, sized so it can't collapse. -->
     <LinearLayout
         android:id="@+id/widget_soundtrack_shuffle_dial_wrap"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
-        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="9" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="22" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="23"
+            android:layout_weight="37"
             android:orientation="horizontal">
-            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="90" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="11" />
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="8">
+                android:layout_weight="16">
                 <FrameLayout
                     android:id="@+id/widget_soundtrack_shuffle_selected"
                     android:layout_width="match_parent"
@@ -232,18 +277,21 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
-                    android:src="@drawable/ic_shuffle_widget"
-                    android:scaleType="fitCenter"
-                    android:padding="4dp"
                     android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_shuffle_widget"
+                    android:contentDescription="@null" />
             </FrameLayout>
-            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="2" />
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="73" />
         </LinearLayout>
-        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="68" />
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="41" />
     </LinearLayout>
 
-    <!-- ═══ Compact (1 cell tall): plain flat row, no photo-position mapping (too short for
-         the photo to read as anything but a texture) ═══ -->
+    <!-- ═══ Compact (1 cell tall): plain flat row, FIXED-dp icon buttons (no weighted-cell
+         squish problem at all — kept as normal icons here) ═══ -->
     <LinearLayout
         android:id="@+id/widget_soundtrack_content_compact"
         android:layout_width="match_parent"
