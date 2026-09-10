@@ -499,7 +499,6 @@ function PlannerTab({
         {!collapsed.goal && (
         <CardBody className="space-y-3">
           {/* Target — independent from the Calculator tab while unlinked (direct user request). */}
-          {!state.planner.linkedToCalc && (
           <div className="space-y-2 p-2 bg-white/5 rounded-lg">
             <div className="grid grid-cols-2 gap-2">
               {[['featured', t('planner.featuredLabel')], ['standard', t('planner.standardLabel')]].map(([v, label]) => (
@@ -547,7 +546,6 @@ function PlannerTab({
               )}
             </div>
           </div>
-          )}
           <div>
             <label className="kuro-label">{t('planner.multiplier')}</label>
             <KuroSelect
