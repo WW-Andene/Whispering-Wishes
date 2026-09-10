@@ -85,32 +85,34 @@
              Second real-device round (same day): the vertical position landed correctly, but
              every glyph was sliced clean across the top — a DIFFERENT bug. A weighted 0dp-height
              row is a HARD cell: LinearLayout's default clipChildren=true clips a wrap_content
-             child taller than that cell, and 10% of this widget's actual height wasn't enough
-             for 14sp bold text to fit without overflowing its own cell. Fixed two ways: grew
-             the text row's weight 10->18 (stealing from the bottom spacer, 66->58) so the cell
-             itself is tall enough on typical placements, AND set clipChildren="false" on this
-             row and the text's own wrapper as a safety net — so on a placement short enough that
-             even 18% still isn't quite enough, the text overflows visibly into the spacer rows
-             instead of being hard-clipped again. -->
+             child taller than that cell. Fixed with clipChildren="false" on this row and the
+             text's own wrapper as a safety net against a cell shorter than the text.
+
+             Third real-device round (same day): text was no longer clipped, but the user
+             pointed out a legible flat white panel just below the reel graphic (the one this
+             text was sitting ON TOP of) and asked for the title there instead — pixel-scanned
+             that screenshot's own brightness (a clear jump to near-white, ~(244,255,246), at
+             ~67-74% vertical / ~50-77% horizontal) and refit these weights to center on that
+             panel: 65/10/25 vertical, 46/35/19 horizontal. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="24" />
+            android:layout_weight="65" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="18"
+            android:layout_weight="10"
             android:orientation="horizontal"
             android:clipChildren="false">
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="35" />
+                android:layout_weight="46" />
             <LinearLayout
                 android:id="@+id/widget_soundtrack_track_name"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="45"
+                android:layout_weight="35"
                 android:gravity="center"
                 android:clipChildren="false">
                 <TextView
@@ -126,12 +128,12 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="20" />
+                android:layout_weight="19" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="58" />
+            android:layout_weight="25" />
 
         <!-- Row 2/3 (vertical weights 81/13/6 ≈ photo's y 824-957 of 1017) — the 4 real
              physical button labels, horizontal weights 33/11/12/14/13/17 ≈ their real x
