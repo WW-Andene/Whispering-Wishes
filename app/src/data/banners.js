@@ -479,7 +479,11 @@ const EVENTS = {
     currentEnd: '2026-09-29T07:59:59Z',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-lime-900/30',
     accentColor: 'lime',
-    imageUrl: './banners/_shared/WNv772NQ-fogveil-pagoda.webp', // real event art, sourced 2026-08-20 from the wiki's File:Fogveil_Pagoda.png, uploaded to imgbb 2026-08-20
+    // Direct user-provided asset (2026-09-10): the event's own official cover card from
+    // wuwatracker.com's timeline (event-cover-images API), converted from the supplied .avif to
+    // .webp to match this file's existing image-format convention — replaces the earlier
+    // wiki location screenshot with the actual promotional art used for this event.
+    imageUrl: './banners/_shared/fogveil-pagoda-event-cover.webp',
   },
   chordCleansing: {
     name: 'Chord Cleansing',
