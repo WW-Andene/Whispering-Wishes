@@ -322,7 +322,16 @@ public class PullBubbleService extends Service {
                     teardown();
                     stopSelf();
                 } else if (wasTap) {
-                    toggleExpanded();
+                    // A tap while a pop-reveal is holding skips its wait instead of toggling the
+                    // arc — see pendingPopAdvance's own comment.
+                    if (pendingPopAdvance != null) {
+                        Runnable advance = pendingPopAdvance;
+                        pendingPopAdvance = null;
+                        handler.removeCallbacks(advance);
+                        advance.run();
+                    } else {
+                        toggleExpanded();
+                    }
                 }
                 return true;
             }
@@ -900,6 +909,17 @@ public class PullBubbleService extends Service {
     private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
     private boolean rolling;
     private static final long WAVE_STAGGER_MS = 220; // pacing for an item with no video of its own
+    // Set by addPopReveal while a pop-reveal is holding (waiting to be tapped or to auto-advance
+    // after POP_AUTO_ADVANCE_MS), null otherwise. A tap on the MAIN BUBBLE — not the pop-reveal
+    // window itself — consumes it early (see onMainBubbleTouch's wasTap branch). Real device
+    // report 2026-09-10: making the temporary pop-reveal's own overlay window touchable (so it
+    // could be tapped directly) caused visible glitching — rapidly adding/removing a *touchable*
+    // TYPE_APPLICATION_OVERLAY window per item, on top of every other overlay this service
+    // already runs, is exactly the kind of thing that misbehaves on real launchers/GPU drivers.
+    // The main bubble's own touch handling is already proven solid (dragging/expanding all
+    // session), so routing the "skip the wait" tap through it instead avoids adding a second
+    // touchable window entirely — the pop-reveal window goes back to non-touchable.
+    private Runnable pendingPopAdvance;
 
     private void rollAndPlay(int count) {
         // A fresh roll means the just-settled tiles are no longer "just settled" — drop any
@@ -1235,12 +1255,13 @@ public class PullBubbleService extends Service {
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
-        // FLAG_NOT_TOUCHABLE dropped (was on both flags before) — this window now needs to
-        // receive the user's tap to continue. FLAG_NOT_FOCUSABLE stays: it never needs keyboard
-        // focus, just a click.
+        // Non-touchable, same as every other one-shot overlay this file adds (glow burst,
+        // holographic flash, etc.) — see pendingPopAdvance's own comment for why "tap to
+        // advance" is handled through the main bubble's already-proven touch handling instead
+        // of making this rapidly-added/removed window itself touchable.
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 popSizePx, popSizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
         params.x = centerX - popSizePx / 2;
@@ -1273,13 +1294,13 @@ public class PullBubbleService extends Service {
                     root.setTranslationY(-dyWindow);
                     float shrinkTo = (float) sizePx / popSizePx;
 
-                    // Guards against a tap and the safety timeout racing each other — whichever
-                    // fires first wins, the other is a no-op.
+                    // Guards against a bubble tap and the auto-advance timer racing each other —
+                    // whichever fires first wins, the other is a no-op.
                     boolean[] advancing = {false};
                     Runnable shrinkAndAdvance = () -> {
                         if (advancing[0]) return;
                         advancing[0] = true;
-                        root.setOnClickListener(null);
+                        pendingPopAdvance = null;
                         root.animate().translationX(0).translationY(0).scaleX(shrinkTo).scaleY(shrinkTo)
                                 .setDuration(POP_SHRINK_DURATION_MS)
                                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
@@ -1292,10 +1313,7 @@ public class PullBubbleService extends Service {
                                 })
                                 .start();
                     };
-                    root.setOnClickListener(v -> {
-                        handler.removeCallbacks(shrinkAndAdvance);
-                        shrinkAndAdvance.run();
-                    });
+                    pendingPopAdvance = shrinkAndAdvance;
                     handler.postDelayed(shrinkAndAdvance, POP_AUTO_ADVANCE_MS);
                 })
                 .start();
