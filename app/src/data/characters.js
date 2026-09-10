@@ -109,7 +109,7 @@ const CHARACTER_DATA = {
     // both the empowered Windqueller (+20% DMG, costs 30 Resolve) and the Finale-vs-Prelude Liberation branch,
     // and exact Qingloong Mode entry/duration/cooldown/cost — none of this was documented with real numbers
     // before.
-    desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS built around Resolve (0-60 cap, gained from Basic Attack and Intro Skill hits, decaying without a hit for 15s): at 30+ Resolve his Resonance Skill deals bonus DMG and his Resonance Liberation casts the stronger 'Emerald Storm: Finale', while below 30 Resolve it instead casts 'Prelude', entering Qingloong Mode — a buffed, high-interruption-resistance state with its Basic/Heavy/Dodge Counter replaced by the 'Lance of Qingloong' combo.",
+    desc: "Windborne Rider, leader of the Midnight Rangers of Jinzhou, acts with swift and resolute righteousness — he possesses the formidable ability to conjure a powerful Qingloong from the winds, making him invincible on the battlefield. On-field Aero DPS built around Resolve, gained from Basic Attack and Intro Skill hits: at high Resolve his Resonance Skill deals bonus DMG and his Resonance Liberation casts a stronger finisher, while below that threshold he instead enters Qingloong Mode, a buffed state replacing his Basic/Heavy/Dodge Counter with a dedicated combo.",
     skills: ['Lone Lance', 'Windqueller', 'Qingloong at War', 'Emerald Storm: Prelude'],
     rotation: ['Echo', 'Intro', 'Liberation: Emerald Storm', 'Heavy: Lance of Qingloong 1 (cancel → Skill)', 'Skill', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Heavy: Lance 1', 'Heavy: Lance 2', 'Heavy: Lance 3', 'Skill', 'Outro'],
     ascension: { boss: 'Roaring Rock Fist', common: 'Howler Core', specialty: 'Pecok Flower' },
@@ -455,7 +455,7 @@ const CHARACTER_DATA = {
   // google.com referer + jsRender). Prior desc had zero mention of the Collapsed Core/Empirical Data
   // resource economy or any exact numbers/caps/timing at all.
   'Shorekeeper': { rarity: 5, element: 'Spectro', weapon: 'Rectifier', role: 'Healer',
-    desc: 'Euphonic Chrysalis, guardian of the Black Shores — this title alone once defined her, but desires, bonds, and emotions, she only began to understand these things after meeting you. Spectro support/healer who builds Collapsed Cores and Empirical Data through her Basic Attacks, converting them into homing damage procs and an empowered attack of her own. Her Resonance Skill heals and grants Concerto Energy, while her Liberation opens a healing Stellarealm that upgrades into stronger team Crit Rate/Crit DMG buffs as allies cast their Intro Skills inside it; her Outro then grants the incoming Resonator free interrupt-recoveries and the nearby team a temporary All DMG Amp.',
+    desc: 'Euphonic Chrysalis, guardian of the Black Shores — this title alone once defined her, but desires, bonds, and emotions, she only began to understand these things after meeting you. Spectro support/healer who builds resources through her Basic Attacks, converting them into homing damage procs and an empowered attack of her own. Her Liberation opens a healing Stellarealm that upgrades team Crit buffs as allies cast their Intro Skills inside it, and her Outro grants the incoming Resonator free interrupt-recoveries plus a temporary team DMG Amp.',
     skills: ['Origin Calculus', 'Chaos Theory', 'Astral Chord', 'End Loop'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
@@ -481,7 +481,7 @@ const CHARACTER_DATA = {
   // Frostburn/Everbright Polestar; alt4 uses Feather Edge (77.8%, #1 4★) and Lumingloss (76.8%, #2 4★);
   // alt3 uses the standard starter Sword of Night, matching the convention used for other Sword users.
   'Camellya': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Sanguine Blossom, a Bloom Bearer of the Black Shores — free-spirited and dangerously charming, she roams Solaris in search of talent, immersing herself in the present and relishing its pleasures, unburdened by thoughts of the past or future. On-field Havoc Main DPS whose Skill locks her into Blossom Mode, replacing her kit with the Vining Waltz combo that consumes Crimson Pistils to build Concerto Energy and Crimson Buds. Once fully charged she can cast Ephemeral to enter Budding Mode, sharply raising her combo\'s DMG Multiplier for its duration, and her Outro deals bonus Havoc DMG if Ephemeral was cast that rotation.',
+    desc: 'Sanguine Blossom, a Bloom Bearer of the Black Shores — free-spirited and dangerously charming, she roams Solaris in search of talent, immersing herself in the present and relishing its pleasures, unburdened by thoughts of the past or future. On-field Havoc Main DPS whose Skill locks her into Blossom Mode, replacing her kit with a combo that builds Concerto Energy and stacking buffs. Once fully charged she can enter Budding Mode for a sharp DMG Multiplier boost, and her Outro deals bonus Havoc DMG if that was used that rotation.',
     skills: ['Burgeoning', 'Valse of Bloom and Blight', 'Fervor Efflorescent', 'Vegetative Universe'],
     ascension: { boss: 'Topological Confinement', common: 'Whisperin Core', specialty: 'Nova' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
@@ -568,7 +568,7 @@ const CHARACTER_DATA = {
     // google.com referer + jsRender, load+9s wait): added exact Forte ("Bravo") economy, Aflame
     // enter/exit + duration, and Returned from Ashes' exact shield duration — none of this was in the
     // prior flavor-text-only desc.
-    desc: 'Flamebound Compass, captain of Rinascita\'s Troupe of Fools — a free spirit and romantic, unpredictable and full of life, the beating heart of the troupe who slips into countless roles on stage but is unwaveringly genuine offstage. Fusion Main DPS/Hybrid built around Bravo, a Forte gauge filled by Basic ATK, Mid-air Attack, Intro Skill, and Resonance Skill hits, which passively heals the whole team at set thresholds. At max Bravo his Skill becomes Returned from Ashes, dumping the gauge into a massive Fusion burst plus a team shield. Casting his Liberation (To the Horizon) heals the team and enters a timed Aflame state that speeds up Bravo gain and strengthens his ATK-from-Energy-Regen passive. His Outro (The Course is Set!) buffs the incoming Resonator\'s Fusion and Resonance Skill DMG — and almost his entire kit is executed airborne, dodging most enemy attacks for free.',
+    desc: 'Flamebound Compass, captain of Rinascita\'s Troupe of Fools — a free spirit and romantic, unpredictable and full of life, the beating heart of the troupe who slips into countless roles on stage but is unwaveringly genuine offstage. Fusion Main DPS/Hybrid built around Bravo, a Forte gauge filled by his attacks that passively heals the team at set thresholds. At max Bravo his Skill dumps it into a Fusion burst plus a team shield, and his Liberation heals the team while entering a timed state that speeds up Bravo gain; his Outro buffs the incoming Resonator\'s Fusion and Skill DMG, and most of his kit is executed airborne, dodging enemy attacks for free.',
     skills: ['Captain\'s Rhapsody', 'Anchors Aweigh!', 'To the Horizon', 'Ocean Odyssey'],
     ascension: { boss: 'Blazing Bone', common: 'Tidal Residuum', specialty: 'Golden Fleece' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Metallic Drip' },
@@ -608,7 +608,7 @@ const CHARACTER_DATA = {
     // relative to her 125 Energy cost, so this is what actually lets Flowing Suffocation come off cooldown per
     // rotation. Outro "Gentle Tentacles" grants the incoming Resonator +20% Havoc DMG and +25% Resonance Skill
     // DMG for 14s, and that buff is forfeited early the moment that Resonator is swapped out again.
-    desc: 'Sea of Dreams, current head of the Fisalia Family, Cantarella the Bane — a mysterious noblewoman whose beauty is as captivating as it is perilous, residing in a crown-like castle where illusory dreams flow like streams, meticulously spun by her own hands. Havoc Hybrid who builds Trance through Basic ATK, Skill, Intro, and Liberation casts, then consumes it all via an enhanced Heavy ATK "Delusive Dive" to enter Mirage — unlocking enhanced "Phantom Sting" Basic Attacks that build Shiver toward the burst nuke "Perception Drain," which also heals the team. She deals off-field Havoc DMG through Dreamweaver Coordinated Attacks summoned by her Liberation, sustains her own Concerto Energy through teammates\' Echo Skill casts via Abyssal Rebirth, and buffs the incoming Resonator\'s Havoc and Resonance Skill DMG via her Outro "Gentle Tentacles".',
+    desc: 'Sea of Dreams, current head of the Fisalia Family, Cantarella the Bane — a mysterious noblewoman whose beauty is as captivating as it is perilous, residing in a crown-like castle where illusory dreams flow like streams, meticulously spun by her own hands. Havoc Hybrid who builds Trance through her attacks, then consumes it via an enhanced Heavy Attack to enter Mirage — unlocking enhanced Basic Attacks that build toward a healing burst nuke. She also deals off-field Havoc DMG through Liberation-summoned Coordinated Attacks and buffs the incoming Resonator\'s Havoc and Skill DMG via her Outro.',
     skills: ['Illusion Collapse', 'Dance with Shadows', 'Beneath the Sea', 'Between Illusion and Reality'],
     ascension: { boss: 'Cleansing Conch', common: 'Polygon Core', specialty: 'Seaside Cendrelis' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Helix' },
@@ -654,7 +654,7 @@ const CHARACTER_DATA = {
   // 6s duration each) and grants 5 Blaze per stack converted, making her fully dependent on a Frazzle-applying
   // teammate (Phoebe by far the most common pairing).
   'Zani': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
-    desc: 'Scorched Radiance, a member of Averardo Vault\'s security team and its longtime "Best Employee" — she has plenty of plans for her free time, but for now her biggest mission is simple: clocking out on time. On-field Spectro Main DPS who converts teammates\' Spectro Frazzle into her own Heliacal Ember and Blaze the instant it lands, builds Redundant Energy through Basic Attacks and Skill casts to unlock a parry-capable enhanced Skill, then dumps everything into a timed Inferno Mode via her Liberation Rekindle for an enhanced Heavy Slash combo string flagged as both Heavy Attack and Spectro Frazzle DMG. She is entirely dependent on a teammate applying Frazzle for her to convert.',
+    desc: 'Scorched Radiance, a member of Averardo Vault\'s security team and its longtime "Best Employee" — she has plenty of plans for her free time, but for now her biggest mission is simple: clocking out on time. On-field Spectro Main DPS who converts teammates\' Spectro Frazzle into her own resource the instant it lands, builds Energy through her attacks to unlock a parry-capable enhanced Skill, then dumps it into a timed Inferno Mode via her Liberation for an enhanced combo string. She depends entirely on a teammate applying Frazzle for her to convert.',
     skills: ['Routine Negotiation', 'Restless Watch', 'Between Dawn and Dusk', 'There Will Be A Light'],
     ascension: { boss: 'Platinum Core', common: 'Polygon Core', specialty: 'Sword Acorus' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -707,7 +707,7 @@ const CHARACTER_DATA = {
     // exact resource economy (trigger events, amounts, caps), enhanced-state entry/exit conditions and duration,
     // and the Skill1→Skill2 cast-order dependency inside Manifest — the prior desc only gestured at "builds Sword
     // Shadows" / "consumes stacked Aero Erosion for bonus DMG" with no numbers at all.
-    desc: 'Feathered Tempest, a wandering knight who travels across Rinascita — formerly known as the Blessed Maiden, the vessel of Divinity, and the Queen of Gale and Tide under the name Fleurdelys, she is now simply free and unfettered. HP-scaling on-field Aero Main DPS. As Cartethyia, her Basic Attack, Heavy Attack, Intro Skill, and Resonance Skill each summon a distinct Sword Shadow, which her Mid-air Attack then recalls and converts into buffs for a Liberation-triggered transformation into Fleurdelys, costing a portion of her current Max HP. As Fleurdelys, every attack restores Conviction, her Resonance Skill is a strict two-cast chain, and at max Conviction her Liberation is replaced by a finisher that restores HP and strips stacked Aero Erosion from the target for bonus DMG taken. Her Outro (Wind\'s Divine Blessing) buffs the incoming Resonator\'s Aero DMG against Negative-Status targets.',
+    desc: 'Feathered Tempest, a wandering knight who travels across Rinascita — formerly known as the Blessed Maiden, the vessel of Divinity, and the Queen of Gale and Tide under the name Fleurdelys, she is now simply free and unfettered. HP-scaling on-field Aero Main DPS. Her attacks summon Sword Shadows that get recalled into buffs for a Liberation-triggered transformation costing a portion of her Max HP; in that form every attack restores a resource that, at max, replaces her Liberation with an HP-restoring finisher. Her Outro buffs the incoming Resonator\'s Aero DMG against Negative-Status targets.',
     skills: ['Sword to Carve My Forms', 'Sword to Bear Their Names', 'A Knight\'s Heartfelt Prayers', 'Tempest'],
     ascension: { boss: 'Unfading Glory', common: 'Tidal Residuum', specialty: 'Bamboo Iris' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
@@ -753,7 +753,7 @@ const CHARACTER_DATA = {
     // +120% self ATK, the Enhanced Attack-Hecate trigger cap (10 per Maestro window, 1 per unique Echo
     // name) which was entirely absent, and the Outro's exact "ends if swapped out" forfeit condition plus
     // its Maestro-only 2-bonus-attack clause (previously stated with no forfeit/conditionality at all).
-    desc: 'Symphony of Beyond, a Fractsidus Overseer walking the fine line between life and death — an uncanny, deadly conductor whose silent wave of the baton is enough to attune the very frequencies of being and conduct the symphonies of "souls," her music able to sculpt a better world or just as easily summon a legion to wreak havoc. Havoc Main DPS who alternates Basic Attack and Skill casts to bank a dual resource of Volatile Notes, then unleashes a Skill-type Heavy Attack nuke that activates Resolving Chord and unlocks her Liberation. Casting the Liberation opens a timed Maestro state that boosts her own ATK and plays her banked Notes out through Hecate, an off-field spectral ally whose Enhanced Attacks also trigger whenever teammates cast Echo Skills. Her Outro (Unfinished Piece) buffs the incoming Resonator\'s Havoc and Heavy Attack DMG, with bonus Hecate attacks if cast while she is still in Maestro state.',
+    desc: 'Symphony of Beyond, a Fractsidus Overseer walking the fine line between life and death — an uncanny, deadly conductor whose silent wave of the baton is enough to attune the very frequencies of being and conduct the symphonies of "souls," her music able to sculpt a better world or just as easily summon a legion to wreak havoc. Havoc Main DPS who alternates Basic Attack and Skill casts to bank a resource, then unleashes a Heavy Attack nuke that unlocks her Liberation. Casting it opens a timed state boosting her own ATK and playing that banked resource out through an off-field spectral ally, whose attacks also trigger on teammates\' Echo Skill casts; her Outro buffs the incoming Resonator\'s Havoc and Heavy Attack DMG.',
     skills: ['Movement of Life and Death', 'Whispers in a Fleeting Dream', 'Waltz of Forsaken Depths', 'Rhapsody of a New World'],
     ascension: { boss: 'Truth in Lies', common: 'Polygon Core', specialty: 'Afterlife' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Helix' },
@@ -761,7 +761,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Stringmaster', 'Whispers of Sirens'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
     teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper'] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro Heavy ATK DPS who self-shields via Glory\'s Favor and builds Ascendancy through her attacks toward a Forte finisher. At enough Majesty stacks she can instead enter a time-stopped Sworn Allegiance state for an extended combo ending in a finisher that deploys a domain granting teammates a shield on their Intro cast. Her Outro (Battlesong of the Unyielding) buffs the next Resonator\'s All-Attribute DMG, and she gains extra Majesty if that same Resonator casts their Outro back to her while the buff is still active.',
+    desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro Heavy ATK DPS who self-shields and builds a resource through her attacks toward a Forte finisher. At enough stacks she can instead enter a time-stopped state for an extended combo ending in a finisher that shields teammates on their Intro cast; her Outro buffs the next Resonator\'s All-Attribute DMG, refunding extra stacks if they Outro back to her.',
     skills: ['Hunter\'s Path', 'Warrior\'s Blade', 'Sunward Conquest', 'Call Me By the Sun'],
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Luminous Calendula' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
@@ -782,7 +782,7 @@ const CHARACTER_DATA = {
   // Aero DMG (also Liberation DMG), heals nearby allies, and drops a 30s Full Moon Domain that restores
   // team HP/STA every 5s — gaining a Shield inside it grants a stack of Blessing of the Wan Light (below).
   'Iuno': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Sub DPS',
-    desc: 'Priestess of Septimont\'s Tetragon Temple. Aero Sub-DPS built around a Sentience resource. Her Resonance Skill or Liberation opens a timed Lunar Cycle that toggles between Half Moon and New Moon via her Heavy Attack; in New Moon, her Basic Attack, Skill follow-up, and Dodge Counter consume Sentience to boost their own damage and heal the team, with this damage categorized as Resonance Liberation DMG. At full Concerto Energy her Heavy Attack becomes a stronger finisher that ends the Cycle, heals the team, and drops a domain granting a stacking all-DMG buff whenever she picks up a Shield inside it. Her Outro buffs the incoming ally\'s Heavy Attack DMG for 14s.',
+    desc: 'Priestess of Septimont\'s Tetragon Temple. Aero Sub-DPS built around a Sentience resource. Her Skill or Liberation opens a timed Lunar Cycle toggled by her Heavy Attack; in its empowered phase, her attacks consume Sentience to boost their own damage and heal the team. At full Concerto Energy her Heavy Attack becomes a stronger finisher that drops a domain buffing on Shield pickup, and her Outro buffs the incoming ally\'s Heavy Attack DMG for 14s.',
     skills: ['Moon Steps', 'Foresight Fugue', 'Beneath Lunar Tides', 'Ebb and Flow'],
     ascension: { boss: 'Abyssal Husk', common: 'Polygon Core', specialty: 'Sliverglow Bloom' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
@@ -801,7 +801,7 @@ const CHARACTER_DATA = {
     // and swapped Brant for Phrolova (both were cited; this is the more conservative single-field edit).
     teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
-    desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who supports from off-field, amplifying the next Resonator\'s Echo Skill damage and Crit DMG.',
+    desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who supports from off-field, boosting the active Resonator\'s Crit DMG via his Liberation and amplifying the next Resonator\'s Echo Skill damage through his Outro.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
     ascension: { boss: 'Truth in Lies', common: 'Whisperin Core', specialty: 'Wintry Bell' },
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Metallic Drip' },
@@ -873,7 +873,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Pulsation Bracer', 'Blazing Justice'], alt4: ['Celestial Spiral', 'Aether Strike'], alt3: ['Gauntlets of Night'] },
     teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who switches between two Resonance Modes, converting that momentum into a heavy Liberation burst.',
+    desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who alternates between two Resonance Modes across her Basic Attack combo, banking momentum that fuels a pair of heavy-hitting Liberation casts for her core damage.',
     skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'Overture of Departure'],
     rotation: ['Intro', 'Basic: Aemeath 3', 'Basic: Aemeath 4 (cancel → Ultimate)', 'Ultimate: Overdrive', 'Basic: Mech 2', 'Basic: Mech 3', 'Basic: Mech 4 (cancel → Skill)', 'Skill: Duet Encore', 'Basic: Aemeath 2', 'Basic: Aemeath 3', 'Basic: Aemeath 4 (cancel → Skill)', 'Skill: Duet Overture', 'Heavy: Mech II (cancel → Ultimate)', 'Ultimate: Finale', 'Outro'],
     ascension: { boss: 'Our Choice', common: 'Exoswarm Core', specialty: 'Moss Amber' },
@@ -1077,7 +1077,7 @@ const CHARACTER_DATA = {
     // publishes his actual optimal rotation.
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
-    desc: 'Suave information broker who slips through the mist. Aero sub-DPS who deals off-field Aero DMG via Coordinated Attacks triggered by his mist clone summon.',
+    desc: 'Suave information broker who slips through the mist. Aero sub-DPS who summons a mist clone via his Skill, dealing off-field Aero DMG whenever it triggers a Coordinated Attack alongside the active Resonator.',
     // corrected 2026-08-18: skills[3] was 'Mistcloak Dash' (the internal dash mechanic triggered within the Forte
     // Circuit), not the Forte Circuit's actual name 'Misty Cover' (the wiki Combat page). SKILL_ICONS already aliased
     // both names to the same icon; fixing here for consistency with the real skill name.
@@ -1116,7 +1116,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt4: ['Variation', 'Call of the Abyss', 'Rectifier#25'], alt3: ['Rectifier of Voyager'] },
     teams: ['Yangyang + Jiyan + Baizhi', 'Lingyang + Sanhua + Baizhi', 'Encore + Sanhua + Baizhi'] },
   'Chixia': { rarity: 4, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
-    desc: 'Energetic patroller who blazes through Jinzhou with dual pistols. On-field Fusion DPS who deals Fusion DMG through rapid-fire Resonance Skill shots and Basic Attack combos.',
+    desc: "Energetic patroller who blazes through Jinzhou with dual pistols. On-field Fusion DPS who deals rapid-fire Fusion DMG through her Resonance Skill's gunfire barrage and a quick Basic Attack combo, favoring speed over single big hits.",
     skills: ['POW POW', 'Whizzing Fight Spirit', 'Blazing Flames', 'Heroic Bullets'],
     ascension: { boss: 'Rage Tacet Core', common: 'Whisperin Core', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Phlogiston' },
@@ -1217,7 +1217,7 @@ const CHARACTER_DATA = {
   // actual documented synergies: Carlotta ("by far Taoqi's best DPS to support") and Jinhsi, both paired
   // with Verina/Shorekeeper per the Example Teams section.
   'Taoqi': { rarity: 4, element: 'Havoc', weapon: 'Broadblade', role: 'Support',
-    desc: 'Steadfast border defense director with an iron will. Havoc support who provides shields via Resonance Skill and amplifies the team\'s Resonance Skill DMG through Outro.',
+    desc: 'Steadfast border defense director with an iron will. Havoc support who shields the team via her Resonance Skill and Forte, then amplifies the team\'s own Resonance Skill DMG through her Outro.',
     skills: ['Concealed Edge', 'Fortified Defense', 'Unmovable', 'Power Shift'],
     ascension: { boss: 'Gold-Dissolving Feather', common: 'Howler Core', specialty: 'Iris' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Waveworn Residue' },
