@@ -258,7 +258,7 @@
                     android:layout_height="18dp"
                     android:layout_gravity="center"
                     android:translationX="1dp"
-                    android:translationY="2dp"
+                    android:translationY="3dp"
                     android:src="@android:drawable/ic_media_previous"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -278,7 +278,7 @@
                     android:layout_height="18dp"
                     android:layout_gravity="center"
                     android:translationX="1dp"
-                    android:translationY="2dp"
+                    android:translationY="3dp"
                     android:src="@android:drawable/ic_media_next"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -294,7 +294,7 @@
                     android:id="@+id/widget_soundtrack_loop_selected"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/widget_target_selected_emerald"
+                    android:background="@drawable/widget_soundtrack_button_selected"
                     android:visibility="gone" />
                 <ImageButton
                     android:id="@+id/widget_soundtrack_loop"
@@ -307,7 +307,7 @@
                     android:layout_height="18dp"
                     android:layout_gravity="center"
                     android:translationX="1dp"
-                    android:translationY="2dp"
+                    android:translationY="3dp"
                     android:src="@drawable/ic_loop_widget"
                     android:contentDescription="@null" />
             </FrameLayout>
@@ -329,7 +329,7 @@
                     android:layout_height="18dp"
                     android:layout_gravity="center"
                     android:translationX="1dp"
-                    android:translationY="2dp"
+                    android:translationY="3dp"
                     android:src="@android:drawable/ic_media_play"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -388,7 +388,7 @@
                     android:id="@+id/widget_soundtrack_shuffle_selected"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/widget_target_selected_emerald"
+                    android:background="@drawable/widget_soundtrack_button_selected"
                     android:visibility="gone" />
                 <ImageButton
                     android:id="@+id/widget_soundtrack_shuffle"
