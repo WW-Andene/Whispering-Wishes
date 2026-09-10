@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Frequency Cassette" widget's own background — a stylized cream/tan chassis with a
+     bronze frame border, evoking the reference cassette-player art (retro cream plastic body,
+     brass trim) rather than the dark card look every other widget in this app uses.
+     RemoteViews shape drawables can't reproduce photographic detail (grain, reflections,
+     embossed labels), so this is a tasteful reinterpretation via gradient + stroke, not a
+     pixel copy of the reference image. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="90"
+        android:startColor="#EBDDBB"
+        android:endColor="#CBB48A" />
+    <corners android:radius="16dp" />
+    <stroke
+        android:width="2dp"
+        android:color="#8A6A3D" />
+</shape>

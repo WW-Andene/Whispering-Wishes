@@ -5,7 +5,8 @@
     <string name="package_name">cc.andene.whisperingwishes</string>
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
     <string name="calculator_widget_description">Calculator widget — resize it to reveal currency counts, a goal gauge, pull target, and a tappable copy target</string>
-    <string name="soundtrack_widget_description">Soundtrack widget — play the app\'s own ambient Log Screen music, tap the track name to switch tracks</string>
+    <string name="frequency_cassette_widget_label">Frequency Cassette</string>
+    <string name="soundtrack_widget_description">Frequency Cassette — play the app\'s own ambient Log Screen music, tap the track name to switch tracks</string>
     <string name="widget_soundtrack_track1">1.0 Login Screen</string>
     <string name="widget_soundtrack_track2">2.0 Login Screen</string>
     <string name="widget_soundtrack_track3">3.0 Login Screen</string>
@@ -94,6 +95,6 @@
     <string name="pull_bubble_pocket_title">All pulls (%1$d)</string>
     <string name="quick_calc_shortcut_short_label">Quick Calc</string>
     <string name="quick_calc_shortcut_long_label">Add the Calculator widget to your home screen</string>
-    <string name="quick_soundtrack_shortcut_short_label">Quick Soundtrack</string>
-    <string name="quick_soundtrack_shortcut_long_label">Add the Soundtrack widget to your home screen</string>
+    <string name="quick_soundtrack_shortcut_short_label">Frequency Cassette</string>
+    <string name="quick_soundtrack_shortcut_long_label">Add the Frequency Cassette widget to your home screen</string>
 </resources>
