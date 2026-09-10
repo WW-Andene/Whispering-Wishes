@@ -100,6 +100,8 @@
     "damageStatsTooltip": "Inclut les modificateurs de buffs d'équipe actifs",
     "teamBuffs": "Buffs d'équipe",
     "enemyDebuffs": "Debuffs ennemis",
+    "rawStatScore": "Score Brut",
+    "rawStatScoreDetail": "base + équipement + séquence, bonus inconditionnels uniquement — sans rotation",
     "teamDps": "DPS d'équipe",
     "teamDpsDetail": "compétences + échos + DOT + réactions",
     "timeToKill": "Temps pour éliminer",

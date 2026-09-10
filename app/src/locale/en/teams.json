@@ -100,6 +100,8 @@
     "damageStatsTooltip": "Includes active team buff modifiers",
     "teamBuffs": "Team Buffs",
     "enemyDebuffs": "Enemy Debuffs",
+    "rawStatScore": "Raw Stat Score",
+    "rawStatScoreDetail": "base + gear + sequence, unconditional buffs only — no rotation",
     "teamDps": "Team DPS",
     "teamDpsDetail": "skills + echoes + DOTs + reactions",
     "timeToKill": "Time to Kill",

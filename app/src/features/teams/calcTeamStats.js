@@ -38,6 +38,7 @@ import { chooseOnFieldOrder } from '../../engine/resolver/rotationOrder/rotation
 import { deriveRotationFromKitRules } from '../../engine/resolver/decision/kitRulesRegistry.js';
 import { coordinatedMultShare } from '../../engine/resolver/gating/coordinatedAtk.js';
 import { gateBlocksBySequence, filterExclusiveModeBlocks } from '../../engine/resolver/gating/sequenceGating.js';
+import { resolveRawStatScore } from '../../engine/resolver/dps/resolveRawStatScore.js';
 import { defaultResonanceMode } from '../../data/resonanceModes.js';
 import { resolveBetweenTheStarsStacks } from '../../engine/resolver/dot/resolveBetweenTheStars.js';
 
@@ -759,6 +760,21 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     let resMult = calcResMult(mainBaseRes, resShred);
     let score = Math.round(effAtk * avgCrit * dmgBonus * defMult * resMult);
 
+    // ── RAW STAT SCORE: base stats + real equipment (weapon refinement, echoes, echo sets) +
+    // Resonance Chain, folded with ONLY unconditional passive TriggerBlock effects — no rotation/
+    // time simulation, no cast/swap/windowed/resource-threshold-triggered buffs. A permanent,
+    // always-shown figure (not a toggle), displayed above Team DPS. Per direct user request
+    // (2026-09-10): "every raw value and unconditional buff. no timed and rotation induce." Main-DPS
+    // only (matching the existing convention that `score` above is already a main-DPS figure), not a
+    // team-wide sum — flagged here since a team-summed alternative was a real, considered option.
+    const rawStatScore = BLOCKS_BY_CHARACTER[mainDps.name]
+      ? resolveRawStatScore(
+          BLOCKS_BY_CHARACTER[mainDps.name], gearDeltaByName[mainDps.name] || {}, mainDps.seqLevel, mainDps.resonanceMode,
+          { baseStat: mainDps.baseStat, dmgFocus: mainDps.d.dmgFocus || [] },
+          { enemyDef90, baseRes: mainBaseRes },
+        ).score
+      : 0;
+
     // PHASE3_PLAN.md Stage 4 step 6: the main-DPS stat-panel fields above (effAtk/avgCrit/dmgBonus/
     // defMult/resMult/score, plus the underlying cr/cd/elemDmg/skillDmg/amplify/atkPct/
     // defShred/resShred/defIgnore returned at the bottom of this function) still came from the
@@ -1037,7 +1053,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       }
     });
 
-    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime,
+    return { members: mems, mainDps, allBuffs, allDebuffs, effAtk, critRate: cr, critDmg: cd, elemDmg, skillDmg, amplify, atkPct, defShred, resShred, defIgnore, avgCrit, defMult, resMult, score, rawStatScore, soloDps, teamDps, synergyUplift, dotDps, hasFrazzle, hasErosion, hasFusionBurst, hasElectroFlare, dmgSources, energyCycleFactors, warnings, memberDps, rotationTimeline, rotTime,
       // Legacy aliases for DPSComparisonCard compatibility
       rawDps: soloDps, realDps: teamDps, perfectDps: teamDps, synergy: Math.min(100, Math.max(0, synergyUplift)) };
 }
