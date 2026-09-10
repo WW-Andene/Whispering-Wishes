@@ -14,7 +14,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Minus, Plus, RefreshCcw, Search, Star, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -109,13 +109,20 @@ function computeFarmMaterials(ftg) {
 // exact same DP/Monte Carlo engine) so this card can never again disagree with the
 // Calculator tab about the same goal. `calc` is state.calc, optionally with astrite
 // overridden to a projected total (for the "by banner end" variant).
-function goalSuccessRate(calc) {
+// Direct user report 2026-09-10: the Goal Progress card's "Target" figure was a flat
+// 80/160/240-per-copy formula with zero awareness of the goal's actual pity — so a target
+// already exceeded (100% success) could still show as e.g. "45.8% of Target," a real
+// contradiction, not just two metrics answering different questions. worstCasePulls below is
+// the SAME pity-aware worst-case number calcStats already computes for the probability side
+// (HARD_PITY-based, minus current pity, minus the guarantee if already banked) — reusing it
+// here means Target and the success-rate tiles can never disagree again.
+function goalStats(calc) {
   const alloc = computePullAllocation(calc);
   const isFeatured = calc.bannerCategory === 'featured';
   const isChar = calc.selectedBanner === 'char';
   const isWeap = calc.selectedBanner === 'weap';
 
-  let pChar = 1, pWeap = 1;
+  let pChar = 1, pWeap = 1, worstCasePulls = 0;
   if (!isWeap) {
     const pulls = isFeatured ? alloc.charTotal : alloc.stdCharTotal;
     const copies = isFeatured ? Math.max(1, +calc.charCopies || 1) : Math.max(1, +calc.stdCharCopies || 1);
@@ -123,6 +130,7 @@ function goalSuccessRate(calc) {
     const guaranteed = isFeatured ? !!calc.charGuaranteed : false; // standard banners have no 50/50
     const stats = calcStats(pulls, pity, guaranteed, true, copies, 0, isFeatured);
     pChar = parseFloat(stats.successRate) / 100;
+    worstCasePulls += stats.worstCase;
   }
   if (!isChar) {
     const pulls = isFeatured ? alloc.weapTotal : alloc.stdWeapTotal;
@@ -130,8 +138,9 @@ function goalSuccessRate(calc) {
     const pity = isFeatured ? (+calc.weapPity || 0) : (+calc.stdWeapPity || 0);
     const stats = calcStats(pulls, pity, false, false, copies, 0, isFeatured); // weapons: no 50/50
     pWeap = parseFloat(stats.successRate) / 100;
+    worstCasePulls += stats.worstCase;
   }
-  return pChar * pWeap * 100;
+  return { successRate: pChar * pWeap * 100, worstCasePulls };
 }
 
 // [SECTION:PLANNER] ── PlannerTab main component ─────────────────────────────
@@ -206,24 +215,17 @@ function PlannerTab({
       ? (isChar ? (+state.calc.radiant || 0) : isWeap ? (+state.calc.forging || 0) : (+state.calc.radiant || 0) + (+state.calc.forging || 0))
       : (+state.calc.lustrous || 0);
     const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
-    const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
-    const targetAstrite = targetPulls * ASTRITE_PER_PULL;
-    // Availability in PULLS first (tides included), THEN converted to an Astrite shortfall —
-    // converting currentAstrite alone (the previous approach) silently dropped every tide from
-    // the "still needed" figure, overstating it by relevantTides * ASTRITE_PER_PULL (direct user
-    // report 2026-09-10, confirmed against the app's own numbers: 47 Radiant + 38 Forging tides
-    // were worth 85 * 160 = 13,600 Astrite that never got credited).
-    const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL) + relevantTides;
-    const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
-    const goalNeeded = Math.max(0, targetPulls - availablePulls) * ASTRITE_PER_PULL;
-    const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
-    const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
-    // Real success-rate-to-get-all-targets (direct user request 2026-09-10, replacing a crude
-    // Poisson approximation that ignored actual pity and tides, and collapsed a "Both" goal into
-    // one target instead of modeling two independent successes) — see goalSuccessRate's own
-    // comment. Resources come from Calc (shared); the target comes from Planner's own
-    // decoupled goal fields. "By end" reruns the same allocation with astrite/lunite bumped to
-    // the projected total (tides don't accrue via dailyIncome, so they stay as-is).
+
+    // Real success-rate-to-get-all-targets AND a pity-aware Target (direct user report
+    // 2026-09-10: the old flat 80/160/240-per-copy Target formula had zero awareness of
+    // current pity, so it could show e.g. "45.8% of Target" for a goal the success-rate tiles
+    // already correctly reported as 100% guaranteed — a real contradiction, not two metrics
+    // answering different questions. worstCasePulls reuses the exact same pity-aware
+    // HARD_PITY-based worst-case calcStats already computes for the probability side, so
+    // Target and the success-rate tiles can never disagree again. Resources come from Calc
+    // (shared); the target itself comes from Planner's own decoupled goal fields. "By end"
+    // reruns the same allocation with astrite/lunite bumped to the projected total (tides
+    // don't accrue via dailyIncome, so they stay as-is).
     const goalCalcLike = {
       astrite: state.calc.astrite, lunite: state.calc.lunite, radiant: state.calc.radiant,
       forging: state.calc.forging, lustrous: state.calc.lustrous,
@@ -234,9 +236,24 @@ function PlannerTab({
       stdCharCopies: state.planner.goalStdCharCopies, stdCharPity: state.planner.goalStdCharPity,
       stdWeapCopies: state.planner.goalStdWeapCopies, stdWeapPity: state.planner.goalStdWeapPity,
     };
-    const probNow = goalSuccessRate(goalCalcLike);
-    const probByEnd = goalSuccessRate({ ...goalCalcLike, astrite: totalAstriteByEnd, lunite: 0 });
-    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
+    const nowStats = goalStats(goalCalcLike);
+    const endStats = goalStats({ ...goalCalcLike, astrite: totalAstriteByEnd, lunite: 0 });
+    const probNow = nowStats.successRate;
+    const probByEnd = endStats.successRate;
+
+    const targetPulls = Math.max(1, nowStats.worstCasePulls * state.planner.goalModifier);
+    const targetAstrite = targetPulls * ASTRITE_PER_PULL;
+    // Availability in PULLS first (tides included), THEN converted to an Astrite shortfall —
+    // converting currentAstrite alone (an earlier approach) silently dropped every tide from
+    // the "still needed" figure, overstating it by relevantTides * ASTRITE_PER_PULL (direct user
+    // report 2026-09-10, confirmed against the app's own numbers: 47 Radiant + 38 Forging tides
+    // were worth 85 * 160 = 13,600 Astrite that never got credited).
+    const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL) + relevantTides;
+    const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
+    const goalNeeded = Math.max(0, targetPulls - availablePulls) * ASTRITE_PER_PULL;
+    const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
+    const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, worstCasePulls: nowStats.worstCasePulls, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
   }, [state.calc, state.planner, bannerEndDate, dailyIncome]);
 
   // Collapsible section toggle
@@ -454,97 +471,30 @@ function PlannerTab({
         </div>
         {!collapsed.goal && (
         <CardBody className="space-y-3">
-          {/* Target — independent from the Calculator tab (direct user request). */}
-          <div className="space-y-2 p-2 bg-white/5 rounded-lg">
-            <div className="grid grid-cols-2 gap-2">
-              {[['featured', t('planner.featuredLabel')], ['standard', t('planner.standardLabel')]].map(([v, label]) => (
-                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalBannerCategory', value: v })} aria-pressed={state.planner.goalBannerCategory === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalBannerCategory === v ? 'active-gold' : ''}`}>{label}</button>
-              ))}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[['char', t('planner.resonatorLabel')], ['weap', t('planner.weaponLabel')], ['both', t('planner.bothLabel')]].map(([v, label]) => (
-                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalSelectedBanner', value: v })} aria-pressed={state.planner.goalSelectedBanner === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalSelectedBanner === v ? 'active-emerald' : ''}`}>{label}</button>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {!planData.isWeap && (
-                <div>
-                  <label className="kuro-label text-xs">{t('planner.goalCharTargetLabel')}</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalCharCopies : state.planner.goalStdCharCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharCopies' : 'goalStdCharCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.copiesLabel')} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalCharPity : state.planner.goalStdCharPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharPity' : 'goalStdCharPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.pityLabel')} />
-                    </div>
-                  </div>
-                  {planData.isFeatured && (
-                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalCharGuaranteed', value: !state.planner.goalCharGuaranteed })} aria-pressed={state.planner.goalCharGuaranteed} className={`kuro-btn kuro-btn-sm w-full mt-1 ${state.planner.goalCharGuaranteed ? 'active-emerald' : ''}`}>{state.planner.goalCharGuaranteed ? t('calculator.guaranteed') : t('calculator.5050active')}</button>
-                  )}
-                </div>
-              )}
-              {!planData.isChar && (
-                <div>
-                  <label className="kuro-label text-xs">{t('planner.goalWeapTargetLabel')}</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapCopies : state.planner.goalStdWeapCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapCopies' : 'goalStdWeapCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.copiesLabel')} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapPity : state.planner.goalStdWeapPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapPity' : 'goalStdWeapPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.pityLabel')} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="kuro-label">{t('planner.baseConvenes')}</label>
-              <KuroSelect
-                value={state.planner.goalPulls}
-                onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalPulls', value: +v })}
-                options={[
-                  { value: HARD_PITY, label: t('planner.hardPityLabel', { n: HARD_PITY }) },
-                  { value: HARD_PITY * 2, label: t('planner.guaranteedLabel', { n: HARD_PITY * 2 }) },
-                  { value: 240, label: t('planner.charSignatureLabel') },
-                ]}
-                className="w-full"
-                ariaLabel={t('planner.baseConvenes')}
-                small
-              />
-            </div>
-            <div>
-              <label className="kuro-label">{t('planner.multiplier')}</label>
-              <KuroSelect
-                value={state.planner.goalModifier}
-                onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +v })}
-                options={[
-                  { value: 1, label: '×1' },
-                  { value: 2, label: '×2' },
-                  { value: 3, label: '×3' },
-                ]}
-                className="w-full"
-                ariaLabel={t('planner.multiplier')}
-                small
-              />
-            </div>
+          <div>
+            <label className="kuro-label">{t('planner.multiplier')}</label>
+            <KuroSelect
+              value={state.planner.goalModifier}
+              onChange={v => dispatch({ type: 'SET_PLANNER', field: 'goalModifier', value: +v })}
+              options={[
+                { value: 1, label: '×1' },
+                { value: 2, label: '×2' },
+                { value: 3, label: '×3' },
+              ]}
+              className="w-full"
+              ariaLabel={t('planner.multiplier')}
+              small
+            />
           </div>
           <div className="p-2 bg-white/5 rounded-lg text-sm text-gray-400 text-center">
             {t('planner.goalSummaryPrefix')}<span className={planData.isFeatured ? 'text-yellow-400' : 'text-cyan-400'}>{planData.goalBannerLabel}</span> × <span className="text-gray-100">{planData.goalCopies}</span> {t('planner.copiesLabel')}
           </div>
           <div className="text-sm text-gray-500 text-center py-1">
-            <span title={t('planner.baseConvenesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.baseConvenes')}</span>
+            <span title={t('planner.worstCaseTooltip')} className="underline decoration-dotted cursor-help">{t('planner.worstCase')}</span>
             {' × '}
             <span title={t('planner.multiplierTooltip')} className="underline decoration-dotted cursor-help">{t('planner.multiplier')}</span>
-            {' × '}
-            <span title={t('planner.copiesTooltip')} className="underline decoration-dotted cursor-help">{t('planner.copiesLabel')}</span>
             {' = '}
-            <span className="text-gray-400">{state.planner.goalPulls} × {state.planner.goalModifier} × {planData.goalCopies} = {planData.targetPulls}</span>
+            <span className="text-gray-400">{planData.worstCasePulls} × {state.planner.goalModifier} = {planData.targetPulls}</span>
           </div>
           <div className="p-3 bg-white/5 rounded-lg" aria-live="polite" aria-atomic="false">
             <div className="flex justify-between text-md mb-2">
