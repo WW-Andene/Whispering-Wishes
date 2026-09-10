@@ -22,7 +22,6 @@ const ACTION = Object.freeze({
   REMOVE_INCOME: 'REMOVE_INCOME',
   CLEAR_ALL_INCOME: 'CLEAR_ALL_INCOME',
   ADD_DAILY_INCOME: 'ADD_DAILY_INCOME',
-  SYNC_PLANNER_GOAL_FROM_CALC: 'SYNC_PLANNER_GOAL_FROM_CALC',
   IMPORT_HISTORY: 'IMPORT_HISTORY',
   SET_UID: 'SET_UID',
   SET_USERNAME: 'SET_USERNAME',
@@ -102,12 +101,15 @@ const initialState = {
   planner: {
     dailyAstrite: 60, luniteSubCount: 0,
     goalModifier: 1,
-    // Direct user request: the Goal Progress card's target (banner/copies/pity/guaranteed)
-    // is its own independent state, decoupled from the Calculator tab's own target — it no
-    // longer silently mirrors whatever the Calc tab happens to be set to. Resources
-    // (Astrite/Lunite/tides) stay shared and are read from state.calc as before; only the
-    // target moved. SYNC_PLANNER_GOAL_FROM_CALC (dispatched from the Goal Progress header's
-    // sync button) is the only way these get overwritten from Calc.
+    // Direct user request: revert the Goal Progress Target back to the original flat
+    // Base-Convenes dropdown (80/160/240) × Multiplier formula, instead of the later
+    // pity-aware worstCasePulls-based Target.
+    goalPulls: HARD_PITY,
+    // Direct user request: the Goal Progress card's target (banner/copies/pity/guaranteed),
+    // AND its char/weapon allocation split, are independent from the Calculator tab by
+    // default — assuming a fixed 50/50 split — with linkedToCalc (the header's persistent
+    // link toggle) as the only way they mirror Calc live instead.
+    linkedToCalc: false,
     goalBannerCategory: 'featured', goalSelectedBanner: 'both',
     goalCharCopies: 1, goalCharPity: 0, goalCharGuaranteed: false,
     goalWeapCopies: 1, goalWeapPity: 0,
@@ -196,23 +198,6 @@ const reducer = (state, action) => {
     case ACTION.SET_PLANNER: {
       const value = _clampPlannerField(action.field, action.value);
       return { ...state, planner: { ...state.planner, [action.field]: value } };
-    }
-    case ACTION.SYNC_PLANNER_GOAL_FROM_CALC: {
-      // Direct user request: the only way the Goal Progress card's independent target
-      // fields get overwritten from the Calculator tab — an explicit action, not automatic.
-      const c = state.calc;
-      return {
-        ...state,
-        planner: {
-          ...state.planner,
-          goalBannerCategory: c.bannerCategory,
-          goalSelectedBanner: c.selectedBanner,
-          goalCharCopies: c.charCopies, goalCharPity: c.charPity, goalCharGuaranteed: c.charGuaranteed,
-          goalWeapCopies: c.weapCopies, goalWeapPity: c.weapPity,
-          goalStdCharCopies: c.stdCharCopies, goalStdCharPity: c.stdCharPity,
-          goalStdWeapCopies: c.stdWeapCopies, goalStdWeapPity: c.stdWeapPity,
-        },
-      };
     }
     case ACTION.SET_SETTINGS: return { ...state, settings: { ...state.settings, [action.field]: action.value } };
     case ACTION.SET_EVENT_STATUS: {

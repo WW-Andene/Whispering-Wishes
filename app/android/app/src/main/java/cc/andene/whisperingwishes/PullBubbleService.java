@@ -1234,8 +1234,25 @@ public class PullBubbleService extends Service {
                                Runnable onAdvance) {
         android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
         int popSizePx = (int) (sizePx * POP_SCALE);
+        // Direct user report 2026-09-10: on real devices the pop-reveal's character art never
+        // rendered — only the background circle and holographic flash were visible, every
+        // single pull, for the full 3s hold (the SAME real tile then showed its art correctly
+        // once it landed in the pocket/bag row, so this wasn't a decode/asset-lookup bug).
+        // Root cause: addHolographicFlash used to add its own SEPARATE overlay window, added
+        // to WindowManager AFTER this one — cross-window stacking order between two
+        // independently-managed TYPE_APPLICATION_OVERLAY windows is not guaranteed the way
+        // child z-order within a single window is, and on-device the flash window apparently
+        // stayed on top for the icon's whole visible lifetime instead of just its own short
+        // burst. Folding the flash into a CHILD VIEW of this same window (added after the
+        // icon, so it simply draws on top within one deterministic view hierarchy) removes
+        // that entire class of race instead of trying to out-guess window-manager ordering —
+        // container is now the actual window content, sized for the flash's bloom; root (the
+        // circular icon) and flash are both its children, centered inside it.
+        int flashSizePx = (int) (popSizePx * 1.15f);
         int centerX = dm.widthPixels / 2;
         int centerY = dm.heightPixels / 2;
+
+        FrameLayout container = new FrameLayout(this);
 
         FrameLayout root = new FrameLayout(this);
         root.setBackground(circleDrawable("#40000000", rarityHex(result.rarity)));
@@ -1251,24 +1268,36 @@ public class PullBubbleService extends Service {
             img.setScaleType(ImageView.ScaleType.CENTER_CROP);
             root.addView(img, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         }
+        container.addView(root, new FrameLayout.LayoutParams(popSizePx, popSizePx, Gravity.CENTER));
+
+        // Flash — a plain radial-gradient burst, added AFTER root so it draws on top within
+        // this same window/view tree (see this method's header comment for why that matters).
+        GradientDrawable burst = new GradientDrawable();
+        burst.setShape(GradientDrawable.OVAL);
+        burst.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        burst.setGradientRadius(flashSizePx / 2f);
+        burst.setColors(new int[]{Color.parseColor("#F2FFFFFF"), Color.parseColor("#59B9E8FF"), Color.TRANSPARENT});
+        FrameLayout flash = new FrameLayout(this);
+        flash.setBackground(burst);
+        container.addView(flash, new FrameLayout.LayoutParams(flashSizePx, flashSizePx, Gravity.CENTER));
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                 : WindowManager.LayoutParams.TYPE_PHONE;
         // Non-touchable, same as every other one-shot overlay this file adds (glow burst,
-        // holographic flash, etc.) — see pendingPopAdvance's own comment for why "tap to
-        // advance" is handled through the main bubble's already-proven touch handling instead
-        // of making this rapidly-added/removed window itself touchable.
+        // etc.) — see pendingPopAdvance's own comment for why "tap to advance" is handled
+        // through the main bubble's already-proven touch handling instead of making this
+        // rapidly-added/removed window itself touchable.
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                popSizePx, popSizePx, overlayType,
+                flashSizePx, flashSizePx, overlayType,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 PixelFormat.TRANSLUCENT);
         params.gravity = Gravity.TOP | Gravity.START;
-        params.x = centerX - popSizePx / 2;
-        params.y = centerY - popSizePx / 2;
+        params.x = centerX - flashSizePx / 2;
+        params.y = centerY - flashSizePx / 2;
 
         try {
-            windowManager.addView(root, params);
+            windowManager.addView(container, params);
         } catch (Exception e) {
             pendingReveal.remove(realTile);
             tileRevealedAt.put(realTile, System.currentTimeMillis());
@@ -1277,7 +1306,13 @@ public class PullBubbleService extends Service {
             return;
         }
 
-        addHolographicFlash(centerX, centerY, popSizePx);
+        // Flash burst — one-shot, independent of the icon's own grow/hold/shrink sequence
+        // below; it just fades out and is left alone (it's removed along with the rest of
+        // container at the very end, no need to tear it down separately).
+        flash.setScaleX(0.4f);
+        flash.setScaleY(0.4f);
+        flash.setAlpha(0.95f);
+        flash.animate().scaleX(1.6f).scaleY(1.6f).alpha(0f).setDuration(320).start();
 
         root.setScaleX(0.5f);
         root.setScaleY(0.5f);
@@ -1285,11 +1320,15 @@ public class PullBubbleService extends Service {
         root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(POP_GROW_DURATION_MS)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
                 .withEndAction(() -> {
-                    int dxWindow = (finalParams.x + sizePx / 2) - (params.x + popSizePx / 2);
-                    int dyWindow = (finalParams.y + sizePx / 2) - (params.y + popSizePx / 2);
+                    // container (the actual window, flashSizePx-sized) is what moves to the
+                    // slot position — root (popSizePx-sized, centered inside container) is
+                    // translated to compensate so the icon doesn't visually jump, same
+                    // instant-jump + translate-compensate trick used elsewhere in this file.
+                    int dxWindow = (finalParams.x + sizePx / 2) - (params.x + flashSizePx / 2);
+                    int dyWindow = (finalParams.y + sizePx / 2) - (params.y + flashSizePx / 2);
                     params.x += dxWindow;
                     params.y += dyWindow;
-                    try { windowManager.updateViewLayout(root, params); } catch (Exception ignored) {}
+                    try { windowManager.updateViewLayout(container, params); } catch (Exception ignored) {}
                     root.setTranslationX(-dxWindow);
                     root.setTranslationY(-dyWindow);
                     float shrinkTo = (float) sizePx / popSizePx;
@@ -1308,7 +1347,7 @@ public class PullBubbleService extends Service {
                                     pendingReveal.remove(realTile);
                                     tileRevealedAt.put(realTile, System.currentTimeMillis());
                                     realTile.setAlpha(1f);
-                                    try { windowManager.removeView(root); } catch (Exception ignored) {}
+                                    try { windowManager.removeView(container); } catch (Exception ignored) {}
                                     onAdvance.run();
                                 })
                                 .start();
@@ -1316,46 +1355,6 @@ public class PullBubbleService extends Service {
                     pendingPopAdvance = shrinkAndAdvance;
                     handler.postDelayed(shrinkAndAdvance, POP_AUTO_ADVANCE_MS);
                 })
-                .start();
-    }
-
-    // A short white/prismatic flash at the pop-reveal's screen-center point — "a little
-    // holographic flash," direct user request 2026-09-10. Distinct from addGlowBurst's
-    // rarity-tinted halo (only for 4★/5★, at the tile's SLOT position, unchanged) — this plays
-    // for every pull, at the pop-reveal's center. Genuinely just a radial-gradient burst
-    // (white-hot center through a faint cyan tint to transparent), not a real animated
-    // hologram shader — the plain Android Views/drawables available here have no access to one.
-    private void addHolographicFlash(int centerX, int centerY, int refSizePx) {
-        int flashSizePx = (int) (refSizePx * 1.15f);
-        FrameLayout flash = new FrameLayout(this);
-        GradientDrawable burst = new GradientDrawable();
-        burst.setShape(GradientDrawable.OVAL);
-        burst.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        burst.setGradientRadius(flashSizePx / 2f);
-        burst.setColors(new int[]{Color.parseColor("#F2FFFFFF"), Color.parseColor("#59B9E8FF"), Color.TRANSPARENT});
-        flash.setBackground(burst);
-
-        int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-                ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                : WindowManager.LayoutParams.TYPE_PHONE;
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(
-                flashSizePx, flashSizePx, overlayType,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                PixelFormat.TRANSLUCENT);
-        params.gravity = Gravity.TOP | Gravity.START;
-        params.x = centerX - flashSizePx / 2;
-        params.y = centerY - flashSizePx / 2;
-
-        try {
-            windowManager.addView(flash, params);
-        } catch (Exception e) {
-            return;
-        }
-        flash.setScaleX(0.4f);
-        flash.setScaleY(0.4f);
-        flash.setAlpha(0.95f);
-        flash.animate().scaleX(1.6f).scaleY(1.6f).alpha(0f).setDuration(320)
-                .withEndAction(() -> { try { windowManager.removeView(flash); } catch (Exception ignored) {} })
                 .start();
     }
 
