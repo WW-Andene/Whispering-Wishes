@@ -1345,6 +1345,7 @@ const CONVENE_ANIMATIONS = {
   // "Clouds") is the real WEAPON_DATA key; the uploaded file was named with the singular.
   'Glint of Clouds': './convene-animations/glint-of-clouds-convene.mp4',
   'Forged Dwarf Star': './convene-animations/forged-dwarf-star-convene.mp4',
+  Frostburn: './convene-animations/frostburn-convene.mp4',
 };
 const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 
