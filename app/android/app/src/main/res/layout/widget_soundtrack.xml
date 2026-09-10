@@ -73,13 +73,19 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <!-- Row 1/3 (vertical weights 41/10/49 ≈ photo's y 417-519 of 1017) — track name,
-             centered in the cream panel inside the tape-reel window. Tap to cycle to the
-             next track, same interaction as the Calculator widget's own copy-target pill. -->
+        <!-- Row 1/3 — track name. Re-measured 2026-09-10 directly against a real-device
+             screenshot (not just the source photo) after a user report that the title
+             rendered cut/overlapping the reel art: pixel-scanning that screenshot for the
+             actual dark-text row found "Convene" sitting at ~24-33% of the widget's height,
+             not the 41-51% these weights previously computed from the source photo's blank
+             panel alone — that photo-only measurement never actually confirmed where the
+             TextView renders relative to the widget's real total height, only that the panel
+             existed at that fraction of the photo. Weights below (24/10/66 vertical,
+             35/45/20 horizontal) are fit to the screenshot's measured text position instead. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="41" />
+            android:layout_weight="24" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -88,7 +94,7 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="39" />
+                android:layout_weight="35" />
             <LinearLayout
                 android:id="@+id/widget_soundtrack_track_name"
                 android:layout_width="0dp"
@@ -108,12 +114,12 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="16" />
+                android:layout_weight="20" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="49" />
+            android:layout_weight="66" />
 
         <!-- Row 2/3 (vertical weights 81/13/6 ≈ photo's y 824-957 of 1017) — the 4 real
              physical button labels, horizontal weights 33/11/12/14/13/17 ≈ their real x
