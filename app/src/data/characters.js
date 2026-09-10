@@ -952,7 +952,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Lux & Umbra', 'Skull Thrasher'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper', 'Lucy + Iuno + Shorekeeper'] },
   'Yangyang: Xuanling': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Xuan Watcher of Xuanfang Hold and sister of Suisui. On-field Havoc DPS who alternates Azure and Feather Sword Stances, applying and consuming Havoc Bane for massive self-buffed Crit DMG — one of the highest damage ceilings in the game at release.',
+    desc: 'Xuan Watcher of Xuanfang Hold and sister of Suisui. On-field Havoc DPS who alternates Azure and Feather Sword Stances, applying and consuming Havoc Bane for massive self-buffed Crit DMG.',
     skills: ['Succor and Smite', "Feather's Edge", 'Hush of a Thousand Voices', 'Skybound Feather'],
     ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Cloudperch Seed' },
     skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'Polarizer' },
@@ -966,7 +966,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Emerald Sentence', 'Red Spring'], alt4: ['Lumingloss', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
     teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui'] },
   'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
-    desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, playing into either Fusion Burst or Tune Strain team archetypes depending on Resonance Mode.',
+    desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, fitting into either Fusion Burst or Tune Strain team archetypes.',
     skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
     rotation: ['Intro', 'Basic: Stagecraft 4 (cancel → Skill)', 'Skill: Phantom Bubble (cancel → Ultimate)', 'Ultimate: Stagecraft', 'Basic: Breakdown 1', 'Basic: Breakdown 2 (cancel → Dash)', 'Dash', 'Basic: Breakdown 1', 'Basic: Breakdown 2 (cancel → Skill)', 'Skill: Banish 1', 'Skill: Banish 2 (cancel → Ultimate)', 'Ultimate: Breakdown', 'Outro'],
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Dream of Stars' },
@@ -1003,7 +1003,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Blazing Brilliance', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
     teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye'] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
-    desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG + Chafe) via Resonance Skill, culminating in a team-wide All DMG Amplification through her Outro.',
+    desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG) via Resonance Skill, closing with a team-wide DMG Amplification Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
     ascension: { boss: "Solidarity's Loneflame", common: 'Autopuppet Kernel', specialty: 'Flowborne Dream' },
     skillMaterials: { weeklyDrop: 'Skyward Glazed Heart', forgery: 'String' },
@@ -1017,7 +1017,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
     teams: ['Suisui + Yangyang: Xuanling + Chisa', 'Suisui + Hiyuki + Lynae', 'Suisui + Aemeath + Denia'] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
-    desc: 'Paragon of Mengzhou. On-field Aero DPS who builds Qin Heart and Sword Cadence through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for empowered combos, scaling off Tune Strain - Interfered stacks and her own Mindlock stacks.',
+    desc: 'Paragon of Mengzhou. On-field Aero DPS who builds resources through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for an empowered combo finisher.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
     // Confirmed 2026-08-20 (v3.6 now live) via the wiki's own Ascension
     // Materials/Forte tables: boss drop Forged Empyrean's Sigh, common Autopuppet Kernel (Land of
@@ -1041,7 +1041,7 @@ const CHARACTER_DATA = {
     weaponAlts: { alt5: ['Red Spring'], alt4: ['Feather Edge'], alt3: ['Sword of Night'] },
     teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
-    desc: 'A loner treading into illusive depths, of Mengzhou. HP-scaling Fusion Broadblade wielder who channels Yin Vessel and Yang Font stances. On-field Fusion DPS whose Heavy Attacks and ATK/DMG scale off Max HP, entering the Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
+    desc: 'A loner treading into illusive depths, of Mengzhou. On-field Fusion DPS who alternates Yin Vessel and Yang Font stances, with ATK and Heavy Attack DMG scaling off Max HP, entering a Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
     // Dates corrected 2026-08-18: Jingran releases in the v3.6-p2 banner (~2026-09-10, per BANNER_HISTORY),
     // not Aug 20 (that's Qingxiao's v3.6-p1 date) — the wiki's own infobox leaves releaseDate blank/commented
@@ -1137,7 +1137,7 @@ const CHARACTER_DATA = {
     // who hunts thieves/bandits for retribution; gameplay half is the source's Hybrid framing — a fast
     // Outro-buff rotation for Havoc teammates, or a longer rotation (Basic ATK x3 into Skill x3, capped
     // by a full-power Forte Heavy Attack) that lets her run as a legitimate Main DPS.
-    desc: 'Midnight Ranger who trades her own blood for power, hunting thieves and bandits across Huanglong for retribution. Havoc Hybrid who consumes HP to fuel enhanced Basic and Heavy Attacks, gaining Havoc DMG Bonus as health decreases — run as a quick Outro buffer for Havoc DPS or, with a longer rotation, as a Main DPS in her own right.',
+    desc: 'Midnight Ranger who trades her own blood for power, hunting thieves and bandits across Huanglong for retribution. Havoc Hybrid who consumes HP to fuel enhanced Basic and Heavy Attacks, gaining Havoc DMG as her health drops — run as a quick Outro buffer for Havoc DPS or, with a longer rotation, as a Main DPS in her own right.',
     skills: ['Execution', 'Crimson Fragment', 'Crimson Bloom', 'Serene Vigil'],
     ascension: { boss: 'Strife Tacet Core', common: 'Ring', specialty: 'Belle Poppy' },
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
