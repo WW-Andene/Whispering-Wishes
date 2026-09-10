@@ -1202,14 +1202,11 @@ public class PullBubbleService extends Service {
     // (already sitting correctly positioned and invisible) and removes this temporary one.
     private static final float POP_SCALE = 2.4f;
     private static final int POP_GROW_DURATION_MS = 200;
-    // Direct user request 2026-09-10: stop auto-advancing through the sequence — the popped
-    // item now holds at full size until tapped (see the tap listener below), same as
-    // ConvenePullSimModal.jsx's own itemReveal phase requiring a tap to continue. This is a
-    // safety net only, not the normal path: if a tap never lands (touch delivery hiccup on some
-    // device, or the user backgrounds the app mid-reveal), the sequence would otherwise stall
-    // forever and block every future pull — a long-but-bounded fallback keeps that from being a
-    // real trap without reading as an auto-advance in ordinary use.
-    private static final int POP_SAFETY_TIMEOUT_MS = 20000;
+    // Direct user request 2026-09-10: the popped item holds at full size until either tapped
+    // (see the tap listener below) or 3s pass, whichever comes first — a tap advances
+    // immediately, an untapped item still moves the sequence along on its own rather than
+    // waiting indefinitely.
+    private static final int POP_AUTO_ADVANCE_MS = 3000;
     private static final int POP_SHRINK_DURATION_MS = 380;
 
     private void addPopReveal(WidgetPullSimulator.PullResult result, JSONObject assetMap,
@@ -1299,7 +1296,7 @@ public class PullBubbleService extends Service {
                         handler.removeCallbacks(shrinkAndAdvance);
                         shrinkAndAdvance.run();
                     });
-                    handler.postDelayed(shrinkAndAdvance, POP_SAFETY_TIMEOUT_MS);
+                    handler.postDelayed(shrinkAndAdvance, POP_AUTO_ADVANCE_MS);
                 })
                 .start();
     }
