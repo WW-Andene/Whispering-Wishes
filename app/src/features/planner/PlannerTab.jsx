@@ -13,7 +13,7 @@
 // state with the rest of this file.
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Calendar, Check, ChevronDown, Minus, Plus, RefreshCcw, Search, Star, X } from 'lucide-react';
+import { Calendar, Check, ChevronDown, Link2, Minus, Plus, Search, Star, Unlink2, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -189,22 +189,32 @@ function PlannerTab({
     const incomeByEnd = dailyIncome * daysLeft;
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
 
-    // Target — fully independent from the Calculator tab (direct user request: "the plan
-    // target should not be link to calc target unless click on a small button"). Only
-    // SYNC_PLANNER_GOAL_FROM_CALC (the header's sync button) overwrites these from Calc.
-    const isFeatured = state.planner.goalBannerCategory === 'featured';
-    const isChar = state.planner.goalSelectedBanner === 'char';
-    const isWeap = state.planner.goalSelectedBanner === 'weap';
+    // Target AND allocation split — fully independent from the Calculator tab by default
+    // (direct user request: "plan should not be wired on calc slider unless button link
+    // used... assume 50/50 by default"). state.planner.linkedToCalc is a persistent on/off
+    // toggle (the header's link button): while ON, both the target fields and the
+    // char/weapon allocation slider mirror Calc LIVE; while OFF (the default), the goal uses
+    // its own independent target fields and a fixed 50/50 allocation.
+    const linked = !!state.planner.linkedToCalc;
+    const goalBannerCategoryField = linked ? state.calc.bannerCategory : state.planner.goalBannerCategory;
+    const goalSelectedBannerField = linked ? state.calc.selectedBanner : state.planner.goalSelectedBanner;
+    const goalCharCopiesField = linked ? state.calc.charCopies : state.planner.goalCharCopies;
+    const goalWeapCopiesField = linked ? state.calc.weapCopies : state.planner.goalWeapCopies;
+    const goalStdCharCopiesField = linked ? state.calc.stdCharCopies : state.planner.goalStdCharCopies;
+    const goalStdWeapCopiesField = linked ? state.calc.stdWeapCopies : state.planner.goalStdWeapCopies;
+    const isFeatured = goalBannerCategoryField === 'featured';
+    const isChar = goalSelectedBannerField === 'char';
+    const isWeap = goalSelectedBannerField === 'weap';
     let goalCopies = 1;
     let goalBannerLabel = '';
     if (isFeatured) {
-      if (isChar) { goalCopies = Math.max(1, state.planner.goalCharCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.resonatorLabel')}`; }
-      else if (isWeap) { goalCopies = Math.max(1, state.planner.goalWeapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.weaponLabel')}`; }
-      else { goalCopies = Math.max(1, state.planner.goalCharCopies || 1, state.planner.goalWeapCopies || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.bothLabel')}`; }
+      if (isChar) { goalCopies = Math.max(1, goalCharCopiesField || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, goalWeapCopiesField || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, goalCharCopiesField || 1, goalWeapCopiesField || 1); goalBannerLabel = `${t('planner.featuredLabel')} ${t('planner.bothLabel')}`; }
     } else {
-      if (isChar) { goalCopies = Math.max(1, state.planner.goalStdCharCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.resonatorLabel')}`; }
-      else if (isWeap) { goalCopies = Math.max(1, state.planner.goalStdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
-      else { goalCopies = Math.max(1, state.planner.goalStdCharCopies || 1, state.planner.goalStdWeapCopies || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
+      if (isChar) { goalCopies = Math.max(1, goalStdCharCopiesField || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.resonatorLabel')}`; }
+      else if (isWeap) { goalCopies = Math.max(1, goalStdWeapCopiesField || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.weaponLabel')}`; }
+      else { goalCopies = Math.max(1, goalStdCharCopiesField || 1, goalStdWeapCopiesField || 1); goalBannerLabel = `${t('planner.standardLabel')} ${t('planner.bothLabel')}`; }
     }
 
     // Tides (Radiant/Forging/Lustrous) relevant to the GOAL's own banner selection — the
@@ -222,19 +232,23 @@ function PlannerTab({
     // already correctly reported as 100% guaranteed — a real contradiction, not two metrics
     // answering different questions. worstCasePulls reuses the exact same pity-aware
     // HARD_PITY-based worst-case calcStats already computes for the probability side, so
-    // Target and the success-rate tiles can never disagree again. Resources come from Calc
-    // (shared); the target itself comes from Planner's own decoupled goal fields. "By end"
+    // Target and the success-rate tiles can never disagree again. Currency amounts always
+    // come from Calc (shared) — the goal's own target fields AND the char/weapon allocation
+    // split only mirror Calc while `linked` is on; otherwise they use Planner's own
+    // independent goal fields and a fixed 50/50 split (direct user request: "plan should not
+    // be wired on calc slider unless button link used... assume 50/50 by default"). "By end"
     // reruns the same allocation with astrite/lunite bumped to the projected total (tides
     // don't accrue via dailyIncome, so they stay as-is).
     const goalCalcLike = {
       astrite: state.calc.astrite, lunite: state.calc.lunite, radiant: state.calc.radiant,
       forging: state.calc.forging, lustrous: state.calc.lustrous,
-      allocPriority: state.calc.allocPriority, stdAllocPriority: state.calc.stdAllocPriority,
-      bannerCategory: state.planner.goalBannerCategory, selectedBanner: state.planner.goalSelectedBanner,
-      charCopies: state.planner.goalCharCopies, charPity: state.planner.goalCharPity, charGuaranteed: state.planner.goalCharGuaranteed,
-      weapCopies: state.planner.goalWeapCopies, weapPity: state.planner.goalWeapPity,
-      stdCharCopies: state.planner.goalStdCharCopies, stdCharPity: state.planner.goalStdCharPity,
-      stdWeapCopies: state.planner.goalStdWeapCopies, stdWeapPity: state.planner.goalStdWeapPity,
+      allocPriority: linked ? state.calc.allocPriority : 50,
+      stdAllocPriority: linked ? state.calc.stdAllocPriority : 50,
+      bannerCategory: goalBannerCategoryField, selectedBanner: goalSelectedBannerField,
+      charCopies: goalCharCopiesField, charPity: linked ? state.calc.charPity : state.planner.goalCharPity, charGuaranteed: linked ? state.calc.charGuaranteed : state.planner.goalCharGuaranteed,
+      weapCopies: goalWeapCopiesField, weapPity: linked ? state.calc.weapPity : state.planner.goalWeapPity,
+      stdCharCopies: goalStdCharCopiesField, stdCharPity: linked ? state.calc.stdCharPity : state.planner.goalStdCharPity,
+      stdWeapCopies: goalStdWeapCopiesField, stdWeapPity: linked ? state.calc.stdWeapPity : state.planner.goalStdWeapPity,
     };
     const nowStats = goalStats(goalCalcLike);
     const endStats = goalStats({ ...goalCalcLike, astrite: totalAstriteByEnd, lunite: 0 });
@@ -458,12 +472,25 @@ function PlannerTab({
       <Card>
         <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('goal')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('goal'); } }} aria-expanded={!collapsed.goal}>
           <CardHeader action={<>
-            {/* Direct user request: the goal target is independent from the Calculator tab by
-                default — this button is the ONLY way it gets overwritten from Calc. stopPropagation
-                so clicking it doesn't also toggle this card's own collapse (the whole header row
+            {/* Direct user request: the goal target (and its char/weapon allocation split) is
+                independent from the Calculator tab by default, using a fixed 50/50 split —
+                this is a persistent on/off link, not a one-shot copy: while ON, both mirror
+                Calc live; while OFF, Planner uses its own goal fields. stopPropagation so
+                clicking it doesn't also toggle this card's own collapse (the whole header row
                 has its own onClick above). */}
-            <button onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SYNC_PLANNER_GOAL_FROM_CALC' }); toast?.addToast?.(t('planner.syncedFromCalcToast'), 'success'); }} className="text-gray-400 hover:text-gray-200 min-w-[48px] min-h-[48px] flex items-center justify-center -my-2" title={t('planner.syncFromCalcTooltip')} aria-label={t('planner.syncFromCalcAriaLabel')}>
-              <RefreshCcw size={14} />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const nextLinked = !state.planner.linkedToCalc;
+                dispatch({ type: 'SET_PLANNER', field: 'linkedToCalc', value: nextLinked });
+                toast?.addToast?.(t(nextLinked ? 'planner.linkedToCalcToast' : 'planner.unlinkedFromCalcToast'), 'success');
+              }}
+              className={`min-w-[48px] min-h-[48px] flex items-center justify-center -my-2 ${state.planner.linkedToCalc ? 'text-yellow-400 hover:text-yellow-300' : 'text-gray-400 hover:text-gray-200'}`}
+              title={t(state.planner.linkedToCalc ? 'planner.unlinkFromCalcTooltip' : 'planner.linkToCalcTooltip')}
+              aria-pressed={state.planner.linkedToCalc}
+              aria-label={t(state.planner.linkedToCalc ? 'planner.unlinkFromCalcAriaLabel' : 'planner.linkToCalcAriaLabel')}
+            >
+              {state.planner.linkedToCalc ? <Link2 size={14} /> : <Unlink2 size={14} />}
             </button>
             <span className="text-gray-400 text-sm">{planData.goalProgress.toFixed(0)}%</span>
             <ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.goal ? '' : 'rotate-180'}`} />
@@ -471,6 +498,56 @@ function PlannerTab({
         </div>
         {!collapsed.goal && (
         <CardBody className="space-y-3">
+          {/* Target — independent from the Calculator tab while unlinked (direct user request). */}
+          {!state.planner.linkedToCalc && (
+          <div className="space-y-2 p-2 bg-white/5 rounded-lg">
+            <div className="grid grid-cols-2 gap-2">
+              {[['featured', t('planner.featuredLabel')], ['standard', t('planner.standardLabel')]].map(([v, label]) => (
+                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalBannerCategory', value: v })} aria-pressed={state.planner.goalBannerCategory === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalBannerCategory === v ? 'active-gold' : ''}`}>{label}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[['char', t('planner.resonatorLabel')], ['weap', t('planner.weaponLabel')], ['both', t('planner.bothLabel')]].map(([v, label]) => (
+                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalSelectedBanner', value: v })} aria-pressed={state.planner.goalSelectedBanner === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalSelectedBanner === v ? 'active-emerald' : ''}`}>{label}</button>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {!planData.isWeap && (
+                <div>
+                  <label className="kuro-label text-xs">{t('planner.goalCharTargetLabel')}</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalCharCopies : state.planner.goalStdCharCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharCopies' : 'goalStdCharCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.copiesLabel')} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalCharPity : state.planner.goalStdCharPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharPity' : 'goalStdCharPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.pityLabel')} />
+                    </div>
+                  </div>
+                  {planData.isFeatured && (
+                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalCharGuaranteed', value: !state.planner.goalCharGuaranteed })} aria-pressed={state.planner.goalCharGuaranteed} className={`kuro-btn kuro-btn-sm w-full mt-1 ${state.planner.goalCharGuaranteed ? 'active-emerald' : ''}`}>{state.planner.goalCharGuaranteed ? t('calculator.guaranteed') : t('calculator.5050active')}</button>
+                  )}
+                </div>
+              )}
+              {!planData.isChar && (
+                <div>
+                  <label className="kuro-label text-xs">{t('planner.goalWeapTargetLabel')}</label>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapCopies : state.planner.goalStdWeapCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapCopies' : 'goalStdWeapCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.copiesLabel')} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
+                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapPity : state.planner.goalStdWeapPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapPity' : 'goalStdWeapPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.pityLabel')} />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+          )}
           <div>
             <label className="kuro-label">{t('planner.multiplier')}</label>
             <KuroSelect
