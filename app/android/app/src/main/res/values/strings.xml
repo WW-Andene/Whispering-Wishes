@@ -77,8 +77,12 @@
     <string name="pull_bubble_category_all">All</string>
     <string name="pull_bubble_pin_aria">Pull from %1$s\'s banner</string>
     <string name="pull_bubble_pinned_toast">Pinned to %1$s</string>
-    <string name="pull_bubble_both">Both</string>
-    <string name="pull_bubble_both_aria">Pull from both at once</string>
+    <!-- Direct user request: was "Both", but the merged-pull button already merges however
+         many banners are active (pinBoth loops over the whole options list, not just two) —
+         "Both" implied exactly 2, which broke down the moment a third banner went live. "Mix"
+         reads correctly regardless of count. -->
+    <string name="pull_bubble_both">Mix</string>
+    <string name="pull_bubble_both_aria">Pull from a mix of all active banners at once</string>
     <string name="pull_bubble_multi_pin_added">Added %1$s — will roll alongside your other pins</string>
     <string name="pull_bubble_multi_pin_removed">Removed %1$s from your pins</string>
     <string name="pull_bubble_back_aria">Back</string>
