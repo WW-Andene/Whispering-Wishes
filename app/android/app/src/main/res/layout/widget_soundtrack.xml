@@ -257,6 +257,8 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@android:drawable/ic_media_previous"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -275,6 +277,8 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@android:drawable/ic_media_next"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -302,12 +306,13 @@
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@drawable/ic_loop_widget"
                     android:contentDescription="@null" />
             </FrameLayout>
-            <!-- Play/Stop — same fixed-size pattern (22dp, slightly larger since it's the
-                 primary action and has to show playing vs paused, which the static photo
-                 can't). -->
+            <!-- Play/Stop — same fixed-size pattern, now 18dp to match the other three icons
+                 (was 22dp/"slightly larger" — direct user request to size it the same). -->
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
@@ -320,9 +325,11 @@
                     android:contentDescription="@string/widget_soundtrack_play_aria" />
                 <ImageView
                     android:id="@+id/widget_soundtrack_play_icon"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
                     android:layout_gravity="center"
+                    android:translationX="1dp"
+                    android:translationY="2dp"
                     android:src="@android:drawable/ic_media_play"
                     android:tint="#3D2817"
                     android:contentDescription="@null" />
@@ -390,9 +397,10 @@
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
                 <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
                     android:layout_gravity="center"
+                    android:translationX="-1dp"
                     android:src="@drawable/ic_shuffle_widget"
                     android:contentDescription="@null" />
             </FrameLayout>
