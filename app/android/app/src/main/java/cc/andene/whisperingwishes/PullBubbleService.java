@@ -1332,37 +1332,55 @@ public class PullBubbleService extends Service {
         root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(POP_GROW_DURATION_MS)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
                 .withEndAction(() -> {
-                    // container (the actual window, flashSizePx-sized) is what moves to the
-                    // slot position — root (popSizePx-sized, centered inside container) is
-                    // translated to compensate so the icon doesn't visually jump, same
-                    // instant-jump + translate-compensate trick used elsewhere in this file.
-                    int dxWindow = (finalParams.x + sizePx / 2) - (params.x + flashSizePx / 2);
-                    int dyWindow = (finalParams.y + sizePx / 2) - (params.y + flashSizePx / 2);
-                    params.x += dxWindow;
-                    params.y += dyWindow;
-                    try { windowManager.updateViewLayout(container, params); } catch (Exception ignored) {}
-                    root.setTranslationX(-dxWindow);
-                    root.setTranslationY(-dyWindow);
-                    float shrinkTo = (float) sizePx / popSizePx;
-
-                    // Guards against a bubble tap and the auto-advance timer racing each other —
-                    // whichever fires first wins, the other is a no-op.
+                    // Direct user report, confirmed on a screen recording: the icon rendered for
+                    // one frame then vanished for the rest of the hold, only reappearing once it
+                    // landed in the pocket/bag row. Root cause: the previous approach jumped the
+                    // window to the tile's small slot position IMMEDIATELY here (at the end of
+                    // the 200ms grow, not after the 3s hold), then translated root backwards by
+                    // the full screen-center-to-slot distance to fake "staying in place." A
+                    // window can never show content translated outside its own surface bounds —
+                    // container is only flashSizePx (~150px) wide, but that translation is
+                    // routinely hundreds of pixels, so root was clipped invisible the instant the
+                    // window jumped. Fixed below: the window stays exactly where it is (screen
+                    // center) for the whole hold, and only starts actually moving once
+                    // shrinkAndAdvance's own animation begins — see there.
                     boolean[] advancing = {false};
                     Runnable shrinkAndAdvance = () -> {
                         if (advancing[0]) return;
                         advancing[0] = true;
                         pendingPopAdvance = null;
-                        root.animate().translationX(0).translationY(0).scaleX(shrinkTo).scaleY(shrinkTo)
-                                .setDuration(POP_SHRINK_DURATION_MS)
-                                .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                                .withEndAction(() -> {
-                                    pendingReveal.remove(realTile);
-                                    tileRevealedAt.put(realTile, System.currentTimeMillis());
-                                    realTile.setAlpha(1f);
-                                    try { windowManager.removeView(container); } catch (Exception ignored) {}
-                                    onAdvance.run();
-                                })
-                                .start();
+                        // Real, incremental window-position animation instead of a jump: the
+                        // window slides from its current (screen-center) position to the tile's
+                        // slot position over the animation's own duration, one updateViewLayout
+                        // per frame, while root simultaneously scales down to the tile's real
+                        // size — container's content is always within its own bounds, so nothing
+                        // gets clipped at any point.
+                        float shrinkTo = (float) sizePx / popSizePx;
+                        int startX = params.x, startY = params.y;
+                        int endX = finalParams.x + sizePx / 2 - flashSizePx / 2;
+                        int endY = finalParams.y + sizePx / 2 - flashSizePx / 2;
+                        android.animation.ValueAnimator slide = android.animation.ValueAnimator.ofFloat(0f, 1f);
+                        slide.setDuration(POP_SHRINK_DURATION_MS);
+                        slide.setInterpolator(new android.view.animation.DecelerateInterpolator());
+                        slide.addUpdateListener(a -> {
+                            float t = (float) a.getAnimatedValue();
+                            params.x = Math.round(startX + (endX - startX) * t);
+                            params.y = Math.round(startY + (endY - startY) * t);
+                            try { windowManager.updateViewLayout(container, params); } catch (Exception ignored) {}
+                            float s = 1f + (shrinkTo - 1f) * t;
+                            root.setScaleX(s);
+                            root.setScaleY(s);
+                        });
+                        slide.addListener(new android.animation.AnimatorListenerAdapter() {
+                            @Override public void onAnimationEnd(android.animation.Animator animation) {
+                                pendingReveal.remove(realTile);
+                                tileRevealedAt.put(realTile, System.currentTimeMillis());
+                                realTile.setAlpha(1f);
+                                try { windowManager.removeView(container); } catch (Exception ignored) {}
+                                onAdvance.run();
+                            }
+                        });
+                        slide.start();
                     };
                     pendingPopAdvance = shrinkAndAdvance;
                     handler.postDelayed(shrinkAndAdvance, POP_AUTO_ADVANCE_MS);
