@@ -11,7 +11,9 @@ import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.util.Log;
 
 import java.util.Random;
@@ -57,6 +59,37 @@ public class SoundtrackPlaybackService extends Service {
     private boolean playing = false;
     private boolean looping = SoundtrackTracks.DEFAULT_LOOP;
     private boolean shuffle = SoundtrackTracks.DEFAULT_SHUFFLE;
+
+    // Drives the title ticker (widget_soundtrack_track_name_text) scrolling left while a track
+    // plays — direct user request 2026-09-10 ("like a real player"). RemoteViews text can't
+    // animate on its own (a home-screen widget never gets the focus real marquee ellipsize
+    // needs, so that's set on the TextView too as a free extra but isn't what actually moves
+    // it here); this instead just re-renders the widget every SCROLL_TICK_MS with the display
+    // string's visible window shifted one character, which works on any launcher since it's
+    // nothing more than a normal periodic text update. Runs ONLY while playing (a paused/
+    // stopped track has no reason to keep re-rendering the widget on a timer) — started in
+    // every path that sets playing=true, stopped in every path that sets it false or tears
+    // the service down, via the scrollOffset write in persistAndRefresh() below.
+    private static final long SCROLL_TICK_MS = 650;
+    private final Handler scrollHandler = new Handler(Looper.getMainLooper());
+    private int scrollOffset = 0;
+    private final Runnable scrollTick = new Runnable() {
+        @Override public void run() {
+            if (!playing) return; // stopScrollTicker() should have caught this, but be safe
+            scrollOffset++;
+            persistAndRefresh();
+            scrollHandler.postDelayed(scrollTick, SCROLL_TICK_MS);
+        }
+    };
+
+    private void startScrollTicker() {
+        scrollHandler.removeCallbacks(scrollTick); // never double-post
+        scrollHandler.postDelayed(scrollTick, SCROLL_TICK_MS);
+    }
+
+    private void stopScrollTicker() {
+        scrollHandler.removeCallbacks(scrollTick);
+    }
 
     @Override
     public IBinder onBind(Intent intent) { return null; }
@@ -105,6 +138,7 @@ public class SoundtrackPlaybackService extends Service {
 
     @Override
     public void onDestroy() {
+        stopScrollTicker();
         releasePlayer();
         super.onDestroy();
     }
@@ -117,9 +151,11 @@ public class SoundtrackPlaybackService extends Service {
         if (mediaPlayer.isPlaying()) {
             mediaPlayer.pause();
             playing = false;
+            stopScrollTicker();
         } else {
             mediaPlayer.start();
             playing = true;
+            startScrollTicker();
         }
         persistAndRefresh();
     }
@@ -170,6 +206,7 @@ public class SoundtrackPlaybackService extends Service {
     private void loadTrack(String trackKey, boolean autoPlay) {
         releasePlayer();
         currentTrackKey = trackKey;
+        scrollOffset = 0; // fresh ticker position for the new title
 
         Uri uri = WidgetAssetUtils.streamOrCachedAssetUri(this, SoundtrackTracks.byKey(trackKey).assetPath, "widget-audio-");
         if (uri == null) {
@@ -188,6 +225,7 @@ public class SoundtrackPlaybackService extends Service {
             Log.w(TAG, "MediaPlayer error what=" + what + " extra=" + extra);
             releasePlayer();
             playing = false;
+            stopScrollTicker();
             persistAndRefresh();
             return true;
         });
@@ -199,6 +237,7 @@ public class SoundtrackPlaybackService extends Service {
         // normal player's "play again" behavior).
         player.setOnCompletionListener(mp -> {
             playing = false;
+            stopScrollTicker();
             persistAndRefresh();
         });
         // prepareAsync(), not the blocking prepare() — this runs on the service's main-thread
@@ -207,6 +246,7 @@ public class SoundtrackPlaybackService extends Service {
             if (autoPlay) {
                 mp.start();
                 playing = true;
+                startScrollTicker();
             }
             persistAndRefresh();
         });
@@ -244,6 +284,7 @@ public class SoundtrackPlaybackService extends Service {
             .putBoolean(SoundtrackTracks.PREF_PLAYING_KEY, playing)
             .putBoolean(SoundtrackTracks.PREF_LOOP_KEY, looping)
             .putBoolean(SoundtrackTracks.PREF_SHUFFLE_KEY, shuffle)
+            .putInt(SoundtrackTracks.PREF_SCROLL_OFFSET_KEY, scrollOffset)
             .apply();
         SoundtrackWidget.requestUpdate(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
