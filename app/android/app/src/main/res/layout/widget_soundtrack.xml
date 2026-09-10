@@ -130,6 +130,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="34"
                 android:gravity="center"
+                android:background="@drawable/widget_title_backing_black25"
                 android:clipChildren="false">
                 <TextView
                     android:id="@+id/widget_soundtrack_track_name_text"
