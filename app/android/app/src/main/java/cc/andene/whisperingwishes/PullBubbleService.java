@@ -104,6 +104,18 @@ public class PullBubbleService extends Service {
     // rendered anywhere, on the big pop OR the real tile. Both eviction paths below now skip a
     // pending tile instead of tearing it down mid-reveal.
     private final Set<View> pendingReveal = new HashSet<>();
+    // Wall-clock time each tile actually became visible (pop-reveal's own withEndAction, or the
+    // immediate fallback if that window failed to add) — direct user report 2026-09-10: on a
+    // standard ×10 pull, tiles spawn ~WAVE_STAGGER_MS apart but MAX_TOTAL_TILE_WINDOWS is 9, so
+    // the very first item was finishing its pop-reveal and getting swept into the pocket almost
+    // the instant the cap was crossed by a later item — "they almost don't even stay before
+    // going in the bag row". Both eviction paths below now also require a tile to have been
+    // visible for at least MIN_TILE_DWELL_MS before it's eligible, the same "skip ineligible,
+    // evict oldest eligible, temporarily exceed the cap if none qualify yet" pattern already
+    // used for pendingReveal — a big ×80 pull still gets capped, just never before every tile
+    // has had a fair look.
+    private final Map<View, Long> tileRevealedAt = new HashMap<>();
+    private static final long MIN_TILE_DWELL_MS = 1500;
     private WindowManager.LayoutParams mainBubbleParams;
     private ImageView mainBubbleIcon; // kept so pin changes can swap the currency icon in place
     private boolean expanded = false;
@@ -1137,15 +1149,17 @@ public class PullBubbleService extends Service {
 
         int individualCap = (pocketIcon != null) ? MAX_TOTAL_TILE_WINDOWS - 1 : MAX_TOTAL_TILE_WINDOWS;
         while (resultIcons.size() > individualCap) {
-            // Skip past any tile still mid pop-reveal (pendingReveal) — evicting it here would
-            // tear its window down before addPopReveal's own withEndAction hands off visibility,
-            // leaving the icon permanently invisible (see pendingReveal's own comment). Oldest
-            // non-pending tile is evicted instead; if every tile is currently pending (a burst of
-            // near-simultaneous pulls), the cap is left temporarily exceeded rather than eating a
-            // tile mid-animation — it resolves itself as each reveal completes.
+            // Skip past any tile still mid pop-reveal, or one that's settled but hasn't had its
+            // MIN_TILE_DWELL_MS on screen yet (see tileRevealedAt's own comment) — evicting a
+            // pending tile here would tear its window down before addPopReveal's own
+            // withEndAction hands off visibility, leaving the icon permanently invisible; evicting
+            // a just-settled one gives it no visible time at all on a fast pull batch. Oldest
+            // fully-eligible tile is evicted instead; if none qualify yet (a burst of
+            // near-simultaneous pulls), the cap is left temporarily exceeded — it resolves itself
+            // as each tile's reveal completes and/or its dwell time elapses.
             View oldestEvictable = null;
             for (View v : resultIcons) {
-                if (!pendingReveal.contains(v)) { oldestEvictable = v; break; }
+                if (isEvictionEligible(v)) { oldestEvictable = v; break; }
             }
             if (oldestEvictable == null) break;
             evictTileToPocket(oldestEvictable, sizePx);
@@ -1226,6 +1240,7 @@ public class PullBubbleService extends Service {
             windowManager.addView(root, params);
         } catch (Exception e) {
             pendingReveal.remove(realTile);
+            tileRevealedAt.put(realTile, System.currentTimeMillis());
             realTile.setAlpha(1f); // this pop window failed — still reveal the real tile plainly
             return;
         }
@@ -1252,6 +1267,7 @@ public class PullBubbleService extends Service {
                             .setInterpolator(new android.view.animation.DecelerateInterpolator())
                             .withEndAction(() -> {
                                 pendingReveal.remove(realTile);
+                                tileRevealedAt.put(realTile, System.currentTimeMillis());
                                 realTile.setAlpha(1f);
                                 try { windowManager.removeView(root); } catch (Exception ignored) {}
                             })
@@ -1348,6 +1364,7 @@ public class PullBubbleService extends Service {
             try { windowManager.removeView(root); } catch (Exception ignored) {}
             resultIcons.remove(root);
             pendingReveal.remove(root);
+            tileRevealedAt.remove(root);
         });
 
         windowManager.addView(root, params);
@@ -1589,6 +1606,7 @@ public class PullBubbleService extends Service {
         }
         resultIcons.clear();
         pendingReveal.clear();
+        tileRevealedAt.clear();
         if (pocketIcon != null) {
             try { windowManager.removeView(pocketIcon); } catch (Exception ignored) {}
             pocketIcon = null;
@@ -1614,18 +1632,28 @@ public class PullBubbleService extends Service {
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
         // Snapshot first — evictTileToPocket mutates resultIcons as it iterates. Skip any tile
-        // still mid pop-reveal (see pendingReveal's own comment) — this is a one-shot Handler
-        // timer on the real wall clock, so it can fire while a reveal is still in flight (e.g.
-        // the app backgrounded mid-animation); tearing that tile's window down early would leave
-        // its icon permanently invisible. A skipped tile just stays as a normal individual result
-        // icon once its own reveal finishes — it isn't lost, just no longer auto-archived by this
-        // particular pass; the next overflow-cap check or settle picks it up normally.
+        // still mid pop-reveal or short of its MIN_TILE_DWELL_MS (see tileRevealedAt's own
+        // comment) — this is a one-shot Handler timer on the real wall clock, so it can fire
+        // while a reveal is still in flight (e.g. the app backgrounded mid-animation); tearing
+        // that tile's window down early would leave its icon permanently invisible, and archiving
+        // a just-settled one gives it no visible time at all. A skipped tile just stays as a
+        // normal individual result icon — it isn't lost, just not archived by this particular
+        // pass; the next overflow-cap check or settle picks it up normally.
         List<View> toEvict = new ArrayList<>(resultIcons);
         for (View tile : toEvict) {
-            if (!pendingReveal.contains(tile)) evictTileToPocket(tile, sizePx);
+            if (isEvictionEligible(tile)) evictTileToPocket(tile, sizePx);
         }
         updatePocketBadge();
         renumberResultSlots(sizePx);
+    }
+
+    // Shared eligibility check for both eviction paths above: a tile must have handed off
+    // visibility (not still pendingReveal) AND have been actually visible for at least
+    // MIN_TILE_DWELL_MS (tileRevealedAt) before either one is allowed to sweep it away.
+    private boolean isEvictionEligible(View tile) {
+        if (pendingReveal.contains(tile)) return false;
+        Long revealedAt = tileRevealedAt.get(tile);
+        return revealedAt != null && System.currentTimeMillis() - revealedAt >= MIN_TILE_DWELL_MS;
     }
 
     // Shared by both eviction paths (the overflow cap in addResultIcon() and the auto-archive
@@ -1636,6 +1664,7 @@ public class PullBubbleService extends Service {
         removeTileGlow(tile);
         try { windowManager.removeView(tile); } catch (Exception ignored) {}
         resultIcons.remove(tile);
+        tileRevealedAt.remove(tile);
     }
 
     // Persistent (non-one-shot) halo behind a settled 4★/5★ tile — a static glow ring for 4★,
