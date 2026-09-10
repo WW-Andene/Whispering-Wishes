@@ -101,7 +101,7 @@ const initialState = {
   },
   planner: {
     dailyAstrite: 60, luniteSubCount: 0,
-    goalPulls: HARD_PITY, goalModifier: 1,
+    goalModifier: 1,
     // Direct user request: the Goal Progress card's target (banner/copies/pity/guaranteed)
     // is its own independent state, decoupled from the Calculator tab's own target — it no
     // longer silently mirrors whatever the Calc tab happens to be set to. Resources
