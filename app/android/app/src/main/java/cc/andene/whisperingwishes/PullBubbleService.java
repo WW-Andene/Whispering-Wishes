@@ -32,8 +32,10 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 // Chat-heads-style persistent floating bubble — replaces PulseBannerWidget's old ×1/×10
 // pull-sim pills entirely (requested explicitly in place of them). Once toggled on from the
@@ -91,6 +93,15 @@ public class PullBubbleService extends Service {
     private View hiddenTab;
     private final List<View> subBubbles = new ArrayList<>();
     private final List<View> resultIcons = new ArrayList<>();
+    // Tiles currently mid pop-reveal (spawned invisible, alpha=0f, waiting on addPopReveal's
+    // grow->hold->shrink chain to hand off visibility — see addResultIcon/addPopReveal). Real
+    // device bug fixed 2026-09-10: evictTileToPocket() calls windowManager.removeView(tile),
+    // tearing the window down outright. If the overflow cap (MAX_TOTAL_TILE_WINDOWS) or the
+    // autoArchiveAllTiles timer evicted a tile still in this set, its window was gone before
+    // addPopReveal's withEndAction ever called realTile.setAlpha(1f) — so the icon never
+    // rendered anywhere, on the big pop OR the real tile. Both eviction paths below now skip a
+    // pending tile instead of tearing it down mid-reveal.
+    private final Set<View> pendingReveal = new HashSet<>();
     private WindowManager.LayoutParams mainBubbleParams;
     private ImageView mainBubbleIcon; // kept so pin changes can swap the currency icon in place
     private boolean expanded = false;
@@ -1096,7 +1107,18 @@ public class PullBubbleService extends Service {
 
         int individualCap = (pocketIcon != null) ? MAX_TOTAL_TILE_WINDOWS - 1 : MAX_TOTAL_TILE_WINDOWS;
         while (resultIcons.size() > individualCap) {
-            evictTileToPocket(resultIcons.get(0), sizePx);
+            // Skip past any tile still mid pop-reveal (pendingReveal) — evicting it here would
+            // tear its window down before addPopReveal's own withEndAction hands off visibility,
+            // leaving the icon permanently invisible (see pendingReveal's own comment). Oldest
+            // non-pending tile is evicted instead; if every tile is currently pending (a burst of
+            // near-simultaneous pulls), the cap is left temporarily exceeded rather than eating a
+            // tile mid-animation — it resolves itself as each reveal completes.
+            View oldestEvictable = null;
+            for (View v : resultIcons) {
+                if (!pendingReveal.contains(v)) { oldestEvictable = v; break; }
+            }
+            if (oldestEvictable == null) break;
+            evictTileToPocket(oldestEvictable, sizePx);
             individualCap = MAX_TOTAL_TILE_WINDOWS - 1;
         }
         if (pocketIcon != null) updatePocketBadge();
@@ -1115,6 +1137,7 @@ public class PullBubbleService extends Service {
         // (newTile, already at its correct final slot window) stays invisible until the
         // pop-reveal hands off to it, so there's exactly one visible copy of the icon at a time.
         newTile.setAlpha(0f);
+        pendingReveal.add(newTile);
         addPopReveal(result, assetMap, finalParams, sizePx, newTile);
     }
 
@@ -1130,6 +1153,10 @@ public class PullBubbleService extends Service {
     // (already sitting correctly positioned and invisible) and removes this temporary one.
     private static final float POP_SCALE = 2.4f;
     private static final int POP_GROW_DURATION_MS = 200;
+    // Direct user report 2026-09-10: the pop reveal moved from grow straight into shrink with
+    // no pause, reading as "too quick" — hold the big reveal on screen for a beat before the
+    // shrink-to-slot animation starts.
+    private static final int POP_HOLD_DURATION_MS = 1000;
     private static final int POP_SHRINK_DURATION_MS = 380;
 
     private void addPopReveal(WidgetPullSimulator.PullResult result, JSONObject assetMap,
@@ -1168,6 +1195,7 @@ public class PullBubbleService extends Service {
         try {
             windowManager.addView(root, params);
         } catch (Exception e) {
+            pendingReveal.remove(realTile);
             realTile.setAlpha(1f); // this pop window failed — still reveal the real tile plainly
             return;
         }
@@ -1189,9 +1217,11 @@ public class PullBubbleService extends Service {
                     root.setTranslationY(-dyWindow);
                     float shrinkTo = (float) sizePx / popSizePx;
                     root.animate().translationX(0).translationY(0).scaleX(shrinkTo).scaleY(shrinkTo)
+                            .setStartDelay(POP_HOLD_DURATION_MS)
                             .setDuration(POP_SHRINK_DURATION_MS)
                             .setInterpolator(new android.view.animation.DecelerateInterpolator())
                             .withEndAction(() -> {
+                                pendingReveal.remove(realTile);
                                 realTile.setAlpha(1f);
                                 try { windowManager.removeView(root); } catch (Exception ignored) {}
                             })
@@ -1287,6 +1317,7 @@ public class PullBubbleService extends Service {
             removeTileGlow(root);
             try { windowManager.removeView(root); } catch (Exception ignored) {}
             resultIcons.remove(root);
+            pendingReveal.remove(root);
         });
 
         windowManager.addView(root, params);
@@ -1527,6 +1558,7 @@ public class PullBubbleService extends Service {
             try { windowManager.removeView(v); } catch (Exception ignored) {}
         }
         resultIcons.clear();
+        pendingReveal.clear();
         if (pocketIcon != null) {
             try { windowManager.removeView(pocketIcon); } catch (Exception ignored) {}
             pocketIcon = null;
@@ -1551,9 +1583,17 @@ public class PullBubbleService extends Service {
         if (resultIcons.isEmpty()) return;
         float density = getResources().getDisplayMetrics().density;
         int sizePx = (int) (RESULT_ICON_SIZE_DP * density);
-        // Snapshot first — evictTileToPocket mutates resultIcons as it iterates.
+        // Snapshot first — evictTileToPocket mutates resultIcons as it iterates. Skip any tile
+        // still mid pop-reveal (see pendingReveal's own comment) — this is a one-shot Handler
+        // timer on the real wall clock, so it can fire while a reveal is still in flight (e.g.
+        // the app backgrounded mid-animation); tearing that tile's window down early would leave
+        // its icon permanently invisible. A skipped tile just stays as a normal individual result
+        // icon once its own reveal finishes — it isn't lost, just no longer auto-archived by this
+        // particular pass; the next overflow-cap check or settle picks it up normally.
         List<View> toEvict = new ArrayList<>(resultIcons);
-        for (View tile : toEvict) evictTileToPocket(tile, sizePx);
+        for (View tile : toEvict) {
+            if (!pendingReveal.contains(tile)) evictTileToPocket(tile, sizePx);
+        }
         updatePocketBadge();
         renumberResultSlots(sizePx);
     }
