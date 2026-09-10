@@ -24,7 +24,7 @@
   "luniteSubRemoveAriaLabel": "Remove a Lunite Subscription",
   "luniteSubCountSuffix": "×{{n}} stacked",
   "perMonth": "${{price}}/mo",
-  "plusPerDay": "+{{n}}/day",
+  "luniteSubActiveSummary": "+{{daily}}/day for {{days}}d",
   "addedToast": "Added {{name}}",
   "directTopUps": "Direct Top-Ups",
   "added": "Added",

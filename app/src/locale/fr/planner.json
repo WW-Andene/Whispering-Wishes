@@ -24,7 +24,7 @@
   "luniteSubRemoveAriaLabel": "Retirer un abonnement Lunite",
   "luniteSubCountSuffix": "×{{n}} cumulés",
   "perMonth": "{{price}} $/mois",
-  "plusPerDay": "+{{n}}/jour",
+  "luniteSubActiveSummary": "+{{daily}}/jour pendant {{days}}j",
   "addedToast": "{{name}} ajouté",
   "directTopUps": "Recharges directes",
   "added": "Ajoutés",
