@@ -7,6 +7,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -18,11 +19,23 @@ import android.widget.RemoteViews;
 // survive the widget/app not being on screen, which a plain RemoteViews click can't do on its
 // own (see SoundtrackPlaybackService's own file header for why this can't just be a
 // MediaPlayer instance owned by this class). See widget_soundtrack.xml's own header for the
-// layout/style rationale — a stylized cassette-player skin (cream chassis, amber screen
-// panel), PerfectSuite sizing, and a compact 1-cell-tall layout that switches in below
-// HEIGHT_COMPACT_MAX_DP (the stacked normal layout doesn't fit that short at all). The dynamic
-// "Log 2.0" theme-art background this class used to decode/crop/round every render is gone —
-// the cassette skin IS the background now, so there's no art bitmap to compute or cache.
+// layout/style rationale — a real product-photo background (BG_ART_ASSET below) with the
+// track name and transport controls positioned as fractions of the photo's own pixel layout,
+// PerfectSuite sizing, and a compact 1-cell-tall layout that switches in below
+// HEIGHT_COMPACT_MAX_DP (the photo-mapped normal layout doesn't fit that short at all).
+//
+// BG_ART_ASSET decoding is deliberately simpler than CalculatorWidget's/the old "Log 2.0" art
+// path here: no per-widget-size crop/round-corners pass, since widget_soundtrack_bg_art uses
+// scaleType="fitXY" (non-uniform stretch to exactly fill the widget) rather than fitCenter/
+// centerCrop — the raw decoded bitmap, at its own natural aspect ratio, gets stretched by the
+// ImageView itself at render time, which is what keeps the XML's fractional-weight overlay
+// positions (see that file's own header) aligned with the photo's real button/text positions
+// at ANY widget size. A crop-to-exact-size pass (decodeAssetExactCrop, still used elsewhere in
+// this app) would cut off part of the image depending on the widget's current aspect ratio,
+// silently drifting the overlay off the real buttons. ARGB_8888 (not RGB_565) is required
+// here specifically because Cassette_Widget.png is alpha-cut around the device's own
+// irregular silhouette — RGB_565 has no alpha channel at all and would fill every transparent
+// pixel with an opaque color, destroying the cutout.
 //
 // State (current track + playing/paused/looping/shuffle) lives in SharedPreferences (the same
 // "CapacitorStorage" file every widget in this app shares), written by
@@ -31,6 +44,14 @@ import android.widget.RemoteViews;
 // display for the service.
 public class SoundtrackWidget extends AppWidgetProvider {
     private static final String PREFS_NAME = "CapacitorStorage";
+    // Bundled Capacitor web asset (public/widgets/cassette-widget.png) — the user's own
+    // reference photo, alpha-cut around the device silhouette. Downsampled to ~480px on its
+    // longest side: RemoteViews.setImageViewBitmap() serializes the whole Bitmap into a Binder
+    // IPC transaction with a combined ~1MB ceiling (past it, the launcher shows its generic
+    // "couldn't load this widget" placeholder) — 480×~274×4 bytes (ARGB_8888) ≈ 500KB, safely
+    // under that with headroom for the rest of the RemoteViews payload.
+    private static final String BG_ART_ASSET = "widgets/cassette-widget.png";
+    private static final int BG_ART_TARGET_PX = 480;
     // Below this, the normal stacked layout (screen panel + transport row) doesn't
     // fit at all — switches to widget_soundtrack_content_compact's single horizontal row
     // instead. Set just under soundtrack_widget_info.xml's own 2-cell minHeight (110dp), so
@@ -42,10 +63,10 @@ public class SoundtrackWidget extends AppWidgetProvider {
     // applies the exact same track/playing/looping data and PendingIntents to whichever set
     // is passed in, so both blocks always agree regardless of which one is actually visible.
     private static final class ControlIds {
-        // trackName is now the "screen panel" container (the tap-to-cycle target, unchanged
-        // behavior) — trackNameText (added 2026-09-10 alongside the cassette-skin rework) is
-        // the actual TextView inside it, since setTextViewText() requires a TextView target
-        // and the panel is a LinearLayout wrapping it plus a decorative waveform icon.
+        // trackName is the tap-to-cycle click target — in the normal (photo-mapped) block
+        // that's a weighted-positioner LinearLayout wrapping the actual TextView
+        // (trackNameText), since setTextViewText() requires a TextView target specifically;
+        // in the compact block they're the same plain TextView (no wrapper needed there).
         final int trackName, trackNameText, play, prev, next, loop, loopSelected, shuffle, shuffleSelected;
         ControlIds(int trackName, int trackNameText, int play, int prev, int next, int loop, int loopSelected, int shuffle, int shuffleSelected) {
             this.trackName = trackName; this.trackNameText = trackNameText; this.play = play; this.prev = prev;
@@ -58,8 +79,11 @@ public class SoundtrackWidget extends AppWidgetProvider {
         R.id.widget_soundtrack_track_name, R.id.widget_soundtrack_track_name_text, R.id.widget_soundtrack_play, R.id.widget_soundtrack_prev,
         R.id.widget_soundtrack_next, R.id.widget_soundtrack_loop, R.id.widget_soundtrack_loop_selected,
         R.id.widget_soundtrack_shuffle, R.id.widget_soundtrack_shuffle_selected);
+    // trackName and trackNameText are the SAME id here — the compact block's track name is a
+    // single plain TextView (no separate click-target wrapper the way the photo-mapped normal
+    // block needs), so it serves as both the click target and the setTextViewText() target.
     private static final ControlIds COMPACT_IDS = new ControlIds(
-        R.id.widget_soundtrack_track_name_compact, R.id.widget_soundtrack_track_name_compact_text, R.id.widget_soundtrack_play_compact, R.id.widget_soundtrack_prev_compact,
+        R.id.widget_soundtrack_track_name_compact_text, R.id.widget_soundtrack_track_name_compact_text, R.id.widget_soundtrack_play_compact, R.id.widget_soundtrack_prev_compact,
         R.id.widget_soundtrack_next_compact, R.id.widget_soundtrack_loop_compact, R.id.widget_soundtrack_loop_selected_compact,
         R.id.widget_soundtrack_shuffle_compact, R.id.widget_soundtrack_shuffle_selected_compact);
 
@@ -98,8 +122,14 @@ public class SoundtrackWidget extends AppWidgetProvider {
         renderControls(context, views, appWidgetId, NORMAL_IDS, trackLabel, playing, looping, shuffle);
         renderControls(context, views, appWidgetId, COMPACT_IDS, trackLabel, playing, looping, shuffle);
 
-        // Only the height is needed now (compact-mode threshold below) — no background art
-        // left to size/crop/round for this widget.
+        // No per-widget-size crop/round-corners pass — see the file header's own explanation
+        // of why a plain natural-aspect decode + the ImageView's fitXY scaleType is what keeps
+        // the layout's fractional overlay positions aligned with the photo's real buttons.
+        Bitmap bgArt = WidgetAssetUtils.decodeAsset(context, BG_ART_ASSET, BG_ART_TARGET_PX);
+        if (bgArt != null) {
+            views.setImageViewBitmap(R.id.widget_soundtrack_bg_art, bgArt);
+        }
+
         Bundle options = appWidgetManager.getAppWidgetOptions(appWidgetId);
         int heightDp = options != null ? options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0) : 0;
 
@@ -109,6 +139,10 @@ public class SoundtrackWidget extends AppWidgetProvider {
         // compact check uses.
         boolean compact = heightDp > 0 && heightDp < HEIGHT_COMPACT_MAX_DP;
         views.setViewVisibility(R.id.widget_soundtrack_content_normal, compact ? View.GONE : View.VISIBLE);
+        // Shuffle's dial-mapped tap zone (see widget_soundtrack.xml's own header) is a sibling
+        // of content_normal, not nested inside it, so it needs its own explicit toggle in
+        // lockstep — otherwise it would float visible over the compact layout too.
+        views.setViewVisibility(R.id.widget_soundtrack_shuffle_dial_wrap, compact ? View.GONE : View.VISIBLE);
         views.setViewVisibility(R.id.widget_soundtrack_content_compact, compact ? View.VISIBLE : View.GONE);
 
         appWidgetManager.updateAppWidget(appWidgetId, views);

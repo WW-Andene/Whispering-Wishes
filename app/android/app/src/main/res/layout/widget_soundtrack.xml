@@ -5,164 +5,139 @@
      Convene) via SoundtrackPlaybackService, a genuine foreground MediaPlayer service so
      playback survives the widget/app not being on screen.
 
-     Restyled the same day to look like a physical cassette player (the user's own reference
-     photo: cream/tan chassis, brass trim, an amber readout window with a waveform trace) —
-     widget_cassette_background.xml replaces the plain dark widget_background, the dynamic
-     "Log 2.0" theme-art ImageView is gone entirely (there's no room for a photo background
-     once the widget IS the artwork), and the track name now sits inside a
-     widget_cassette_screen_bg.xml "screen" panel next to a static waveform accent
-     (ic_cassette_waveform.xml) and a decorative reel motif (ic_cassette_reel.xml).
-     RemoteViews shape/vector drawables can't reproduce photographic grain/reflections, so
-     this is a stylized reinterpretation, not a pixel copy of the reference.
+     Restyled a second time the same day: the user supplied an actual product photo
+     (Cassette_Widget.png, alpha-cutout around the device's own irregular silhouette —
+     bundled as a Capacitor web asset at public/widgets/cassette-widget.png, decoded/scaled
+     by SoundtrackWidget.java the same way the old "Log 2.0" background art was) and asked
+     for the widget to look like THAT specific device, not the shape-drawable
+     reinterpretation from the first pass (that attempt's widget_cassette_background/
+     widget_cassette_screen_bg/ic_cassette_reel/ic_cassette_waveform/
+     widget_cassette_button_bg/widget_cassette_play_bg are all deleted — the real photo
+     supersedes every one of them, and layering the old hand-drawn reel/waveform/screen-panel
+     decorations on TOP of a real photo that already has its own reel/screen/scrub-bar art
+     would look cluttered, not additive).
 
-     PerfectSuite-compliant sizes throughout, and the same tap-to-cycle interaction the
-     copy-target pill uses — tapping the track name cycles to the next one. Conventional
-     transport row: skip-backward / play-pause / skip-forward / loop toggle / shuffle
-     toggle, each now on its own tan "tab" (widget_cassette_button_bg.xml /
-     widget_cassette_play_bg.xml) instead of a transparent background, since transparent
-     read fine on the old dark card but disappears on this light chassis.
+     The root background is genuinely transparent now (@android:color/transparent) — the
+     photo's own alpha cutout IS the widget's visible edge, matching the "uneven border" the
+     user asked about (a rectangle can't do that; an alpha-cutout silhouette always could).
 
-     TWO alternate content blocks, not one — widget_soundtrack_content_normal (stacked:
-     track name, transport row) reads fine down to 2 cells tall, but the same stack
-     doesn't fit in a 1-cell-tall placement at all; widget_soundtrack_content_compact (one
-     horizontal row: track name + smaller transport controls) is what SoundtrackWidget.java
-     switches to below its own height threshold — same compact-mode pattern
-     PulseBannerWidget.java already uses for its own short placements.
-     Both blocks' equivalent views get the SAME data/PendingIntents every render; only
-     whichever one is actually visible matters.
+     Track name text and the 4 real transport buttons are positioned as FRACTIONS of the
+     photo's own pixel layout (measured directly against the 1840×1050 source: the blank
+     cream panel at x 700-1550/y 430-520 for text, the 4 physical button labels at
+     x 596-1526/y 860-980 for controls), built from nested weighted LinearLayouts (RemoteViews
+     has no percentage-margin attribute, so weight-sum spacers are the standard substitute).
+     This holds up under resize ONLY because the background ImageView uses scaleType="fitXY"
+     (stretches non-uniformly to exactly fill the widget) rather than fitCenter/centerCrop —
+     both axes scale by the exact same widget-width/height factors the fractional weights are
+     already expressed in, so the overlay tracks the photo's real button positions at any
+     size. A uniform-scale mode would NOT compose with this: it'd letterbox and drift the
+     overlay off the real buttons as soon as the widget's cell aspect ratio differs from the
+     photo's own 1840:1050.
 
-     No plain <View> anywhere (RemoteViews' allowlist doesn't include it — see
-     widget_banner.xml's own comment on this) — background layers use empty FrameLayouts
-     instead. -->
+     Only 4 real button positions exist in the photo, but the kit has 5 transport actions
+     (shuffle/prev/play/next/loop) — mapped prev/play/next onto the 3 middle real buttons
+     (the ones a "transport row" reads as), the left real button onto loop (closest visual
+     fit — Off-Tune... no, just the nearest slot), and shuffle onto the round dial in the
+     photo's top-right corner (visually already knob-shaped, a reasonable second control
+     zone) rather than dropping it. This mapping is a judgment call, not a measured fact the
+     way the button/text positions above are — flagged here for anyone tuning it further.
+
+     TWO alternate content blocks, not one — widget_soundtrack_content_normal (the
+     photo-mapped layout above) reads fine down to 2 cells tall, but doesn't fit in a
+     1-cell-tall placement at all (the photo would be squeezed into an unrecognizable
+     sliver); widget_soundtrack_content_compact falls back to a plain flat row — text +
+     small icon buttons, no photo-position mapping attempted — which SoundtrackWidget.java
+     switches to below its own height threshold, same compact-mode pattern
+     PulseBannerWidget.java already uses for its own short placements. Both blocks' data/
+     PendingIntents are applied identically every render; only whichever one is actually
+     visible matters.
+
+     No plain <View> anywhere (RemoteViews' allowlist doesn't include it) — spacer/positioner
+     layers use empty FrameLayouts instead. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_cassette_background">
+    android:background="@android:color/transparent">
 
-    <!-- Decorative reel motif, top-left corner — purely visual, no interaction. -->
     <ImageView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_gravity="top|left"
-        android:layout_margin="6dp"
-        android:src="@drawable/ic_cassette_reel"
+        android:id="@+id/widget_soundtrack_bg_art"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
         android:contentDescription="@null" />
 
-    <!-- ═══ Normal (>= 2 cells tall): stacked screen panel / transport row ═══ -->
+    <!-- ═══ Normal (>= 2 cells tall): photo-position-mapped overlay ═══ -->
     <LinearLayout
         android:id="@+id/widget_soundtrack_content_normal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="8dp">
+        android:orientation="vertical">
 
-        <!-- Amber "screen" panel — tap to cycle to the next track, same interaction as the
-             Calculator widget's own copy-target pill (CalculatorWidget's
-             setCyclePendingIntent). -->
+        <!-- Row 1/3 (vertical weights 41/9/50 ≈ the photo's y 430-520 of 1050) — track name,
+             centered in the cream panel right of the tape reels. Tap to cycle to the next
+             track, same interaction as the Calculator widget's own copy-target pill. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="41" />
         <LinearLayout
-            android:id="@+id/widget_soundtrack_track_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/widget_cassette_screen_bg"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp">
-
-            <TextView
-                android:id="@+id/widget_soundtrack_track_name_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#3D2817"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="12dp"
-                android:layout_marginTop="2dp"
-                android:src="@drawable/ic_cassette_waveform"
-                android:contentDescription="@null" />
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="9"
+            android:orientation="horizontal">
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="38" />
+            <LinearLayout
+                android:id="@+id/widget_soundtrack_track_name"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="46"
+                android:gravity="center">
+                <TextView
+                    android:id="@+id/widget_soundtrack_track_name_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#3D2817"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:maxLines="1"
+                    android:ellipsize="end" />
+            </LinearLayout>
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="16" />
         </LinearLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="50" />
 
+        <!-- Row 2/3 (vertical weights 82/11/7 ≈ the photo's y 860-980 of 1050) — the 4 real
+             physical button labels, horizontal weights 32/11/12/14/13/18 ≈ their real x
+             596/794/1022/1286/1526 of 1840. -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="82" />
         <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <!-- Shuffle toggle — same stacked selected/unselected background overlay as the
-                 loop toggle further along this row (RemoteViews can't runtime-swap a view's
-                 background drawable resource directly). -->
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="11"
+            android:orientation="horizontal">
             <FrameLayout
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginRight="8dp">
-                <FrameLayout
-                    android:id="@+id/widget_soundtrack_shuffle_selected"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/widget_target_selected_emerald"
-                    android:visibility="gone" />
-                <ImageButton
-                    android:id="@+id/widget_soundtrack_shuffle"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/widget_cassette_button_bg"
-                    android:src="@drawable/ic_shuffle_widget"
-                    android:scaleType="fitCenter"
-                    android:padding="4dp"
-                    android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
-            </FrameLayout>
-
-            <ImageButton
-                android:id="@+id/widget_soundtrack_prev"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginRight="8dp"
-                android:background="@drawable/widget_cassette_button_bg"
-                android:src="@android:drawable/ic_media_previous"
-                android:tint="#3D2817"
-                android:scaleType="fitCenter"
-                android:contentDescription="@string/widget_soundtrack_prev_aria" />
-
-            <ImageButton
-                android:id="@+id/widget_soundtrack_play"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/widget_cassette_play_bg"
-                android:src="@android:drawable/ic_media_play"
-                android:tint="#FDF6E3"
-                android:scaleType="fitCenter"
-                android:padding="8dp"
-                android:contentDescription="@string/widget_soundtrack_play_aria" />
-
-            <ImageButton
-                android:id="@+id/widget_soundtrack_next"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginLeft="8dp"
-                android:background="@drawable/widget_cassette_button_bg"
-                android:src="@android:drawable/ic_media_next"
-                android:tint="#3D2817"
-                android:scaleType="fitCenter"
-                android:contentDescription="@string/widget_soundtrack_next_aria" />
-
-            <!-- Loop toggle — stacked selected/unselected background overlay, same convention
-                 as CalculatorWidget's own target picker (widget_target_char_selected etc.):
-                 RemoteViews can't runtime-swap a view's background drawable resource
-                 directly, so the "on" highlight is a second view whose visibility toggles. -->
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="32" />
+            <!-- Loop toggle on the leftmost real button (nearest available slot — see file
+                 header). Selected-state overlay: RemoteViews can't runtime-swap a view's own
+                 background, so the "on" highlight is a second view toggled by visibility. -->
             <FrameLayout
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginLeft="8dp">
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="11">
                 <FrameLayout
                     android:id="@+id/widget_soundtrack_loop_selected"
                     android:layout_width="match_parent"
@@ -173,16 +148,102 @@
                     android:id="@+id/widget_soundtrack_loop"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/widget_cassette_button_bg"
+                    android:background="@android:color/transparent"
                     android:src="@drawable/ic_loop_widget"
                     android:scaleType="fitCenter"
-                    android:padding="4dp"
+                    android:padding="6dp"
                     android:contentDescription="@string/widget_soundtrack_loop_aria" />
             </FrameLayout>
+            <ImageButton
+                android:id="@+id/widget_soundtrack_prev"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="12"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_previous"
+                android:tint="#3D2817"
+                android:scaleType="fitCenter"
+                android:padding="4dp"
+                android:contentDescription="@string/widget_soundtrack_prev_aria" />
+            <ImageButton
+                android:id="@+id/widget_soundtrack_play"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="14"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_play"
+                android:tint="#3D2817"
+                android:scaleType="fitCenter"
+                android:padding="4dp"
+                android:contentDescription="@string/widget_soundtrack_play_aria" />
+            <ImageButton
+                android:id="@+id/widget_soundtrack_next"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="13"
+                android:background="@android:color/transparent"
+                android:src="@android:drawable/ic_media_next"
+                android:tint="#3D2817"
+                android:scaleType="fitCenter"
+                android:padding="4dp"
+                android:contentDescription="@string/widget_soundtrack_next_aria" />
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="18" />
         </LinearLayout>
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="7" />
     </LinearLayout>
 
-    <!-- ═══ Compact (1 cell tall): everything in one horizontal row ═══ -->
+    <!-- Shuffle toggle on the photo's own round dial, top-right corner (horizontal weights
+         90/8/2 ≈ x 1650-1790 of 1840; vertical weights 9/23/68 ≈ y 90-330 of 1050) — see file
+         header for why shuffle didn't fit into the 4-button row. A SIBLING of
+         widget_soundtrack_content_normal (not nested inside it) only because it needed its
+         own independent weighted-positioner tree rooted at the full widget height rather than
+         the transport row's — SoundtrackWidget.java toggles this id's visibility in lockstep
+         with content_normal/content_compact so it doesn't float over the compact layout too. -->
+    <LinearLayout
+        android:id="@+id/widget_soundtrack_shuffle_dial_wrap"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="9" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="23"
+            android:orientation="horizontal">
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="90" />
+            <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="8">
+                <FrameLayout
+                    android:id="@+id/widget_soundtrack_shuffle_selected"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/widget_target_selected_emerald"
+                    android:visibility="gone" />
+                <ImageButton
+                    android:id="@+id/widget_soundtrack_shuffle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ic_shuffle_widget"
+                    android:scaleType="fitCenter"
+                    android:padding="4dp"
+                    android:contentDescription="@string/widget_soundtrack_shuffle_aria" />
+            </FrameLayout>
+            <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="2" />
+        </LinearLayout>
+        <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="68" />
+    </LinearLayout>
+
+    <!-- ═══ Compact (1 cell tall): plain flat row, no photo-position mapping (too short for
+         the photo to read as anything but a texture) ═══ -->
     <LinearLayout
         android:id="@+id/widget_soundtrack_content_compact"
         android:layout_width="match_parent"
@@ -193,30 +254,17 @@
         android:paddingRight="8dp"
         android:visibility="gone">
 
-        <LinearLayout
-            android:id="@+id/widget_soundtrack_track_name_compact"
+        <TextView
+            android:id="@+id/widget_soundtrack_track_name_compact_text"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginRight="6dp"
-            android:gravity="center"
-            android:background="@drawable/widget_cassette_screen_bg"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="2dp"
-            android:paddingBottom="2dp">
-
-            <TextView
-                android:id="@+id/widget_soundtrack_track_name_compact_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textColor="#3D2817"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:maxLines="1"
-                android:ellipsize="end" />
-        </LinearLayout>
+            android:textColor="#3D2817"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <FrameLayout
             android:layout_width="24dp"
@@ -231,7 +279,7 @@
                 android:id="@+id/widget_soundtrack_shuffle_compact"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/widget_cassette_button_bg"
+                android:background="@android:color/transparent"
                 android:src="@drawable/ic_shuffle_widget"
                 android:scaleType="fitCenter"
                 android:padding="2dp"
@@ -243,7 +291,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginLeft="6dp"
-            android:background="@drawable/widget_cassette_button_bg"
+            android:background="@android:color/transparent"
             android:src="@android:drawable/ic_media_previous"
             android:tint="#3D2817"
             android:scaleType="fitCenter"
@@ -254,9 +302,9 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginLeft="6dp"
-            android:background="@drawable/widget_cassette_play_bg"
+            android:background="@android:color/transparent"
             android:src="@android:drawable/ic_media_play"
-            android:tint="#FDF6E3"
+            android:tint="#3D2817"
             android:scaleType="fitCenter"
             android:padding="4dp"
             android:contentDescription="@string/widget_soundtrack_play_aria" />
@@ -266,7 +314,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginLeft="6dp"
-            android:background="@drawable/widget_cassette_button_bg"
+            android:background="@android:color/transparent"
             android:src="@android:drawable/ic_media_next"
             android:tint="#3D2817"
             android:scaleType="fitCenter"
@@ -286,7 +334,7 @@
                 android:id="@+id/widget_soundtrack_loop_compact"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/widget_cassette_button_bg"
+                android:background="@android:color/transparent"
                 android:src="@drawable/ic_loop_widget"
                 android:scaleType="fitCenter"
                 android:padding="2dp"
