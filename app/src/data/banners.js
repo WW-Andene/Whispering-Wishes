@@ -99,7 +99,15 @@ const BANNER_HISTORY = [
   // bannerArt replaced 2026-09-10 with Jingran's official solo reveal splash
   // (user-supplied Jingran_Banner_Art.jpg, stored as Banner_Jingran.webp per its
   // real encoding), superseding the earlier fan-composited convene mockup.
-  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-30', bannerArt: './banners/_shared/Banner_Jingran.webp', weaponBannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg', predicted: true },
+  // endDate corrected 2026-09-10: was '2026-09-30' (a 20-day guess, the source's own generic
+  // "21-day cycle" estimate above), which showed the Plan tab's calendar as "20d" remaining.
+  // Direct user report of that mismatch, verified against a live wuwatracker.com/fr/timeline
+  // snapshot (captured 2026-09-10T21:40:36Z, .mht Date header) showing this exact banner
+  // (Jingran/Hiyuki/Mornye) counting down "18d" — floor(daysRemaining) from that timestamp
+  // lands the real end between 2026-09-28T21:40Z and 2026-09-29T21:40Z, which matches
+  // 2026-09-29T08:00:00Z (this file's own confirmed 08:00 UTC version-boundary convention —
+  // see EVENTS.ifDreamsStillReverberate's already-correct currentEnd of the same date) exactly.
+  { id: 'v3.6-p2', version: '3.6', phase: 2, characters: ['Jingran', 'Hiyuki', 'Mornye'], weapons: ['Thousandfold Deliverance', 'Frostburn', 'Starfield Calibrator'], startDate: '2026-09-10', endDate: '2026-09-29', bannerArt: './banners/_shared/Banner_Jingran.webp', weaponBannerArt: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg', predicted: true },
   // bannerArt fixed 2026-08-18: was reusing Denia's own v3.3-p2 banner art (wrong — Denia is the
   // rerun here, Qingxiao is this banner's new headliner). 2nd attempt used the wiki's
   // File:Qingxiao_Splash_Art.png (transparent cutout, not a banner image); 3rd attempt was a
@@ -1375,7 +1383,9 @@ const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 // Pioneer Podcast runs every version. Dates = version P1 start → last phase end (from BANNER_HISTORY)
 // Cross-checked against the wiki wiki page URLs: Pioneer_Podcast/2024-05-23, /2024-06-28, etc.
 const PIONEER_PODCAST_HISTORY = [
-  { version: '3.6', startDate: '2026-08-20', endDate: '2026-09-30', rewards: 400 },
+  // endDate corrected 2026-09-10 to match BANNER_HISTORY's v3.6-p2 fix (was '2026-09-30') —
+  // see that entry's own comment for the sourcing.
+  { version: '3.6', startDate: '2026-08-20', endDate: '2026-09-29', rewards: 400 },
   { version: '3.5', startDate: '2026-07-10', endDate: '2026-08-19', rewards: 400 },
   { version: '3.4', startDate: '2026-06-10', endDate: '2026-07-10', rewards: 400 },
   { version: '3.3', startDate: '2026-04-29', endDate: '2026-06-10', rewards: 400 },
@@ -1421,8 +1431,9 @@ const TACTICAL_HOLOGRAM_HISTORY = [
 
 // Version start dates (P1 start from BANNER_HISTORY) — used to derive event boundaries
 const VERSION_DATES = [
-  // 3.6 end date is the source's own estimate (21-day-cycle-per-phase pattern); confirm once 3.7's start date is announced.
-  { version: '3.6', start: '2026-08-20', end: '2026-09-30' },
+  // end corrected 2026-09-10 (was '2026-09-30', a 21-day-cycle estimate) — see
+  // BANNER_HISTORY's v3.6-p2 comment for the live-tracker sourcing.
+  { version: '3.6', start: '2026-08-20', end: '2026-09-29' },
   // Confirmed via the source WuWa hub: "Version 3.5 Schedule | July 10, 2026 - August 19, 2026"
   { version: '3.5', start: '2026-07-10', end: '2026-08-19' },
   // Estimated — see BANNER_HISTORY v3.4 comment for reasoning (3.3 end -> 3.5 start boundary)
