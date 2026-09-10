@@ -31,6 +31,8 @@ import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { AstriteCalendar } from './AstriteCalendar.jsx';
 import EchoFarmPlanner from './EchoFarmPlanner.jsx';
 import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
+import { calcStats } from '../../core/calcStats.js';
+import { computePullAllocation } from '../../core/pullAllocation.js';
 
 
 // Computes the full material/shell/EXP-potion requirement for one Ascension Planner target.
@@ -98,6 +100,39 @@ function computeFarmMaterials(ftg) {
   return { mats, potions, shell };
 }
 
+// Real success-rate-to-get-all-targets for the Goal Progress card — replaces a previous
+// crude Poisson approximation that ignored the user's actual pity, ignored their tides
+// entirely, and collapsed a "Both" goal into a single target instead of modeling two
+// independent successes (direct user report 2026-09-10). Reuses computePullAllocation
+// (the exact same per-banner pull split the Calculator tab uses) and calcStats (the
+// exact same DP/Monte Carlo engine) so this card can never again disagree with the
+// Calculator tab about the same goal. `calc` is state.calc, optionally with astrite
+// overridden to a projected total (for the "by banner end" variant).
+function goalSuccessRate(calc) {
+  const alloc = computePullAllocation(calc);
+  const isFeatured = calc.bannerCategory === 'featured';
+  const isChar = calc.selectedBanner === 'char';
+  const isWeap = calc.selectedBanner === 'weap';
+
+  let pChar = 1, pWeap = 1;
+  if (!isWeap) {
+    const pulls = isFeatured ? alloc.charTotal : alloc.stdCharTotal;
+    const copies = isFeatured ? Math.max(1, +calc.charCopies || 1) : Math.max(1, +calc.stdCharCopies || 1);
+    const pity = isFeatured ? (+calc.charPity || 0) : (+calc.stdCharPity || 0);
+    const guaranteed = isFeatured ? !!calc.charGuaranteed : false; // standard banners have no 50/50
+    const stats = calcStats(pulls, pity, guaranteed, true, copies, 0, isFeatured);
+    pChar = parseFloat(stats.successRate) / 100;
+  }
+  if (!isChar) {
+    const pulls = isFeatured ? alloc.weapTotal : alloc.stdWeapTotal;
+    const copies = isFeatured ? Math.max(1, +calc.weapCopies || 1) : Math.max(1, +calc.stdWeapCopies || 1);
+    const pity = isFeatured ? (+calc.weapPity || 0) : (+calc.stdWeapPity || 0);
+    const stats = calcStats(pulls, pity, false, false, copies, 0, isFeatured); // weapons: no 50/50
+    pWeap = parseFloat(stats.successRate) / 100;
+  }
+  return pChar * pWeap * 100;
+}
+
 // [SECTION:PLANNER] ── PlannerTab main component ─────────────────────────────
 function PlannerTab({
   state,
@@ -138,13 +173,15 @@ function PlannerTab({
     const daysLeft = Math.max(0, Math.ceil((bannerEnd - now) / 86400000));
     const incomeByEnd = dailyIncome * daysLeft;
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
-    const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + (
-      state.calc.bannerCategory === 'featured'
-        ? (state.calc.selectedBanner === 'both'
-            ? (+state.calc.radiant || 0) + (+state.calc.forging || 0)
-            : state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
-        : (+state.calc.lustrous || 0)
-    );
+    // Tides (Radiant/Forging/Lustrous) relevant to whichever banner(s) are selected — free
+    // pulls on top of Astrite/Lunite, not something that grows with dailyIncome, so the same
+    // count applies to both the "now" and "by end" figures below.
+    const relevantTides = state.calc.bannerCategory === 'featured'
+      ? (state.calc.selectedBanner === 'both'
+          ? (+state.calc.radiant || 0) + (+state.calc.forging || 0)
+          : state.calc.selectedBanner === 'weap' ? (+state.calc.forging || 0) : (+state.calc.radiant || 0))
+      : (+state.calc.lustrous || 0);
+    const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
     const isFeatured = state.calc.bannerCategory === 'featured';
     const isChar = state.calc.selectedBanner === 'char';
     const isWeap = state.calc.selectedBanner === 'weap';
@@ -161,32 +198,23 @@ function PlannerTab({
     }
     const targetPulls = Math.max(1, state.planner.goalPulls * goalCopies * state.planner.goalModifier);
     const targetAstrite = targetPulls * ASTRITE_PER_PULL;
-    const goalNeeded = Math.max(0, targetAstrite - currentAstrite);
+    // Availability in PULLS first (tides included), THEN converted to an Astrite shortfall —
+    // converting currentAstrite alone (the previous approach) silently dropped every tide from
+    // the "still needed" figure, overstating it by relevantTides * ASTRITE_PER_PULL (direct user
+    // report 2026-09-10, confirmed against the app's own numbers: 47 Radiant + 38 Forging tides
+    // were worth 85 * 160 = 13,600 Astrite that never got credited).
+    const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL) + relevantTides;
+    const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
+    const goalNeeded = Math.max(0, targetPulls - availablePulls) * ASTRITE_PER_PULL;
     const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
-    const goalProgress = targetAstrite > 0 ? Math.min(100, (currentAstrite / targetAstrite) * 100) : 0;
-    // Quick probability estimate: what's the chance of getting the target with available pulls?
-    const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL);
-    const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL);
-    // Simplified probability model: P(5★ in N pulls) using soft pity integral
-    const calcProb = (pulls, copies, has5050) => {
-      if (pulls <= 0 || copies <= 0) return 0;
-      // Expected pulls per 5★ (accounting for soft pity): ~62 avg with soft pity ramp
-      const avgPer5Star = 62;
-      const pullsPerFeatured = has5050 ? avgPer5Star * 1.5 : avgPer5Star; // 50/50 = 1.5x avg
-      const expectedCopies = pulls / pullsPerFeatured;
-      // Poisson CDF approximation for P(copies >= target)
-      if (expectedCopies >= copies * 2) return 99.9;
-      let prob = 0;
-      let term = Math.exp(-expectedCopies);
-      for (let k = 0; k < copies; k++) {
-        prob += term;
-        term *= expectedCopies / (k + 1);
-      }
-      return Math.min(99.9, Math.max(0.1, (1 - prob) * 100));
-    };
-    const has5050 = isFeatured && state.planner.goalBanner === 'featuredChar';
-    const probNow = calcProb(availablePulls, goalCopies, has5050);
-    const probByEnd = calcProb(pullsByEnd, goalCopies, has5050);
+    const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
+    // Real success-rate-to-get-all-targets (direct user request 2026-09-10, replacing a crude
+    // Poisson approximation that ignored actual pity and tides, and collapsed a "Both" goal into
+    // one target instead of modeling two independent successes) — see goalSuccessRate's own
+    // comment. "By end" reruns the same allocation with astrite/lunite bumped to the projected
+    // total (tides don't accrue via dailyIncome, so they stay as-is).
+    const probNow = goalSuccessRate(state.calc);
+    const probByEnd = goalSuccessRate({ ...state.calc, astrite: totalAstriteByEnd, lunite: 0 });
     return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
   }, [state.calc, state.planner.goalPulls, state.planner.goalModifier, bannerEndDate, dailyIncome]);
 
@@ -443,7 +471,7 @@ function PlannerTab({
               <div className={`h-full transition-[width] duration-300 ${planData.isFeatured ? 'bg-gradient-to-r from-yellow-500 to-orange-500' : 'bg-gradient-to-r from-cyan-500 to-purple-500'}`} style={{ width: `${planData.goalProgress}%` }} />
             </div>
             <div className="flex justify-between text-sm mt-1">
-              <span className="text-gray-400">{t('planner.convenesProgress', { current: Math.floor(planData.currentAstrite / ASTRITE_PER_PULL), target: planData.targetPulls })}</span>
+              <span className="text-gray-400">{t('planner.convenesProgress', { current: planData.availablePulls, target: planData.targetPulls })}</span>
               <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
             </div>
           </div>

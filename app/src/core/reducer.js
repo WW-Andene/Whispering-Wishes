@@ -100,7 +100,7 @@ const initialState = {
   },
   planner: {
     dailyAstrite: 60, luniteActive: false,
-    goalType: '5star', goalBanner: 'featuredChar', goalTarget: 1, goalPulls: HARD_PITY, goalModifier: 1,
+    goalType: '5star', goalTarget: 1, goalPulls: HARD_PITY, goalModifier: 1,
     goal4StarTarget: 1, goal4StarType: 'featured',
     addedIncome: [],
   },

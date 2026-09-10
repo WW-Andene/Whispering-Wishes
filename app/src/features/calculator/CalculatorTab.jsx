@@ -13,6 +13,7 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { ASTRITE_PER_PULL, MAX_ASTRITE, MAX_CALC_PULLS } from '../../data/constants.js';
 import { haptic } from '../../utils/haptics.js';
 import { calcStats } from '../../core/calcStats.js';
+import { computePullAllocation } from '../../core/pullAllocation.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -64,65 +65,13 @@ function CalculatorTab({ state, dispatch }) {
 
   // ── Smart astrite allocation for "Both" mode ─────────────────────────────
   // P2-FIX: Uses deferredCalc so heavy DP isn't triggered on every slider tick
-  const astriteAllocation = useMemo(() => {
-    const totalAstrite = (+effectiveCalc.astrite || 0) + (+effectiveCalc.lunite || 0); // Lunite converts to Astrite 1:1
-    const totalPulls = Math.floor(totalAstrite / ASTRITE_PER_PULL);
-    const radiant = +effectiveCalc.radiant || 0;
-    const forging = +effectiveCalc.forging || 0;
-    const lustrous = +effectiveCalc.lustrous || 0;
-
-    if (effectiveCalc.selectedBanner !== 'both') {
-      // Single banner mode - all resources go to that banner
-      return {
-        charAstritePulls: totalPulls,
-        weapAstritePulls: totalPulls,
-        charTotal: totalPulls + radiant,
-        weapTotal: totalPulls + forging,
-        stdCharTotal: totalPulls + lustrous,
-        stdWeapTotal: totalPulls + lustrous,
-        charPercent: 100,
-        weapPercent: 100,
-        stdCharAstrite: totalPulls,
-        stdWeapAstrite: totalPulls,
-        stdCharLustrous: lustrous,
-        stdWeapLustrous: lustrous,
-      };
-    }
-
-    // "Both" mode - split resources based on priority (0-100)
-    // 0 = all weapon, 50 = balanced, 100 = all char
-    const featPriority = typeof effectiveCalc.allocPriority === 'number' ? effectiveCalc.allocPriority : 50;
-    const stdPriority = typeof effectiveCalc.stdAllocPriority === 'number' ? effectiveCalc.stdAllocPriority : 50;
-    const charPercent = featPriority;
-    const weapPercent = 100 - featPriority;
-
-    const charAstritePulls = Math.floor(totalPulls * (charPercent / 100));
-    const weapAstritePulls = totalPulls - charAstritePulls;
-
-    // Standard banners use their own independent priority
-    const stdCharPercent = stdPriority;
-    const stdCharLustrous = Math.floor(lustrous * (stdCharPercent / 100));
-    const stdWeapLustrous = lustrous - stdCharLustrous;
-
-    // Standard Astrite split uses standard priority
-    const stdCharAstrite = Math.floor(totalPulls * (stdCharPercent / 100));
-    const stdWeapAstrite = totalPulls - stdCharAstrite;
-
-    return {
-      charAstritePulls,
-      weapAstritePulls,
-      charTotal: charAstritePulls + radiant,
-      weapTotal: weapAstritePulls + forging,
-      stdCharTotal: stdCharAstrite + stdCharLustrous,
-      stdWeapTotal: stdWeapAstrite + stdWeapLustrous,
-      charPercent,
-      weapPercent,
-      stdCharAstrite,
-      stdWeapAstrite,
-      stdCharLustrous,
-      stdWeapLustrous,
-    };
-  }, [effectiveCalc.astrite, effectiveCalc.lunite, effectiveCalc.radiant, effectiveCalc.forging, effectiveCalc.lustrous, effectiveCalc.selectedBanner, effectiveCalc.allocPriority, effectiveCalc.stdAllocPriority]);
+  // Extracted into core/pullAllocation.js so PlannerTab.jsx's own goal-progress
+  // math shares this exact same per-banner split — the two tabs disagreeing on
+  // "how many pulls do I have for banner X" was a real reported bug (2026-09-10).
+  const astriteAllocation = useMemo(
+    () => computePullAllocation(effectiveCalc),
+    [effectiveCalc.astrite, effectiveCalc.lunite, effectiveCalc.radiant, effectiveCalc.forging, effectiveCalc.lustrous, effectiveCalc.selectedBanner, effectiveCalc.allocPriority, effectiveCalc.stdAllocPriority]
+  );
 
   // Calculate pulls for each banner type using allocation
   const { charTotal: charPulls, weapTotal: weapPulls, stdCharTotal: stdCharPulls, stdWeapTotal: stdWeapPulls } = astriteAllocation;
