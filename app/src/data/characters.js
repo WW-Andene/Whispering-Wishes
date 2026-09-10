@@ -4573,14 +4573,24 @@ const SKILL_MULTIPLIERS = {
   // values used for now (a conservative floor, not an overstatement).
   'Iuno': [
     ['Basic ATK', 'Moonring 1-3', '87.68% → 46.06%×2+47.46% → 87.98%×2+90.65%', 'Standard combo before entering the Lunar Cycle. Lv.10, per-hit.'],
-    ['Basic ATK', 'Moonbow 1-3', '126.45% → 55.67%×3 → 167.01%×2', 'Empowered combo used while inside the Lunar Cycle (New Moon); counted as Resonance Liberation DMG. Lv.10, per-hit.'],
+    ['Basic ATK', 'Moonbow 1-3', '126.45% → 55.67%×3 → 167.01%×2', 'Base (Sentience = 0) values for the empowered combo used while inside the Lunar Cycle (New Moon); counted as Resonance Liberation DMG. Lv.10, per-hit. See "Enhanced Moonbow 1-3" below for the Sentience-boosted values that actually fire in her real modeled rotation.'],
+    // Added (Iuno Enhanced Moonbow sweep): the dump's own text is explicit "Enhanced attacks stay
+    // enhanced at ANY nonzero Sentience (not scaled by how much remains, just gated on >0)" — a binary
+    // gate, not a continuous per-point scale. Her real rotation's own math (Intro+40, Liberation+60 =
+    // 100 Sentience before the combo; Moonbow chain costs 50, Arc Beyond the Edge costs 25×2=50 — the
+    // full 100-point bar drains to exactly 0 only at the very end) means Sentience is nonzero for
+    // EVERY real cast in the modeled sequence, so the Enhanced values are what actually fire, not the
+    // base ones above. Previously the engine used the base values, silently undercrediting real damage.
+    ['Basic ATK', 'Enhanced Moonbow 1-3', '205.97% → 88.74%×3 → 266.41%×2', 'Sentience-boosted values (Sentience > 0) for the same Moonbow combo above — counted as Resonance Liberation DMG. Lv.10, per-hit. Fires in her real modeled rotation (see CHARACTER_ROTATIONS note).'],
     ['Mid-air', 'Mid-air Attack', '53.68%×2', 'Plunging attack, 30 STA cost. Lv.10.'],
     ['Dodge Counter', 'Moonring Dodge Counter', '82.08%×2+84.57%', 'Dodge Counter while in Half Moon (or outside Lunar Cycle). Lv.10, per-hit.'],
-    ['Dodge Counter', 'Moonbow Dodge Counter', '103.39%×3', 'Dodge Counter while in New Moon; counted as Resonance Liberation DMG. Lv.10, per-hit.'],
+    ['Dodge Counter', 'Moonbow Dodge Counter', '103.39%×3', 'Base (Sentience = 0) values for the Dodge Counter while in New Moon; counted as Resonance Liberation DMG. Lv.10, per-hit. Unused in the modeled rotation either way — see "Enhanced Moonbow Dodge Counter" below.'],
+    ['Dodge Counter', 'Enhanced Moonbow Dodge Counter', '156.40%×3', 'Sentience-boosted values (Sentience > 0) for the same Dodge Counter above — counted as Resonance Liberation DMG. Lv.10, per-hit. Unused in the modeled rotation.'],
     ['Skill', 'Pulse of Origins', '18.65%×7 + 130.52%', 'Base dash Skill, can transform into different follow-ups depending on her state. Lv.10.'],
     ['Skill', 'Closing Refrain', '140.73%×2 + 145.00%', 'Skill replacement when NOT in Lunar Cycle (after Moonring Basic ATK 3/Intro/Pulse of Origins); casting it activates Lunar Cycle. Lv.10.'],
     ['Skill', 'Unfinished Refrain', '140.73%×2 + 145.00%', 'Skill replacement while in Lunar Cycle - Half Moon; shares Closing Refrain\'s cooldown. Lv.10.'],
-    ['Skill', 'Arc Beyond the Edge', '219.79%×2', 'Skill replacement in New Moon, 2 charges, consumes Sentience per cast; counted as Resonance Liberation DMG. Lv.10.'],
+    ['Skill', 'Arc Beyond the Edge', '219.79%×2', 'Base (Sentience = 0) values for the Skill replacement in New Moon, 2 charges, consumes Sentience per cast; counted as Resonance Liberation DMG. Lv.10. See "Enhanced Arc Beyond the Edge" below for the Sentience-boosted values that actually fire in her real modeled rotation.'],
+    ['Skill', 'Enhanced Arc Beyond the Edge', '319.19%×2', 'Sentience-boosted values (Sentience > 0) for the same Arc Beyond the Edge above — counted as Resonance Liberation DMG. Lv.10. Fires in her real modeled rotation (see CHARACTER_ROTATIONS note).'],
     ['Heavy ATK', 'Flux: Moonbow', '250.51%', 'Heavy ATK replacement in Half Moon (25 STA) — switches Half Moon → New Moon; counted as Resonance Liberation DMG. Lv.10.'],
     ['Heavy ATK', 'Flux: Moonring', '79.18%×4', 'Heavy ATK replacement in New Moon (25 STA) — switches New Moon → Half Moon; counted as Resonance Liberation DMG. Lv.10, per-hit.'],
     ['Heavy ATK', 'Absolute Fullness', '159.05%', 'Forte-empowered Heavy ATK at full Concerto Energy (once per 25s); ends Lunar Cycle. Counted as Resonance Liberation DMG despite the Heavy ATK slot (corrected 2026-09-02 against a fresh dump — same pattern as Flux: Moonbow/Moonring above, previously not noted here). Lv.10 (was the Lv.1 value 80%).'],

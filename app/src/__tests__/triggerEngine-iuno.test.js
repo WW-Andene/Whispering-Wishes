@@ -126,6 +126,20 @@ describe('triggerEngine parity — Iuno', () => {
     expect(fired.has('iuno.outro.from-gloom-to-gleam')).toBe(true);
   });
 
+  // Added (Iuno Enhanced Moonbow sweep): Moonbow Basic ATK/Arc Beyond the Edge were previously using
+  // their BASE (Sentience = 0) values under a claim of "state-gated, no home in this schema" — wrong.
+  // The dump's own text says the enhancement is a binary gate (any nonzero Sentience), and her real
+  // modeled rotation's Sentience math keeps it nonzero for the whole combo, so the Enhanced values
+  // (a straightforward, already-sourced number swap) are what actually fire.
+  it('Moonbow Basic ATK and Arc Beyond the Edge use the real Sentience-enhanced values, not the base ones', () => {
+    const moonbow = IUNO_BLOCKS.find(b => b.id === 'iuno.basic.moonbow');
+    expect(moonbow.damage.hits[0].atkPct).toBeCloseTo(205.97, 2);
+    const abe = IUNO_BLOCKS.find(b => b.id === 'iuno.skill.arc-beyond-the-edge');
+    expect(abe.damage.hits[0].atkPct).toBeCloseTo(319.19, 2);
+    expect(SKILL_MULTIPLIERS['Iuno'].some(r => r[1] === 'Enhanced Moonbow 1-3')).toBe(true);
+    expect(SKILL_MULTIPLIERS['Iuno'].some(r => r[1] === 'Enhanced Arc Beyond the Edge')).toBe(true);
+  });
+
   // Added 2026-09-04 (Phase A audit, REMAINING_WORK.md 1c): the dump's "Standard Sub DPS Rotation"
   // explicitly spends both Arc Beyond the Edge charges ("Arc Beyond the Edge ×2") before swapping out —
   // and her own Sentience math only balances (100-point bar: 1 full Basic chain @ 50 + 2 Skill charges
@@ -137,7 +151,7 @@ describe('triggerEngine parity — Iuno', () => {
     const steps = deriveStepsFromRotation(CHARACTER_ROTATIONS['Iuno'], IUNO_BLOCKS);
     const { hitLog } = resolveHitComposedDps(IUNO_BLOCKS, steps, { enemyDef: 792 + 8 * 90, enemyRes: 10 }, 3000, 'aero', 'Sub DPS');
     const abeHitCount = hitLog.filter(h => h.blockId === 'iuno.skill.arc-beyond-the-edge').length;
-    // '219.79%×2' is 2 sub-hits per cast — 2 casts × 2 sub-hits = 4 logged hits.
+    // '319.19%×2' (Enhanced Arc Beyond the Edge) is 2 sub-hits per cast — 2 casts × 2 sub-hits = 4 logged hits.
     expect(abeHitCount).toBe(4);
   });
 

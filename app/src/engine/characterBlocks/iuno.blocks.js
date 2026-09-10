@@ -6,6 +6,16 @@
 // SKILL_MULTIPLIERS['Iuno'], and CHARACTER_ROTATIONS['Iuno']. No new numbers
 // invented. S4 correctly has NO block — a pure defensive team shield with zero DPS
 // component, per the audit's own zeroing.
+//
+// Fixed (Iuno Enhanced Moonbow sweep): Moonbow Basic ATK/Arc Beyond the Edge/Moonbow Dodge Counter
+// were previously using their BASE (Sentience = 0) multiplier values under a claim that the
+// Sentience-enhanced variant was "state/resource-gated per-hit... no home in this schema" — wrong.
+// The dump's own text says the enhancement is a binary gate ("stay enhanced at ANY nonzero
+// Sentience, not scaled by how much remains"), and her real modeled rotation's own Sentience math
+// (100 at combo start, draining to exactly 0 only after the full sequence) keeps Sentience nonzero
+// for every real cast — so the Enhanced values are what actually fire, not the base ones. A
+// straightforward value correction (3 new SKILL_MULTIPLIERS rows added for the Enhanced variants),
+// not a new engine capability.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { parseSkillMultiplierHits } from '../math/hitParser.js';
@@ -44,20 +54,31 @@ export const IUNO_BLOCKS = [
     note: 'Switches Half Moon -> New Moon; counted as Resonance Liberation DMG despite the Heavy ATK slot.',
   },
   {
+    // Fixed (Iuno Enhanced Moonbow sweep): was using the BASE (Sentience = 0) values under a claim
+    // that the Sentience-enhanced variant was "state/resource-gated per-hit... no home in this
+    // schema" — wrong. The dump's own text says enhancement is a binary gate ("stay enhanced at ANY
+    // nonzero Sentience, not scaled by how much remains"), not a continuous per-point scale, and her
+    // real modeled rotation's own Sentience math (100 at combo start, draining to exactly 0 only
+    // after the full Basic chain + both Arc Beyond the Edge charges) means Sentience is nonzero for
+    // this entire real cast. Retargeted to the real Enhanced Moonbow values — a straightforward value
+    // correction, not a new engine capability.
     id: 'iuno.basic.moonbow',
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Basic ATK:Moonbow 1-3' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('126.45% → 55.67%×3 → 167.01%×2'), category: 'libDmg', basis: 'ATK' },
-    note: 'Empowered combo used while in New Moon; counted as Resonance Liberation DMG. Base (non-Sentience-enhanced) values used — the Sentience-consuming DMG boost + team heal on hit is not modeled.',
+    damage: { hits: parseSkillMultiplierHits('205.97% → 88.74%×3 → 266.41%×2'), category: 'libDmg', basis: 'ATK' },
+    note: 'Empowered combo used while in New Moon; counted as Resonance Liberation DMG. Sentience-enhanced (Enhanced Moonbow) values used, matching her real modeled rotation where Sentience stays nonzero throughout — the team-heal-on-hit component is still not modeled (no heal-kind block for this).',
   },
   {
+    // Fixed (Iuno Enhanced Moonbow sweep) — same reasoning as iuno.basic.moonbow above: real
+    // Enhanced Arc Beyond the Edge values used, since Sentience is nonzero for both real casts in the
+    // modeled rotation (25→0 only after the 2nd charge resolves).
     id: 'iuno.skill.arc-beyond-the-edge',
     source: SOURCE, kind: 'damage', section: 'Skill',
     trigger: { type: 'cast', on: 'Skill:Arc Beyond the Edge' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('219.79%×2'), category: 'libDmg', basis: 'ATK' },
-    note: 'New Moon Skill follow-up, 2 charges, consumes Sentience per cast (its own DMG-boost from Sentience not modeled); counted as Resonance Liberation DMG.',
+    damage: { hits: parseSkillMultiplierHits('319.19%×2'), category: 'libDmg', basis: 'ATK' },
+    note: 'New Moon Skill follow-up, 2 charges, consumes Sentience per cast; counted as Resonance Liberation DMG. Sentience-enhanced values used, matching her real modeled rotation.',
   },
   {
     id: 'iuno.heavy.absolute-fullness',
@@ -107,12 +128,15 @@ export const IUNO_BLOCKS = [
     note: 'Dodge Counter while in Half Moon (or outside Lunar Cycle). Unused in the modeled rotation.',
   },
   {
+    // Fixed (Iuno Enhanced Moonbow sweep) — same reasoning as iuno.basic.moonbow above: if this move
+    // were ever cast in a real rotation, Sentience would be nonzero (same binary gate), so the
+    // Enhanced value is the correct one to carry even though this block is currently unused.
     id: 'iuno.dodgecounter.moonbow-dodge-counter',
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Dodge Counter:Moonbow Dodge Counter' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('103.39%×3'), category: 'libDmg', basis: 'ATK' },
-    note: 'Dodge Counter while in New Moon; counted as Resonance Liberation DMG. Unused in the modeled rotation.',
+    damage: { hits: parseSkillMultiplierHits('156.40%×3'), category: 'libDmg', basis: 'ATK' },
+    note: 'Dodge Counter while in New Moon; counted as Resonance Liberation DMG. Sentience-enhanced value used. Unused in the modeled rotation.',
   },
   {
     id: 'iuno.skill.pulse-of-origins',

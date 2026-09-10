@@ -405,3 +405,31 @@ character through the same block data). `phase3-statpanel-golden.json`'s `score`
 `phase3-parityGolden.test.js`'s own header comment. Tests added: cast-anchor shape checks and
 positive-verification tests for both S1 and Blessing (pre-trigger hits unaffected, post-trigger hits
 boosted), plus an updated S3 scoping test covering all 3 named moves. Full suite: 1840/1840 passing.
+
+## Enhanced Moonbow gap fixed (direct user follow-up)
+
+The remaining documented gap on this character: Moonbow Basic ATK and Arc Beyond the Edge were using
+their BASE (Sentience = 0) multiplier values, under a claim this was "a separate, higher-value scaling
+track... state/resource-gated per hit in a way the flat per-move schema can't express."
+
+Re-reading this dump's own text closely disproved that: "Enhanced attacks stay enhanced at ANY nonzero
+Sentience (not scaled by how much remains, just gated on >0)" — a simple BINARY gate, not a continuous
+per-point scaling problem at all. And her real modeled rotation's own Sentience math is explicit: Intro
+(+40) and Liberation (+60) bring her to a full 100-point bar before the combo; the Moonbow Basic chain
+costs 50, and both Arc Beyond the Edge charges cost 25 each (50 total) — "one full Basic chain plus
+both Skill charges drains a full 100-point bar, which IS her core rotation loop." That means Sentience
+is nonzero for literally every real cast in the modeled sequence, only reaching exactly 0 after the
+very last hit resolves. So the **Enhanced** values are what actually fire in her real, optimized
+rotation — not the base ones — and this dump already has the complete, sourced Enhanced multiplier
+table (Enhanced Moonbow 1/2/3, Enhanced Moonbow Dodge Counter, Enhanced Arc Beyond the Edge) sitting
+right there, unused.
+
+This was a straightforward value correction, not a new engine capability. Added 3 new
+`SKILL_MULTIPLIERS['Iuno']` rows for the Enhanced variants (keeping the base-value rows too, matching
+the dump's own separate labeling) and retargeted `iuno.basic.moonbow`, `iuno.skill.arc-beyond-the-edge`,
+and the unused `iuno.dodgecounter.moonbow-dodge-counter` to their real Enhanced values.
+
+Measured directly: `legacyRawDps`/`engineDps` rose 4099 → 5072/5072 (+~24%), a real, substantial, and
+now-correct DPS increase — golden fixtures regenerated with the reason logged in
+`phase3-parityGolden.test.js`'s own header comment. Stat-panel golden (avgCrit/score) unaffected, as
+expected for a pure multiplier swap. 1 new test added, full suite green (1903/1903).

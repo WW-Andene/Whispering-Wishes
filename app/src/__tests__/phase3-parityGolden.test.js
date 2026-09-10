@@ -674,6 +674,18 @@ describe('Engine merge Stage 2 — golden-value parity regression (legacy calcTe
 // mechanism is purely additive/backward-compatible — any block without a secondaryCategory computes
 // byte-identically to before this field existed, confirmed by the rest of the roster's golden numbers
 // staying unchanged.
+//
+// Iuno's `legacyRawDps`/`engineDps` updated (documented-gaps sweep, "Enhanced Moonbow" flag): 4099 ->
+// 5072/5072 (+~24%); stat-panel unaffected (avgCrit/score unchanged — a pure multiplier swap doesn't
+// touch crit stats). Root cause: Moonbow Basic ATK and Arc Beyond the Edge were using their BASE
+// (Sentience = 0) multiplier values under a prior claim that the Sentience-enhanced variant was
+// "state/resource-gated per-hit... no home in this schema" — wrong. The dump's own text says the
+// enhancement is a binary gate ("stay enhanced at ANY nonzero Sentience, not scaled by how much
+// remains"), and her real modeled rotation's own Sentience math (100 at combo start — Intro+40,
+// Liberation+60 — draining to exactly 0 only after the full Basic chain + both Arc Beyond the Edge
+// charges, which cost 50+50) keeps Sentience nonzero for every real cast in the sequence. Retargeted
+// both blocks to the real, already-sourced "Enhanced Moonbow"/"Enhanced Arc Beyond the Edge" values (2
+// new SKILL_MULTIPLIERS rows added) — a straightforward value correction, not a new engine capability.
 describe('Stat-panel projection (projectMainDpsStatPanel) — byte-identical to pre-extraction golden', () => {
   PARITY_CHARACTERS.forEach(({ name }) => {
     it(`${name}: effAtk/avgCrit/defMult/resMult/score unchanged by the routeTypeBonuses -> projectMainDpsStatPanel relocation`, () => {
