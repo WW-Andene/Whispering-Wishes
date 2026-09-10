@@ -106,7 +106,7 @@ const getActiveEvents = (date) => {
   return result;
 };
 
-function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote, deadlinePin, onSetDeadlinePin, toast }) {
+function AstriteCalendar({ dailyIncome, cumulativeIncome, bannerEndDate, planData, activeBanners, eventStatus, calendarNotes, onSetNote, deadlinePin, onSetDeadlinePin, toast }) {
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedDay, setSelectedDay] = useState(null);
   const [noteInput, setNoteInput] = useState('');
@@ -128,7 +128,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       const isToday = date.getTime() === today.getTime();
       const isBanner = date <= bannerEnd && date >= today;
       const daysFwd = Math.max(0, Math.floor((date - today) / 86400000));
-      const earned = isPast ? 0 : dailyIncome * (daysFwd + (isToday ? 0 : 1));
+      const earned = isPast ? 0 : cumulativeIncome(daysFwd + (isToday ? 0 : 1));
       // U6-07: Show events on all days (not just future) for consistency with chronology
       const events = getActiveEvents(date);
       const eventAstrite = events.reduce((s, e) => s + e.astrite, 0);
@@ -140,7 +140,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
       });
     }
     return { year, month, firstDay, daysInMonth, days, monthName: formatDate(view, { month: 'long', year: 'numeric' }) };
-  }, [monthOffset, dailyIncome, bannerEndDate, calendarNotes, eventStatus]);
+  }, [monthOffset, cumulativeIncome, bannerEndDate, calendarNotes, eventStatus]);
 
   const sel = selectedDay ? cal.days.find(d => d.dateKey === selectedDay) : null;
   // U6-02: Allow tapping past days (read-only — can view notes/events but not add new notes)
@@ -521,7 +521,7 @@ function AstriteCalendar({ dailyIncome, bannerEndDate, planData, activeBanners, 
           <div className="text-center" style={{ fontSize: 'var(--font-sm)', color: 'var(--text-muted)' }}>
             <span className="text-yellow-400 kuro-number font-bold">{formatNumber(dailyIncome)}</span> {t('planner.calendar.astritePerDay')}
             <span style={{ margin: '0 8px' }}>&middot;</span>
-            <span className="text-yellow-400 kuro-number font-bold">{formatNumber(Math.floor(dailyIncome / ASTRITE_PER_PULL * cal.daysInMonth))}</span> {t('planner.calendar.convenesPerMonth')}
+            <span className="text-yellow-400 kuro-number font-bold">{formatNumber(Math.floor(cumulativeIncome(cal.daysInMonth) / ASTRITE_PER_PULL))}</span> {t('planner.calendar.convenesPerMonth')}
           </div>
         )}
 

@@ -172,11 +172,24 @@ function PlannerTab({
   // Collapsible card state
   const [collapsed, setCollapsed] = useState({});
 
-  const dailyIncome = useMemo(() => {
-    // Direct user request: the Lunite Subscription is stackable in the real game (you can run
-    // multiple concurrent 30-day subs at once), so this is a count, not a single on/off toggle.
-    return (state.planner.dailyAstrite || 0) + (state.planner.luniteSubCount || 0) * LUNITE_DAILY_ASTRITE;
-  }, [state.planner.dailyAstrite, state.planner.luniteSubCount]);
+  // Direct user correction: Lunite Subscription stacks do NOT stack the daily Astrite rate —
+  // only ONE subscription's +90/day bonus is ever active at a time, the same as in the real
+  // game. Buying multiple queues them back-to-back instead, extending how many total days
+  // that bonus lasts (count × duration), not multiplying what it pays per day.
+  const baseDailyAstrite = state.planner.dailyAstrite || 0;
+  const luniteDaysActive = (state.planner.luniteSubCount || 0) * SUBSCRIPTIONS.lunite.duration;
+  // Today's rate — shown in the Daily Income card/header. Flat +90 while ANY stacked sub is
+  // still within its queued duration, 0 once they've all run out.
+  const dailyIncome = baseDailyAstrite + (luniteDaysActive > 0 ? LUNITE_DAILY_ASTRITE : 0);
+  // Astrite earned over `days` days starting today — the Lunite bonus only applies for the
+  // first luniteDaysActive of those days, then income drops back to the base rate. Anything
+  // projecting more than "today" (calendar totals, income projections, days-to-goal) must use
+  // this instead of a flat dailyIncome × days multiplication, or it silently assumes the
+  // bonus lasts forever.
+  const cumulativeIncome = useCallback((days) => {
+    const d = Math.max(0, days);
+    return baseDailyAstrite * d + LUNITE_DAILY_ASTRITE * Math.min(d, luniteDaysActive);
+  }, [baseDailyAstrite, luniteDaysActive]);
 
   const planData = useMemo(() => {
     const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
@@ -186,7 +199,7 @@ function PlannerTab({
     const deadline = state.planner.deadlinePin ? new Date(state.planner.deadlinePin) : new Date(bannerEndDate);
     const now = new Date();
     const daysLeft = Math.max(0, Math.ceil((deadline - now) / 86400000));
-    const incomeByEnd = dailyIncome * daysLeft;
+    const incomeByEnd = cumulativeIncome(daysLeft);
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
 
     // Target AND allocation split — fully independent from the Calculator tab by default
@@ -277,10 +290,30 @@ function PlannerTab({
     const availablePulls = Math.floor(currentAstrite / ASTRITE_PER_PULL) + relevantTides;
     const pullsByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
     const goalNeeded = Math.max(0, targetPulls - availablePulls) * ASTRITE_PER_PULL;
-    const goalDaysNeeded = goalNeeded <= 0 ? 0 : (dailyIncome > 0 ? Math.ceil(goalNeeded / dailyIncome) : Infinity);
+    // Days to reach goalNeeded — NOT a flat division, since the Lunite bonus only lasts
+    // luniteDaysActive days before income drops to the base rate (see cumulativeIncome above).
+    // Solved directly rather than iterated: cumulativeIncome is piecewise-linear with one
+    // breakpoint at luniteDaysActive, so either the target is reached within the boosted
+    // period (divide by the boosted rate), or it's reached only after the boost runs out
+    // (the boosted period's own total, plus however many further days the base rate alone
+    // needs for the remainder).
+    let goalDaysNeeded;
+    if (goalNeeded <= 0) {
+      goalDaysNeeded = 0;
+    } else {
+      const boostRate = baseDailyAstrite + (luniteDaysActive > 0 ? LUNITE_DAILY_ASTRITE : 0);
+      const incomeAtBoostEnd = cumulativeIncome(luniteDaysActive);
+      if (goalNeeded <= incomeAtBoostEnd) {
+        goalDaysNeeded = boostRate > 0 ? Math.ceil(goalNeeded / boostRate) : Infinity;
+      } else if (baseDailyAstrite > 0) {
+        goalDaysNeeded = luniteDaysActive + Math.ceil((goalNeeded - incomeAtBoostEnd) / baseDailyAstrite);
+      } else {
+        goalDaysNeeded = Infinity; // boost expired and no base income — goal is never reached
+      }
+    }
     const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
     return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
-  }, [state.calc, state.planner, bannerEndDate, dailyIncome]);
+  }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome]);
 
   // Collapsible section toggle
   const toggleSection = useCallback((key) => setCollapsed(p => ({ ...p, [key]: !p[key] })), []);
@@ -298,7 +331,7 @@ function PlannerTab({
         </div>
         {!collapsed.calendar && (
           <CardBody className="space-y-3">
-            <AstriteCalendar dailyIncome={dailyIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} deadlinePin={state.planner.deadlinePin} onSetDeadlinePin={(dateKey) => dispatch({ type: 'SET_PLANNER', field: 'deadlinePin', value: dateKey })} toast={toast} />
+            <AstriteCalendar dailyIncome={dailyIncome} cumulativeIncome={cumulativeIncome} bannerEndDate={bannerEndDate} planData={planData} activeBanners={activeBanners} eventStatus={state.eventStatus} calendarNotes={calendarNotes} onSetNote={handleSetNote} deadlinePin={state.planner.deadlinePin} onSetDeadlinePin={(dateKey) => dispatch({ type: 'SET_PLANNER', field: 'deadlinePin', value: dateKey })} toast={toast} />
           </CardBody>
         )}
       </Card>
@@ -323,7 +356,7 @@ function PlannerTab({
                 <span className="text-yellow-400 text-md font-medium">{t('planner.total')}</span>
                 <span className="text-yellow-400 font-bold kuro-number text-lg">{t('planner.astriteSuffix', { n: formatNumber(dailyIncome) })}</span>
               </div>
-              <div className="text-gray-400 text-sm mt-1">{t('planner.perDaySummary', { convenes: (dailyIncome / ASTRITE_PER_PULL).toFixed(2), monthly: formatNumber(Math.floor(dailyIncome * 30 / ASTRITE_PER_PULL)) })}</div>
+              <div className="text-gray-400 text-sm mt-1">{t('planner.perDaySummary', { convenes: (dailyIncome / ASTRITE_PER_PULL).toFixed(2), monthly: formatNumber(Math.floor(cumulativeIncome(30) / ASTRITE_PER_PULL)) })}</div>
             </div>
           </CardBody>
         )}
@@ -354,7 +387,7 @@ function PlannerTab({
                 <div className="text-right flex items-center gap-2">
                   <div>
                     <span className="text-emerald-400 text-base">{t('planner.perMonth', { price: SUBSCRIPTIONS.lunite.price })}</span>
-                    {state.planner.luniteSubCount > 0 && <div className="text-emerald-400 text-sm">{t('planner.plusPerDay', { n: state.planner.luniteSubCount * SUBSCRIPTIONS.lunite.daily })}</div>}
+                    {state.planner.luniteSubCount > 0 && <div className="text-emerald-400 text-sm">{t('planner.luniteSubActiveSummary', { daily: SUBSCRIPTIONS.lunite.daily, days: state.planner.luniteSubCount * SUBSCRIPTIONS.lunite.duration })}</div>}
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'luniteSubCount', value: Math.max(0, (state.planner.luniteSubCount || 0) - 1) })} disabled={!state.planner.luniteSubCount} className="text-red-400 min-w-[48px] min-h-[48px] flex items-center justify-center disabled:opacity-30" aria-label={t('planner.luniteSubRemoveAriaLabel')}><Minus size={12} /></button>
@@ -430,9 +463,9 @@ function PlannerTab({
               {[7, 30, 90].map(days => (
                 <div key={days} className={`kuro-stat p-3 text-center ${days === 30 ? 'border-yellow-500/30 kuro-stat-gold' : ''}`}>
                   <div className="text-gray-400 text-sm mb-1">{days === 30 ? t('planner.monthly') : t('planner.daysLabel', { days })}</div>
-                  <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-4xl' : 'text-2xl'}`}>{formatNumber(Math.floor(dailyIncome * days / ASTRITE_PER_PULL))}</div>
+                  <div className={`kuro-number text-yellow-400 font-extrabold ${days === 30 ? 'text-4xl' : 'text-2xl'}`}>{formatNumber(Math.floor(cumulativeIncome(days) / ASTRITE_PER_PULL))}</div>
                   <div className="text-gray-400 text-sm">{t('planner.convenes')}</div>
-                  <div className="text-gray-400 text-sm">{t('planner.astriteSuffix', { n: formatNumber(dailyIncome * days) })}</div>
+                  <div className="text-gray-400 text-sm">{t('planner.astriteSuffix', { n: formatNumber(cumulativeIncome(days)) })}</div>
                 </div>
               ))}
             </div>
