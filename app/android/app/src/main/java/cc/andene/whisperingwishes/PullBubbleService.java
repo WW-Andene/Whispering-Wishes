@@ -1296,6 +1296,24 @@ public class PullBubbleService extends Service {
         params.x = centerX - flashSizePx / 2;
         params.y = centerY - flashSizePx / 2;
 
+        // Direct user report 2026-09-10 (still broken after the single-window fix above): the
+        // icon flashes fully-formed for ~1 frame, then snaps/glitches into its hidden state for
+        // the rest of the hold. Root cause: windowManager.addView() can synchronously trigger a
+        // layout+draw pass before the NEXT lines of code (which set root/flash to their hidden
+        // starting scale/alpha) ever run — so whatever these views' default state is (fully
+        // opaque, full scale) can get composited for one real frame before being forced to its
+        // "hidden" starting point. addTileView's own tiles do the exact same add-then-hide
+        // ordering and have the identical theoretical flash, but it's imperceptible there (a
+        // small tile spawning near the corner bubble) — it's only glaring here because this is
+        // a large icon popping up at screen center. Fix: set the hidden initial state BEFORE
+        // addView, so there's no "default" frame to flash in the first place.
+        flash.setScaleX(0.4f);
+        flash.setScaleY(0.4f);
+        flash.setAlpha(0.95f);
+        root.setScaleX(0.5f);
+        root.setScaleY(0.5f);
+        root.setAlpha(0f);
+
         try {
             windowManager.addView(container, params);
         } catch (Exception e) {
@@ -1309,14 +1327,8 @@ public class PullBubbleService extends Service {
         // Flash burst — one-shot, independent of the icon's own grow/hold/shrink sequence
         // below; it just fades out and is left alone (it's removed along with the rest of
         // container at the very end, no need to tear it down separately).
-        flash.setScaleX(0.4f);
-        flash.setScaleY(0.4f);
-        flash.setAlpha(0.95f);
         flash.animate().scaleX(1.6f).scaleY(1.6f).alpha(0f).setDuration(320).start();
 
-        root.setScaleX(0.5f);
-        root.setScaleY(0.5f);
-        root.setAlpha(0f);
         root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(POP_GROW_DURATION_MS)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
                 .withEndAction(() -> {
