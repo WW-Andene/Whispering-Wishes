@@ -454,54 +454,6 @@ function PlannerTab({
         </div>
         {!collapsed.goal && (
         <CardBody className="space-y-3">
-          {/* Target — independent from the Calculator tab (direct user request). */}
-          <div className="space-y-2 p-2 bg-white/5 rounded-lg">
-            <div className="grid grid-cols-2 gap-2">
-              {[['featured', t('planner.featuredLabel')], ['standard', t('planner.standardLabel')]].map(([v, label]) => (
-                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalBannerCategory', value: v })} aria-pressed={state.planner.goalBannerCategory === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalBannerCategory === v ? 'active-gold' : ''}`}>{label}</button>
-              ))}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              {[['char', t('planner.resonatorLabel')], ['weap', t('planner.weaponLabel')], ['both', t('planner.bothLabel')]].map(([v, label]) => (
-                <button key={v} onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalSelectedBanner', value: v })} aria-pressed={state.planner.goalSelectedBanner === v} className={`kuro-btn kuro-btn-sm ${state.planner.goalSelectedBanner === v ? 'active-emerald' : ''}`}>{label}</button>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {!planData.isWeap && (
-                <div>
-                  <label className="kuro-label text-xs">{t('planner.goalCharTargetLabel')}</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalCharCopies : state.planner.goalStdCharCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharCopies' : 'goalStdCharCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.copiesLabel')} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalCharPity : state.planner.goalStdCharPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalCharPity' : 'goalStdCharPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalCharTargetLabel') + ' ' + t('planner.pityLabel')} />
-                    </div>
-                  </div>
-                  {planData.isFeatured && (
-                    <button onClick={() => dispatch({ type: 'SET_PLANNER', field: 'goalCharGuaranteed', value: !state.planner.goalCharGuaranteed })} aria-pressed={state.planner.goalCharGuaranteed} className={`kuro-btn kuro-btn-sm w-full mt-1 ${state.planner.goalCharGuaranteed ? 'active-emerald' : ''}`}>{state.planner.goalCharGuaranteed ? t('calculator.guaranteed') : t('calculator.5050active')}</button>
-                  )}
-                </div>
-              )}
-              {!planData.isChar && (
-                <div>
-                  <label className="kuro-label text-xs">{t('planner.goalWeapTargetLabel')}</label>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.copiesLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapCopies : state.planner.goalStdWeapCopies} min={1} max={50} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapCopies' : 'goalStdWeapCopies', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.copiesLabel')} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="text-gray-500 text-xs mb-0.5">{t('planner.pityLabel')}</div>
-                      <TargetInput value={planData.isFeatured ? state.planner.goalWeapPity : state.planner.goalStdWeapPity} min={0} max={80} onChange={v => dispatch({ type: 'SET_PLANNER', field: planData.isFeatured ? 'goalWeapPity' : 'goalStdWeapPity', value: v })} className="kuro-input kuro-input-sm w-full" ariaLabel={t('planner.goalWeapTargetLabel') + ' ' + t('planner.pityLabel')} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <label className="kuro-label">{t('planner.baseConvenes')}</label>
