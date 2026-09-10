@@ -1346,6 +1346,11 @@ const CONVENE_ANIMATIONS = {
   'Glint of Clouds': './convene-animations/glint-of-clouds-convene.mp4',
   'Forged Dwarf Star': './convene-animations/forged-dwarf-star-convene.mp4',
   Frostburn: './convene-animations/frostburn-convene.mp4',
+  'Azure Oath': './convene-animations/azure-oath-convene.mp4',
+  "Firstlight's Herald": './convene-animations/firstlights-herald-convene.mp4',
+  'Freeze Frame': './convene-animations/freeze-frame-convene.mp4',
+  'Skull Thrasher': './convene-animations/skull-thrasher-convene.mp4',
+  'Spectral Trigger': './convene-animations/spectral-trigger-convene.mp4',
 };
 const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 
