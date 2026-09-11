@@ -175,7 +175,14 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               {isChar ? item.element : item.type}
             </span>
           </div>
-          <h4 className="font-bold text-xl text-white leading-tight">{item.name}</h4>
+          {/* Direct user request 2026-09-11: the main featured 5★'s own name now opens its
+              detail modal too, same click-through as the featured-4★ previews below (there
+              is no separate small preview picture for the main item — imgUrl above is the
+              card's own full-bleed background art, so the name text is the click target). */}
+          <h4
+            className="font-bold text-xl text-white leading-tight cursor-pointer"
+            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: imgUrl, framing: getImageFraming(`collection-${item.name}`) })}
+          >{item.name}</h4>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
         
