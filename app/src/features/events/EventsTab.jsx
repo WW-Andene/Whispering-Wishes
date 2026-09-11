@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { RefreshCcw, Calendar } from 'lucide-react';
 import { getLocalizedEvents } from '../../data/banners.js';
 import { getServerOffset } from '../../data/constants.js';
-import { getServerAdjustedEnd } from '../../core/time.js';
+import { getServerAdjustedEnd, getServerWeekProgress } from '../../core/time.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { EventCard } from './EventCard.jsx';
 import { getActiveBanners } from '../../shared/components/bannerUtils.js';
@@ -41,7 +41,17 @@ function EventsTab({
 
   // L1-FIX: Memoize event progress stats (was 60+ array iterations per render)
   const progressStats = useMemo(() => {
-    // Weekly rewards: daily recurring (×7) + weekly recurring sources
+    const { weekStartKey } = getServerWeekProgress(state.server);
+    // Direct user request: Daily Reset is checkable per server-day, Monday-Sunday (7x/week) —
+    // its status is { weekStart, days: [dayKey, ...] } instead of the 'done'/'skipped' string
+    // every other event uses (see EventCard.jsx's day-grid UI). A grid from a past week is
+    // stale (a new week always starts all 7 days unchecked) — checkedDailyDays only counts
+    // days that belong to the CURRENT week.
+    const dailyStatus = state.eventStatus.dailyReset;
+    const checkedDailyDays = (dailyStatus && dailyStatus.weekStart === weekStartKey && Array.isArray(dailyStatus.days))
+      ? Math.min(7, dailyStatus.days.length) : 0;
+
+    // Weekly rewards: daily recurring (×7, the max across a full week) + weekly recurring sources
     const totalAstrite = LOCALIZED_EVENT_ENTRIES.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
       if (!val) return sum;
@@ -49,26 +59,28 @@ function EventsTab({
       if (ev.weeklyReset) return sum + val;
       return sum;
     }, 0);
-    const doneKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'done');
-    const skippedKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'skipped');
+    const doneKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => key !== 'dailyReset' && state.eventStatus[key] === 'done');
+    const skippedKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => key !== 'dailyReset' && state.eventStatus[key] === 'skipped');
     // NOT ×7 here, unlike totalAstrite above: totalAstrite's ×7 represents the max
-    // achievable across a full week of daily resets, but a single 'done'/'skipped' status
-    // (EventCard auto-clears it back to null at the next daily reset — see its handleExpire)
-    // only ever reflects ONE day's reset, so it can only ever be worth val, not 7×val.
+    // achievable across a full week, but a single 'done'/'skipped' status on a weekly/one-off
+    // event is only ever worth val once. Daily Reset's own earned amount is handled separately
+    // below (val × however many of this week's days are actually checked).
     const earnedAstrite = doneKeys.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
       if (!val) return sum;
       return sum + val;
-    }, 0);
+    }, 0) + (parseInt(LOCALIZED_EVENT_ENTRIES.find(([k]) => k === 'dailyReset')?.[1]?.rewards, 10) || 0) * checkedDailyDays;
     const skippedAstrite = skippedKeys.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
       if (!val) return sum;
       return sum + val;
     }, 0);
-    const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
-    const pendingCount = LOCALIZED_EVENT_ENTRIES.length - doneKeys.length - skippedKeys.length;
-    return { totalAstrite, earnedAstrite, skippedAstrite, hasProgress, doneCount: doneKeys.length, skippedCount: skippedKeys.length, pendingCount, totalCount: LOCALIZED_EVENT_ENTRIES.length };
-  }, [state.eventStatus]);
+    const dailyFullyChecked = checkedDailyDays >= 7;
+    const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0 || checkedDailyDays > 0;
+    const doneCount = doneKeys.length + (dailyFullyChecked ? 1 : 0);
+    const pendingCount = LOCALIZED_EVENT_ENTRIES.length - doneCount - skippedKeys.length;
+    return { totalAstrite, earnedAstrite, skippedAstrite, hasProgress, doneCount, skippedCount: skippedKeys.length, pendingCount, totalCount: LOCALIZED_EVENT_ENTRIES.length };
+  }, [state.eventStatus, state.server]);
 
   // L1-FIX: Memoize active/expired event split
   const { active, expired, eventImageMap } = useMemo(() => {

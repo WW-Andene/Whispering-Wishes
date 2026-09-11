@@ -839,7 +839,9 @@ const CHARACTER_DATA = {
     // naming convention used for other characters' 3★ slot).
     weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
     teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa'] },
-  'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
+  // title: direct user-supplied banner subtitle (2026-09-11) — feeds getCurrentBannerAuto()'s
+  // per-character `title` field (banners.js) for the v3.6-p2 live banner.
+  'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer', title: 'Distant May the Starlights Be',
     desc: 'A Spacetrek Collective Research Institute engineer and Department of Exostrider Engineering professor at Startorch Academy. DEF-scaling Fusion healer who keeps the team topped up through her Skill and Liberation while speeding up their Off-Tune Buildup.',
     skills: ['Ground State Calibration', 'Resolution', 'Critical Protocol', 'Convergence'],
     rotation: ['Intro', 'Basic: Wide Field 1', 'Basic: Wide Field 2', 'Basic: Wide Field 3 (cancel → Skill)', 'Skill: Distributed Array', 'Heavy: Inversion (cancel → Ultimate)', 'Ultimate', 'Outro'],
@@ -988,7 +990,8 @@ const CHARACTER_DATA = {
     // Tune Strain pairs her with either Qingxiao or Luuk Herssen, always alongside Mornye ("not
     // recommended for Tune Strain without Mornye involved").
     teams: ['Aemeath + Denia + Chisa', 'Qingxiao + Denia + Mornye'] },
-  'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
+  // title: direct user-supplied banner subtitle (2026-09-11) — see the Mornye entry above for why.
+  'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS', title: 'Thousand Futures Mirrored in Snow',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
     rotation: ['Intro', 'Basic 3', 'Heavy: Frost Splinter (cancel → Ultimate)', 'Ultimate: Inward Vision', 'Basic: Foreclaimed 1', 'Basic: Foreclaimed 2', 'Basic: Foreclaimed 3 (cancel → Skill)', 'Skill: Jade Cleave', 'Skill: Petalfall', 'Basic: Foreclaimed 1', 'Basic: Foreclaimed 2', 'Basic: Foreclaimed 3 (cancel → Dodge)', 'Dodge (enter Iai Stance)', 'Basic: Iai (×3)', 'Heavy: Bitterfrost', 'Hold Ultimate: Blade Liberation', 'Skill (swap)', 'Outro'],
@@ -1040,7 +1043,8 @@ const CHARACTER_DATA = {
     // "Best 4★ option" (65.53%), matching the alt4 convention used everywhere else in this table.
     weaponAlts: { alt5: ['Red Spring'], alt4: ['Feather Edge'], alt3: ['Sword of Night'] },
     teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
-  'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
+  // title: direct user-supplied banner subtitle (2026-09-11) — see the Mornye entry above for why.
+  'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS', title: 'Where Santu Beckons',
     desc: 'A loner treading into illusive depths, of Mengzhou. On-field Fusion DPS who alternates Yin Vessel and Yang Font stances, with ATK and Heavy Attack DMG scaling off Max HP, entering a Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
     // Dates corrected 2026-08-18: Jingran releases in the v3.6-p2 banner (~2026-09-10, per BANNER_HISTORY),
