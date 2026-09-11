@@ -119,7 +119,7 @@ const CHARACTER_DATA = {
     // Thunderflare Dominion (90.3%) and Aureate Zenith (82.3%) are the actual best 5★/4★ alternatives —
     // Waning Redshift wasn't in the source's recommendations for him at all.
     bestEchoes: ['Nightmare: Kelpie', 'Windward Pilgrimage 5pc'], bestWeapon: 'Verdant Summit',
-    weaponAlts: { alt5: ['Thunderflare Dominion', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Broadblade of Night'] },
+    weaponAlts: { alt5: ['Thunderflare Dominion', 'Ages of Harvest'], alt4: ['Aureate Zenith'], alt3: ['Broadblade of Night'] },
     teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     // desc rewritten 2026-08-31 against the wiki/Calcharo/Combat (Chrome/Windows UA +
@@ -165,12 +165,14 @@ const CHARACTER_DATA = {
     //    real weapon options ("Waning Redshift (R5) 83.29% (solid F2P option)"). Restored; Aureate
     //    Zenith (the weapon that had wrongly replaced it) is real too and kept alongside it.
     // Also closed a genuine completeness gap the same pass left behind: Verdant Summit (96.69%, #4
-    // overall) was missing from alt5 entirely, and 3 of the dump's 5 real 4-star options (Waning
-    // Redshift, Helios Cleaver, Broadblade#41) were missing from alt4 — all restored, matching this
-    // table's own established "list every real, ranked alt the source provides" convention (see e.g.
-    // Brant's own weaponAlts completeness fix).
+    // overall) was missing from alt5 entirely, and 2 of the dump's real 4-star options (Waning
+    // Redshift, Helios Cleaver) were missing from alt4 — all restored, matching this table's own
+    // established "list every real, ranked alt the source provides" convention (see e.g. Brant's own
+    // weaponAlts completeness fix). Broadblade#41 (also briefly restored here) was later removed
+    // app-wide, 2026-09-11, along with Autumntrace — direct user report that both weapons are dead
+    // entries (no longer real, existing weapons in the game).
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Wildfire Mark',
-    weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest', 'Verdant Summit'], alt4: ['Autumntrace', 'Aureate Zenith', 'Waning Redshift', 'Helios Cleaver', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
+    weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest', 'Verdant Summit'], alt4: ['Aureate Zenith', 'Waning Redshift', 'Helios Cleaver'], alt3: ['Broadblade of Night'] },
     teams: ['Calcharo + Lynae + Mornye', 'Calcharo + Yinlin + Shorekeeper'] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
     // desc rewritten 2026-08-31 against wuthering.gg/characters/encore (Lv.1 skill-detail widget, cross-checked
@@ -766,7 +768,7 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Blighted Crown of Puppet King', common: 'Tidal Residuum', specialty: 'Luminous Calendula' },
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
-    weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
+    weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Aureate Zenith'], alt3: ['Guardian Broadblade'] },
     teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Mortefi + Shorekeeper', 'Augusta + Mortefi + Verina'] },
   // desc rewritten 2026-08-31 against the wiki/Iuno/Combat "Forte > Details" (Chrome/
   // Windows UA + google.com referer + jsRender, load+9s wait): prior desc was flavor text with no exact
@@ -822,7 +824,7 @@ const CHARACTER_DATA = {
     // icons — was previously two long freeform strings baking both options into one entry, which broke
     // set-icon lookup entirely (no exact key match) and only ever displayed a single unlabeled row.
     bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc (personal DMG)', 'Fallacy of No Return', 'Rejuvenating Glow 5pc (best overall team ATK)'], bestWeapon: 'Kumokiri',
-    weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
+    weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy'], alt3: ['Guardian Broadblade'] },
     teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'A Startorch Academy prep student whose head-turning, electric style hides an inner focus as explosive as a coiled spring. Spectro sub-DPS who swaps in for a quick burst then buffs the team\'s All DMG on Outro, pairing especially well with Tune Strain comps.',
@@ -851,8 +853,10 @@ const CHARACTER_DATA = {
     // no other 3.x Broadblade offers her key ER stat). Verdant Summit added as the 5★ alt slot as a
     // generic ATK/Crit DMG stat-stick (same fallback role it plays for other Broadblade users' alt5
     // slots elsewhere in this file); Broadblade of Night is the 3★ fallback, matching the "<Weapon
-    // Type> of Night" naming convention used for other characters' 3★ slot.
-    weaponAlts: { alt5: ['Verdant Summit'], alt4: ['Discord', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
+    // Type> of Night" naming convention used for other characters' 3★ slot. Broadblade#41 removed
+    // from alt4 2026-09-11 (direct user report: it's a dead weapon, no longer real in-game), leaving
+    // Discord as her sole alt4 pick.
+    weaponAlts: { alt5: ['Verdant Summit'], alt4: ['Discord'], alt3: ['Broadblade of Night'] },
     teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia'] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles through his Aureole of Execution's enhanced forms, dealing bonus damage against Tune Strain - Interfered enemies.",
@@ -1351,7 +1355,7 @@ const CHARACTER_DATA = {
     // real #1 (Impermanence Heron / Moonlit Clouds 5pc), matching every other character's convention of
     // excluding situational Special Echo Sets from bestEchoes.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Ages of Harvest',
-    weaponAlts: { alt5: ['Verdant Summit', 'Lustrous Razor'], alt4: ['Autumntrace', 'Waning Redshift'] },
+    weaponAlts: { alt5: ['Verdant Summit', 'Lustrous Razor'], alt4: ['Waning Redshift'] },
     teams: ['Lumi + Jinhsi', 'Lumi + Carlotta'] },
   // corrected/added 2026-08-18: desc rewritten — a real bio (Black Shores Consultant/"Spiritchaser
   // Taoist" who wanders investigating the strange and mysterious, selling talismans and divination as

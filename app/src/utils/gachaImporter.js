@@ -38,7 +38,7 @@ export const IMPORT_NAME_ALIASES = {
   'Gardien de Jinzhou': 'Jinzhou Keeper', 'Comète éclatant': 'Comet Flare', 'Dévoisant': 'Augment',
   'Mirage creux': 'Hollow Mirage', "Main d'or": 'Stonard', "Accord d'Amity": 'Amity Accord',
   'Éclat de Nova': 'Novaburst', 'Flamme divine': 'Undying Flame', "Tailleur d'Hélios": 'Helios Cleaver',
-  'Intrépide éternel': 'Dauntless Evernight', "Trace d'automne": 'Autumntrace', 'Épée #41': 'Broadblade#41',
+  'Intrépide éternel': 'Dauntless Evernight',
   'Épée #18': 'Sword#18', 'Gantelets #21D': 'Gauntlets#21D', 'Amplificateur #25': 'Rectifier#25',
   'Pistolets #26': 'Pistols#26', 'Épée du Gardien': 'Guardian Sword', 'Pistolets du Gardien': 'Guardian Pistols',
   'Gantelets du Gardien': 'Guardian Gauntlets', 'Amplificateur du Gardien': 'Guardian Rectifier', 'Sabre du Gardien': 'Guardian Broadblade',

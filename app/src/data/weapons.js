@@ -434,10 +434,6 @@ const WEAPON_DATA = {
     desc: 'Broadblade that cuts through the longest night. ATK and DEF boost on Intro Skill.',
     passive: 'Intro Skill → ATK +8%, DEF +15% for 15s', pv: { atkPct: 8, defPct: 15 }, bestFor: ['Taoqi', 'Broadblade supports'], 
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } }, // Taoqi tag added 2026-08-18: the source's Best Weapons list ranks this as her free/signature #2 pick (107.54%), just below Discord.
-  'Autumntrace': { rarity: 4, type: 'Broadblade', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
-    desc: 'Huanglong\'s golden ginkgo, prosperous and long-lasting. Stacking ATK on Basic/Heavy hits.',
-    passive: 'Basic/Heavy ATK DMG → ATK +4% per stack (max x5, 7s per stack, 1s trigger interval)', pv: { atkPct: 20 }, bestFor: ['Broadblade DPS', 'Jiyan', 'Calcharo', 'Jinhsi', 'Lumi'], 
-    ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
   // corrected 2026-08-18 (4★ audit): Crit Rate substat is an exact 20.25% at Lv.90 R1 (the source's raw
   // stat table), which the game's toFixed(1)-style rounding renders as +20.3%, not +20.2%.
   'Solar Flame': { rarity: 4, type: 'Pistols', stat: 'Crit Rate', baseAtk: 412, subStatValue: '+20.3%',
@@ -449,12 +445,6 @@ const WEAPON_DATA = {
     passive: 'Liberation → ATK +7.2%, Liberation DMG +10.8% for 15s', pv: { atkPct: 7.2, libDmg: 10.8 }, bestFor: ['Sword DPS'], 
     ascensionMaterials: { forgery: 'Metallic Drip', common: 'Howler Core' } },
   // ── 4★ Craftable ──
-  // corrected 2026-08-18 (4★ audit): Energy Regen substat was +32.3%, the source's raw Lv.90 stat table
-  // shows an exact 32.4%.
-  'Broadblade#41': { rarity: 4, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 412, subStatValue: '+32.4%',
-    desc: 'Craftable broadblade. ATK and healing boost when HP is high or low.',
-    passive: 'HP >80% → ATK +12%. HP <40% → heal 5% on ATK', pv: { atkPct: 12 }, bestFor: ['Broadblade users'],
-    ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
   'Sword#18': { rarity: 4, type: 'Sword', stat: 'ATK%', baseAtk: 387, subStatValue: '+36.4%',
     desc: 'Improved mass-produced sword from Huanglong. Crafted for seasoned warriors.',
     passive: 'Daybreak: HP <40% → Heavy ATK DMG +18%, heal 5% HP on Heavy ATK hit (8s CD)', bestFor: ['Danjin'],

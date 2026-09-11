@@ -259,8 +259,12 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
           </div>
 
           {/* 8. Assets — Banner Art, with its convene video (when one exists) playable inline
-              over it, same tile pattern as CharacterDetailModal's own Assets section. */}
-          {bannerArtUrl && (
+              over it, same tile pattern as CharacterDetailModal's own Assets section.
+              5★-only (direct user request): 2★/3★/4★ weapons are never gacha-pull banner
+              headliners — bannerArtUrl was falling back to DEFAULT_COLLECTION_IMAGES for any
+              rarity, so this section incorrectly showed a plain collection thumbnail relabeled
+              "Assets" for craftable/lower-rarity weapons that have no real banner art at all. */}
+          {data.rarity === 5 && bannerArtUrl && (
             <div>
               <h3 className="text-white font-semibold text-xl mb-2 flex items-center gap-2">
                 <LayoutGrid size={14} className="text-gray-300" /> {t('modals.weaponDetail.assetsSection')}
