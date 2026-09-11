@@ -32,11 +32,10 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
       // Auto-reset done/skipped status on new cycle so recurring events start fresh
       if (onStatusChange) onStatusChange(null);
     } else if (isDaily) {
-      // Direct user request: Daily Reset is checkable per server-day, Monday-Sunday (7x/week),
-      // not a single status that used to get wiped every day. Just recompute the countdown/
-      // day-grid on each daily reset — the day-grid below (and progressStats in EventsTab)
-      // already treat a grid from a past week as stale via its own weekStart comparison, so
-      // no explicit reset is needed here; wiping it every day would defeat the whole point.
+      // Direct user request: Daily Reset's Done button resets itself every server day but
+      // remembers/accumulates the week's completions — NOT a status wipe on every daily reset
+      // like this used to do. Just recompute the countdown/today's key here; isDailyDoneToday
+      // below naturally reads as unchecked the moment todayKey advances, no explicit reset needed.
       setResetTick(t => t + 1);
     }
   }, [isDaily, isWeekly, isRecurring, onStatusChange]);
@@ -56,31 +55,29 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
 
-  // Direct user request: Daily Reset is checkable per server-day, Monday-Sunday (7x/week) —
-  // status here is { weekStart, days: [dayKey, ...] } rather than the 'done'/'skipped' string
-  // every other event uses. weekStartKey/todayKey/todayIndex come from the same server-local,
-  // 04:00-boundary calendar getNextDailyReset already uses, so "today" here always matches
-  // the countdown above it.
+  // Direct user request: Daily Reset is a single Done button, same as every other event, that
+  // resets itself back to unchecked each server day but remembers and accumulates how many of
+  // the current Monday-Sunday week's days were marked done. status here is { weekStart, days:
+  // [dayKey, ...] } rather than the plain 'done'/'skipped' string every other event uses — the
+  // button's own on/off state is just "is TODAY's key in that list", so a new server day is
+  // automatically unchecked (today's key hasn't been added yet) without any explicit reset,
+  // while yesterday's (and every earlier this-week) completion stays counted toward the total.
+  // weekStartKey/todayKey come from the same server-local, 04:00-boundary calendar
+  // getNextDailyReset already uses, so "today" here always matches the countdown above it.
   const weekProgress = useMemo(() => (isDaily ? getServerWeekProgress(server) : null), [isDaily, server, resetTick]);
-  const dailyDayKeys = useMemo(() => {
-    if (!weekProgress) return [];
-    const start = new Date(`${weekProgress.weekStartKey}T00:00:00Z`);
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(start);
-      d.setUTCDate(d.getUTCDate() + i);
-      return d.toISOString().slice(0, 10);
-    });
-  }, [weekProgress]);
   const checkedDays = (isDaily && status && status.weekStart === weekProgress?.weekStartKey && Array.isArray(status.days))
     ? status.days : [];
-  const toggleDailyDay = useCallback((dayKey) => {
+  const isDailyDoneToday = isDaily && !!weekProgress && checkedDays.includes(weekProgress.todayKey);
+  const toggleDailyToday = useCallback(() => {
     if (!onStatusChange || !weekProgress) return;
-    const next = checkedDays.includes(dayKey) ? checkedDays.filter(d => d !== dayKey) : [...checkedDays, dayKey];
+    const next = isDailyDoneToday
+      ? checkedDays.filter(d => d !== weekProgress.todayKey)
+      : [...checkedDays, weekProgress.todayKey];
     onStatusChange(next.length ? { weekStart: weekProgress.weekStartKey, days: next } : null);
-  }, [onStatusChange, weekProgress, checkedDays]);
+  }, [onStatusChange, weekProgress, checkedDays, isDailyDoneToday]);
   const dailyFullyChecked = isDaily && checkedDays.length >= 7;
 
-  const isDone = !isDaily && status === 'done';
+  const isDone = isDaily ? isDailyDoneToday : status === 'done';
   const isSkipped = !isDaily && status === 'skipped';
   const dimmed = isSkipped || isExpired;
   const showDoneStyle = isDone || dailyFullyChecked;
@@ -134,50 +131,29 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
           <div className={event.rewards ? `kuro-badge font-medium ${isExpired ? 'kuro-badge-gray' : showDoneStyle ? 'kuro-badge-emerald' : isSkipped ? 'kuro-badge-gray line-through' : `${colors.bg} ${colors.text}`}` : ''}>
             {event.rewards}
           </div>
-          {isDaily && onStatusChange && !isExpired ? (
-            // Direct user request: 7 tappable day-cells (Monday-Sunday), not a single Done/
-            // Skip toggle — a day before today's server-day isn't retroactively checkable
-            // (you can't back-mark a reset that already came and went uncompleted), and a day
-            // after today isn't reachable yet either.
-            <div className="flex gap-1">
-              {dailyDayKeys.map((dayKey, i) => {
-                const dayLabelKey = ['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat', 'daySun'][i];
-                const checked = checkedDays.includes(dayKey);
-                const reachable = weekProgress && i <= weekProgress.todayIndex;
-                return (
-                  <button
-                    key={dayKey}
-                    onClick={reachable ? () => toggleDailyDay(dayKey) : undefined}
-                    disabled={!reachable}
-                    className={`kuro-btn kuro-btn-sm backdrop-blur-sm ${checked ? 'active-emerald' : ''} ${!reachable ? 'opacity-30 cursor-not-allowed' : ''}`}
-                    style={{ paddingLeft: 6, paddingRight: 6, minWidth: 24 }}
-                    aria-label={t('events.dailyDayAria', { day: t(`events.${dayLabelKey}`) })}
-                    aria-pressed={checked}
-                  >
-                    {checked ? <Check size={12} className="inline" /> : t(`events.${dayLabelKey}`)}
-                  </button>
-                );
-              })}
-            </div>
-          ) : !isDaily && onStatusChange && !isExpired ? (
+          {onStatusChange && !isExpired && (
             <div className="flex gap-1">
               {!isDone && (
-                <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[48px] backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Mark ${event.name} as done`}>
+                <button onClick={isDaily ? toggleDailyToday : () => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[48px] backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Mark ${event.name} as done`}>
                   <Check size={12} className="inline -mt-0.5" /> Done
                 </button>
               )}
-              {!isSkipped && (
+              {!isDaily && !isSkipped && (
                 <button onClick={() => onStatusChange('skipped')} className="kuro-btn kuro-btn-sm min-w-[48px] backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Skip ${event.name}`}>
                   <SkipForward size={12} className="inline -mt-0.5" /> Skip
                 </button>
               )}
-              {status && (
+              {isDaily ? (isDailyDoneToday && (
+                <button onClick={toggleDailyToday} className="kuro-btn kuro-btn-sm backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Undo ${event.name} status`}>
+                  Undo Done
+                </button>
+              )) : (status && (
                 <button onClick={() => onStatusChange(null)} className="kuro-btn kuro-btn-sm backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Undo ${event.name} status`}>
                   {isDone ? 'Undo Done' : 'Undo Skip'}
                 </button>
-              )}
+              ))}
             </div>
-          ) : null}
+          )}
           {!onStatusChange && (
             <div className="text-gray-400 text-sm">{event.resetType}</div>
           )}

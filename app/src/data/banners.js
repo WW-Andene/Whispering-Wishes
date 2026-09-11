@@ -27,11 +27,15 @@ const CURRENT_BANNERS = {
   weaponBannerImage: './banners/_shared/C3Gz8y18-Glint-Of-Cloud-Banner.jpg',
   eventBannerImage: PLACEHOLDER_IMAGE,
   whimperingWastesImage: './banners/_shared/HT4RyJBy-Whimpering-Wastes-BG.png',
-  endstateMatrixImage: './banners/_shared/Jjn2Ncvp-images-2026-04-01-T034054-984.jpg',
+  // BUG FIX 2026-09-11: EventsTab.jsx's eventImageMap reads THESE fields ahead of the
+  // EVENTS.<key>.imageUrl fallback, so updating only the EVENTS entry's own imageUrl (as the
+  // 2026-09-11 correction did) never actually changed what rendered — this object's copy of
+  // the URL always won. Both now point at the same user-supplied images as their EVENTS entries.
+  endstateMatrixImage: './banners/_shared/Endstate-Matrix.png',
   pioneerPodcastImage: './banners/_shared/zHsVrt8z-Sans-titre-115-20260401035034.png',
   towerOfAdversityImage: './banners/_shared/QF335JVv-Tower-of-Adversity-Banner-Art.jpg',
   illusiveRealmImage: './banners/_shared/zcc2MxR-Fantasies-of-the-Thousand-Gateways.jpg',
-  tacticalHologramImage: './banners/_shared/CpjDZj8V-652896591-1275960654470518-5091818010205633369-n.jpg',
+  tacticalHologramImage: './banners/_shared/Tactical-Hologram-Sparring.jpeg',
   weeklyBossImage: './banners/_shared/M5cLkMWf-file-00000000e8b071f480ded273f611ec2e.png',
   standardCharBannerImage: './banners/current/pjXgHN70-Tidal-Chorus-Banner-Art.webp',
   standardWeapBannerImage: './banners/current/21kQ66xr-Drawn-Edges.webp',
@@ -303,7 +307,9 @@ const EVENTS = {
     // for anything that later wants the itemized breakdown, not read by EventsTab's own
     // astrite-total math (pioneerPodcast has no dailyReset/weeklyReset flag, so it was
     // already excluded from that total either way).
-    rewards: 'Public: 5 Lustrous Tide · Insider: 680 Astrite',
+    // BUG FIX 2026-09-11: the badge text was truncated — dropped Insider Channel's
+    // Lustrous/Radiant Tide, showing only its Astrite amount. Lists every reward now.
+    rewards: 'Public: 5 Lustrous Tide · Insider: 680 Astrite, 2 Lustrous Tide, 5 Radiant Tide',
     options: [
       { name: 'Public Channel', subtitle: 'Radio publique', tier: 'free', lustrousTide: 5 },
       { name: 'Insider Channel', subtitle: 'Radio universalis', tier: 'premium', astrite: 680, lustrousTide: 2, radiantTide: 5 },

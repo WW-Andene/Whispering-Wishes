@@ -13,13 +13,5 @@
   "noEvents": "Aucun événement suivi actuellement",
   "noEventsHint": "Les événements apparaîtront automatiquement à chaque mise à jour de version",
   "expired": "Expiré",
-  "resetTimesFooter": "Heures de réinitialisation basées sur le serveur {{server}} (UTC{{offset}})",
-  "dayMon": "L",
-  "dayTue": "M",
-  "dayWed": "M",
-  "dayThu": "J",
-  "dayFri": "V",
-  "daySat": "S",
-  "daySun": "D",
-  "dailyDayAria": "Marquer {{day}} comme fait"
+  "resetTimesFooter": "Heures de réinitialisation basées sur le serveur {{server}} (UTC{{offset}})"
 }
