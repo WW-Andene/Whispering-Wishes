@@ -296,33 +296,44 @@ const EVENTS = {
     // (was already the right day via wuwatracker.com/fr/timeline's pixel-geometry read, just the
     // wrong hour — see the giftsOfDriftingMist block above for the technique).
     currentEnd: '2026-09-29T07:59:59Z',
-    rewards: '400 Astrite',
+    // Direct user correction 2026-09-11: this event has TWO reward tracks, not one flat
+    // "400 Astrite" — Public Channel (free) gives Lustrous Tide only; Insider Channel
+    // (premium) additionally gives Astrite + Radiant Tide. `rewards` stays a display string
+    // (badge text — same convention as every other event here); `options` is additive detail
+    // for anything that later wants the itemized breakdown, not read by EventsTab's own
+    // astrite-total math (pioneerPodcast has no dailyReset/weeklyReset flag, so it was
+    // already excluded from that total either way).
+    rewards: 'Public: 5 Lustrous Tide · Insider: 680 Astrite',
+    options: [
+      { name: 'Public Channel', subtitle: 'Radio publique', tier: 'free', lustrousTide: 5 },
+      { name: 'Insider Channel', subtitle: 'Radio universalis', tier: 'premium', astrite: 680, lustrousTide: 2, radiantTide: 5 },
+    ],
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
     imageUrl: './banners/_shared/zHsVrt8z-Sans-titre-115-20260401035034.png'
   },
-  // Renamed 2026-08-20 (v3.6 launch): wuwatracker.com/fr/timeline's live v3.6 event bar shows
-  // "Tactical Hologram: Simulation" replacing v3.5's "Sparring" arena — same permanent-challenge
-  // slot, new arena tied to the v3.6 Land of Xuanfang story beat. Boss roster for the new arena not
-  // independently confirmed this pass (wuwatracker's rendered bar doesn't expose it via text scrape);
-  // kept the v3.5 boss note removed rather than guess new bosses.
+  // Direct user correction 2026-09-11: the currently live name is "Tactical Hologram: Sparring",
+  // not "Simulation" (the 2026-08-25 rename above was wrong — supersedes it). Still the same
+  // permanent-challenge slot. `permanent: true` (below) already keeps this out of EventsTab's
+  // weekly-progress Astrite total (that math only sums dailyReset/weeklyReset events), matching
+  // the user's explicit "shouldn't be counted in the weekly or monthly" — the 120 Astrite rewards
+  // value is shown on the event's own badge only.
   tacticalHologram: {
-    name: 'Tactical Hologram: Simulation',
+    name: 'Tactical Hologram: Sparring',
     subtitle: 'Combat Challenge',
-    description: 'Permanent combat challenge — Simulation arena, added in v3.6',
+    description: 'Permanent combat challenge',
     resetType: 'Permanent',
     color: 'cyan',
-    // Permanent content, current active arena introduced in v3.6 — not a time-limited event
-    // Showing with currentEnd for current version cycle display only. Corrected 2026-08-25:
-    // wuwatracker.com/fr/timeline's pixel geometry (bar-div left/width vs. the day-marker grid)
-    // shows this arena's bar actually ends Sep 28, one day before Pioneer Podcast/most other
-    // v3.6 events — not the same date as previously guessed.
+    // Permanent content — not a time-limited event. Showing with currentEnd for current version
+    // cycle display only. Corrected 2026-08-25: wuwatracker.com/fr/timeline's pixel geometry
+    // (bar-div left/width vs. the day-marker grid) shows this arena's bar actually ends Sep 28,
+    // one day before Pioneer Podcast/most other v3.6 events — not the same date as previously guessed.
     currentEnd: '2026-09-28T07:59:59Z',
     permanent: true,
-    rewards: 'Weekly Rewards',
+    rewards: '120 Astrite',
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
-    imageUrl: './banners/_shared/CpjDZj8V-652896591-1275960654470518-5091818010205633369-n.jpg'
+    imageUrl: './banners/_shared/Tactical-Hologram-Sparring.jpeg' // user-supplied 2026-09-11
   },
   endstateMatrix: {
     name: 'Endstate Matrix (Phase 1)',
@@ -336,10 +347,14 @@ const EVENTS = {
     currentStart: '2026-08-20T08:00:00Z',
     currentEnd: '2026-09-29T07:59:59Z',
     introducedVersion: '3.2',
-    rewards: '400 Astrite',
+    // Direct user correction 2026-09-11: 400 Astrite total, paid out in 8 plateaus of 50 Astrite
+    // each (not one lump sum) — `stages` is additive detail for a future per-plateau tracker;
+    // EventsTab's own Done/Skip toggle still treats this as one event for now (see chat follow-up).
+    rewards: '400 Astrite (8× 50 Astrite plateaus)',
+    stages: { count: 8, perStage: 50 },
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
-    imageUrl: './banners/_shared/Jjn2Ncvp-images-2026-04-01-T034054-984.jpg'
+    imageUrl: './banners/_shared/Endstate-Matrix.png' // user-supplied 2026-09-11
   },
   towerOfAdversity: {
     name: 'Tower of Adversity: Hazard Revisited',
@@ -353,7 +368,7 @@ const EVENTS = {
     currentStart: '2026-08-17T02:00:00Z',
     currentEnd: '2026-09-14T01:59:00Z',
     introducedVersion: '1.0', // Since launch
-    rewards: '700 Astrite',
+    rewards: '800 Astrite', // Direct user correction 2026-09-11 (was 700) — per event duration/reset
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
     imageUrl: './banners/_shared/QF335JVv-Tower-of-Adversity-Banner-Art.jpg'
@@ -370,7 +385,7 @@ const EVENTS = {
     currentStart: '2026-08-03T02:00:00Z',
     currentEnd: '2026-08-31T01:59:59Z',
     introducedVersion: '2.1', // Added in v2.1 (Feb 13, 2025)
-    rewards: '800 Astrite',
+    rewards: '550 Astrite', // Direct user correction 2026-09-11 (was 800) — per event duration/reset
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-cyan-900/30',
     accentColor: 'cyan',
     imageUrl: './banners/_shared/HT4RyJBy-Whimpering-Wastes-BG.png'
@@ -430,6 +445,7 @@ const EVENTS = {
     // pixel geometry: runs almost the entire v3.6 version (through Sep 29), not just 5 days as the
     // previous text-scrape pass estimated.
     currentEnd: '2026-09-29T07:59:59Z',
+    rewards: '1200 Astrite', // Direct user correction 2026-09-11 — one-time, not weekly/monthly (no dailyReset/weeklyReset flag)
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-red-900/30',
     accentColor: 'red',
     imageUrl: './banners/_shared/zHQTnWXp-wuwa-resonance-sim-realm.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (the wiki has no article for this event yet), uploaded to imgbb 2026-08-21
@@ -460,6 +476,7 @@ const EVENTS = {
     // pixel geometry: starts Sep 3 (two weeks into the version), not at the Aug 20 launch.
     currentStart: '2026-09-03T08:00:00Z',
     currentEnd: '2026-09-21T07:59:59Z',
+    rewards: '400 Astrite', // Direct user correction 2026-09-11 — one-time, not weekly/monthly (no dailyReset/weeklyReset flag)
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-purple-900/30',
     accentColor: 'purple',
     imageUrl: './banners/_shared/XxJtGLpQ-wuwa-the-strings-remember.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (the wiki has no article for this event yet), uploaded to imgbb 2026-08-21
@@ -474,6 +491,7 @@ const EVENTS = {
     // this is a phase-2-only event, the opposite of what the earlier text-scrape guess assumed.
     currentStart: '2026-09-10T08:00:00Z',
     currentEnd: '2026-09-29T07:59:59Z',
+    rewards: '600 Astrite', // Direct user correction 2026-09-11 — one-time, not weekly/monthly (no dailyReset/weeklyReset flag)
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-orange-900/30',
     accentColor: 'orange',
     imageUrl: './banners/_shared/WpcMcR5t-wuwa-if-dreams-still-reverberate.png', // real event cover art, sourced 2026-08-21 from wuwatracker.com/timeline's event-cover-images API (the wiki has no article for this event yet), uploaded to imgbb 2026-08-21

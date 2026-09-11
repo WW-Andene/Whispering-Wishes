@@ -138,7 +138,41 @@ const getNextWeeklyReset = (server) => {
   return new Date(mondayUtc).toISOString();
 };
 
+// Direct user request: the Daily Reset event card should be checkable once per server-day,
+// Monday through Sunday (7x/week), not a single done/skipped toggle that silently credited a
+// whole week at once. This returns the "server calendar" coordinates EventsTab/EventCard need
+// to render and persist that per-day grid — weekStartKey identifies the current Mon-Sun week
+// (so a stored grid from a past week is recognized as stale and cleared), todayKey identifies
+// today specifically (so today's cell can be toggled), and todayIndex (0=Mon..6=Sun) says how
+// many of the week's cells are unlocked so far (future days stay disabled).
+// Uses the same 04:00-server-local reset boundary as getNextDailyReset above: before 04:00,
+// you're still living in the previous server-day, so that day (not the wall-clock calendar
+// date) is what's checkable/what defines "today" for this grid.
+const getServerWeekProgress = (server) => {
+  const serverOffset = getServerOffset(server);
+  const now = Date.now();
+  const nowInServerTz = new Date(now + serverOffset * 3600000);
+  const hour = nowInServerTz.getUTCHours();
+  const minute = nowInServerTz.getUTCMinutes();
+  const currentMinutes = hour * 60 + minute;
+
+  // Effective server-day: today's date, shifted back one day if before the 04:00 reset.
+  const effective = new Date(Date.UTC(
+    nowInServerTz.getUTCFullYear(), nowInServerTz.getUTCMonth(), nowInServerTz.getUTCDate()
+  ));
+  if (currentMinutes < 240) effective.setUTCDate(effective.getUTCDate() - 1);
+
+  const dayOfWeek = effective.getUTCDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+  const todayIndex = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0=Mon..6=Sun
+
+  const monday = new Date(effective);
+  monday.setUTCDate(monday.getUTCDate() - todayIndex);
+
+  const toKey = (d) => d.toISOString().slice(0, 10);
+  return { weekStartKey: toKey(monday), todayKey: toKey(effective), todayIndex };
+};
+
 export {
   getTimeRemaining, getServerAdjustedEnd,
-  getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset,
+  getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset, getServerWeekProgress,
 };

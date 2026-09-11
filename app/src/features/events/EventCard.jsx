@@ -5,7 +5,7 @@
 
 import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
 import { Check, CheckCircle, SkipForward } from 'lucide-react';
-import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset } from '../../core/time.js';
+import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset, getServerWeekProgress } from '../../core/time.js';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
@@ -27,10 +27,17 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
   }, [event, server, isDaily, isWeekly, isRecurring, resetTick]);
 
   const handleExpire = useCallback(() => {
-    if (isDaily || isWeekly || isRecurring) {
+    if (isWeekly || isRecurring) {
       setResetTick(t => t + 1);
       // Auto-reset done/skipped status on new cycle so recurring events start fresh
       if (onStatusChange) onStatusChange(null);
+    } else if (isDaily) {
+      // Direct user request: Daily Reset is checkable per server-day, Monday-Sunday (7x/week),
+      // not a single status that used to get wiped every day. Just recompute the countdown/
+      // day-grid on each daily reset — the day-grid below (and progressStats in EventsTab)
+      // already treat a grid from a past week as stale via its own weekStart comparison, so
+      // no explicit reset is needed here; wiping it every day would defeat the whole point.
+      setResetTick(t => t + 1);
     }
   }, [isDaily, isWeekly, isRecurring, onStatusChange]);
 
@@ -49,12 +56,37 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
     : generateMaskGradient();
   const pictureOpacity = visualSettings ? visualSettings.shadowOpacity / 100 : 0.9;
 
-  const isDone = status === 'done';
-  const isSkipped = status === 'skipped';
+  // Direct user request: Daily Reset is checkable per server-day, Monday-Sunday (7x/week) —
+  // status here is { weekStart, days: [dayKey, ...] } rather than the 'done'/'skipped' string
+  // every other event uses. weekStartKey/todayKey/todayIndex come from the same server-local,
+  // 04:00-boundary calendar getNextDailyReset already uses, so "today" here always matches
+  // the countdown above it.
+  const weekProgress = useMemo(() => (isDaily ? getServerWeekProgress(server) : null), [isDaily, server, resetTick]);
+  const dailyDayKeys = useMemo(() => {
+    if (!weekProgress) return [];
+    const start = new Date(`${weekProgress.weekStartKey}T00:00:00Z`);
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(start);
+      d.setUTCDate(d.getUTCDate() + i);
+      return d.toISOString().slice(0, 10);
+    });
+  }, [weekProgress]);
+  const checkedDays = (isDaily && status && status.weekStart === weekProgress?.weekStartKey && Array.isArray(status.days))
+    ? status.days : [];
+  const toggleDailyDay = useCallback((dayKey) => {
+    if (!onStatusChange || !weekProgress) return;
+    const next = checkedDays.includes(dayKey) ? checkedDays.filter(d => d !== dayKey) : [...checkedDays, dayKey];
+    onStatusChange(next.length ? { weekStart: weekProgress.weekStartKey, days: next } : null);
+  }, [onStatusChange, weekProgress, checkedDays]);
+  const dailyFullyChecked = isDaily && checkedDays.length >= 7;
+
+  const isDone = !isDaily && status === 'done';
+  const isSkipped = !isDaily && status === 'skipped';
   const dimmed = isSkipped || isExpired;
+  const showDoneStyle = isDone || dailyFullyChecked;
 
   return (
-    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : isDone ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
+    <div className={`relative overflow-hidden rounded-xl border ${isExpired ? 'border-gray-700/40' : showDoneStyle ? 'border-emerald-500/30' : isSkipped ? 'border-gray-600/30' : colors.border}`} style={{ minHeight: 'var(--height-banner)', isolation: 'isolate', zIndex: 5, opacity: dimmed ? 0.6 : 1 }}>
       {!imgUrl && event.gradient && <div className={`absolute inset-0 bg-gradient-to-br ${event.gradient}`} />}
       {imgUrl && (
         <img
@@ -67,20 +99,20 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
             objectPosition: imgUrl === PLACEHOLDER_IMAGE ? 'center 15%' : undefined,
             maskImage: maskGradient,
             WebkitMaskImage: maskGradient,
-            filter: dimmed ? 'grayscale(0.8)' : isDone ? 'grayscale(0.3)' : 'none'
+            filter: dimmed ? 'grayscale(0.8)' : showDoneStyle ? 'grayscale(0.3)' : 'none'
           }}
           loading="lazy"
           onError={hideOnError}
         />
       )}
 
-      {isDone && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
+      {showDoneStyle && <div className="absolute inset-0 z-[2] bg-emerald-900/20" />}
 
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div className="flex justify-between items-start">
           <div className="flex-1 pr-2">
-            <h4 className={`font-bold text-xl ${isExpired ? 'text-gray-500' : isDone ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
-              {isDone && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
+            <h4 className={`font-bold text-xl ${isExpired ? 'text-gray-500' : showDoneStyle ? 'text-emerald-400' : isSkipped ? 'text-gray-500 ' : colors.text}`}>
+              {showDoneStyle && <CheckCircle size={12} className="inline mr-1 -mt-0.5" />}
               {isSkipped && <SkipForward size={12} className="inline mr-1 -mt-0.5" />}
               {event.name}
             </h4>
@@ -99,10 +131,35 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
         </div>
 
         <div className="flex justify-between items-end">
-          <div className={event.rewards ? `kuro-badge font-medium ${isExpired ? 'kuro-badge-gray' : isDone ? 'kuro-badge-emerald' : isSkipped ? 'kuro-badge-gray line-through' : `${colors.bg} ${colors.text}`}` : ''}>
+          <div className={event.rewards ? `kuro-badge font-medium ${isExpired ? 'kuro-badge-gray' : showDoneStyle ? 'kuro-badge-emerald' : isSkipped ? 'kuro-badge-gray line-through' : `${colors.bg} ${colors.text}`}` : ''}>
             {event.rewards}
           </div>
-          {onStatusChange && !isExpired && (
+          {isDaily && onStatusChange && !isExpired ? (
+            // Direct user request: 7 tappable day-cells (Monday-Sunday), not a single Done/
+            // Skip toggle — a day before today's server-day isn't retroactively checkable
+            // (you can't back-mark a reset that already came and went uncompleted), and a day
+            // after today isn't reachable yet either.
+            <div className="flex gap-1">
+              {dailyDayKeys.map((dayKey, i) => {
+                const dayLabelKey = ['dayMon', 'dayTue', 'dayWed', 'dayThu', 'dayFri', 'daySat', 'daySun'][i];
+                const checked = checkedDays.includes(dayKey);
+                const reachable = weekProgress && i <= weekProgress.todayIndex;
+                return (
+                  <button
+                    key={dayKey}
+                    onClick={reachable ? () => toggleDailyDay(dayKey) : undefined}
+                    disabled={!reachable}
+                    className={`kuro-btn kuro-btn-sm backdrop-blur-sm ${checked ? 'active-emerald' : ''} ${!reachable ? 'opacity-30 cursor-not-allowed' : ''}`}
+                    style={{ paddingLeft: 6, paddingRight: 6, minWidth: 24 }}
+                    aria-label={t('events.dailyDayAria', { day: t(`events.${dayLabelKey}`) })}
+                    aria-pressed={checked}
+                  >
+                    {checked ? <Check size={12} className="inline" /> : t(`events.${dayLabelKey}`)}
+                  </button>
+                );
+              })}
+            </div>
+          ) : !isDaily && onStatusChange && !isExpired ? (
             <div className="flex gap-1">
               {!isDone && (
                 <button onClick={() => onStatusChange('done')} className="kuro-btn kuro-btn-sm active-emerald min-w-[48px] backdrop-blur-sm" style={{ paddingLeft: 8, paddingRight: 8 }} aria-label={`Mark ${event.name} as done`}>
@@ -120,7 +177,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
                 </button>
               )}
             </div>
-          )}
+          ) : null}
           {!onStatusChange && (
             <div className="text-gray-400 text-sm">{event.resetType}</div>
           )}

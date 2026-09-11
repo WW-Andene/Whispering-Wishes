@@ -13,5 +13,13 @@
   "noEvents": "No events currently tracked",
   "noEventsHint": "Events will appear automatically each version update",
   "expired": "Expired",
-  "resetTimesFooter": "Reset times based on {{server}} server (UTC{{offset}})"
+  "resetTimesFooter": "Reset times based on {{server}} server (UTC{{offset}})",
+  "dayMon": "M",
+  "dayTue": "T",
+  "dayWed": "W",
+  "dayThu": "T",
+  "dayFri": "F",
+  "daySat": "S",
+  "daySun": "S",
+  "dailyDayAria": "Mark {{day}} as done"
 }
