@@ -376,6 +376,11 @@ export const WEAPON_DATA_FR = {
     name: "Intrépide éternel",    desc: "Sabre qui tranche à travers la plus longue des nuits. Boost d'ATQ et de DÉF sur la Compétence d'Intro.",
     passive: "Compétence d'Intro → ATQ +8 %, DÉF +15 % pendant 15 s.",
   },
+  'Autumntrace': {
+    name: 'Trace d\'Automne',
+    desc: "Ginkgo doré de Huanglong, prospère et durable. ATQ cumulable sur coups d'Attaque Basique/Lourde.",
+    passive: "DGT d'Attaque Basique/Lourde → ATQ +4 % par cumul (max x5, 7 s par cumul, intervalle de déclenchement 1 s).",
+  },
   'Solar Flame': {
     name: 'Flamme Solaire',
     desc: "Pistolets brûlant d'un feu solaire. ATQ et DGT d'Attaque Lourde cumulables au contact.",
@@ -385,6 +390,10 @@ export const WEAPON_DATA_FR = {
     name: 'Lame de Plume',
     desc: "Épée légère comme une plume mais tranchante comme une lame. Boost d'ATQ et de DGT de Libération après la Libération.",
     passive: "Libération → ATQ +7,2 %, DGT de Libération +10,8 % pendant 15 s.",
+  },
+  'Broadblade#41': {
+    name: "Épée #41",    desc: "Sabre fabricable. Boost d'ATQ et de soin selon que les PV sont hauts ou bas.",
+    passive: "PV >80 % → ATQ +12 %. PV <40 % → soigne 5 % à l'ATQ.",
   },
   'Sword#18': {
     name: "Épée #18",    desc: "Épée de série améliorée fabriquée à Huanglong. Conçue pour les guerriers aguerris.",

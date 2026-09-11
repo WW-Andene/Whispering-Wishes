@@ -25,9 +25,9 @@ const ALL_4STAR_WEAPONS = [
   'Jinzhou Keeper', 'Comet Flare', 'Augment', 'Variation', 'Hollow Mirage',
   'Stonard', 'Amity Accord', 'Marcato', 'Novaburst', 'Thunderbolt', 'Undying Flame', 'Cadenza',
   'Discord', 'Helios Cleaver', 'Dauntless Evernight',
-  'Solar Flame', 'Feather Edge',
+  'Autumntrace', 'Solar Flame', 'Feather Edge',
   // Craftable 4★
-  'Sword#18', 'Rectifier#25', 'Gauntlets#21D', 'Pistols#26',
+  'Sword#18', 'Rectifier#25', 'Gauntlets#21D', 'Pistols#26', 'Broadblade#41',
   // Battle Pass 4★
   'Aureate Zenith', 'Radiant Dawn', 'Aether Strike',
 ];
