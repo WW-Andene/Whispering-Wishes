@@ -53,18 +53,21 @@ const CURRENT_BANNERS = {
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
-  // Standard Weapon Banner (Utterance of Marvels)
+  // Standard Weapon Banner (Utterance of Marvels) — two distinct collections, per direct
+  // user clarification 2026-09-11: collection 1 is the five original standard 5★ weapons,
+  // collection 2 is the five added later. Not sequential "sets" of the same pool — the
+  // Standard banner's picker panel groups and labels them separately for this reason.
   standardWeapons: [
-    { name: 'Lustrous Razor', type: 'Broadblade' },
-    { name: 'Emerald of Genesis', type: 'Sword' },
-    { name: 'Static Mist', type: 'Pistols' },
-    { name: 'Abyss Surges', type: 'Gauntlets' },
-    { name: 'Cosmic Ripples', type: 'Rectifier' },
-    { name: 'Radiance Cleaver', type: 'Broadblade' },
-    { name: 'Laser Shearer', type: 'Sword' },
-    { name: 'Phasic Homogenizer', type: 'Pistols' },
-    { name: 'Pulsation Bracer', type: 'Gauntlets' },
-    { name: 'Boson Astrolabe', type: 'Rectifier' },
+    { name: 'Lustrous Razor', type: 'Broadblade', collection: 1 },
+    { name: 'Emerald of Genesis', type: 'Sword', collection: 1 },
+    { name: 'Static Mist', type: 'Pistols', collection: 1 },
+    { name: 'Abyss Surges', type: 'Gauntlets', collection: 1 },
+    { name: 'Cosmic Ripples', type: 'Rectifier', collection: 1 },
+    { name: 'Radiance Cleaver', type: 'Broadblade', collection: 2 },
+    { name: 'Laser Shearer', type: 'Sword', collection: 2 },
+    { name: 'Phasic Homogenizer', type: 'Pistols', collection: 2 },
+    { name: 'Pulsation Bracer', type: 'Gauntlets', collection: 2 },
+    { name: 'Boson Astrolabe', type: 'Rectifier', collection: 2 },
   ],
 };
 

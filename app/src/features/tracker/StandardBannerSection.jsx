@@ -25,6 +25,54 @@ import { t } from '../../utils/i18n.js';
 // for the weapon banner, the panel entry itself is also the target-select control.
 const StandardPoolPicker = memo(({ isOpen, onClose, title, items, itemKey, columns, selectable, targetWeapon, selectTarget, setDetailModal }) => {
   const { getImageFraming } = useImageFramingContext();
+  const gridColsClass = columns === 3 ? 'grid-cols-3' : 'grid-cols-5';
+
+  const renderTile = (item) => {
+    const name = typeof item === 'string' ? item : item[itemKey];
+    const selected = selectable && targetWeapon === name;
+    const previewImg = DEFAULT_COLLECTION_IMAGES[name];
+    const framingKey = `collection-${name}`;
+    const framing = getImageFraming(framingKey);
+    return (
+      <div key={name} className="flex flex-col items-center gap-1">
+        <div
+          className={`w-full aspect-square rounded-md overflow-hidden border bg-black/25 cursor-pointer ${selected ? 'border-yellow-400 ring-2 ring-yellow-500/50' : 'border-cyan-400/40'}`}
+          onClick={() => setDetailModal?.({ show: true, type: selectable ? 'weapon' : 'character', name, imageUrl: previewImg, framing })}
+          title={t('tracker.conveneSim.viewDetailAria', { name })}
+        >
+          {previewImg && (
+            <img
+              src={previewImg}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-contain pointer-events-none"
+              style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+              onError={hideOnError}
+            />
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={selectable ? () => selectTarget(name) : undefined}
+          className={`w-full text-2xs px-1 py-0.5 rounded truncate text-center ${selectable ? 'cursor-pointer' : 'cursor-default'} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
+          title={selectable ? t('tracker.conveneSim.targetWeaponHint') : name}
+        >
+          {selected && '★ '}{name}
+        </button>
+      </div>
+    );
+  };
+
+  // Direct user clarification 2026-09-11: the Standard Weapon pool is two distinct
+  // collections (the five original standard 5★ weapons, and five added later), not
+  // one flat list — grouped and labeled separately here whenever items carry a
+  // `collection` field (banners.js's standardWeapons). standardCharacters has no
+  // such field and falls through to the single flat grid below.
+  const hasCollections = (items || []).some(i => i && typeof i === 'object' && i.collection != null);
+  const collections = hasCollections
+    ? [...new Map((items || []).map(i => [i.collection, true])).keys()].sort((a, b) => a - b)
+    : null;
+
   return (
     <FocusTrapModal isOpen={isOpen} onClose={onClose} centered padding="p-3" onClick={onClose}>
       <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
@@ -34,44 +82,19 @@ const StandardPoolPicker = memo(({ isOpen, onClose, title, items, itemKey, colum
             <ChevronUp size={16} />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-3">
-          <div className={`grid gap-2 ${columns === 3 ? 'grid-cols-3' : 'grid-cols-5'}`}>
-            {(items || []).map(item => {
-              const name = typeof item === 'string' ? item : item[itemKey];
-              const selected = selectable && targetWeapon === name;
-              const previewImg = DEFAULT_COLLECTION_IMAGES[name];
-              const framingKey = `collection-${name}`;
-              const framing = getImageFraming(framingKey);
-              return (
-                <div key={name} className="flex flex-col items-center gap-1">
-                  <div
-                    className={`w-full aspect-square rounded-md overflow-hidden border bg-black/25 cursor-pointer ${selected ? 'border-yellow-400 ring-2 ring-yellow-500/50' : 'border-cyan-400/40'}`}
-                    onClick={() => setDetailModal?.({ show: true, type: selectable ? 'weapon' : 'character', name, imageUrl: previewImg, framing })}
-                    title={t('tracker.conveneSim.viewDetailAria', { name })}
-                  >
-                    {previewImg && (
-                      <img
-                        src={previewImg}
-                        alt=""
-                        aria-hidden="true"
-                        className="w-full h-full object-contain pointer-events-none"
-                        style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
-                        onError={hideOnError}
-                      />
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={selectable ? () => selectTarget(name) : undefined}
-                    className={`w-full text-2xs px-1 py-0.5 rounded truncate text-center ${selectable ? 'cursor-pointer' : 'cursor-default'} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
-                    title={selectable ? t('tracker.conveneSim.targetWeaponHint') : name}
-                  >
-                    {selected && '★ '}{name}
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {collections ? collections.map(col => (
+            <div key={col}>
+              <div className="text-gray-400 text-2xs uppercase tracking-wider mb-1">{t('tracker.conveneSim.collectionLabel', { number: col })}</div>
+              <div className={`grid gap-2 ${gridColsClass}`}>
+                {items.filter(i => i.collection === col).map(renderTile)}
+              </div>
+            </div>
+          )) : (
+            <div className={`grid gap-2 ${gridColsClass}`}>
+              {(items || []).map(renderTile)}
+            </div>
+          )}
         </div>
       </div>
     </FocusTrapModal>
