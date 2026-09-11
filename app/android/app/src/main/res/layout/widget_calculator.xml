@@ -108,13 +108,20 @@
                  ProgressBar (progressDrawable baked in at build time) and
                  CalculatorWidget.renderProgressSection shows only the one matching the
                  current percent, hiding the rest — same stacked-overlay pattern already
-                 used for the target picker's own selected/unselected backgrounds. -->
+                 used for the target picker's own selected/unselected backgrounds.
+
+                 BUG FIX (direct user report, "weird loading icon in the middle" once resized
+                 tall enough to reveal this row): a <ProgressBar> with no style attribute
+                 defaults to Android's INDETERMINATE CIRCULAR SPINNER style, not a horizontal
+                 bar — progressDrawable alone doesn't override that. Every bar below now sets
+                 style="?android:attr/progressBarStyleHorizontal" and indeterminate="false"
+                 explicitly, which is what actually renders them as flat horizontal bars. -->
             <FrameLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp">
-                <ProgressBar android:id="@+id/widget_progress_bar_default" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_default" android:max="100" android:progress="0" />
-                <ProgressBar android:id="@+id/widget_progress_bar_green" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_green" android:max="100" android:progress="0" android:visibility="gone" />
-                <ProgressBar android:id="@+id/widget_progress_bar_blue" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_blue" android:max="100" android:progress="0" android:visibility="gone" />
-                <ProgressBar android:id="@+id/widget_progress_bar_purple" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_purple" android:max="100" android:progress="0" android:visibility="gone" />
-                <ProgressBar android:id="@+id/widget_progress_bar_gold" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_gold" android:max="100" android:progress="0" android:visibility="gone" />
+                <ProgressBar android:id="@+id/widget_progress_bar_default" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_default" android:indeterminate="false" android:max="100" android:progress="0" />
+                <ProgressBar android:id="@+id/widget_progress_bar_green" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_green" android:indeterminate="false" android:max="100" android:progress="0" android:visibility="gone" />
+                <ProgressBar android:id="@+id/widget_progress_bar_blue" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_blue" android:indeterminate="false" android:max="100" android:progress="0" android:visibility="gone" />
+                <ProgressBar android:id="@+id/widget_progress_bar_purple" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_purple" android:indeterminate="false" android:max="100" android:progress="0" android:visibility="gone" />
+                <ProgressBar android:id="@+id/widget_progress_bar_gold" style="?android:attr/progressBarStyleHorizontal" android:layout_width="match_parent" android:layout_height="12dp" android:progressDrawable="@drawable/widget_progress_gold" android:indeterminate="false" android:max="100" android:progress="0" android:visibility="gone" />
             </FrameLayout>
         </LinearLayout>
 

@@ -5,7 +5,10 @@
        height 1-5 cells (40dp-320dp)  — which stacked sections exist at all
      minWidth/minHeight are the smallest placeable size (2x1 cells); maxResizeWidth/Height
      cap how far a user can drag it out (5x5 cells) — same 70dp*cells-30dp grid formula
-     used everywhere else in this app. -->
+     used everywhere else in this app. targetCellWidth/Height (5x1, direct user request —
+     was 2x1) is only the size Android pre-selects when the widget is first dropped on the
+     home screen; minResizeWidth/Height above still let the user shrink it back down to 2x1
+     afterward if they want the more compact layout. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="110dp"
     android:minHeight="40dp"
@@ -13,7 +16,7 @@
     android:minResizeHeight="40dp"
     android:maxResizeWidth="320dp"
     android:maxResizeHeight="320dp"
-    android:targetCellWidth="2"
+    android:targetCellWidth="5"
     android:targetCellHeight="1"
     android:updatePeriodMillis="1800000"
     android:previewImage="@mipmap/ic_launcher"
