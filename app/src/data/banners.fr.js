@@ -60,7 +60,7 @@ export const EVENTS_FR = {
     description: 'Défi de combat permanent — Arène de simulation, ajoutée en v3.6',
   },
   endstateMatrix: {
-    name: 'Matrice de fin d’état (Phase 1)',
+    name: 'Matrice de fin d’état',
     subtitle: 'Enchaînement de boss',
     description: 'Enchaînement de boss haute difficulté — nouveau en v3.2',
   },

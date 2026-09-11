@@ -8,10 +8,29 @@ import { Check, CheckCircle, SkipForward } from 'lucide-react';
 import { getServerAdjustedEnd, getRecurringEventEnd, getNextDailyReset, getNextWeeklyReset, getServerWeekProgress } from '../../core/time.js';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { getCurrencyIcon } from '../../shared/utils/elementVisuals.js';
 import { CountdownTimer } from '../../shared/components/CountdownTimer.jsx';
 import { EVENT_ACCENT_COLORS, TEXT_SHADOW_STYLE, generateMaskGradient } from '../../shared/components/BannerCard.jsx';
 import { PLACEHOLDER_IMAGE } from '../../data/banners.js';
 import { t } from '../../utils/i18n.js';
+
+// Direct user request 2026-09-11: show the Astrite/Radiant Tide currency icons inline
+// wherever those currency names appear in an event's rewards badge text.
+const REWARD_ICON_CURRENCIES = ['Radiant Tide', 'Astrite'];
+const REWARD_ICON_PATTERN = new RegExp(`(${REWARD_ICON_CURRENCIES.join('|')})`, 'g');
+function renderRewardsWithIcons(rewardsText) {
+  if (!rewardsText) return rewardsText;
+  return rewardsText.split(REWARD_ICON_PATTERN).map((part, i) => {
+    const iconSrc = REWARD_ICON_CURRENCIES.includes(part) ? getCurrencyIcon(part) : null;
+    if (!iconSrc) return part;
+    return (
+      <React.Fragment key={i}>
+        <img src={iconSrc} alt="" className="inline w-4 h-4 -mt-0.5 mr-1" onError={hideOnError} />
+        {part}
+      </React.Fragment>
+    );
+  });
+}
 
 const EventCard = memo(({ event, server, bannerImage, visualSettings, status, onStatusChange, isExpired }) => {
   const [resetTick, setResetTick] = useState(0);
@@ -129,7 +148,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
 
         <div className="flex justify-between items-end">
           <div className={event.rewards ? `kuro-badge font-medium ${isExpired ? 'kuro-badge-gray' : showDoneStyle ? 'kuro-badge-emerald' : isSkipped ? 'kuro-badge-gray line-through' : `${colors.bg} ${colors.text}`}` : ''}>
-            {event.rewards}
+            {renderRewardsWithIcons(event.rewards)}
           </div>
           {onStatusChange && !isExpired && (
             <div className="flex gap-1">
