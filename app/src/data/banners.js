@@ -55,7 +55,6 @@ const CURRENT_BANNERS = {
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
   // Standard Weapon Banner (Utterance of Marvels)
   standardWeapons: [
-    { name: 'Verdant Summit', type: 'Broadblade' },
     { name: 'Lustrous Razor', type: 'Broadblade' },
     { name: 'Emerald of Genesis', type: 'Sword' },
     { name: 'Static Mist', type: 'Pistols' },
