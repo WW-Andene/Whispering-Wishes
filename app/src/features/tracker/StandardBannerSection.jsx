@@ -11,6 +11,7 @@ import { ConvenePullPills } from '../../shared/components/ConvenePullPills.jsx';
 import { ConvenePullSimModal } from '../../shared/components/ConvenePullSimModal.jsx';
 import { storageAvailable } from '../../core/storage.js';
 import { STANDARD_WEAPON_TARGET_KEY } from '../../shared/constants/appConstants.js';
+import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { t } from '../../utils/i18n.js';
 
 const StandardBannerOverlay = memo(() => {
@@ -200,13 +201,23 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
               const name = typeof item === 'string' ? item : item[itemKey];
               const selectable = kind === 'standardWeap';
               const selected = selectable && targetWeapon === name;
+              const thumb = DEFAULT_COLLECTION_IMAGES[name];
               return (
                 <span
                   key={name}
                   onClick={selectable ? (e) => { e.stopPropagation(); selectTarget(name); } : undefined}
-                  className={`text-[8px] px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm ${selectable ? 'cursor-pointer' : ''} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
+                  className={`flex items-center gap-1 text-[8px] pl-0.5 pr-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm ${selectable ? 'cursor-pointer' : ''} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
                   title={selectable ? t('tracker.conveneSim.targetWeaponHint') : undefined}
                 >
+                  {thumb && (
+                    <img
+                      src={thumb}
+                      alt=""
+                      className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+                      loading="lazy"
+                      onError={hideOnError}
+                    />
+                  )}
                   {selected && '★ '}{name}
                 </span>
               );
