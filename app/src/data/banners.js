@@ -11,20 +11,21 @@ import { RELEASE_ORDER, CHARACTER_DATA } from './characters.js';
 const PLACEHOLDER_IMAGE = './banners/_shared/cK3h3qFh-Abby-Card2.webp';
 
 // [SECTION:BANNERS]
-// v3.6 Phase 1 — Qingxiao debut + Denia rerun, August 20 - September 10, 2026. CONFIRMED LIVE
-// 2026-08-20 (today) — the source shows "Version 3.6 (365) (latest) (live) (current)" and
-// the wiki's own Qingxiao infobox lists "Release Date: August 20, 2026" plus the
-// exact convene: "Wind of Transcendence" (2026-08-20 – 2026-09-10, 3.6), featured resonators
-// Qingxiao + Baizhi/Yangyang/Sanhua as 4★s — used to fix featured4Stars below (previously an
-// unconfirmed carry-over guess of Baizhi/Mortefi/Lumi). title/element/weaponType pulled from
-// CHARACTER_DATA (audited IDENTITY_DATA).
+// v3.6 Phase 2 — Jingran debut + Hiyuki/Mornye reruns, September 10 - 29, 2026. CONFIRMED LIVE
+// 2026-09-11 (today) — promoted from Phase 1 (Qingxiao/Denia) per BANNER_HISTORY's own
+// v3.6-p2 entry above (same startDate/endDate/bannerArt/weaponBannerArt/featured4Stars this
+// object had already been mirroring for getCurrentBannerAuto()'s auto-derive fallback — see
+// that function further down). `title` here is each character's own poetic BANNER subtitle
+// (direct user-supplied 2026-09-11), a different field from CHARACTER_DATA[name].title (the
+// character's own Resonator-Infobox epithet, e.g. Jingran's "Nether Qi Art") — this object's
+// characters[].title is what BannerCard.jsx actually renders under the banner name.
 const CURRENT_BANNERS = {
-  version: '3.6', phase: 1, // Game version (not app version)
-  // Aug 20, 10:00 CEST (UTC+2) = 08:00 UTC -> Sep 10, 10:00 CEST (UTC+2) = 08:00 UTC
-  startDate: '2026-08-20T08:00:00Z',
-  endDate: '2026-09-10T08:00:00Z',
-  characterBannerImage: './banners/_shared/8nvgqZKC-e7478-17840855867105-1920.jpg',
-  weaponBannerImage: './banners/_shared/C3Gz8y18-Glint-Of-Cloud-Banner.jpg',
+  version: '3.6', phase: 2, // Game version (not app version)
+  // Sep 10, 10:00 CEST (UTC+2) = 08:00 UTC -> Sep 29, 10:00 CEST (UTC+2) = 08:00 UTC
+  startDate: '2026-09-10T08:00:00Z',
+  endDate: '2026-09-29T08:00:00Z',
+  characterBannerImage: './banners/_shared/Banner_Jingran.webp',
+  weaponBannerImage: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg',
   eventBannerImage: PLACEHOLDER_IMAGE,
   whimperingWastesImage: './banners/_shared/HT4RyJBy-Whimpering-Wastes-BG.png',
   // BUG FIX 2026-09-11: EventsTab.jsx's eventImageMap reads THESE fields ahead of the
@@ -41,12 +42,14 @@ const CURRENT_BANNERS = {
   standardWeapBannerImage: './banners/current/21kQ66xr-Drawn-Edges.webp',
   dailyResetImage: './banners/current/Jj6cqnsQ-image.jpg',
   characters: [
-    { id: 'qingxiao', name: 'Qingxiao', title: 'Heart Sword', element: 'Aero', weaponType: 'Sword', isNew: true, featured4Stars: ['Baizhi', 'Yangyang', 'Sanhua'], imageUrl: './banners/_shared/8nvgqZKC-e7478-17840855867105-1920.jpg' }, // no individual splash art yet — new debut, using the combined convene banner
-    { id: 'denia', name: 'Denia', title: 'Bubbles of Nihility', element: 'Fusion', weaponType: 'Rectifier', isNew: false, featured4Stars: ['Baizhi', 'Yangyang', 'Sanhua'], imageUrl: './banners/_shared/DPnPVGVF-denia-banner.jpg', imagePosition: '50% 31%' }, // real splash art (same asset as BANNER_HISTORY v3.3-p2 / CHARACTER_THEMES.denia)
+    { id: 'jingran', name: 'Jingran', title: 'Where Santu Beckons', element: 'Fusion', weaponType: 'Broadblade', isNew: true, featured4Stars: ['Yuanwu', 'Mortefi', 'Aalto'], imageUrl: './banners/_shared/Banner_Jingran.webp' }, // new debut — same solo splash art used for the combined convene banner
+    { id: 'hiyuki', name: 'Hiyuki', title: 'Thousand Futures Mirrored in Snow', element: 'Glacio', weaponType: 'Sword', isNew: false, featured4Stars: ['Yuanwu', 'Mortefi', 'Aalto'], imageUrl: './banners/_shared/Gf7F9h12-hiyuki-banner.jpg' }, // rerun — real splash art, same asset as CHARACTER_THEMES.hiyuki
+    { id: 'mornye', name: 'Mornye', title: 'Distant May the Starlights Be', element: 'Fusion', weaponType: 'Broadblade', isNew: false, featured4Stars: ['Yuanwu', 'Mortefi', 'Aalto'], imageUrl: './banners/_shared/9mGJpYvb-morny-banner.jpg' }, // rerun — real splash art, same asset as CHARACTER_THEMES.mornye
   ],
   weapons: [
-    { id: 'glint-of-clouds', name: 'Glint of Clouds', type: 'Sword', forCharacter: 'Qingxiao', element: 'Aero', isNew: true, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: './banners/_shared/C3Gz8y18-Glint-Of-Cloud-Banner.jpg' },
-    { id: 'forged-dwarf-star', name: 'Forged Dwarf Star', type: 'Rectifier', forCharacter: 'Denia', element: 'Fusion', isNew: false, featured4Stars: ['Variation', 'Endless Collapse', 'Relativistic Jet'], imageUrl: './banners/_shared/Gv3c41jD-Forged-Dwarf-Star-Banner.webp' }, // real art, same asset as WEAPON_THEMES.forged-dwarf-star
+    { id: 'thousandfold-deliverance', name: 'Thousandfold Deliverance', type: 'Broadblade', forCharacter: 'Jingran', element: 'Fusion', isNew: true, featured4Stars: ['Discord', 'Novaburst', 'Waning Redshift'], imageUrl: './banners/history/v3-6-p2/S7m6cfPC-Thousandfold-Delivrance.jpg' },
+    { id: 'frostburn', name: 'Frostburn', type: 'Sword', forCharacter: 'Hiyuki', element: 'Glacio', isNew: false, featured4Stars: ['Discord', 'Novaburst', 'Waning Redshift'], imageUrl: './banners/_shared/rRh3h5zR-Frostburn-Banner.webp' }, // real art, same asset as WEAPON_THEMES.frostburn
+    { id: 'starfield-calibrator', name: 'Starfield Calibrator', type: 'Broadblade', forCharacter: 'Mornye', element: 'Fusion', isNew: false, featured4Stars: ['Discord', 'Novaburst', 'Waning Redshift'], imageUrl: './banners/_shared/N6qwBGnv-starfield-calibrator-banner.jpg' }, // real art, same asset as WEAPON_THEMES.starfield-calibrator
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
