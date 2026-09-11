@@ -231,11 +231,12 @@ function WhisperingWishesInner() {
       astritePerPull: ASTRITE_PER_PULL,
       charCopies: state.calc.charCopies,
       weapCopies: state.calc.weapCopies,
+      charGuaranteed: state.calc.charGuaranteed,
     });
   }, [
     state.calc.astrite, state.calc.lunite, state.calc.radiant, state.calc.lustrous, state.calc.forging,
     state.calc.astriteGoal, state.calc.luniteGoal, state.calc.radiantGoal, state.calc.lustrousGoal, state.calc.forgingGoal,
-    state.calc.charCopies, state.calc.weapCopies,
+    state.calc.charCopies, state.calc.weapCopies, state.calc.charGuaranteed,
     state.profile.featured?.pity5, state.profile.weapon?.pity5,
   ]);
   // One-time global listener for the glass-touch press effect (see glassTouch.js)

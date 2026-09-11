@@ -161,9 +161,12 @@ export async function syncBannerWidget(activeBanners) {
 // *Goal fields (mode 2's manual progress-bar targets); v3 added pity/
 // hardPity/astritePerPull so mode 2 can compute a "currency needed to reach
 // guaranteed" goal automatically instead of relying only on a manually-typed
-// number; v4 added charCopies/weapCopies for mode 4's copy-target display —
-// see CurrencyProgressWidget.java's and PityTargetWidget.java's own headers.
-const CURRENCY_WIDGET_SCHEMA_VERSION = 4;
+// number; v4 added charCopies/weapCopies for mode 4's copy-target display;
+// v5 added charGuaranteed so CalculatorWidget's progress gauge can account
+// for the 50/50 system (a losing pull doubles the worst-case pulls needed
+// for the character track, and clears once the player is guaranteed) —
+// see CalculatorWidget.java's renderProgressSection for the math this feeds.
+const CURRENCY_WIDGET_SCHEMA_VERSION = 5;
 
 // Feeds the Android home-screen currency widgets (CurrencyWidget.java mode 1,
 // CurrencyProgressWidget.java mode 2, PityTargetWidget.java mode 4) with the
@@ -200,6 +203,9 @@ export async function syncCurrencyWidget(calc, pityContext) {
       astritePerPull: n(pityContext?.astritePerPull),
       charCopies: n(pityContext?.charCopies),
       weapCopies: n(pityContext?.weapCopies),
+      // Weapon banners have no 50/50 (always featured) — only the character track's
+      // guarantee state matters here, same as calcStats.js's own isChar-only usage of it.
+      charGuaranteed: !!pityContext?.charGuaranteed,
     };
     await Preferences.set({ key: 'widget_currency_data', value: JSON.stringify(payload) });
   } catch (err) {
