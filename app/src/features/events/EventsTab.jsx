@@ -51,19 +51,19 @@ function EventsTab({
     }, 0);
     const doneKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'done');
     const skippedKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => state.eventStatus[key] === 'skipped');
+    // NOT ×7 here, unlike totalAstrite above: totalAstrite's ×7 represents the max
+    // achievable across a full week of daily resets, but a single 'done'/'skipped' status
+    // (EventCard auto-clears it back to null at the next daily reset — see its handleExpire)
+    // only ever reflects ONE day's reset, so it can only ever be worth val, not 7×val.
     const earnedAstrite = doneKeys.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
       if (!val) return sum;
-      if (ev.dailyReset) return sum + val * 7;
-      if (ev.weeklyReset) return sum + val;
-      return sum;
+      return sum + val;
     }, 0);
     const skippedAstrite = skippedKeys.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
       if (!val) return sum;
-      if (ev.dailyReset) return sum + val * 7;
-      if (ev.weeklyReset) return sum + val;
-      return sum;
+      return sum + val;
     }, 0);
     const hasProgress = doneKeys.length > 0 || skippedKeys.length > 0;
     const pendingCount = LOCALIZED_EVENT_ENTRIES.length - doneKeys.length - skippedKeys.length;
