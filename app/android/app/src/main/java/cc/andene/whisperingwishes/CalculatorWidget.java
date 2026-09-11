@@ -67,11 +67,6 @@ public class CalculatorWidget extends AppWidgetProvider {
     private static final int DEFAULT_ASTRITE_PER_PULL = 160;
     private static final int MAX_CHAR_COPIES = 7; // C0-C6
     private static final int MAX_WEAP_COPIES = 5; // R1-R5
-    // Same 50/50 rate model as core/calcStats.js's getPullRate() — kept in sync with that
-    // file, not re-derived from widget_currency_data (hardPity is synced, but the soft-pity
-    // ramp shape isn't, since it hasn't changed since this app's launch).
-    private static final double BASE_5STAR_RATE = 0.008;
-    private static final int SOFT_PITY_START = 66;
 
     // Android's own widget-grid formula (70dp * cells - 30dp). Two independent axes use
     // this same math for different purposes: WIDTH_COL* gates row 1's own column reveal
@@ -261,15 +256,16 @@ public class CalculatorWidget extends AppWidgetProvider {
     // Lunite = 1 pull) combined, then ÷ astritePerPull, + Radiant Tide (1:1 pulls, char
     // track only) + Forging Tide (1:1 pulls, weapon track only) — Lustrous Tide (standard
     // banner) is left out, since it isn't governed by the Resonator/Weapon target picker at
-    // all. That total is shown against the EXPECTED (average) pulls still needed to reach
-    // the copy target (section 4's tappable pill, same readCopies() source), via the same
-    // value-iteration formula as core/calcStats.js's expectedPullsToTarget() — ported here
-    // rather than re-derived, since the naive "hardPity - pity, once per copy" this used to
-    // do silently assumed every 5★ pull on the character track wins its 50/50, which is
-    // only true for the weapon track (100% featured, no 50/50 at all). The character track
-    // also needs the live charGuaranteed flag (synced from state.calc.charGuaranteed): a
-    // player who already lost their 50/50 has their very next character 5★ guaranteed
-    // featured, which meaningfully shortens the expected pulls remaining.
+    // all. That total is shown against the WORST-CASE pulls still needed to reach the copy
+    // target (section 4's tappable pill, same readCopies() source) — the exact same
+    // HARD_PITY-based worstCase formula core/calcStats.js computes and the Plan tab's own
+    // Goal Progress Target already displays (PlannerTab.jsx's worstCasePulls), so this
+    // widget's gauge reads consistently with the app's other pull-target UI rather than a
+    // different (expected-value) metric: every copy on the weapon track (100% featured, no
+    // 50/50) costs a full hardPity cycle; every copy on the character track costs up to TWO
+    // full cycles (lose the 50/50, then win the guaranteed rerun), except the very first
+    // copy when charGuaranteed (synced from state.calc.charGuaranteed) is already true,
+    // which needs only one — both minus whatever pity is already banked.
     private void renderProgressSection(Context context, RemoteViews views, JSONObject data, String targetMode) {
         int hardPity = data != null ? data.optInt("hardPity", DEFAULT_HARD_PITY) : DEFAULT_HARD_PITY;
         int astritePerPull = data != null ? data.optInt("astritePerPull", DEFAULT_ASTRITE_PER_PULL) : DEFAULT_ASTRITE_PER_PULL;
@@ -282,9 +278,9 @@ public class CalculatorWidget extends AppWidgetProvider {
         int charCopies = readCopies(context, "char", data);
         int weapCopies = readCopies(context, "weap", data);
         int charPullsNeeded = wantChar
-            ? (int) Math.ceil(expectedPullsToTarget(false, charCopies, charPity, charGuaranteed, hardPity)) : 0;
+            ? Math.max(0, hardPity * 2 * charCopies - (charGuaranteed ? hardPity : 0) - charPity) : 0;
         int weapPullsNeeded = wantWeap
-            ? (int) Math.ceil(expectedPullsToTarget(true, weapCopies, weapPity, false, hardPity)) : 0;
+            ? Math.max(0, hardPity * weapCopies - weapPity) : 0;
         int pullsNeeded = charPullsNeeded + weapPullsNeeded;
 
         long astrite = readCurrencyValue(context, "astrite", data);
@@ -396,57 +392,6 @@ public class CalculatorWidget extends AppWidgetProvider {
         PendingIntent pending = PendingIntent.getBroadcast(context, requestCode, intent,
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(pillId, pending);
-    }
-
-    // Soft-pity ramp — exact port of core/calcStats.js's getPullRate(): base 0.8% until
-    // SOFT_PITY_START, then a linear ramp to a guaranteed 100% at hardPity.
-    private static double getPullRate(int pity, int hardPity) {
-        if (pity < SOFT_PITY_START) return BASE_5STAR_RATE;
-        int softPitySteps = Math.max(1, hardPity - SOFT_PITY_START);
-        return Math.min(BASE_5STAR_RATE + ((pity - SOFT_PITY_START + 1) / (double) softPitySteps) * (1.0 - BASE_5STAR_RATE), 1.0);
-    }
-
-    // Expected pulls to reach targetK copies, by backward value iteration over
-    // (pity, guarantee-state) — exact port of core/calcStats.js's expectedPullsToTarget().
-    // isWeapon: true = 100% featured, no 50/50 (weapon track); false = 50/50 + guarantee
-    // system (character track), where startGuaranteed = the player's next 5★ on this track
-    // is already guaranteed featured (they lost their previous 50/50 and haven't won since).
-    private static double expectedPullsToTarget(boolean isWeapon, int targetK, int startPity, boolean startGuaranteed, int hardPity) {
-        if (targetK <= 0) return 0;
-        int clampedPity = Math.max(0, Math.min(hardPity, startPity));
-
-        // v[pity][guar][copies] — guar dimension unused (stays 0) for weapons.
-        double[][][] v = new double[hardPity + 1][isWeapon ? 1 : 2][targetK];
-
-        for (int c = targetK - 1; c >= 0; c--) {
-            int[] gs = isWeapon ? new int[]{0} : new int[]{1, 0};
-            for (int g : gs) {
-                for (int p = hardPity; p >= 0; p--) {
-                    double rate = getPullRate(p, hardPity);
-                    int nextPity = Math.min(hardPity, p + 1);
-                    double pFeatured = (isWeapon || g == 1) ? 1.0 : 0.5;
-
-                    double expected = 1; // this pull
-
-                    // Non-5★: continue at next pity, same guarantee state
-                    expected += (1 - rate) * v[nextPity][g][c];
-
-                    // 5★ featured: +1 copy, guarantee resets
-                    int nextC = c + 1;
-                    if (nextC < targetK) {
-                        expected += rate * pFeatured * v[0][0][nextC];
-                    }
-                    // 5★ not featured (character track only, g=0): same copies, now guaranteed
-                    if (!isWeapon && g == 0) {
-                        expected += rate * 0.5 * v[0][1][c];
-                    }
-
-                    v[p][g][c] = expected;
-                }
-            }
-        }
-
-        return v[clampedPity][isWeapon ? 0 : (startGuaranteed ? 1 : 0)][0];
     }
 
     // A currency's count, widget-local override first (set by CurrencyInputActivity when
