@@ -42,11 +42,11 @@ function EventsTab({
   // L1-FIX: Memoize event progress stats (was 60+ array iterations per render)
   const progressStats = useMemo(() => {
     const { weekStartKey } = getServerWeekProgress(state.server);
-    // Direct user request: Daily Reset is checkable per server-day, Monday-Sunday (7x/week) —
-    // its status is { weekStart, days: [dayKey, ...] } instead of the 'done'/'skipped' string
-    // every other event uses (see EventCard.jsx's day-grid UI). A grid from a past week is
-    // stale (a new week always starts all 7 days unchecked) — checkedDailyDays only counts
-    // days that belong to the CURRENT week.
+    // Direct user request: Daily Reset's Done button resets itself every server day but
+    // remembers/accumulates the week's completions — its status is { weekStart, days:
+    // [dayKey, ...] } instead of the 'done'/'skipped' string every other event uses (see
+    // EventCard.jsx's isDailyDoneToday). A list from a past week is stale (a new week always
+    // starts unchecked) — checkedDailyDays only counts days that belong to the CURRENT week.
     const dailyStatus = state.eventStatus.dailyReset;
     const checkedDailyDays = (dailyStatus && dailyStatus.weekStart === weekStartKey && Array.isArray(dailyStatus.days))
       ? Math.min(7, dailyStatus.days.length) : 0;
@@ -61,18 +61,25 @@ function EventsTab({
     }, 0);
     const doneKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => key !== 'dailyReset' && state.eventStatus[key] === 'done');
     const skippedKeys = LOCALIZED_EVENT_ENTRIES.filter(([key]) => key !== 'dailyReset' && state.eventStatus[key] === 'skipped');
-    // NOT ×7 here, unlike totalAstrite above: totalAstrite's ×7 represents the max
-    // achievable across a full week, but a single 'done'/'skipped' status on a weekly/one-off
-    // event is only ever worth val once. Daily Reset's own earned amount is handled separately
-    // below (val × however many of this week's days are actually checked).
+    // BUG FIX 2026-09-11: this reduce was missing totalAstrite's own `ev.weeklyReset` guard,
+    // so marking ANY event done — including one-off/limited-time events with no dailyReset/
+    // weeklyReset flag at all (Tower of Adversity, Whimpering Wastes, Pioneer Podcast, Endstate
+    // Matrix, Tactical Hologram, The Strings Remember, If Dreams Still Reverberate, Resonance
+    // Sim Realm) — credited that event's full reward into the "Weekly Progress" Astrite bar,
+    // even though totalAstrite (the denominator) never counted those events at all. That let
+    // earnedAstrite exceed totalAstrite and put non-weekly rewards into a weekly total —
+    // reported directly by the user. Only weeklyReset events belong here now; NOT ×7 (unlike
+    // totalAstrite's own ×7), since a single 'done'/'skipped' status on a weekly event is only
+    // ever worth val once. Daily Reset's own earned amount is handled separately below (val ×
+    // however many of this week's days are actually checked).
     const earnedAstrite = doneKeys.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
-      if (!val) return sum;
+      if (!val || !ev.weeklyReset) return sum;
       return sum + val;
     }, 0) + (parseInt(LOCALIZED_EVENT_ENTRIES.find(([k]) => k === 'dailyReset')?.[1]?.rewards, 10) || 0) * checkedDailyDays;
     const skippedAstrite = skippedKeys.reduce((sum, [, ev]) => {
       const val = parseInt(ev.rewards, 10) || 0;
-      if (!val) return sum;
+      if (!val || !ev.weeklyReset) return sum;
       return sum + val;
     }, 0);
     const dailyFullyChecked = checkedDailyDays >= 7;
