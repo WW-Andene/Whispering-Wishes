@@ -536,7 +536,27 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Phlogiston' },
     bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'The Last Dance',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'Woodland Aria'], alt4: ['Undying Flame', 'Pistols#26'], alt3: ['Pistols of Night'] },
-    teams: ['Carlotta + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Buling'] },
+    // Expanded 2026-09-13, continuing the authoritative-source-first process: her own
+    // dump's Example Teams ("Best: Carlotta + Lynae/Zhezhi/Brant/Cantarella + Mornye +
+    // Shorekeeper/Verina"; "F2P: Carlotta + Taoqi/Yangyang + Verina/Buling") and Synergies text
+    // (Mornye "best with Lynae" specifically, matching the Mornye-restriction pattern already
+    // used elsewhere) give the full cross product below.
+    teams: [
+      'Carlotta + Lynae + Mornye',
+      'Carlotta + Lynae + Shorekeeper',
+      'Carlotta + Lynae + Verina',
+      'Carlotta + Zhezhi + Shorekeeper',
+      'Carlotta + Zhezhi + Verina',
+      'Carlotta + Zhezhi + Buling',
+      'Carlotta + Brant + Shorekeeper',
+      'Carlotta + Brant + Verina',
+      'Carlotta + Cantarella + Shorekeeper',
+      'Carlotta + Cantarella + Verina',
+      'Carlotta + Taoqi + Verina',
+      'Carlotta + Taoqi + Buling',
+      'Carlotta + Yangyang + Verina',
+      'Carlotta + Yangyang + Buling',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1606 sheet. desc: title "Stage in the Box" (the source) prepended and
   // blurb rewritten to match the roster's convention (previous desc wrongly described her as dealing
@@ -1043,10 +1063,15 @@ const CHARACTER_DATA = {
     // each (2 interchangeable headliners + Lynae/Mornye + a Shorekeeper/Verina choice) — a real
     // 4-person Whimpering Wastes-shaped comp this flat 3-name `teams` string format can't represent
     // without guessing which specific trio was meant, so deliberately left uncoded.
+    // Added 'Lynae + Carlotta + Mornye' (2026-09-13): "Other Alternative Teams" above names
+    // Carlotta ambiguously (same 4+-name issue), but Carlotta's OWN dump unambiguously confirms
+    // it ("Best: Carlotta + Lynae/Zhezhi/Brant/Cantarella + Mornye + Shorekeeper/Verina") — one
+    // clear side is enough to keep it, per the established standard.
     teams: [
       'Lynae + Aemeath + Mornye',
       'Lynae + Qingxiao + Mornye',
       'Lynae + Luuk Herssen + Mornye',
+      'Lynae + Carlotta + Mornye',
       'Lynae + Hiyuki + Chisa',
       'Lynae + Aemeath + Chisa',
       'Lynae + Yangyang: Xuanling + Chisa',
