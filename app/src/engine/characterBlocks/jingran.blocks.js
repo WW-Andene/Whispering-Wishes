@@ -43,9 +43,19 @@
 // accumulation, exactly as before. This file exists so that gap closes automatically the
 // moment a real rotation is sourced, without another from-scratch rewrite.
 //
-// Basis: 'HP' throughout except the Outro (explicit "795% of Jingran's ATK" text overrides
-// the character-wide HP-scaling default, per CONTRIBUTING.md's basis-selection rule), same
-// convention as the prior version and Cartethyia's own HP-scaling blocks.
+// Basis corrected 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/
+// Jingran.md's own closing Meta-position paragraph): every damage.basis below was 'HP' (an
+// unsourced inference modeled on Cartethyia's real HP-scaling kit) — the fresh dump explicitly
+// states Jingran is "HP-CONVERTING (like Brant is with Energy Regen), not HP-scaling like
+// Cartethyia — his multipliers apply to ATK, with HP only feeding the ATK-conversion and
+// %-bonus passives." His own kit text ("Yang Changes, Yin Unites": flat ATK +36 per 1000 Max HP)
+// already described an HP→ATK conversion passive, not a raw-HP damage basis — CONTRIBUTING.md's
+// own basis-selection rule ("Only use 'HP'/'DEF' when the character's own kit text says
+// explicitly the hit scales off that stat instead") was never actually satisfied for him. Fixed:
+// every damage.basis below is now 'ATK' (the schema default), matching Brant's own ATK-basis
+// HP-conversion blocks; the Outro was already correctly 'ATK'. CHARACTER_DATA['Jingran'].
+// statScaling and its ROTATION_DATA/totalMult row in characters.js corrected to match in the same
+// pass.
 //
 // Two real mechanics still have no home in this schema, honestly left unmodeled rather than
 // guessed: (1) Soul Raid/Stardome Meander's Fire-of-Life-conditional HP-scaling DMG-increase
@@ -73,7 +83,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Drink Soul Stage 1-2' },
     condition: { requiresStance: 'Yin Vessel' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('44.74% → 37.28%×2'), category: 'basicDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('44.74% → 37.28%×2'), category: 'basicDmg', basis: 'ATK' },
     note: 'Yin Vessel Basic ATK, Stage 1-2 only — Basic Attack DMG per the dump (no override for these 2 stages, unlike Stage 3/4 below).',
   },
   {
@@ -82,7 +92,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Basic ATK:Drink Soul Stage 3-4' },
     condition: { requiresStance: 'Yin Vessel' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('27.33%×4 → 45.95%×2+30.63%×2'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('27.33%×4 → 45.95%×2+30.63%×2'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Yin Vessel Basic ATK, Stage 3-4 — the dump is explicit both stages are "dealing Heavy Attack DMG" despite firing off the Basic Attack button; also each restores 50 Qi (resource, not modeled — no CHARACTER_ROTATIONS to drive gauge simulation yet).',
   },
   {
@@ -91,7 +101,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: "Basic ATK:Devil's Bane Stage 1-2" },
     condition: { requiresStance: 'Yang Font' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('39.82% → 59.68%+39.79%'), category: 'basicDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('39.82% → 59.68%+39.79%'), category: 'basicDmg', basis: 'ATK' },
     note: "Yang Font Basic ATK, Stage 1-2 only — Basic Attack DMG per the dump.",
   },
   {
@@ -100,7 +110,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: "Basic ATK:Devil's Bane Stage 3-4" },
     condition: { requiresStance: 'Yang Font' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('47.73%×2+63.64% → 86.95%+12.43%×3'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('47.73%×2+63.64% → 86.95%+12.43%×3'), category: 'heavyDmg', basis: 'ATK' },
     note: "Yang Font Basic ATK, Stage 3-4 — explicit \"dealing Heavy Attack DMG\" per the dump, same as Drink Soul's own Stage 3-4 above; each restores 50 Qi (not modeled).",
   },
   {
@@ -108,7 +118,7 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'BasicATK',
     trigger: { type: 'cast', on: 'Mid-air:Attack' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('92.45%'), category: 'basicDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('92.45%'), category: 'basicDmg', basis: 'ATK' },
     note: 'Base Mid-air Attack, previously entirely missing. No override text — kept basicDmg per this schema\'s established mid-air convention.',
   },
   {
@@ -117,7 +127,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Dodge Counter:Nether Dive' },
     condition: { requiresStance: 'Yin Vessel' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('49.70%×4'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('49.70%×4'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Yin Vessel Dodge Counter, previously entirely missing — explicitly "considered Heavy Attack DMG" per the dump (not the usual Basic-ATK-family Dodge Counter convention). Restores 100 Qi (not modeled).',
   },
   {
@@ -126,7 +136,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Dodge Counter:Light Watch' },
     condition: { requiresStance: 'Yang Font' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('74.57%+74.57%+99.43%'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('74.57%+74.57%+99.43%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Yang Font Dodge Counter, previously entirely missing — explicitly "considered Heavy Attack DMG" per the dump. Restores 100 Qi (not modeled).',
   },
   // Skill row 1: the dump gives ONE shared %-string for both stance names — modeled as two blocks
@@ -138,7 +148,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Encroaching Yin' },
     condition: { requiresStance: 'Yin Vessel' },
     timing: { cooldown: 15 }, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('65.61%+32.81%×3'), category: 'skillDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('65.61%+32.81%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'Yin Vessel Resonance Skill. Real 15s cooldown per the dump. Grants Cleanse of Impurity (4s, resource-economy, not modeled).',
   },
   {
@@ -147,7 +157,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Scorching Yang' },
     condition: { requiresStance: 'Yang Font' },
     timing: { cooldown: 15 }, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('65.61%+32.81%×3'), category: 'skillDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('65.61%+32.81%×3'), category: 'skillDmg', basis: 'ATK' },
     note: 'Yang Font Resonance Skill, same shared multiplier row as Encroaching Yin. Real 15s cooldown per the dump.',
   },
   // Skill row 2 (Netherworld Traverse/Afterlife's Guide) — fixed 2026-09-07: was skillDmg, but the
@@ -158,7 +168,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: 'Skill:Netherworld Traverse' },
     condition: { requiresStance: 'Yin Vessel' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('51.69%+25.85%×2+38.77%×4'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('51.69%+25.85%×2+38.77%×4'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Yin Vessel Resonance Skill Heavy Attack follow-up — the dump is explicit "considered Heavy Attack DMG" (fixed 2026-09-07 from a wrong skillDmg category). Needs Cleanse of Impurity to cast; restores 100 Qi (not modeled).',
   },
   {
@@ -167,7 +177,7 @@ export const JINGRAN_BLOCKS = [
     trigger: { type: 'cast', on: "Skill:Afterlife's Guide" },
     condition: { requiresStance: 'Yang Font' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('65.87%×2+131.74%'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('65.87%×2+131.74%'), category: 'heavyDmg', basis: 'ATK' },
     note: "Yang Font Resonance Skill Heavy Attack follow-up — same real \"considered Heavy Attack DMG\" fix as Netherworld Traverse above.",
   },
   // Heavy ATK — the character's real Forte Circuit Heavy Attacks. HP-scaling DMG-increase component
@@ -177,7 +187,7 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Soul Raid' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('16.40%×2+21.09%×3+138.22%'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('16.40%×2+21.09%×3+138.22%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Real Fire-of-Life-conditional HP-scaling DMG increase beyond this % row (see file header) not modeled. Switches to Yang Font on cast.',
   },
   {
@@ -185,7 +195,7 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'HeavyATK',
     trigger: { type: 'cast', on: 'Heavy ATK:Stardome Meander' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('24.04%+24.04%+48.08%+144.22%'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('24.04%+24.04%+48.08%+144.22%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'Same unmodeled Fire-of-Life-conditional HP-scaling caveat as Soul Raid above. Switches to Yin Vessel on cast, castable mid-air.',
   },
   {
@@ -193,7 +203,7 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Liberation',
     trigger: { type: 'cast', on: 'Liberation:Burial of Thousand Souls' },
     timing: { cooldown: 25 }, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('93.15%×8'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('93.15%×8'), category: 'heavyDmg', basis: 'ATK' },
     // category fixed 2026-09-07: the dump is explicit this is "considered Heavy Attack DMG" despite
     // the Liberation slot — was previously libDmg-categorized (an unconfirmed guess in the prior
     // sparse version, since no source text was available then).
@@ -205,7 +215,7 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Forte',
     trigger: { type: 'cast', on: 'Forte:Chimei Wangliang' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('83.51%'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('83.51%'), category: 'heavyDmg', basis: 'ATK' },
     // category fixed 2026-09-07: the dump is explicit this proc is "considered Heavy Attack DMG" too
     // (previously left uncategorized in the prior sparse version, since no source text existed yet).
     note: 'Real text: "summon proc on Heavy ATK," considered Heavy Attack DMG per the dump. A Forte-summon proc firing once per Soul Raid/Stardome Meander cast while in Yinghuo — modeled as its own cast-triggered block (best available trigger shape absent a CHARACTER_ROTATIONS to drive a real windowed-proc simulation) rather than dependency-linked to the Heavy ATK blocks above.',
@@ -215,7 +225,7 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Intro',
     trigger: { type: 'cast', on: 'Intro:Question the Tombs' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('198.81%'), basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('198.81%'), basis: 'ATK' },
     concertoEnergyGain: 10,
   },
   {
@@ -223,9 +233,9 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Outro',
     trigger: { type: 'swap-out' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    // Basis kept 'ATK' here (not 'HP' like every other block above) — the dump's own row text
-    // explicitly says "795% of Jingran's ATK," the one row in his whole table that states its own
-    // basis in plain text, overriding the character-wide HP-scaling default per CONTRIBUTING.md.
+    // Basis 'ATK' — the dump's own row text explicitly says "795% of Jingran's ATK." This was
+    // already correct before the 2026-09-12 file-wide basis fix above (see header comment); it's
+    // the one row that always stated its own basis in plain text.
     damage: { hits: parseSkillMultiplierHits('795%'), basis: 'ATK' },
   },
 
@@ -233,8 +243,11 @@ export const JINGRAN_BLOCKS = [
   // Added 2026-09-07: "Minor Fortes: Crit Rate+8%, HP%+12%" (Data dump/Jingran/Jingran.md, sourced as
   // the sum of every Combat-Skill-tree Stat Bonus breakpoint the dump lists) — previously had no
   // block at all, same class of gap as every other converted character's own missing Minor Fortes.
-  // hpPct is a real, resolver-consumed stat (resolveHitComposedDps.js/resolveHitComposedTeamDps.js)
-  // that directly scales every HP-basis hit above, unlike a generic character where it would be inert.
+  // hpPct is still a real base-kit stat (his HP% growth genuinely matters — it feeds the "Yang
+  // Changes, Yin Unites"/S3 flat-ATK-from-HP conversion and his Max-HP-scaled Fusion DMG Bonus/
+  // Incoming Healing Bonus passives) but, after the 2026-09-12 basis fix above, no longer directly
+  // scales any damage.basis:'HP' hit in this file (there are none) — it's modeled here purely as
+  // the real stat bonus itself, not as a damage-scaling lever.
   {
     id: 'jingran.buff.minor-fortes',
     source: SOURCE, kind: 'buff', section: 'Buff',
@@ -336,7 +349,7 @@ export const JINGRAN_BLOCKS = [
     source: SOURCE, kind: 'damage', section: 'Chain',
     trigger: { type: 'cast', on: 'Liberation:Burial of Thousand Souls' },
     timing: {}, target: { scope: 'self' }, effects: [],
-    damage: { hits: parseSkillMultiplierHits('83.51%'), category: 'heavyDmg', basis: 'HP' },
+    damage: { hits: parseSkillMultiplierHits('83.51%'), category: 'heavyDmg', basis: 'ATK' },
     note: 'S6 Parade of Thousand Souls: upon entering Yinghuo (via Liberation cast), dealing damage summons an extra Chimei Wangliang (Fusion DMG, considered Heavy Attack DMG), up to 1/second, max 8 summons over the 15s Yinghuo window — the real per-second/8-cap proc timing is not modeled (no CHARACTER_ROTATIONS to drive it), so this is recorded as a single real-valued instance anchored to the Yinghuo-entry cast rather than fabricating a repeat-count. Gated to sequence 6.',
   },
 ];

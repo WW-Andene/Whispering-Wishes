@@ -3,19 +3,19 @@ import { JINGRAN_BLOCKS } from '../engine/characterBlocks/jingran.blocks.js';
 import { expectValidBlockFile } from '../engine/schema/validate.js';
 import { resolveTriggerBlocks } from '../engine/resolver/gating/triggerEngine.js';
 
-// Jingran has no CHARACTER_ROTATIONS entry yet (unreleased, no sourced rotation — see
-// jingran.blocks.js's own header comment), so there is no rotation-derived hit-composed-DPS test
-// here the way every other character's triggerEngine-*.test.js has — that would require inventing
-// a rotation order, exactly what this file's own sourcing discipline forbids. This test only
-// covers what's actually sourced: schema validity and the Resonance Chain stat contributions.
+// Updated 2026-09-12: CHARACTER_ROTATIONS['Jingran'] was added against a fresh prydwen.gg
+// build-guide snapshot (Data dump/Jingran/Jingran.md), so he is now keyed into
+// BLOCKS_BY_CHARACTER — the "no rotation-derived test" limitation this comment used to document no
+// longer applies to that specific gap, though a full rotation-derived hit-composed-DPS test is still
+// out of scope for this file (schema validity and Resonance Chain stat contributions only).
 describe('triggerEngine parity — Jingran', () => {
   it('every block matches the canonical schema', () => {
     expectValidBlockFile(JINGRAN_BLOCKS, 'Jingran');
   });
 
-  it('is not in BLOCKS_BY_CHARACTER (no CHARACTER_ROTATIONS entry to pair it with yet)', async () => {
+  it('is in BLOCKS_BY_CHARACTER now that CHARACTER_ROTATIONS pairs with it', async () => {
     const { BLOCKS_BY_CHARACTER } = await import('../engine/characterBlocks/index.js');
-    expect(BLOCKS_BY_CHARACTER['Jingran']).toBeUndefined();
+    expect(BLOCKS_BY_CHARACTER['Jingran']).toBe(JINGRAN_BLOCKS);
   });
 
   // Updated 2026-09-07 (real-kit rewrite against Data dump/Jingran/Jingran.md): S1/S2 are now
@@ -47,10 +47,14 @@ describe('triggerEngine parity — Jingran', () => {
     expect(yang.condition.requiresStance).toBe('Yang Font');
   });
 
-  it('Outro damage uses ATK basis (explicit "795% ATK" in source), unlike every other HP-basis block', () => {
+  it('every damage block uses ATK basis (corrected 2026-09-12 — he is HP-CONVERTING, not HP-scaling)', () => {
+    // A fresh prydwen.gg snapshot's own Meta-position paragraph states Jingran's multipliers apply
+    // to ATK, with HP only feeding an ATK-conversion passive — not HP-scaling like Cartethyia. Every
+    // damage.basis in this file was corrected from 'HP' to 'ATK' to match (see jingran.blocks.js's
+    // own header comment for the full sourcing).
     const outro = JINGRAN_BLOCKS.find(b => b.id === 'jingran.outro.rising-fortune-and-ebbing-evil');
     expect(outro.damage.basis).toBe('ATK');
     const heavy = JINGRAN_BLOCKS.find(b => b.id === 'jingran.heavy.soul-raid');
-    expect(heavy.damage.basis).toBe('HP');
+    expect(heavy.damage.basis).toBe('ATK');
   });
 });
