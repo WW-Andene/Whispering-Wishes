@@ -97,7 +97,7 @@
   "recommendationWeaponMustHaveReason": "No real 5★ alternative for {{name}}.",
   "recommendationWeaponReliantDespiteAlts": "{{name}} is signature-reliant; alternatives underperform.",
   "recommendationWeaponAlreadyHaveAlt": "You already own {{alt}}, a solid alternative.",
-  "recommendationWeaponAltExists": "Alternatives: {{alts}}.",
+  "recommendationWeaponAltExists": "Not signature-reliant — {{alts}} performs nearly as well.",
   "recommendationGoodForHeader": "{{name}} pairs well with these characters in your roster",
   "recommendationGoodForEmpty": "No confirmed synergy with your current roster yet",
   "recommendationAllOwnedTitle": "You already own every featured character this patch",
