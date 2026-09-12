@@ -281,7 +281,16 @@ const CHARACTER_DATA = {
     // her Outro; the Iuno+Shorekeeper / Xiangli Yao+Shorekeeper pairing is also cited directly in
     // the source's own endgame-stats ER estimate). Xiangli Yao + Shorekeeper kept, confirmed as her other
     // named example team.
-    teams: ['Jianxin + Iuno + Shorekeeper', 'Jianxin + Xiangli Yao + Shorekeeper'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Jianxin/Jianxin.md, Synergies/Example Teams):
+    // added the "F2P Jinhsi Team" (Mortefi's Ultimate + her Forte triggers Marcato Coordinated
+    // Attacks refilling Jinhsi's Incandescence) and Verina alternatives.
+    teams: [
+      'Jianxin + Iuno + Shorekeeper',
+      'Jianxin + Iuno + Verina',
+      'Jianxin + Xiangli Yao + Shorekeeper',
+      'Jianxin + Xiangli Yao + Verina',
+      'Jianxin + Mortefi + Jinhsi',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API, Cloudflare bypassed via
   // Chrome UA + google.com referer + jsRender) and the source/character/1104 — base stats, skills,
   // multipliers, buffs, ascension mats all independently re-confirmed accurate, no changes needed there.
