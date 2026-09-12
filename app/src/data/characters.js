@@ -1037,7 +1037,22 @@ const CHARACTER_DATA = {
     // field) and independently on Phrolova's own dump (line 292: "Yangyang: Xuanling... + Phrolova +
     // Suisui/Chisa/Shorekeeper — Suisui and Chisa are only best specifically with Yangyang: Xuanling
     // on the team").
-    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper', 'Phrolova + Yangyang: Xuanling + Suisui'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Phrolova/Phrolova.md, Synergies/Example
+    // Teams): Lucilla/Sigrika named as good 2nd-slot alternatives to Cantarella; Roccia/Danjin named
+    // as 3rd-slot alternatives to Qiuyuan/Shorekeeper; Galbrena/Jiyan/Phoebe as her other
+    // Heavy-Attack-DPS pairings alongside Yangyang: Xuanling.
+    teams: [
+      'Phrolova + Cantarella + Qiuyuan',
+      'Phrolova + Cantarella + Shorekeeper',
+      'Phrolova + Yangyang: Xuanling + Suisui',
+      'Phrolova + Lucilla + Qiuyuan',
+      'Phrolova + Sigrika + Qiuyuan',
+      'Phrolova + Roccia + Cantarella',
+      'Phrolova + Danjin + Shorekeeper',
+      'Phrolova + Galbrena + Shorekeeper',
+      'Phrolova + Jiyan + Shorekeeper',
+      'Phrolova + Phoebe + Rover: Spectro',
+    ] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro Heavy ATK DPS who self-shields and builds a resource through her attacks toward a Forte finisher. At enough stacks she can instead enter a time-stopped state for an extended combo ending in a finisher that shields teammates on their Intro cast; her Outro buffs the next Resonator\'s All-Attribute DMG, refunding extra stacks if they Outro back to her.',
     skills: ['Hunter\'s Path', 'Warrior\'s Blade', 'Sunward Conquest', 'Call Me By the Sun'],
