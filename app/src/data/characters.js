@@ -849,7 +849,17 @@ const CHARACTER_DATA = {
     // Added 'Ciaccona + Zani + Phoebe' (2026-09-13): confirmed on Ciaccona's own dump ("Spectro
     // Frazzle Teams: Phoebe + Zani + Ciaccona + Rover: Aero/Shorekeeper") and independently on
     // Zani's own dump (Synergies naming Ciaccona a real Frazzle-applier alternative).
-    teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa', 'Ciaccona + Zani + Phoebe'] },
+    // Expanded 2026-09-13 from her own dump's Example Teams list: "Best Team" Sigrika + Qiuyuan +
+    // Ciaccona; "Jiyan Iuno Dual DPS" Jiyan + Iuno + Ciaccona; "Main DPS Ciaccona" Ciaccona + Lynae +
+    // Sanhua (Sanhua named her Main-DPS-enabler "best option by far").
+    teams: [
+      'Ciaccona + Cartethyia + Rover: Aero',
+      'Ciaccona + Cartethyia + Chisa',
+      'Ciaccona + Zani + Phoebe',
+      'Ciaccona + Sigrika + Qiuyuan',
+      'Ciaccona + Jiyan + Iuno',
+      'Ciaccona + Lynae + Sanhua',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1409 sheet. desc: title "Feathered Tempest" (the source) prepended and
   // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes/
