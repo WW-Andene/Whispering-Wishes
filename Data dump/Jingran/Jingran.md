@@ -171,18 +171,143 @@ already aggregates:
 HP 15375, ATK 313, DEF — (not listed), Max Energy 125, Crit Rate 5%, Crit DMG 150%, Healing Bonus 0%,
 Fusion DMG 0%.
 
-## Build (partial — this source's guide text is not yet fully written for him)
+## Build
 
-**Recommended Weapons** (ranked, no ATK%/comparison figures given on this page): 1. Thousandfold
-Deliverance (already `bestWeapon` in this repo). 2. Radiance Cleaver. 3. Aureate Zenith.
+Source for this section: a second, later snapshot from prydwen.gg
+(prydwen.gg/wuthering-waves/characters/jingran), user-provided via a .mht file (fetched 2026-09-12) —
+supersedes the nanoka.cc snapshot's own "Build (partial — not yet written)" placeholder above, whose
+guide content had no Echo-set/team-synergy/rotation section written yet for him at that earlier date
+(a newly-released character). Real-life last update on the prydwen page itself: review/calcs Patch 3.6,
+profile 10/September/2026.
 
-**Key Stat**: HP (this page's own "Key Stat: HP 5000.0%" line — likely a malformed/placeholder render on
-the source's own page, not a literal 5000% target; not used as a real number here).
+### Best Weapons (Lv.90, % = calculated performance vs. his Signature)
+| Weapon | Score | Stats |
+|---|---|---|
+| Thousandfold Deliverance (R1, signature) | 100.0% | ATK 413, HP% 72.2% |
+| Thunderflare Dominion (R1, Augusta's sig) | 85.1% | ATK 675, CRIT Rate 12.1% |
+| Verdant Summit (R1) | 82.0% | ATK 587, CRIT DMG 48.6% |
+| Wildfire Mark (R1) | 78.8% | ATK 587, CRIT DMG 48.6% |
+| Radiance Cleaver (R1) | 73.7% | ATK 587, CRIT DMG 48.6% |
+| Aureate Zenith (R5, 4★, best 4★) | 73.1% | ATK 412, CRIT DMG 40.5% |
+| Ages of Harvest (R1) | 70.9% | ATK 587, CRIT Rate 24.3% |
+| Kumokiri (R1) | 69.1% | ATK 500, CRIT Rate 36% |
+| Autumntrace (R5, 4★) | 68.7% | ATK 412, CRIT Rate 20.2% |
+| Lustrous Razor (R1, standard 5★) | 67.6% | ATK 587, ER 36.4% |
+| Helios Cleaver (R5, 4★) | 62.8% | ATK 412, ATK 30.3% |
+| Waning Redshift (R5, 4★) | 62.4% | ATK 462, ATK 18.2% |
+| Meditations on Mercy (R5, best no-gacha/F2P) | 59.9% | ATK 462, ATK 18.2% |
 
-No Echo set recommendation, team synergy, or rotation/combo text exists on this page — this source's
-guide content for him isn't fully written yet (a newly-released character), same genuinely-unconfirmed
-state this repo's own CHARACTER_DATA['Jingran'] comment already documents for bestEchoes/teams. Not
-fabricated here either.
+Note: this table's Radiance Cleaver (#5, 73.7%) and Aureate Zenith (#6, 73.1%) rankings are consistent
+with the nanoka.cc snapshot's earlier, coarser #2/#3 ranking of the same 2 weapons above — corroborating
+both sources rather than conflicting.
+
+**Signature (Thousandfold Deliverance)**: +12% All-Attribute DMG Bonus. Casting Intro or gaining a
+Shield as the active Resonator grants Nature's Order + Cradle of Life (once per 0.5s via Shield, up to
+6 stacks, 7s). Nature's Order: +4% Crit DMG per stack (cap 24%); at 6 stacks, +12% Heavy Attack Crit
+Rate. Cradle of Life: casting a Heavy Attack consumes up to 2 stacks, each granting Heavy Attack DEF
+Ignore +15% (cap 30%) for 2s. His Signature is the only weapon giving him ~72% HP%, letting him hit
+the 50000 Max HP self-buff cap on a 4-4-1-1-1 build while still stacking Crit/DEF Ignore — a very large
+gap over every alternative.
+
+### Best Echo Sets
+**Lamp of Nether Road** (his signature set, 100%): 2pc HP +10%; 5pc — gaining a Shield grants +5% Crit
+Rate for 5s (max 4 stacks, once per 0.5s); at max stacks, +15% Fusion DMG Bonus. Fully ramped: +10%
+HP, +20% Crit Rate, +15% Fusion DMG Bonus.
+
+**Best Main Echo**: Myriad Snare: Rustfire Chassis (Simple Summon, HP-scaling) — grants the wearer
++12% Fusion DMG Bonus and +12% Heavy Attack DMG Bonus in the main slot; deals 10.20% Max HP on impact
+plus 0.37% Max HP ×19 hits over its duration (CD 20s).
+
+**Best Echo Stats**: 4-cost CRIT DMG/HP%, 4-cost CRIT DMG/HP%, 1-cost HP%, 1-cost HP%, 1-cost HP%.
+Substat priority: Energy Regen (until satisfied) > HP (until 50000 total) > Crit Rate = Crit DMG >
+Heavy DMG% > ATK% > ATK.
+
+### Best Endgame Stats (Level 90, S0)
+HP: 50000 (priority above Crit stats — abandon building HP further past this). DEF: 0 (fixed by kit).
+ATK: 3200+ (post-HP-conversion). Crit Rate: 50%+ (before Echo set/Signature). Crit DMG: 260-340%+.
+Energy Regen: 110-120%+ (lower end in a Brant/Mortefi+Lupa team, higher end in an Iuno+Shorekeeper/
+Lupa+Mornye team). Fusion DMG Bonus: 87% (before Set & Ghost Shroud bonuses).
+
+### Skill Priority
+Forte Circuit > Res. Liberation > Res. Skill > Basic Attack > Intro Skill (Intro/Basic can be skipped
+when leveling for minimal loss).
+
+## Gameplay and Teams
+
+### Standard Rotation (S0-S1)
+Intro → Ultimate → Heavy: Stardome Meander → Basic: Yin 2/3/4 → Heavy: Soul Raid → Skill: Scorching
+Yang → Basic: Afterlife's Guide → Heavy: Stardome Meander → Skill: Encroaching Yin → Basic: Netherworld
+Traverse → Heavy: Soul Raid → Outro.
+
+### S2+ Rotation (Stardome Meander openable pre-Intro)
+Opener only: Heavy: Stardome Meander (swap) → Intro → Ultimate → Heavy: Soul Raid → Basic: Yang 2/3/4 →
+Heavy: Stardome Meander → Skill: Encroaching Yin → Basic: Netherworld Traverse → Heavy: Soul Raid →
+Skill: Scorching Yang → Basic: Afterlife's Guide → Heavy: Stardome Meander → Outro.
+
+Dodge Counters can fully replace a Skill or Basic chain and immediately net his next Heavy Attack —
+use them to save rotation time whenever possible. Extra Basic Attacks (Yang for S0-S1, Yin for S2+)
+pad out rotation time if the team's cycle runs longer than his 4-Forte-Heavy sequence; best placed
+after his 4th Heavy, before Outro (outside Quickswap).
+
+### Synergies
+- **Iuno / Lupa** — Jingran's 2 best archetypes: Iuno (Shield-based Heavy Attack buffer) and Lupa
+  (Mono Fusion enabler) — his 2 best synergies overall, though not recommended together since Lupa
+  wants a full Fusion team.
+- **Mortefi / Rebecca** — Lupa's best partner in a Jingran team is Mortefi (Fusion Heavy Attack buffer,
+  enables Lupa too); works without Lupa in a pinch, but Rebecca is generally the stronger Heavy Attack
+  buffer when Mono Fusion isn't being run (Electro element, so worse specifically inside Mono Fusion).
+- **The Shorekeeper / Mornye / Verina** — Jingran scales with any general Support (no dedicated
+  HP-scaler/Shield-archetype Support exists yet). Shorekeeper is generally the most flexible/best
+  pick; Mornye is a safe alternative that also enables Mono Fusion with Lupa; Verina is the
+  permanently-accessible Shorekeeper replacement.
+
+### Example Teams
+1. **Best Team**: Jingran + Iuno + Shorekeeper/Verina. (Shorekeeper ideal; Iuno+Verina is still
+   stronger than the Mono Fusion/F2P alternatives by a slight margin, excluding Quickswap.)
+2. **Mono Fusion**: Jingran + Mortefi + Mornye/Lupa. (Mortefi on Moonlit Clouds w/ Stonewall Bracer
+   main Echo in 2nd slot, OR Mornye on Halo of Starry Radiance w/ Spacetrek Explorer main Echo in 3rd
+   slot so Lupa can Outro-buff Jingran.)
+3. **F2P Team**: Jingran + Rebecca/Mortefi + Shorekeeper/Verina. (Support runs Halo of Starry Radiance
+   w/ Spacetrek Explorer main Echo — a Shield-generating Main Echo lets non-Iuno supports approximate
+   Iuno's Ghost Shroud generation for him.)
+
+## Calculations
+
+### Damage Profile (Prydwen's own simulated rotation, S0, solo/no buffs)
+Basic 15,667 (0.8%) · Heavy 1,824,337 (84%) · Skill 78,044 (part of 8.4% Skill share incl. Intro/Outro)
+· Liberation 0 · Intro 27,754 · Outro 181,825 · Echo 43,624. Total ≈ 2,171,250. Rotation time 13.37s.
+Confirms his damage is overwhelmingly Heavy Attack (84%), with Skill/Intro/Outro/Echo as the remainder
+and zero Liberation damage share (his Liberation is a resource-setup cast, not a damage source).
+
+### Damage Output by Sequence (1-Target, 13.37s rotation)
+- S0: 2,171,250 DMG / 162,397 DPS (100.00%)
+- S1: 2,332,662 DMG / 174,469 DPS (107.43%)
+- S2: 2,919,050 DMG / 224,197 DPS (138.05%)
+- S3: 3,533,757 DMG / 271,409 DPS (167.13%)
+- S4: 3,725,972 DMG / 286,172 DPS (176.22%)
+- S5: 3,725,972 DMG / 286,172 DPS (176.22%) — S5 grants no damage delta (a survivability node).
+- S6: 5,977,682 DMG / 459,115 DPS (282.71%)
+
+Calculated with buffs from Iuno (Moongazer's Sigil + Moonlit Clouds + Bell-Borne Geochelone) and The
+Shorekeeper (Variation + Rejuvenating Glow + Fallacy of No Return).
+
+## Review / Ratings
+Tier: DPS T0 (Tower of Adversity), T1 (Whimpering Wastes) — same split on the Value Tier List.
+
+**Pros**: one of the strongest/most accessible DPS releases in a while; only needs his Signature to
+perform at a very high level; strong sequence value (S2, S6 particularly); damage spread evenly across
+his rotation with good AoE (multi-wave-friendly); wide team-option access, easy to build a team around.
+
+**Cons**: one of the most Signature-weapon-reliant characters in the game (permanent alternatives are
+notably worse, not just slightly); poor Whimpering Wastes purple-token options once his dedicated gold
+token rotates out; low Quickswap potential in his ideal teams.
+
+**Meta position**: strong on-release meta contender; baseline performance is very high even though his
+ceiling doesn't scale much further past it. Best used with Iuno + Shorekeeper; second-best in a Mono
+Fusion setup (Mortefi + Lupa); can fall back to F2P Heavy Attack buffers (Rebecca/Mortefi + Shorekeeper/
+Verina) via the Shield-generating-Main-Echo workaround, landing around the Cartethyia-to-Galbrena power
+generation for those teams. HP-CONVERTING (like Brant is with Energy Regen), not HP-scaling like
+Cartethyia — his multipliers apply to ATK, with HP only feeding the ATK-conversion and %-bonus passives.
 
 ## App Data Comparison (vs. `app/src/data/characters.js` + `jingran.blocks.js`)
 
@@ -215,5 +340,36 @@ data" values this repo had sourced before his live release) — the deltas found
 5. **Minor Fortes and both Inherent Skills had no block at all** — added (Crit Rate+8%/HP%+12%; Hark the
    Dust/Trace the Vestige as inert utility, no DPS component).
 
-No `CHARACTER_ROTATIONS['Jingran']` entry exists still: this source's own guide text for him has no
-rotation/combo/team section written yet (confirmed above, under Build) — not fabricated.
+**2026-09-12 update (second, prydwen.gg snapshot)**: filled in `CHARACTER_DATA['Jingran']`'s previously
+empty `bestEchoes`/`teams`/`weaponAlts` from this section's own Build/Gameplay-and-Teams content above
+(his own dump is authoritative for his own teams field), added `CHARACTER_ROTATIONS['Jingran']` (both
+the Standard S0-S1 and S2+ rotations, now published above under Gameplay and Teams), and added
+reciprocal team entries to Iuno's own `teams` field (her own dump independently names the same
+Jingran+Iuno+Shorekeeper/Verina pairing as her #1 Best Team pick). Checked Mortefi/Rebecca/Mornye/Lupa/
+The Shorekeeper/Verina's own dump files under `Data dump/` for a Jingran mention before adding any
+further reciprocal entries — none of them mention him, so no reciprocal entries were added to their own
+`teams` fields (a one-way citation from Jingran's own dump is still valid data for his own field, per
+this session's established standard, just not cross-corroborated).
+
+**Also found and fixed in this same pass — a real basis bug, not a numeric one**: this section's own
+closing Meta-position paragraph explicitly states Jingran is "HP-CONVERTING... not HP-scaling like
+Cartethyia — his multipliers apply to ATK, with HP only feeding the ATK-conversion." Every
+`damage.basis` in `jingran.blocks.js` (17 blocks) was `'HP'`, and `CHARACTER_DATA['Jingran'].statScaling`
+was `'HP'` in `characters.js` — both modeled him like Cartethyia's real HP-scaling kit, which this
+source now explicitly rules out. Neither the nanoka.cc snapshot above nor his real kit text ever
+actually stated an HP damage basis (his "Yang Changes, Yin Unites" passive was always described as a
+flat-ATK-from-HP *conversion*, not a raw-HP damage scale) — `engine/characterBlocks/CONTRIBUTING.md`'s
+own basis-selection rule ("Only use 'HP'/'DEF' when the character's own kit text says explicitly the
+hit scales off that stat instead") was never actually satisfied. Fixed: all 17 blocks switched to
+`basis: 'ATK'` (the schema default, matching Brant's own ATK-basis HP-conversion kit); the Outro block
+was already correctly `'ATK'`. `statScaling` corrected to `'ATK'` and the `ROTATION_DATA`/`totalMult`
+heuristic row re-derived as a sum of %ATK multipliers across the Standard (S0-S1) rotation (was `60`,
+labeled "%HP, NOT %ATK" — now `3875`, see that row's own comment in `characters.js` for the full
+addition). Because damage.basis wasn't touched anywhere else in this file's `## Kit` section above (no
+number in the raw kit data changed, only which stat it multiplies against in the engine), it was left
+as-is rather than rewritten.
+
+No `CHARACTER_ROTATIONS['Jingran']` entry exists in this app yet as of the FIRST (nanoka.cc) pass: that
+snapshot's own guide text had no rotation/combo/team section written yet (a newly-released character) —
+not fabricated. This has since been resolved by the second (prydwen.gg) pass above, which supplies a
+real, sourced Standard and S2+ rotation.
