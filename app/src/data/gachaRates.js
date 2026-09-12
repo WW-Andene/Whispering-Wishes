@@ -22,6 +22,23 @@ const ASTRITE_PER_PULL = 160;
 // average real-world patch duration (35/42/42/32/42/41 days).
 const AVG_UPDATE_ASTRITE = 12800;
 const AVG_UPDATE_DAYS = 39;
+// Phase-specific daily rates for "By Banner End"/Goal Progress's average-update-income addition
+// (direct user follow-up, 2026-09-13: the flat AVG_UPDATE_ASTRITE/AVG_UPDATE_DAYS rate above
+// overstates remaining income when only Phase 2 of a patch is left — real WuWa patches are
+// front-loaded, with Phase 1 carrying new-area exploration/story rewards Phase 2 doesn't have).
+// Sourced from 4 patches (2.5, 2.6, 3.1, 3.2) where a real Phase 1/Phase 2 Astrite split was
+// found, using each phase's REAL day count from this file's own BANNER_HISTORY (banners.js) —
+// not an assumed 50/50 split:
+//   2.5: P1 6,500/21d=309.5/day, P2 2,280/13d=175.4/day
+//   2.6: P1 9,950/20d=497.5/day, P2 4,180/21d=199.0/day
+//   3.1: P1 14,560/21d=693.3/day, P2 4,960/20d=248.0/day
+//   3.2: P1 7,040/21d=335.2/day, P2 5,440/20d=272.0/day
+// Raw averages: P1 458.9/day, P2 223.6/day (P2 is consistently ~half of P1, not just shorter).
+// Both scaled down by the same ~0.945 factor used to land AVG_UPDATE_ASTRITE/AVG_UPDATE_DAYS at
+// the conservative 328.2/day baseline instead of that baseline's own raw sampled average, so the
+// phase-specific rates stay consistent with the already-agreed conservative calibration.
+const AVG_UPDATE_P1_DAILY_ASTRITE = 434;
+const AVG_UPDATE_P2_DAILY_ASTRITE = 211;
 const BEGINNER_ASTRITE_PER_PULL = 128; // P14-FIX: NIT-2 — Extract magic number (beginner banner = 80% of standard cost)
 
 // Subscription and top-up prices (USD) - Updated January 2026
@@ -70,6 +87,8 @@ export {
   BEGINNER_ASTRITE_PER_PULL,
   AVG_UPDATE_ASTRITE,
   AVG_UPDATE_DAYS,
+  AVG_UPDATE_P1_DAILY_ASTRITE,
+  AVG_UPDATE_P2_DAILY_ASTRITE,
   SUBSCRIPTIONS,
   MAX_ASTRITE,
   MAX_LUNITE,
