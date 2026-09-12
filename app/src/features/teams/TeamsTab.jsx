@@ -367,13 +367,33 @@ function TeamsTab({
                   teamStr.split('+').map(m => m.trim()).includes(targetName)
                 );
               };
+              // Anchor character the player is actually building around — same fallback chain as
+              // assumedMainDps below (crown, else an already-placed Main DPS, else the first placed
+              // character), computed here too since curatedVotes needs it before that later
+              // declaration.
+              const anchorDps = activeTeam.mainDpsOverride
+                || placedNow.find(m => CHARACTER_DATA[m]?.role === 'Main DPS')
+                || placedNow[0];
+              // 2026-09-12 (direct user pushback: building Yangyang: Xuanling + Lynae surfaced Mornye
+              // as a mutually-cited #2 pick, purely from Lynae's own UNRELATED 'Lynae + Aemeath +
+              // Mornye' team — a real Lynae synergy, but one that has nothing to do with Yangyang:
+              // Xuanling at all). The prior version credited ANY citation a placed member's own teams
+              // list happened to contain, regardless of whether that specific curated string had
+              // anything to do with the team actually being built — not 3-way coherent, just a sum of
+              // independent pairwise relationships. Fixed: a citation only counts when its own curated
+              // team-string actually includes the anchor DPS (or the citing member IS the anchor, whose
+              // own list is inherently about themselves) — so a secondary placed member's orthogonal
+              // synergy with someone else can no longer leak a false-positive recommendation into an
+              // unrelated build.
               const curatedVotes = new Map();
               placedNow.forEach(charInSlot => {
                 const d = CHARACTER_DATA[charInSlot];
                 if (!d?.teams) return;
                 const mentionedByThisMember = new Set();
                 d.teams.forEach(teamStr => {
-                  teamStr.split('+').map(m => m.trim()).forEach(m => {
+                  const parts = teamStr.split('+').map(m => m.trim());
+                  if (charInSlot !== anchorDps && !parts.includes(anchorDps)) return;
+                  parts.forEach(m => {
                     if (m !== charInSlot && !usedInTeam.has(m)) mentionedByThisMember.add(m);
                   });
                 });
@@ -396,10 +416,10 @@ function TeamsTab({
               // placed Sub DPS/support, regardless of real synergy. Anchor the assumed carry explicitly:
               // the crown if set, else an already-placed role:'Main DPS' member if one exists, else the
               // first character the player actually placed — never let the yet-untested candidate
-              // itself claim the role.
-              const assumedMainDps = activeTeam.mainDpsOverride
-                || placedNow.find(m => CHARACTER_DATA[m]?.role === 'Main DPS')
-                || placedNow[0];
+              // itself claim the role. (Same value as anchorDps above, computed earlier so
+              // curatedVotes' citation filter could use it — kept under its original name here so
+              // scoreTeamComposition's call site below reads the same as before.)
+              const assumedMainDps = anchorDps;
               const candidateScores = new Map();
               allCharNames.forEach(name => {
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
