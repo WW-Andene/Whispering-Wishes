@@ -496,7 +496,17 @@ const CHARACTER_DATA = {
     // Added 'Changli + Jinhsi + Verina' (2026-09-13): confirmed on Changli's own dump (naming
     // Jinhsi one of her top quickswap/Whimpering Wastes partners) and independently on Jinhsi's
     // own dump ("Quickswap Team... Verina must run with Brant+Changli").
-    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina', 'Changli + Aemeath + Lupa', 'Changli + Jinhsi + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Changli/Changli.md, Synergies/Example Teams):
+    // added Chixia ("currently the ONLY character able to fully utilize Changli's Outro") and Xiangli
+    // Yao ("the infamous hardcore Dual DPS pair").
+    teams: [
+      'Changli + Lupa + Brant',
+      'Changli + Encore + Verina',
+      'Changli + Aemeath + Lupa',
+      'Changli + Jinhsi + Verina',
+      'Changli + Chixia + Lupa',
+      'Changli + Xiangli Yao + Lupa',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc content (title prepended to match the roster's
   // convention), skills, base stats, multipliers, buffs, ascension mats, bestEchoes, and both example
