@@ -9,6 +9,19 @@
 const HARD_PITY = 80, SOFT_PITY_START = 66;
 const LUNITE_DAILY_ASTRITE = 90; // P7-FIX: Extract magic number (7E)
 const ASTRITE_PER_PULL = 160;
+// Average total income (Astrite-equivalent) a "usual" game update grants an F2P/light-spender
+// player, for the Income Projections tab's 2nd-row/"By Banner End" average-update-income
+// addition. Direct user-directed research (2026-09-13): sampled 6 recent patches (2.8, 3.1, 3.2,
+// 3.4, 3.5, 3.6) from consistent-methodology community trackers (lootbar.com, topuplive.com,
+// gamemarket.gg), converting Radiant Tide/Forging Tide to Astrite-equivalent at this file's own
+// ASTRITE_PER_PULL rate (1 tide = 1 pull = 160 Astrite) and averaging across F2P/subscription
+// tiers where a source reported more than one. Raw per-patch totals ranged 11,845-18,390 (avg
+// ~15,050); 12,800 was chosen as the standard figure per direct user instruction, to account for
+// the not-full-completion vs. full-completion variance across sources (a conservative middle
+// figure rather than the raw sampled average). AVG_UPDATE_DAYS is the same 6-patch sample's
+// average real-world patch duration (35/42/42/32/42/41 days).
+const AVG_UPDATE_ASTRITE = 12800;
+const AVG_UPDATE_DAYS = 39;
 const BEGINNER_ASTRITE_PER_PULL = 128; // P14-FIX: NIT-2 — Extract magic number (beginner banner = 80% of standard cost)
 
 // Subscription and top-up prices (USD) - Updated January 2026
@@ -55,6 +68,8 @@ export {
   LUNITE_DAILY_ASTRITE,
   ASTRITE_PER_PULL,
   BEGINNER_ASTRITE_PER_PULL,
+  AVG_UPDATE_ASTRITE,
+  AVG_UPDATE_DAYS,
   SUBSCRIPTIONS,
   MAX_ASTRITE,
   MAX_LUNITE,

@@ -14,7 +14,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Link2, Minus, Plus, Search, Star, Unlink2, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, AVG_UPDATE_ASTRITE, AVG_UPDATE_DAYS, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -191,6 +191,17 @@ function PlannerTab({
     return baseDailyAstrite * d + LUNITE_DAILY_ASTRITE * Math.min(d, luniteDaysActive);
   }, [baseDailyAstrite, luniteDaysActive]);
 
+  // Adds the average income a "usual" game update grants (AVG_UPDATE_ASTRITE, sourced/derived in
+  // gachaRates.js) on top of the player's own known income (cumulativeIncome above), prorated to
+  // a flat per-day rate over AVG_UPDATE_DAYS — direct user request, 2026-09-13. Reuses
+  // cumulativeIncome rather than reimplementing the Lunite-boost piecewise math, so this can never
+  // drift from the base projection it's extending.
+  const AVG_UPDATE_DAILY_ASTRITE = AVG_UPDATE_ASTRITE / AVG_UPDATE_DAYS;
+  const cumulativeIncomeWithUpdates = useCallback((days) => {
+    const d = Math.max(0, days);
+    return cumulativeIncome(d) + AVG_UPDATE_DAILY_ASTRITE * d;
+  }, [cumulativeIncome]);
+
   const planData = useMemo(() => {
     const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
     // Deadline: the pinned date if one is set, else the actual banner end date (direct user
@@ -201,6 +212,10 @@ function PlannerTab({
     const daysLeft = Math.max(0, Math.ceil((deadline - now) / 86400000));
     const incomeByEnd = cumulativeIncome(daysLeft);
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
+    // "By Banner End" including the average-update-income addition — same daysLeft, just routed
+    // through cumulativeIncomeWithUpdates instead of the base-only cumulativeIncome.
+    const incomeByEndWithUpdates = cumulativeIncomeWithUpdates(daysLeft);
+    const totalAstriteByEndWithUpdates = currentAstrite + incomeByEndWithUpdates;
 
     // Target AND allocation split — fully independent from the Calculator tab by default
     // (direct user request: "plan should not be wired on calc slider unless button link
@@ -245,6 +260,7 @@ function PlannerTab({
       ? (isChar ? (+state.calc.radiant || 0) : isWeap ? (+state.calc.forging || 0) : (+state.calc.radiant || 0) + (+state.calc.forging || 0))
       : (+state.calc.lustrous || 0);
     const convenesByEnd = Math.floor(totalAstriteByEnd / ASTRITE_PER_PULL) + relevantTides;
+    const convenesByEndWithUpdates = Math.floor(totalAstriteByEndWithUpdates / ASTRITE_PER_PULL) + relevantTides;
 
     // Real success-rate-to-get-all-targets AND a pity-aware Target (direct user report
     // 2026-09-10: the old flat 80/160/240-per-copy Target formula had zero awareness of
@@ -272,8 +288,15 @@ function PlannerTab({
     };
     const nowStats = goalStats(goalCalcLike);
     const endStats = goalStats({ ...goalCalcLike, astrite: totalAstriteByEnd, lunite: 0 });
+    // 3rd success-rate figure: "by end" but including the average-update-income addition —
+    // direct user request, 2026-09-13. Added ALONGSIDE probNow/probByEnd rather than replacing
+    // either, matching the pattern already used for the Income Projections/By Banner End rows
+    // above (base figure kept, a 2nd figure shows the range with average future-update income
+    // folded in).
+    const endStatsWithUpdates = goalStats({ ...goalCalcLike, astrite: totalAstriteByEndWithUpdates, lunite: 0 });
     const probNow = nowStats.successRate;
     const probByEnd = endStats.successRate;
+    const probByEndWithUpdates = endStatsWithUpdates.successRate;
 
     // Target — reverted to the original flat Base-Convenes-per-copy × Multiplier × Copies
     // formula (direct user request), instead of the later pity-aware worstCasePulls Target.
@@ -312,8 +335,8 @@ function PlannerTab({
       }
     }
     const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
-    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, convenesByEnd, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, availablePulls, pullsByEnd };
-  }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome]);
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, incomeByEndWithUpdates, totalAstriteByEndWithUpdates, convenesByEnd, convenesByEndWithUpdates, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, probByEndWithUpdates, availablePulls, pullsByEnd };
+  }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome, cumulativeIncomeWithUpdates]);
 
   // Collapsible section toggle
   const toggleSection = useCallback((key) => setCollapsed(p => ({ ...p, [key]: !p[key] })), []);
@@ -470,6 +493,23 @@ function PlannerTab({
               ))}
             </div>
             )}
+            {/* 2nd row: same projection PLUS the average income a "usual" game update grants
+                (AVG_UPDATE_ASTRITE/AVG_UPDATE_DAYS, gachaRates.js) prorated over the same day
+                count — direct user request, 2026-09-13. All 3 columns use the plain
+                t('planner.daysLabel') (no "Monthly" label on the 30-day column here). */}
+            <div className="mt-2 pt-2 border-t border-[var(--border-medium)]">
+              <div className="text-gray-400 text-sm mb-2">{t('planner.incomeProjectionsWithUpdates')}</div>
+              <div className="grid grid-cols-3 gap-2">
+                {[7, 30, 90].map(days => (
+                  <div key={days} className="kuro-stat p-3 text-center">
+                    <div className="text-gray-400 text-sm mb-1">{t('planner.daysLabel', { days })}</div>
+                    <div className="kuro-number text-yellow-400 font-extrabold text-2xl">{formatNumber(Math.floor(cumulativeIncomeWithUpdates(days) / ASTRITE_PER_PULL))}</div>
+                    <div className="text-gray-400 text-sm">{t('planner.convenes')}</div>
+                    <div className="text-gray-400 text-sm">{t('planner.astriteSuffix', { n: formatNumber(Math.round(cumulativeIncomeWithUpdates(days))) })}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
             {state.planner.luniteSubCount > 0 && (
               <div className="mt-3 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-center">
                 <span className="text-emerald-400 text-base">{t('planner.monthlySub')}</span>
@@ -508,6 +548,25 @@ function PlannerTab({
                 </div>
               </div>
               <div className="text-gray-400 text-sm text-center">{t('planner.currentEarnedSummary', { current: formatNumber(+state.calc.astrite || 0), luniteSuffix: (+state.calc.lunite || 0) > 0 ? t('planner.luniteSuffixText', { lunite: formatNumber(+state.calc.lunite || 0) }) : '', earned: formatNumber(planData.incomeByEnd) })}</div>
+              {/* Same 3 tiles, but including the average-update-income addition, prorated over
+                  the same daysLeft — direct user request, 2026-09-13. */}
+              <div className="pt-2 border-t border-[var(--border-medium)]">
+                <div className="text-gray-400 text-sm mb-2">{t('planner.byBannerEndWithUpdates')}</div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
+                    <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(planData.convenesByEndWithUpdates)}</div>
+                    <div className="text-gray-400 text-sm">{t('planner.totalConvenes')}</div>
+                  </div>
+                  <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
+                    <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(Math.floor(planData.incomeByEndWithUpdates / ASTRITE_PER_PULL))}</div>
+                    <div className="text-gray-400 text-sm">{t('planner.earned')}</div>
+                  </div>
+                  <div className="kuro-stat p-2 flex flex-col items-center justify-center text-center">
+                    <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(Math.round(planData.totalAstriteByEndWithUpdates))}</div>
+                    <div className="text-gray-400 text-sm">{(+state.calc.lunite || 0) > 0 ? t('planner.totalAL') : t('planner.astrite')}</div>
+                  </div>
+                </div>
+              </div>
             </CardBody>
           )}
         </Card>
@@ -600,8 +659,10 @@ function PlannerTab({
               <span className="text-gray-100">{planData.goalProgress.toFixed(1)}%</span>
             </div>
           </div>
-          {/* Probability estimate */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Probability estimate. 3rd tile (with-updates) added alongside the existing 2 rather
+              than replacing "by end" — direct user request, 2026-09-13, matching the pattern
+              already used for the Income Projections/By Banner End rows above. */}
+          <div className="grid grid-cols-3 gap-2">
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probNow >= 80 ? 'text-emerald-400' : planData.probNow >= 50 ? 'text-yellow-400' : planData.probNow >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probNow.toFixed(1)}%</div>
               <div className="text-gray-500 text-xs">{t('planner.chanceNow', { pulls: planData.availablePulls })}</div>
@@ -609,6 +670,10 @@ function PlannerTab({
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className={`kuro-number text-xl font-bold ${planData.probByEnd >= 80 ? 'text-emerald-400' : planData.probByEnd >= 50 ? 'text-yellow-400' : planData.probByEnd >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEnd.toFixed(1)}%</div>
               <div className="text-gray-500 text-xs">{t(state.planner.deadlinePin ? 'planner.chanceByDeadlinePin' : 'planner.chanceByEnd', { pulls: planData.pullsByEnd, date: state.planner.deadlinePin ? formatDate(new Date(state.planner.deadlinePin), { month: 'short', day: 'numeric' }) : undefined })}</div>
+            </div>
+            <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
+              <div className={`kuro-number text-xl font-bold ${planData.probByEndWithUpdates >= 80 ? 'text-emerald-400' : planData.probByEndWithUpdates >= 50 ? 'text-yellow-400' : planData.probByEndWithUpdates >= 20 ? 'text-orange-400' : 'text-red-400'}`}>{planData.probByEndWithUpdates.toFixed(1)}%</div>
+              <div className="text-gray-500 text-xs">{t('planner.chanceByEndWithUpdates', { pulls: planData.convenesByEndWithUpdates })}</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">

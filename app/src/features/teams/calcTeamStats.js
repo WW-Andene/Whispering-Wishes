@@ -659,8 +659,9 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
       // per-hit by their own real category (see its own EXTERNAL_STAT_KEYS), so `rStats` is handed
       // over BEFORE routeTypeBonuses flattens those into a single skillDmg bucket — that flattening
       // is a legacy-only approximation the engine doesn't need. Falls back to the legacy formula
-      // for any not-yet-converted character (currently just Jingran, unreleased) so an incomplete
-      // roster never breaks a team containing one.
+      // for any not-yet-converted character (Jingran was the last remaining gap; now converted as of
+      // 2026-09-12 — see jingran.blocks.js/CHARACTER_ROTATIONS['Jingran']) so an incomplete roster
+      // never breaks a team containing one.
       const blocks = BLOCKS_BY_CHARACTER[m.name];
       const curatedRotation = CHARACTER_ROTATIONS[m.name];
       // ADAPTIVE_ENGINE_DESIGN.md's decision layer: for a character with real registered kit rules
@@ -742,7 +743,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // effAtk/avgCrit/dmgBonus/defMult/resMult/score) is unconditionally overridden by the
     // engine-composed block below (Stage 4 step 6's own `resolveSimulatedTeamRotation` call)
     // regardless, so computing it first was pure wasted work once that override landed. Kept as the
-    // exact, unmodified fallback for a mixed team (currently only Jingran, unreleased).
+    // exact, unmodified fallback for a mixed team containing any not-yet-converted character.
     if (!allMembersConverted) {
       const legacyMainResult = computeLegacyMainDpsStats({
         mainDps, mems, teamEquipment, teamIdx, dpsSeg, rotTime, elCounts,
@@ -838,8 +839,8 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // totalMult%-plus-hand-written-buff-routing) is now SKIPPED ENTIRELY for a fully-converted team —
     // its only outputs, totalRotDmg/memberDmgArr, are unconditionally overridden by the engine-composed
     // block right below (Stage 4 step 2) regardless, so computing it first was pure wasted work once
-    // that override landed. Kept as the exact, unmodified fallback for a mixed team (currently only
-    // Jingran, unreleased, lacks a converted TriggerBlocks file).
+    // that override landed. Kept as the exact, unmodified fallback for a mixed team containing any
+    // not-yet-converted character (Jingran was the last remaining gap; now converted).
     if (!allMembersConverted) {
       const legacyResult = computeLegacyMemberDamage({
         mainDps, mems, rotTime, energyCycleFactors, seqTotalMultBonus, teamEquipment, teamIdx,
@@ -855,7 +856,7 @@ export function calcTeamStats(slots, teamIdx, mainDpsOverride, teamEquipment, en
     // damage instead of the flat totalMult%-plus-hand-written-buff-routing computation above — which,
     // per step 6's own cleanup pass, is now itself gated behind `!allMembersConverted` and genuinely
     // SKIPPED for a fully-converted team, not just computed-and-discarded. Still the exact, unmodified
-    // fallback for a mixed team (currently only Jingran, unreleased).
+    // fallback for a mixed team containing any not-yet-converted character.
     // `engineChosenOrder` (computed once, near the top of this function, right before
     // rotationTimeline — Stage 4 step 4 also reuses it for rotationTimeline's own displayed order,
     // so both agree on the same real on-field sequence instead of two independently-derived guesses).

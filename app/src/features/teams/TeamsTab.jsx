@@ -346,17 +346,85 @@ function TeamsTab({
                 ...Object.keys(collectionData?.weaps5Counts || {}),
                 ...Object.keys(collectionData?.weaps4Counts || {}),
               ]);
+              // 2026-09-12 (direct user instruction — recommendation priority is now "1st what the
+              // data dump says, 2nd kit/role/type reasoning, 3rd raw computed damage", NOT the other
+              // way around): a one-way mention (only the placed member's own dump names the
+              // candidate) was previously worth a flat +20, the same weight regardless of whether the
+              // candidate's OWN dump corroborates the pairing back. That let a citation that exists
+              // only inside one character's internal ranking (e.g. Iuno's own dump ranking Yangyang:
+              // Xuanling above her Augusta pairing, for HERSELF) get credited as if it were equally
+              // strong evidence as an actual two-way "both dumps name this exact pairing" confirmation
+              // — a category error the user corrected directly ("Augusta is not in Xuanling kit and
+              // vice versa stop inventing data"). Mutual corroboration (both sides' own dumps name each
+              // other) is the real dump-tier-1 signal and must dominate the tier-3 raw-damage score
+              // below it; a one-way mention stays a much smaller, secondary nudge.
+              // FULL_TRIO_MATCH_WEIGHT sits above MUTUAL_CITATION_WEIGHT (2026-09-12, direct user
+              // pushback): Lynae's own dump lists the exact, literal team 'Lynae + Yangyang: Xuanling
+              // + Chisa' — the strongest possible dump-tier-1 evidence there is, a fully-documented
+              // team, not just "these two characters cite each other somewhere." Before this fix,
+              // that exact citation was scored identically to any other pairwise mutual citation, so
+              // it got outranked by Suisui (who has real but only PAIRWISE citations with Xuanling —
+              // no dump ever writes out the literal 'Xuanling + Lynae + Suisui' trio). An exact-trio
+              // match (every already-placed member plus the candidate, as a set, equals one of a
+              // placed member's own curated team strings) must outrank a mere pairwise mutual
+              // citation, since it's citing the SAME team being built, not just a related pair.
+              const FULL_TRIO_MATCH_WEIGHT = 250;
+              const MUTUAL_CITATION_WEIGHT = 100;
+              const ONE_WAY_CITATION_WEIGHT = 15;
+              const citesBack = (fromName, targetName) => {
+                const d = CHARACTER_DATA[fromName];
+                if (!d?.teams) return false;
+                return d.teams.some(teamStr =>
+                  teamStr.split('+').map(m => m.trim()).includes(targetName)
+                );
+              };
+              // True only when some placed member's own curated team-string names EXACTLY the full
+              // hypothetical team (every already-placed member plus this candidate, no more, no
+              // fewer) — the literal documented trio, not just a pairwise relationship within it.
+              const exactTrioMatch = (candidate) => {
+                const wantedSet = new Set([...placedNow, candidate]);
+                return placedNow.some(charInSlot => {
+                  const d = CHARACTER_DATA[charInSlot];
+                  return (d?.teams || []).some(teamStr => {
+                    const parts = teamStr.split('+').map(m => m.trim());
+                    return parts.length === wantedSet.size && parts.every(p => wantedSet.has(p));
+                  });
+                });
+              };
+              // Anchor character the player is actually building around — same fallback chain as
+              // assumedMainDps below (crown, else an already-placed Main DPS, else the first placed
+              // character), computed here too since curatedVotes needs it before that later
+              // declaration.
+              const anchorDps = activeTeam.mainDpsOverride
+                || placedNow.find(m => CHARACTER_DATA[m]?.role === 'Main DPS')
+                || placedNow[0];
+              // 2026-09-12 (direct user pushback: building Yangyang: Xuanling + Lynae surfaced Mornye
+              // as a mutually-cited #2 pick, purely from Lynae's own UNRELATED 'Lynae + Aemeath +
+              // Mornye' team — a real Lynae synergy, but one that has nothing to do with Yangyang:
+              // Xuanling at all). The prior version credited ANY citation a placed member's own teams
+              // list happened to contain, regardless of whether that specific curated string had
+              // anything to do with the team actually being built — not 3-way coherent, just a sum of
+              // independent pairwise relationships. Fixed: a citation only counts when its own curated
+              // team-string actually includes the anchor DPS (or the citing member IS the anchor, whose
+              // own list is inherently about themselves) — so a secondary placed member's orthogonal
+              // synergy with someone else can no longer leak a false-positive recommendation into an
+              // unrelated build.
               const curatedVotes = new Map();
               placedNow.forEach(charInSlot => {
                 const d = CHARACTER_DATA[charInSlot];
                 if (!d?.teams) return;
                 const mentionedByThisMember = new Set();
                 d.teams.forEach(teamStr => {
-                  teamStr.split('+').map(m => m.trim()).forEach(m => {
+                  const parts = teamStr.split('+').map(m => m.trim());
+                  if (charInSlot !== anchorDps && !parts.includes(anchorDps)) return;
+                  parts.forEach(m => {
                     if (m !== charInSlot && !usedInTeam.has(m)) mentionedByThisMember.add(m);
                   });
                 });
-                mentionedByThisMember.forEach(m => curatedVotes.set(m, (curatedVotes.get(m) || 0) + 1));
+                mentionedByThisMember.forEach(m => {
+                  const weight = citesBack(m, charInSlot) ? MUTUAL_CITATION_WEIGHT : ONE_WAY_CITATION_WEIGHT;
+                  curatedVotes.set(m, (curatedVotes.get(m) || 0) + weight);
+                });
               });
               // Full synergy score for every eligible candidate — drives sort order for the whole list.
               // Fixed 2026-09-01 (found via a per-character/all-pairs recommendation audit): without an
@@ -372,16 +440,21 @@ function TeamsTab({
               // placed Sub DPS/support, regardless of real synergy. Anchor the assumed carry explicitly:
               // the crown if set, else an already-placed role:'Main DPS' member if one exists, else the
               // first character the player actually placed — never let the yet-untested candidate
-              // itself claim the role.
-              const assumedMainDps = activeTeam.mainDpsOverride
-                || placedNow.find(m => CHARACTER_DATA[m]?.role === 'Main DPS')
-                || placedNow[0];
+              // itself claim the role. (Same value as anchorDps above, computed earlier so
+              // curatedVotes' citation filter could use it — kept under its original name here so
+              // scoreTeamComposition's call site below reads the same as before.)
+              const assumedMainDps = anchorDps;
               const candidateScores = new Map();
               allCharNames.forEach(name => {
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
                 const hypotheticalTeam = placedNow.length > 0 ? [...placedNow, name] : [name];
                 const { score } = scoreTeamComposition(hypotheticalTeam, ownedWeapsForRec, assumedMainDps);
-                candidateScores.set(name, score + (curatedVotes.get(name) || 0) * 20);
+                // An exact literal-trio match is strictly stronger dump evidence than a pairwise
+                // citation of the same candidate — take whichever is higher rather than summing them
+                // (a candidate already fully confirmed by name shouldn't be double-counted just
+                // because they also happen to satisfy a weaker pairwise citation).
+                const dumpBonus = Math.max(curatedVotes.get(name) || 0, exactTrioMatch(name) ? FULL_TRIO_MATCH_WEIGHT : 0);
+                candidateScores.set(name, score + dumpBonus);
               });
               // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible
               // character has a real score, badging literally everyone would make the highlight

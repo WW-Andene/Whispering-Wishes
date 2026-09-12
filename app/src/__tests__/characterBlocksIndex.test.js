@@ -7,8 +7,10 @@ import { BLOCKS_BY_CHARACTER } from '../engine/characterBlocks/index.js';
 import { CHARACTER_DATA } from '../data/characters.js';
 
 describe('BLOCKS_BY_CHARACTER', () => {
-  it('has exactly 57 converted characters (one entry per .blocks.js file)', () => {
-    expect(Object.keys(BLOCKS_BY_CHARACTER)).toHaveLength(57);
+  it('has exactly 58 converted characters (one entry per .blocks.js file)', () => {
+    // 58, not 57: Jingran was added 2026-09-12 once CHARACTER_ROTATIONS['Jingran'] existed to pair
+    // with his already-real jingran.blocks.js (see engine/characterBlocks/index.js's own comment).
+    expect(Object.keys(BLOCKS_BY_CHARACTER)).toHaveLength(58);
   });
 
   it('every key is a real CHARACTER_DATA name', () => {

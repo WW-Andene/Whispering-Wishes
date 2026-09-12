@@ -120,7 +120,13 @@ const CHARACTER_DATA = {
     // Waning Redshift wasn't in the source's recommendations for him at all.
     bestEchoes: ['Nightmare: Kelpie', 'Windward Pilgrimage 5pc'], bestWeapon: 'Verdant Summit',
     weaponAlts: { alt5: ['Thunderflare Dominion', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Broadblade of Night'] },
-    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper'] },
+    // Added 'Jiyan + Rebecca + Shorekeeper' (2026-09-12): confirmed on Jiyan's own dump (line 173:
+    // "Rebecca/Mortefi (free/accessible Heavy DMG...)") and independently on Rebecca's own dump
+    // ("Alternative Heavy Attack Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina").
+    // Added 'Jiyan + Mortefi + Shorekeeper' (2026-09-12): confirmed on Jiyan's own dump (line 173,
+    // grouping Rebecca/Mortefi together as free/accessible Heavy DMG buffers) and independently on
+    // Mortefi's own dump (Synergies: "Jiyan (tailor-made partner)").
+    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper', 'Jiyan + Rebecca + Shorekeeper', 'Jiyan + Mortefi + Shorekeeper'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     // desc rewritten 2026-08-31 against the wiki/Calcharo/Combat (Chrome/Windows UA +
     // google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare) and cross-checked against
@@ -194,7 +200,10 @@ const CHARACTER_DATA = {
     // source's own list, ahead of Fusion Accretion's 87.70%) and was missing entirely.
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
     weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa'] },
+    // Added 'Encore + Lupa + Mornye' (2026-09-12): confirmed on Encore's own dump ("Mornye has
+    // special synergy with Encore+Lupa, letting Encore run Hyper Carry while Lupa keeps her full Mono
+    // Fusion buffs") and independently on Lupa's own dump (Brant's-duo/generalist-support text).
+    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa', 'Encore + Lupa + Mornye'] },
   // desc corrected against the wiki's Jianxin infobox (2026-08-17 audit): the wiki's
   // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
   // shown on the source's character page for her — the two sources disagree here, the wiki's live
@@ -395,7 +404,10 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Blazing Brilliance',
     weaponAlts: { alt5: ['Emerald of Genesis', 'Emerald Sentence'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
-    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina'] },
+    // Added 'Changli + Aemeath + Lupa' (2026-09-12): confirmed on Changli's own dump ("Best Team:
+    // Changli buffs Aemeath via Outro here, Lupa buffs Changli") and independently on Lupa's own
+    // dump ("Classic Mono Fusion: Aemeath/Changli/Galbrena/Encore/Brant + Lupa").
+    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina', 'Changli + Aemeath + Lupa'] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc content (title prepended to match the roster's
   // convention), skills, base stats, multipliers, buffs, ascension mats, bestEchoes, and both example
@@ -581,7 +593,11 @@ const CHARACTER_DATA = {
     // this file's own convention elsewhere) are moved there instead; alt4 cleared rather than filled
     // with unsourced weapons.
     weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge", 'Red Spring', 'Emerald of Genesis'], alt4: [], alt3: ['Sword of Night'] },
-    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
+    // Added 'Brant + Lupa + Galbrena'/'Brant + Lupa + Aemeath'/'Brant + Lupa + Mornye' (2026-09-12):
+    // confirmed on Brant's own dump ("Fusion DPS partners for a Brant+Lupa duo: Galbrena/Aemeath/
+    // Changli/Encore/Chixia" plus "Generalist supports: Mornye (best with Lupa)") and independently
+    // on Lupa's own dump for each.
+    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper', 'Brant + Lupa + Galbrena', 'Brant + Lupa + Aemeath', 'Brant + Lupa + Mornye'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1607 sheet. desc: title "Sea of Dreams" (the source) prepended and blurb
   // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
@@ -730,7 +746,38 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Waveworn Residue' },
     bestEchoes: ['Lioness of Glory', 'Flaming Clawprint 5pc'], bestWeapon: 'Wildfire Mark',
     weaponAlts: { alt5: ['Ages of Harvest', 'Kumokiri'], alt4: ['Waning Redshift', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
-    teams: ['Lupa + Brant + Changli', 'Lupa + Aemeath + Mornye'] },
+    // Expanded 2026-09-12 from a fresh prydwen.gg snapshot the user provided directly (Data dump/
+    // Lupa/Lupa.md's Synergies/Example Teams, updated to fold in Jingran, who didn't exist in this
+    // codebase when the section was first written), taken directly as authoritative for her own
+    // recommendations:
+    //   Best Team: Jingran/Aemeath/Galbrena + Lupa + Mortefi/Denia/Mornye — Mortefi is Jingran's
+    //     dedicated 3rd-slot partner, Denia is exclusive to Aemeath in Fusion Burst mode, Mornye is
+    //     the generalist alternate working with all three headliners.
+    //   Chixia Best Team: Chixia + Brant + Lupa (was in her own dump's prose but missing from this
+    //     flat list — added).
+    //   Encore F2P Team: Encore + Lupa + Shorekeeper/Chixia.
+    // Cross-corroborated on the OTHER character's own dump too: Changli's own dump ("Best Team:
+    // Changli buffs Aemeath via Outro here, Lupa buffs Changli") independently confirms Aemeath +
+    // Changli + Lupa; Brant's own dump ("Fusion DPS partners for a Brant+Lupa duo: Galbrena/Aemeath/
+    // Changli/Encore/Chixia" plus "Mornye best with Lupa") independently confirms
+    // Brant+Lupa+Galbrena/Aemeath/Encore/Mornye; Encore's own dump ("Mornye has special synergy with
+    // Encore+Lupa") independently confirms Encore+Lupa+Mornye.
+    teams: [
+      'Lupa + Brant + Changli',
+      'Lupa + Aemeath + Mornye',
+      'Lupa + Jingran + Mortefi',
+      'Lupa + Jingran + Mornye',
+      'Lupa + Aemeath + Denia',
+      'Lupa + Galbrena + Mornye',
+      'Lupa + Chixia + Brant',
+      'Lupa + Encore + Shorekeeper',
+      'Lupa + Aemeath + Changli',
+      'Lupa + Brant + Galbrena',
+      'Lupa + Brant + Aemeath',
+      'Lupa + Brant + Encore',
+      'Lupa + Brant + Mornye',
+      'Lupa + Encore + Mornye',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1608 sheet. desc: title "Symphony of Beyond" (the source) prepended and
   // blurb rewritten — the previous desc wrongly said she "summons Hecate via Echo Skill"; Hecate is
@@ -759,7 +806,12 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Helix' },
     bestEchoes: ['Nightmare: Hecate', 'Dream of the Lost 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Lethean Elegy',
     weaponAlts: { alt5: ['Stringmaster', 'Whispers of Sirens'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper'] },
+    // Added 'Phrolova + Yangyang: Xuanling + Suisui' (2026-09-12): confirmed on Yangyang: Xuanling's
+    // own dump (Alternative Premium Teams: 1st-pick Phrolova + 2nd-pick Suisui — see her own teams
+    // field) and independently on Phrolova's own dump (line 292: "Yangyang: Xuanling... + Phrolova +
+    // Suisui/Chisa/Shorekeeper — Suisui and Chisa are only best specifically with Yangyang: Xuanling
+    // on the team").
+    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper', 'Phrolova + Yangyang: Xuanling + Suisui'] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro Heavy ATK DPS who self-shields and builds a resource through her attacks toward a Forte finisher. At enough stacks she can instead enter a time-stopped state for an extended combo ending in a finisher that shields teammates on their Intro cast; her Outro buffs the next Resonator\'s All-Attribute DMG, refunding extra stacks if they Outro back to her.',
     skills: ['Hunter\'s Path', 'Warrior\'s Blade', 'Sunward Conquest', 'Call Me By the Sun'],
@@ -767,7 +819,31 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
     weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
-    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Mortefi + Shorekeeper', 'Augusta + Mortefi + Verina'] },
+    // Expanded 2026-09-12, reading Augusta's OWN dump directly (Data dump/Augusta/Augusta.md's
+    // "Example Teams" section, line 294): "Best Team: Augusta + Iuno/Lynae/Rebecca/Mortefi +
+    // Shorekeeper/Verina/Mornye — Mornye is niche, only worth considering with Rebecca or Lynae on
+    // the team (for their respective Hack/Tune Rupture synergies)." Taken directly as authoritative
+    // for her own recommendations, applying the same 1st-pick(alternates)/2nd-pick(alternates,
+    // Mornye restricted) parsing already validated elsewhere this session.
+    // Cross-corroborated (not required, but confirmed): Iuno's own dump line 316-318 names Augusta
+    // as a best Hybrid-Iuno teammate; Rebecca's own dump line 336 ("Alternative Heavy Attack Teams:
+    // Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina") independently confirms
+    // Augusta+Rebecca+Shorekeeper/Mornye/Verina AND the same Mornye-with-Rebecca allowance; Mortefi's
+    // own dump line 147 names Augusta as his best F2P-accessible synergy partner. Lynae's own dump
+    // only has a loose prose mention ("working excellently with... Augusta"), not a literal trio, so
+    // no reciprocal entry was added to her own teams field for this.
+    teams: [
+      'Augusta + Iuno + Shorekeeper',
+      'Augusta + Iuno + Verina',
+      'Augusta + Lynae + Shorekeeper',
+      'Augusta + Lynae + Verina',
+      'Augusta + Lynae + Mornye',
+      'Augusta + Rebecca + Shorekeeper',
+      'Augusta + Rebecca + Verina',
+      'Augusta + Rebecca + Mornye',
+      'Augusta + Mortefi + Shorekeeper',
+      'Augusta + Mortefi + Verina',
+    ] },
   // desc rewritten 2026-08-31 against the wiki/Iuno/Combat "Forte > Details" (Chrome/
   // Windows UA + google.com referer + jsRender, load+9s wait): prior desc was flavor text with no exact
   // resource numbers. Sentience (0-100 cap): Intro Skill +40, Resonance Liberation +60, Closing/Unfinished
@@ -788,15 +864,47 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Lady of the Sea', 'Crown of Valor 3pc + Sierra Gale 2pc'], bestWeapon: "Moongazer's Sigil",
     weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Guardian Gauntlets'] },
-    // BUG FIX 2026-09-12 (per direct user instruction to prioritize the source dump's own
-    // synergy reasoning over the engine's numeric scoring): this list was missing her own dump's
-    // explicitly-named "best team overall" entirely — Data dump/Iuno/Iuno.md line 315-318/338:
-    // "Yangyang: Xuanling is actually a stronger pick than [Iuno's] Augusta pairing... Yangyang:
-    // Xuanling + Augusta + Iuno + Chisa/Shorekeeper (best team overall) — Chisa is only
-    // best-in-slot specifically alongside Yangyang: Xuanling." Added the missing Yangyang:
-    // Xuanling + Chisa pairing (a real, separate team from the Augusta + Shorekeeper one already
-    // listed, not a duplicate).
-    teams: ['Iuno + Yangyang: Xuanling + Chisa', 'Iuno + Augusta + Shorekeeper', 'Iuno + Lynae + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
+    // REBUILT 2026-09-12 from a fresh prydwen.gg build-guide snapshot the user provided directly
+    // (superseding the prior text-scrape dump, which had gone stale) — Data dump/Iuno/Iuno.md's
+    // "Example Teams" section, read icon-order and taken directly as authoritative for Iuno's own
+    // recommendations:
+    //   Best Team: Jingran/Augusta + Iuno + Shorekeeper/Verina.
+    //   Main DPS Iuno: Iuno + Lynae/Ciaccona/Yinlin/Jianxin + Mornye/Shorekeeper/Verina (Mornye
+    //     restricted to Lynae only).
+    //   Jiyan Team: Jiyan + Iuno + Ciaccona/Rover: Aero/Shorekeeper.
+    //   Galbrena Team: Galbrena + Iuno + Shorekeeper/Verina.
+    //   Frazzle Teams: Zani/Phoebe + Iuno + Rover: Spectro.
+    // The previous 'Iuno + Yangyang: Xuanling + Chisa' entry is REMOVED: the updated source's
+    // Example Teams section no longer lists Yangyang: Xuanling anywhere at all — retroactively
+    // confirming the earlier direct correction in this same session that treating Iuno's internal
+    // Augusta-comparison text as evidence for a Xuanling pairing was inventing data, not reading it.
+    // Jingran was a new character not yet in this codebase's data when the above was written —
+    // deferred per direct instruction, with only Augusta's half of the Best Team pick captured.
+    // Added 2026-09-12 now that Jingran exists: Data dump/Jingran/Jingran.md's own Example Teams
+    // section independently names 'Best Team: Jingran + Iuno + Shorekeeper/Verina' too — cross-
+    // corroborated from both characters' own dumps, not a one-way citation.
+    teams: [
+      'Iuno + Jingran + Shorekeeper',
+      'Iuno + Jingran + Verina',
+      'Iuno + Augusta + Shorekeeper',
+      'Iuno + Augusta + Verina',
+      'Iuno + Lynae + Mornye',
+      'Iuno + Lynae + Shorekeeper',
+      'Iuno + Lynae + Verina',
+      'Iuno + Ciaccona + Shorekeeper',
+      'Iuno + Ciaccona + Verina',
+      'Iuno + Yinlin + Shorekeeper',
+      'Iuno + Yinlin + Verina',
+      'Iuno + Jianxin + Shorekeeper',
+      'Iuno + Jianxin + Verina',
+      'Iuno + Jiyan + Ciaccona',
+      'Iuno + Jiyan + Rover: Aero',
+      'Iuno + Jiyan + Shorekeeper',
+      'Iuno + Galbrena + Shorekeeper',
+      'Iuno + Galbrena + Verina',
+      'Iuno + Zani + Rover: Spectro',
+      'Iuno + Phoebe + Rover: Spectro',
+    ] },
   'Galbrena': { rarity: 5, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Black Shores Consultant known as the Discord Slayer, seizing power from darkness. On-field Fusion DPS who deals primary damage through Echo Skill and Heavy ATK combos in quick burst rotations.',
     skills: ['Slayer\'s Trigger', 'Edge Transcended', 'Hellfire Absolution', 'Beyond Threshold'],
@@ -807,7 +915,14 @@ const CHARACTER_DATA = {
     // teams corrected 2026-08-18: 'Brant + Lupa' wasn't corroborated by any current source found;
     // current secondary options cited are Mortefi + Verina or Phrolova + Lupa — kept the Lupa pairing
     // and swapped Brant for Phrolova (both were cited; this is the more conservative single-field edit).
-    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa'] },
+    // Added 'Galbrena + Rebecca + Shorekeeper' (2026-09-12): confirmed on Galbrena's own dump ("Best
+    // teammates: ...Phrolova/Iuno/Rebecca (Heavy DMG Amp Outros); Mornye/Shorekeeper/Verina
+    // (generalist supports)") and independently on Rebecca's own dump ("Alternative Heavy Attack
+    // Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina").
+    // Added 'Galbrena + Lupa + Mornye' (2026-09-12): confirmed on Lupa's own dump ("Best Team:
+    // Jingran/Aemeath/Galbrena + Lupa + Mortefi/Denia/Mornye" — Mornye is the generalist alternate
+    // working with all three headliners, Galbrena included).
+    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa', 'Galbrena + Rebecca + Shorekeeper', 'Galbrena + Lupa + Mornye'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who supports from off-field, boosting the active Resonator\'s Crit DMG via his Liberation and amplifying the next Resonator\'s Echo Skill damage through his Outro.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
@@ -835,7 +950,29 @@ const CHARACTER_DATA = {
     // Xuanling): this list was missing her own dump's #1 real partner entirely — Data dump/Chisa/
     // Chisa.md line 224/227: "By current strength: Yangyang: Xuanling (highest ceiling)..." and
     // "Best Team: Yangyang: Xuanling + Suisui + Lynae/Rebecca + Phrolova + Chisa." Added.
-    teams: ['Chisa + Yangyang: Xuanling + Suisui', 'Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
+    // Expanded 2026-09-12, reading Chisa's OWN dump directly (Data dump/Chisa/Chisa.md's
+    // "### Example Teams" section, lines 226-231), taken as directly authoritative for her own
+    // recommendations:
+    //   Best Team: Yangyang: Xuanling + Suisui + Lynae/Rebecca + Phrolova + Chisa — this restates
+    //     info already fully captured via Yangyang: Xuanling's and Suisui's own dumps (her Best
+    //     Team trio + her Alternative Premium's Lynae/Rebecca/Phrolova alternates, all already in
+    //     both their teams fields), so no new trio to add here.
+    //   Aemeath Fusion Burst Team: Aemeath + Denia + Chisa (already had).
+    //   Hiyuki Team: Hiyuki + Lynae + Chisa (new — her own explicit "Hiyuki Team" pick; the existing
+    //     'Chisa + Hiyuki + Lucilla' entry is a separate, also-valid alternate per Hiyuki's own dump's
+    //     {Lucilla/Lynae} 2nd-pick structure, not a replacement for this one).
+    //   Cartethyia Team: Cartethyia + Ciaccona + Rover (Aero)/Chisa → Cartethyia+Ciaccona+Chisa (new).
+    //   Phoebe Expert Team: Phoebe + Rover (Spectro) + Ciaccona/Chisa → Phoebe+Rover: Spectro+Chisa
+    //     (new — a niche "Expert" pick her own dump explicitly flags as "not generally recommended,"
+    //     kept as a real but lower-confidence dump-sourced entry rather than omitted).
+    teams: [
+      'Chisa + Yangyang: Xuanling + Suisui',
+      'Chisa + Aemeath + Denia',
+      'Chisa + Hiyuki + Lucilla',
+      'Chisa + Hiyuki + Lynae',
+      'Chisa + Cartethyia + Ciaccona',
+      'Chisa + Phoebe + Rover: Spectro',
+    ] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'A Startorch Academy prep student whose head-turning, electric style hides an inner focus as explosive as a coiled spring. Spectro sub-DPS who swaps in for a quick burst then buffs the team\'s All DMG on Outro, pairing especially well with Tune Strain comps.',
     skills: ['Chroma Drift', 'Lynae-Style Palettes', 'Prismatic Overblast', 'Time to Show Some Colors!'],
@@ -855,7 +992,35 @@ const CHARACTER_DATA = {
     // ("Lynae + Chisa: Hiyuki / Aemeath / Yangyang: Xuanling / Lynae / Chisa") names 3
     // interchangeable headliners for the SAME Lynae+Chisa support duo — Hiyuki was already
     // captured below, Yangyang: Xuanling was missing entirely. Added.
-    teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa', 'Lynae + Yangyang: Xuanling + Chisa'] },
+    // Rebuilt 2026-09-12, reading Lynae's OWN dump directly (Data dump/Lynae/Lynae.md's "###
+    // Example Teams" section, lines 165-169), applying the same 1st-pick(Main DPS)/2nd-pick
+    // (Lynae, by her own Sub-DPS/buffer role)/3rd-pick(generalist Support) structure already
+    // validated on Yangyang: Xuanling's dump, taken as directly authoritative for Lynae's own
+    // recommendations the same way Xuanling's dump was taken as authoritative for hers — not held
+    // to a stricter third-party-corroboration standard than she was:
+    //   Best Team: 1st pick Aemeath (Alt: Qingxiao, Luuk Herssen) + 2nd pick Lynae + 3rd pick Mornye.
+    //   Lynae + Chisa: 1st pick Hiyuki (Alt: Aemeath, Yangyang: Xuanling) + 2nd pick Lynae + 3rd
+    //     pick Chisa.
+    // 'Lynae + Luuk Herssen + Mornye' was briefly dropped over an apparent conflict with Luuk
+    // Herssen's own dump (his Best Team text adds Denia as a 4th member) — restored: that's a
+    // richer 4-person comp on HIS page, not a contradiction of Lynae's own direct claim that
+    // Luuk+Lynae+Mornye is a valid team for her.
+    // 'Lynae + Phoebe + Rover: Spectro' stays dropped — that one wasn't from this same 1st/2nd/3rd-
+    // pick line at all; Phoebe's own dump explicitly splits Lynae (Absolution mode) and Rover:
+    // Spectro (Confession mode) as picks for two different Resonance Modes, a genuinely separate
+    // issue from the Luuk Herssen case.
+    // "Alternative Liberation Teams" and "Other Alternative Teams" (lines 167-168) list 4+ names
+    // each (2 interchangeable headliners + Lynae/Mornye + a Shorekeeper/Verina choice) — a real
+    // 4-person Whimpering Wastes-shaped comp this flat 3-name `teams` string format can't represent
+    // without guessing which specific trio was meant, so deliberately left uncoded.
+    teams: [
+      'Lynae + Aemeath + Mornye',
+      'Lynae + Qingxiao + Mornye',
+      'Lynae + Luuk Herssen + Mornye',
+      'Lynae + Hiyuki + Chisa',
+      'Lynae + Aemeath + Chisa',
+      'Lynae + Yangyang: Xuanling + Chisa',
+    ] },
   'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
     desc: 'A Spacetrek Collective Research Institute engineer and Department of Exostrider Engineering professor at Startorch Academy. DEF-scaling Fusion healer who keeps the team topped up through her Skill and Liberation while speeding up their Off-Tune Buildup.',
     skills: ['Ground State Calibration', 'Resolution', 'Critical Protocol', 'Convergence'],
@@ -870,7 +1035,12 @@ const CHARACTER_DATA = {
     // slots elsewhere in this file); Broadblade of Night is the 3★ fallback, matching the "<Weapon
     // Type> of Night" naming convention used for other characters' 3★ slot.
     weaponAlts: { alt5: ['Verdant Summit'], alt4: ['Discord', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
-    teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia'] },
+    // Added 'Mornye + Lynae + Yangyang: Xuanling' (2026-09-12): confirmed on BOTH sides —
+    // Data dump/Mornye/Mornye.md line 218 ("Lynae + Mornye: Aemeath / Hiyuki / Iuno / Yangyang:
+    // Xuanling + Lynae + Mornye — any non-Negative-Status DPS... fully interchangeable") explicitly
+    // lists Yangyang: Xuanling as a headliner option, and Yangyang: Xuanling's own dump's
+    // "Alternative Premium Teams" line confirms the same combo ("Only run Mornye alongside Lynae").
+    teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia', 'Mornye + Lynae + Yangyang: Xuanling'] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles through his Aureole of Execution's enhanced forms, dealing bonus damage against Tune Strain - Interfered enemies.",
     skills: ['Such is Light', 'Reunion of All the Fallen', 'Rewritten in Winter\'s Margins', 'Before Injection of Dawn'],
@@ -888,7 +1058,12 @@ const CHARACTER_DATA = {
     // real 4★s (Celestial Spiral 65.9%, Aether Strike 63.9%, both weapons.js rarity 4); alt3 unchanged
     // (Gauntlets of Night, the "<Weapon Type> of Night" 3★ fallback convention used elsewhere).
     weaponAlts: { alt5: ['Pulsation Bracer', 'Blazing Justice'], alt4: ['Celestial Spiral', 'Aether Strike'], alt3: ['Gauntlets of Night'] },
-    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
+    // Added 'Luuk Herssen + Lynae + Mornye' (2026-09-12): reciprocal to Lynae's own dump-confirmed
+    // 'Lynae + Luuk Herssen + Mornye' entry (her "Best Team" line names Luuk Herssen as one of the
+    // interchangeable 1st-pick headliners alongside Aemeath/Qingxiao) — his own dump's separate
+    // Best Team line names Denia as his top pick, but that doesn't contradict Lynae being a real,
+    // dump-confirmed alternate 2nd-pick on his page too.
+    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye', 'Luuk Herssen + Lynae + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who alternates between two Resonance Modes across her Basic Attack combo, banking momentum that fuels a pair of heavy-hitting Liberation casts for her core damage.',
     skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'Overture of Departure'],
@@ -902,7 +1077,12 @@ const CHARACTER_DATA = {
     // Endless Collapse 73.9%); Sword of Night is the 3★ fallback, matching the "<Weapon Type> of Night"
     // naming convention used for other characters' 3★ slot.
     weaponAlts: { alt5: ['Emerald of Genesis', 'Red Spring'], alt4: ['Feather Edge', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
-    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye'] },
+    // Added 'Aemeath + Lynae + Chisa' (2026-09-12): Aemeath's own dump line 233 ("Best Tune Rupture
+    // Team: Aemeath + Lynae + Mornye. Alternatives for the 3rd slot: Shorekeeper, Verina... Chisa
+    // (viable if run in Fusion Burst mode too)") names Chisa as a valid 3rd-slot alternative to
+    // Mornye alongside Aemeath+Lynae — reciprocal to Lynae's own dump-confirmed 'Lynae + Aemeath +
+    // Chisa' entry, which this side was missing.
+    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye', 'Aemeath + Lynae + Chisa'] },
   'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. On-field Aero DPS who consumes Rune stacks to empower Echo Skill and Heavy ATK for Aero burst DMG with crowd control.',
     skills: ['One, Two, Three', 'Royan Close Quarters Combat', 'Where Trust Leads Me!', 'Solsworn Etymology'],
@@ -947,7 +1127,41 @@ const CHARACTER_DATA = {
     // (mutual Hack-mechanic synergy, her own separate "Edgerunners Team: Lucy + Rebecca + Mornye +
     // Shorekeeper/Verina") — the two never appear in the same real team. Corrected to the real
     // Yangyang: Xuanling pairing and kept Lucy's own real team separately below.
-    teams: ['Rebecca + Yangyang: Xuanling + Suisui', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
+    // Expanded 2026-09-12, reading Rebecca's OWN dump directly (Data dump/Rebecca/Rebecca.md's
+    // "Example Teams" section, lines 330-336), taken as directly authoritative for her own
+    // recommendations:
+    //   Edgerunners Team: Lucy + Rebecca + Mornye/Shorekeeper/Verina (already had Mornye/Shorekeeper;
+    //     added Verina).
+    //   Phoebe Team: Phoebe + Rebecca + Rover: Spectro (new, fixed trio).
+    //   Alternative Heavy Attack Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina
+    //     (no Mornye restriction stated on THIS page, unlike Augusta's own dump's Rebecca/Lynae-only
+    //     restriction for Augusta's teams — full 3×3 cross product added).
+    //   Best Team (Yangyang: Xuanling + Rebecca + Suisui + Chisa) — a 4-name line; the
+    //     Rebecca+Suisui+Xuanling portion is already captured (confirmed on Xuanling's own dump too),
+    //     and the extra Chisa name doesn't resolve to an unambiguous 3rd literal trio beyond that
+    //     (same "don't force a specific trio out of a 4+-name line" precedent used for Lynae's
+    //     "Alternative Liberation Teams" case) — left uncoded rather than guessed.
+    // Cross-corroborated: Jiyan's own dump independently confirms Rebecca as a real synergy AND the
+    // same "Mornye niche, only with Rebecca/Lynae" restriction (from Jiyan's side); Lucy's own dump
+    // confirms Lucy+Rebecca+Shorekeeper (already had); Galbrena's own dump names Rebecca as a
+    // generalist Heavy DMG buffer/F2P alt (prose only, no literal trio, so no forced reciprocal
+    // beyond what's added to Rebecca's own list below).
+    teams: [
+      'Rebecca + Yangyang: Xuanling + Suisui',
+      'Rebecca + Lucy + Mornye',
+      'Rebecca + Lucy + Shorekeeper',
+      'Rebecca + Lucy + Verina',
+      'Rebecca + Phoebe + Rover: Spectro',
+      'Rebecca + Augusta + Shorekeeper',
+      'Rebecca + Augusta + Mornye',
+      'Rebecca + Augusta + Verina',
+      'Rebecca + Jiyan + Shorekeeper',
+      'Rebecca + Jiyan + Mornye',
+      'Rebecca + Jiyan + Verina',
+      'Rebecca + Galbrena + Shorekeeper',
+      'Rebecca + Galbrena + Mornye',
+      'Rebecca + Galbrena + Verina',
+    ] },
   'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'President and head of Startorch Academy, former chief editor of the New Federation\'s top academic journal. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
     skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
@@ -989,7 +1203,31 @@ const CHARACTER_DATA = {
     // the 3★ fallback (the source doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming
     // convention used elsewhere.
     weaponAlts: { alt5: ['Emerald Sentence', 'Red Spring'], alt4: ['Lumingloss', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
-    teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui'] },
+    // Rebuilt 2026-09-12 (direct user correction: an earlier pass built this list by inferring
+    // ambiguous slash-separated phrasing from OTHER characters' dumps — Chisa's/Lynae's — instead
+    // of reading Yangyang: Xuanling's OWN dump first, which is the actual authoritative source for
+    // her own recommended teammates. Her dump's "### Example Teams" section (Data dump/Yangyang
+    // Xuanling/Yangyang Xuanling.md lines 147-150) states, verbatim:
+    //   Best Team: Yangyang: Xuanling + Chisa + Suisui. (Run Chisa on Moonlit Clouds...)
+    //   Alternative Premium Teams: Yangyang: Xuanling + Lynae/Rebecca/Iuno/Phrolova +
+    //     Suisui/Chisa/Mornye. (Only run Mornye alongside Lynae, as an alternative to Suisui/Chisa.)
+    //   F2P Team: Yangyang: Xuanling + Mortefi + Verina.
+    // Every entry below is a literal 1st-pick × 2nd-pick combination from that Alternative Premium
+    // line, honoring the one explicit restriction (Mornye only pairs with Lynae, never with
+    // Rebecca/Iuno/Phrolova) — not a re-interpretation of a different character's ambiguous text.
+    teams: [
+      'Yangyang: Xuanling + Chisa + Suisui',
+      'Yangyang: Xuanling + Lynae + Suisui',
+      'Yangyang: Xuanling + Lynae + Chisa',
+      'Yangyang: Xuanling + Lynae + Mornye',
+      'Yangyang: Xuanling + Rebecca + Suisui',
+      'Yangyang: Xuanling + Rebecca + Chisa',
+      'Yangyang: Xuanling + Iuno + Suisui',
+      'Yangyang: Xuanling + Iuno + Chisa',
+      'Yangyang: Xuanling + Phrolova + Suisui',
+      'Yangyang: Xuanling + Phrolova + Chisa',
+      'Yangyang: Xuanling + Mortefi + Verina',
+    ] },
   'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, fitting into either Fusion Burst or Tune Strain team archetypes.',
     skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
@@ -1012,7 +1250,13 @@ const CHARACTER_DATA = {
     // Example Teams sections confirm: Fusion Burst pairs her only with Aemeath (Chisa or Lupa 3rd slot);
     // Tune Strain pairs her with either Qingxiao or Luuk Herssen, always alongside Mornye ("not
     // recommended for Tune Strain without Mornye involved").
-    teams: ['Aemeath + Denia + Chisa', 'Qingxiao + Denia + Mornye'] },
+    // Filled out 2026-09-12: 'Aemeath + Denia + Suisui'/'Aemeath + Denia + Lupa' (her own Synergies
+    // text lists Chisa/Mornye/Lupa as her 3rd-slot options with Aemeath — Suisui isn't named on
+    // Denia's own page, but IS confirmed on both Aemeath's and Suisui's own dumps, so kept as a real,
+    // cross-corroborated trio) and 'Luuk Herssen + Denia + Mornye' (her own Tune Strain line: "no
+    // listed alternative to Mornye" alongside either Qingxiao or Luuk Herssen) were previously only
+    // captured on the OTHER character's own teams field, not Denia's — added here too.
+    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Denia + Suisui', 'Aemeath + Denia + Lupa', 'Qingxiao + Denia + Mornye', 'Luuk Herssen + Denia + Mornye'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
@@ -1026,7 +1270,15 @@ const CHARACTER_DATA = {
     // Fables of Wisdom (71.8%, her best F2P no-gacha pick) are the 4★s; Sword of Night is the 3★
     // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Blazing Brilliance', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
-    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye'] },
+    // Added 'Hiyuki + Lynae + Chisa' (2026-09-12): Hiyuki's own dump line 202 ("Best Team: Hiyuki +
+    // {Lucilla/Lynae} + {Suisui/Chisa/Mornye/Verina}. Only pair Mornye with Lynae specifically")
+    // confirms Chisa as a valid 2nd-slot alongside Lynae — reciprocal to Lynae's own dump-confirmed
+    // 'Lynae + Hiyuki + Chisa' entry, which this side was missing.
+    // Added 'Hiyuki + Lynae + Suisui' (2026-09-12): confirmed on Suisui's own dump ("Hiyuki Team:
+    // Hiyuki + Lucilla + Lynae + Suisui" — Lucilla/Lynae are the alternate 2nd-pick per Hiyuki's own
+    // dump's "{Lucilla/Lynae}" structure, not simultaneous members) and independently on Hiyuki's own
+    // dump line 202's "{Suisui/Chisa/Mornye/Verina}" 3rd-pick list.
+    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye', 'Hiyuki + Lynae + Chisa', 'Hiyuki + Lynae + Suisui'] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG) via Resonance Skill, closing with a team-wide DMG Amplification Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
@@ -1040,7 +1292,27 @@ const CHARACTER_DATA = {
     // the 4★s; Rectifier of Night is the 3★ fallback (the source doesn't rank a 3★ for her), matching the
     // "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
-    teams: ['Suisui + Yangyang: Xuanling + Chisa', 'Suisui + Hiyuki + Lynae', 'Suisui + Aemeath + Denia'] },
+    // Expanded 2026-09-12, reading Suisui's OWN dump directly (Data dump/Suisui/Suisui.md's
+    // "### Example Teams" section, lines 206-209), taken as directly authoritative for her own
+    // recommendations:
+    //   Best Team: Yangyang: Xuanling + Chisa + Rebecca/Phrolova + Suisui (Phrolova strongest in WW)
+    //     → trios: Xuanling+Chisa+Suisui (already had), Xuanling+Rebecca+Suisui, Xuanling+Phrolova+Suisui.
+    //   Hiyuki Team: Hiyuki + Lucilla + Lynae + Suisui → trios: Hiyuki+Lucilla+Suisui (already had),
+    //     Hiyuki+Lynae+Suisui (new — Lucilla/Lynae are alternates per Hiyuki's own dump line 202's
+    //     "{Lucilla/Lynae}" 2nd-pick structure, not simultaneous team members).
+    //   Aemeath Team: Aemeath + Denia + Suisui (already had).
+    // Xuanling+Rebecca+Suisui and Xuanling+Phrolova+Suisui both independently confirmed on Yangyang:
+    // Xuanling's own dump too (her Alternative Premium Teams line); Hiyuki+Lynae+Suisui independently
+    // confirmed on Hiyuki's own dump (line 202's {Suisui/Chisa/Mornye/Verina} 3rd-pick list) and on
+    // Aemeath's own dump (line 232's "Best Fusion Burst Team: Aemeath + Denia + {Chisa/Suisui/Lupa}").
+    teams: [
+      'Suisui + Yangyang: Xuanling + Chisa',
+      'Suisui + Yangyang: Xuanling + Rebecca',
+      'Suisui + Yangyang: Xuanling + Phrolova',
+      'Suisui + Hiyuki + Lynae',
+      'Suisui + Hiyuki + Lucilla',
+      'Suisui + Aemeath + Denia',
+    ] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'Paragon of Mengzhou. On-field Aero DPS who builds resources through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for an empowered combo finisher.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
@@ -1082,24 +1354,40 @@ const CHARACTER_DATA = {
     // weaponAlts added 2026-09-07 against a real nanoka.cc dump (Data dump/Jingran/Jingran.md) —
     // its "Recommended Weapons" list ranks Thousandfold Deliverance #1 (already bestWeapon), Radiance
     // Cleaver #2, Aureate Zenith #3; no ATK%/comparison figures given on that page to rank further alts.
-    // bestEchoes/teams remain genuinely unconfirmed — that same dump's guide content for him has no
-    // Echo-set/team-synergy/rotation section written yet (a newly-released character), not guessed.
-    // bestEchoes/teams left empty rather than a placeholder sentinel string: DamageCalculator.jsx's
-    // "Recommended" line (`m.d.bestEchoes && ...`) renders any truthy bestEchoes verbatim to the
-    // user, sentinel prose included — found via a team-recommendation audit (2026-09-01). An empty
-    // array renders nothing (falls through to the "no recommendation yet" empty state) instead of
-    // leaking placeholder prose as if it were a real echo-set suggestion.
-    bestEchoes: [], bestWeapon: 'Thousandfold Deliverance',
-    weaponAlts: { alt5: ['Radiance Cleaver', 'Aureate Zenith'] },
-    teams: [] },
-    // Re-checked 2026-09-07 against a real nanoka.cc .mht snapshot (Data dump/Jingran/Jingran.md) —
-    // he is now LIVE ("Version 3.6 (live)" on that page, captured 7/September/2026), no longer
-    // pre-release. His real kit — SKILL_MULTIPLIERS, RESONANCE_CHAIN_DATA, Minor Fortes, Inherent
-    // Skills — has now been filled in from that source (see the dump's own "App Data Comparison"
-    // section for exactly what changed). CHARACTER_ROTATIONS['Jingran'] is still correctly absent:
-    // that same dump's guide content has no rotation/combo/team section written yet for him (a
-    // newly-released character) — not fabricated here either. Do not fill it in until a real source
-    // publishes his actual optimal rotation.
+    // bestEchoes/teams REBUILT 2026-09-12 from a fresh prydwen.gg build-guide snapshot the user
+    // provided directly (Data dump/Jingran/Jingran.md), superseding the prior "not yet written"
+    // placeholder — that dump now has a full Build/Gameplay-and-Teams section.
+    // bestEchoes: [mainEcho, set] convention (see Brant's own entry above) — main echo is Myriad
+    // Snare: Rustfire Chassis (the dump's own "Best Main Echo"), set is his signature Lamp of Nether
+    // Road (100% score, "his signature set").
+    bestEchoes: ['Myriad Snare: Rustfire Chassis', 'Lamp of Nether Road 5pc'], bestWeapon: 'Thousandfold Deliverance',
+    // weaponAlts extended 2026-09-12: the dump's Best Weapons table ranks Thunderflare Dominion #2
+    // (85.1%, Augusta's own signature) and Verdant Summit #3 (82.0%) among 5★ alts; Aureate Zenith is
+    // explicitly the dump's own "best 4★" (73.1%) and Meditations on Mercy its own "best no-gacha/F2P"
+    // (59.9%) — kept as alt4/alt3 per the established weaponAlts shape (alt5/alt4/alt3 tiers).
+    weaponAlts: { alt5: ['Thunderflare Dominion', 'Verdant Summit', 'Radiance Cleaver'], alt4: ['Aureate Zenith'], alt3: ['Meditations on Mercy'] },
+    // teams sourced directly from the dump's own "Example Teams" section (his own dump is
+    // authoritative for his own teams field — no third-party corroboration required): Best Team
+    // (Iuno + Shorekeeper/Verina), Mono Fusion (Mortefi + Mornye/Lupa), F2P (Rebecca/Mortefi +
+    // Shorekeeper/Verina). Checked 2026-09-12: only Iuno's own dump independently corroborated the
+    // pairing at the time. UPDATED 2026-09-12 (same day, after Lupa's own dump was refreshed from a
+    // fresh prydwen.gg snapshot): Lupa's own "Best Team" now independently names Jingran too (with
+    // Mortefi as his dedicated 3rd-slot partner, Mornye as the generalist alternate) — 'Jingran +
+    // Mortefi + Lupa' is now mutually confirmed on both sides, not one-way.
+    teams: [
+      'Jingran + Iuno + Shorekeeper',
+      'Jingran + Iuno + Verina',
+      'Jingran + Mortefi + Mornye',
+      'Jingran + Mortefi + Lupa',
+      'Jingran + Rebecca + Shorekeeper',
+      'Jingran + Rebecca + Verina',
+      'Jingran + Mortefi + Shorekeeper',
+      'Jingran + Mortefi + Verina',
+    ] },
+    // Re-checked 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/
+    // Jingran.md) — his Standard (S0-S1) and S2+ rotations are now published (see CHARACTER_ROTATIONS
+    // below, added below this entry) and his Build/Gameplay-and-Teams sections are fully populated,
+    // superseding the 2026-09-07 "no guide content yet" note.
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who summons a mist clone via his Skill, dealing off-field Aero DMG whenever it triggers a Coordinated Attack alongside the active Resonator.',
@@ -1314,7 +1602,31 @@ const CHARACTER_DATA = {
     // alt4 order corrected 2026-09-03 against a real browser snapshot: source ranks Pistols#26
     // (81.87%) ahead of Undying Flame in the listed order — was previously swapped.
     weaponAlts: { alt5: ['The Last Dance'], alt4: ['Relativistic Jet', 'Novaburst', 'Thunderbolt', 'Pistols#26', 'Undying Flame'] },
-    teams: ['Mortefi + Galbrena + Lupa', 'Mortefi + Jiyan + Verina'] },
+    // Expanded 2026-09-12, reading Mortefi's OWN dump directly (Data dump/Mortefi/Mortefi.md's
+    // "Example Teams" section, lines 158-160) — that section is explicit about a real gap: "exact
+    // roster icons weren't machine-readable in this extraction; inferred from the Synergies section
+    // text" instead. Rather than force-guess which specific headliner maps to the "Best Team" label,
+    // only the combinations the Synergies text itself literally names are added, each independently
+    // confirmed on the OTHER character's own dump too:
+    //   Augusta: "best F2P-accessible option for her" — confirmed on Augusta's own dump ("Best Team:
+    //     Augusta + Iuno/Lynae/Rebecca/Mortefi + Shorekeeper/Verina/Mornye").
+    //   Jiyan: "tailor-made partner" — confirmed on Jiyan's own dump (Rebecca/Mortefi named as
+    //     free/accessible Heavy DMG buffers).
+    //   Phoebe: "good secondary... with Rejuvenating Glow Spectro Rover" — matches Phoebe's own dump
+    //     naming Mortefi as an additional Heavy ATK buffer (prose-level, not a literal trio there).
+    //   Zani: "substitute for Phoebe's buffing... must be paired with Spectro Rover" — matches Zani's
+    //     own dump naming Mortefi as a Heavy ATK DMG Amp option (prose-level, same caveat).
+    // Galbrena+Lupa and Jiyan+Verina (already present) are the pre-existing reasonable inferences
+    // from the same Synergies text — kept as-is.
+    teams: [
+      'Mortefi + Galbrena + Lupa',
+      'Mortefi + Jiyan + Verina',
+      'Mortefi + Jiyan + Shorekeeper',
+      'Mortefi + Augusta + Shorekeeper',
+      'Mortefi + Augusta + Verina',
+      'Mortefi + Phoebe + Rover: Spectro',
+      'Mortefi + Zani + Rover: Spectro',
+    ] },
   // audited 2026-08-18: sourced from the wiki's Youhu/Combat page (rendered via the
   // MediaWiki API, section-by-section, since the raw wikitext only transcludes {{Forte Table}}/
   // {{Chain Table}} templates) and the source's Kit/Build/Review/Gameplay tabs.
@@ -2057,7 +2369,20 @@ const CHARACTER_DATA = {
   // in the same order of magnitude as other Main DPS instead of ~49x inflated. His kit/build is still
   // "Unconfirmed" (unreleased, see his main CHARACTER_DATA entry) so this is a unit-conversion fix,
   // not a verified tier placement -- revisit once his real build guide exists.
-  ['Jingran',       60, 24, 15],  // HP-scaling Heavy ATK bursts, Yinghuo empowerment — totalMult is %HP, NOT %ATK
+  // totalMult corrected 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/
+  // Jingran.md): was 60 with a comment claiming "totalMult is %HP, NOT %ATK" — that dump's own closing
+  // Meta-position paragraph explicitly says the opposite: "HP-CONVERTING (like Brant is with Energy
+  // Regen), not HP-scaling like Cartethyia — his multipliers apply to ATK, with HP only feeding the
+  // ATK-conversion and %-bonus passives." His statScaling below is corrected from 'HP' to 'ATK' to
+  // match (same fix class as Brant, whose HP→ATK-conversion kit is also modeled as ATK-scaling, not
+  // HP-scaling). Value re-derived as the sum of his real per-move %ATK multipliers across the dump's
+  // own Standard (S0-S1) Rotation: Intro 198.81 + Liberation 745.20 (93.15×8) + Heavy:Stardome Meander
+  // 240.38 (×2 occurrences) + Basic Yin 2/3/4 337.04 + Heavy:Soul Raid 234.29 (×2) + Skill Scorching
+  // Yang 164.04 + Basic Afterlife's Guide 263.48 + Skill Encroaching Yin 164.04 + Basic Netherworld
+  // Traverse 258.47 + Outro 795.00 ≈ 3875. rotTime/onField left at their prior placeholder values (24s/
+  // 15s) — the dump gives an exact SOLO rotation time (13.37s) but not a full-team-rotation figure this
+  // table's own convention expects, so not swapped in as a guess.
+  ['Jingran',       3875, 24, 15],  // ATK-scaling (HP→ATK conversion) Heavy ATK bursts, Yinghuo empowerment
   ["Yangyang: Xuanling", 3600, 23, 18],  // Azure/Feather stance swap, Havoc Bane self-buff — T0/T0 ceiling
   ['Hiyuki',        3400, 23, 17],  // Present/Foreclaimed Self, Iai burst finisher — best Glacio DPS
   ['Lucy',          2000, 23, 12],  // TCP/Root Access into enhanced Heavy + Ultimate
@@ -2153,7 +2478,10 @@ const CHARACTER_DATA = {
   ['Sigrika',        'ATK'],
   ['Chixia',         'ATK'],
   ['Qingxiao',       'ATK'],
-  ['Jingran',        'HP'],
+  // statScaling corrected 2026-09-12 against a fresh dump (see the totalMult table's own comment
+  // above for the full quote): was 'HP' — Jingran is HP-CONVERTING (HP feeds an ATK-conversion
+  // passive, like Brant below), not HP-scaling like Cartethyia. His damage multipliers apply to ATK.
+  ['Jingran',        'ATK'],
   ['Yangyang: Xuanling', 'ATK'],
   ['Hiyuki',         'ATK'],
   ['Lucy',           'ATK'],
@@ -2326,10 +2654,14 @@ const CHARACTER_DATA = {
   ['Youhu',         'T4',   'T4'],
   ['Yuanwu',        'T4',   'T4'],
   // Added 2026-09-02 against a fresh the source dump: Qingxiao was entirely missing from this table (a
-  // 3.6-patch release-day gap, same as Jingran, who is left untouched here since no fresh source for
-  // him was checked this pass). Standard-list values used, matching this table's established
+  // 3.6-patch release-day gap, same as Jingran, who was left untouched then since no fresh source for
+  // him was checked that pass). Standard-list values used, matching this table's established
   // convention (e.g. Augusta/Luuk Herssen use their standard T0/T1.5-style lists, not the Value list).
   ['Qingxiao',      'T0',   'T1'],
+  // Added 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/Jingran.md):
+  // his own Review section states "Tier: DPS T0 (Tower of Adversity), T1 (Whimpering Wastes) — same
+  // split on the Value Tier List" explicitly (both lists agree, unlike some other characters above).
+  ['Jingran',       'T0',   'T1'],
 ].forEach(([name, toa, ww]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } });
 });
@@ -3949,8 +4281,14 @@ const SKILL_MULTIPLIERS = {
     ['Mid-air', 'Attack', '92.45%'],
     ['Dodge Counter', 'Nether Dive', '49.70%×4', "Yin Vessel Dodge Counter; considered Heavy Attack DMG per its own kit text."],
     ['Dodge Counter', 'Light Watch', '74.57%+74.57%+99.43%', "Yang Font Dodge Counter; considered Heavy Attack DMG per its own kit text."],
-    ['Skill', 'Encroaching Yin / Scorching Yang', '65.61%+32.81%×3'],
-    ['Skill', "Netherworld Traverse / Afterlife's Guide", '51.69%+25.85%×2+38.77%×4 / 65.87%×2+131.74%', 'Considered Heavy Attack DMG per its own kit text.'],
+    // Split into 4 separate exact-named rows (2026-09-12) — the prior combined 'X / Y' row names
+    // only ever matched a CHARACTER_ROTATIONS step via findSkillMultiplierRow's fuzzy substring
+    // fallback (each step names only one skill, never both), which logged a console warning on
+    // every load; splitting removes the fuzzy match entirely with the exact same values.
+    ['Skill', 'Encroaching Yin', '65.61%+32.81%×3'],
+    ['Skill', 'Scorching Yang', '65.61%+32.81%×3'],
+    ['Skill', 'Netherworld Traverse', '51.69%+25.85%×2+38.77%×4', 'Considered Heavy Attack DMG per its own kit text.'],
+    ['Skill', "Afterlife's Guide", '65.87%×2+131.74%', 'Considered Heavy Attack DMG per its own kit text.'],
     ['Heavy ATK', 'Soul Raid', '16.40%×2+21.09%×3+138.22% (+ Max HP scaling)'],
     ['Heavy ATK', 'Stardome Meander', '24.04%+24.04%+48.08%+144.22% (+ Max HP scaling)'],
     ['Liberation', 'Burial of Thousand Souls', '93.15%×8'],
@@ -6528,6 +6866,33 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Billows Beneath Heaven', note: "Press Liberation — best saved for last so her signature weapon's passive (or any pre-Ultimate buffs) are fully stacked before it fires." },
     { type: 'Echo', skill: 'Use Echo', note: "Swap-cancel your Echo skill right after the Liberation lands, just before swapping out for the Outro." },
     { type: 'Outro', skill: 'Lingering Song', note: 'Swap out to trigger this automatically — deals Aero DMG equal to 800% of her ATK.' },
+  ],
+  // Added 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/Jingran.md)
+  // — previously entirely absent (his guide content had no rotation section written yet when this
+  // repo's characters.js entry was first built from an earlier nanoka.cc snapshot). Standard (S0-S1)
+  // Rotation used, matching the convention of using the lower-sequence/most-accessible rotation as the
+  // stored CHARACTER_ROTATIONS entry (see Phoebe's own comment above) — the dump's separate S2+
+  // rotation (openable Stardome Meander pre-Intro) is a real, sourced alternative not modeled here.
+  // Skill fields below match their SKILL_MULTIPLIERS['Jingran'] row names EXACTLY (that table's
+  // Encroaching Yin/Scorching Yang/Netherworld Traverse/Afterlife's Guide rows were split into 4
+  // individually-named rows on 2026-09-12, replacing the combined 'X / Y' rows that only ever
+  // matched via findSkillMultiplierRow's fuzzy substring fallback and logged a console warning on
+  // every load) — Netherworld Traverse/Afterlife's Guide are typed 'Skill' here (not 'Basic ATK')
+  // to match the row they actually live under, even though they fire off the Basic Attack input
+  // in-game.
+  'Jingran': [
+    { type: 'Intro', skill: 'Question the Tombs', note: 'Swap into him — fires automatically, consumes all Ghost Shroud and converts it 1:1 into Fortune in Disguise stacks (Fusion DMG Bonus scaling with Max HP).' },
+    { type: 'Liberation', skill: 'Burial of Thousand Souls', note: 'Cast right after Intro — reduces current HP to 50% Max HP if above it, grants 200 Qi and 3 Wayfarer\'s Mark stacks, and enters the 15s Yinghuo state (empowers his next Forte Heavy Attacks via Chimei Wangliang summons).' },
+    { type: 'Heavy ATK', skill: 'Stardome Meander', note: 'From Yang Font (his default starting stance), cast Heavy Attack - Stardome Meander at 300 Qi — consumes it, deals Fusion DMG, and switches him to Yin Vessel.' },
+    { type: 'Basic ATK', skill: 'Drink Soul', note: 'In Yin Vessel, chain Basic Attack - Drink Soul stages 2 through 4 — Stage 3/4 each restore 50 Qi and are considered Heavy Attack DMG despite firing off the Basic Attack button.' },
+    { type: 'Heavy ATK', skill: 'Soul Raid', note: 'At 300 Qi in Yin Vessel, cast Heavy Attack - Soul Raid — consumes it, deals Fusion DMG, and switches him back to Yang Font.' },
+    { type: 'Skill', skill: 'Scorching Yang', note: 'In Yang Font, press Skill (Resonance Skill - Scorching Yang) — deals Fusion DMG and grants Cleanse of Impurity for 4s, enabling the Afterlife\'s Guide follow-up below.' },
+    { type: 'Skill', skill: "Afterlife's Guide", note: 'With Cleanse of Impurity active, press the Basic Attack input again (Resonance Skill - Afterlife\'s Guide, mid-air castable) — a Fusion DMG hit considered Heavy Attack DMG, restores 100 Qi.' },
+    { type: 'Heavy ATK', skill: 'Stardome Meander', note: 'Second cast of the rotation — same effect as above, switches back to Yin Vessel.' },
+    { type: 'Skill', skill: 'Encroaching Yin', note: 'In Yin Vessel, press Skill (Resonance Skill - Encroaching Yin) — deals Fusion DMG, grants Cleanse of Impurity for 4s, enabling the Netherworld Traverse follow-up below.' },
+    { type: 'Skill', skill: 'Netherworld Traverse', note: 'With Cleanse of Impurity active, press the Basic Attack input again (Resonance Skill - Netherworld Traverse, mid-air castable) — Fusion DMG considered Heavy Attack DMG, restores 100 Qi.' },
+    { type: 'Heavy ATK', skill: 'Soul Raid', note: 'Second cast of the rotation — same effect as above, switches back to Yang Font.' },
+    { type: 'Outro', skill: 'Rising Fortune and Ebbing Evil', duration: 0, note: 'Swap out to trigger this automatically — deals Fusion DMG equal to 795% of his ATK, with no team-buff component (pure damage, safe to Quickswap).' },
   ],
 };
 
