@@ -989,7 +989,14 @@ const CHARACTER_DATA = {
     // the 3★ fallback (the source doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming
     // convention used elsewhere.
     weaponAlts: { alt5: ['Emerald Sentence', 'Red Spring'], alt4: ['Lumingloss', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
-    teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui'] },
+    // Added 'Yangyang: Xuanling + Lynae + Chisa' (2026-09-12): Data dump/Yangyang Xuanling/
+    // Yangyang Xuanling.md's own Synergies section explicitly names Lynae ("Lynae also brings
+    // strong general buffs plus high personal damage"), and Lynae's own dump already lists the
+    // reciprocal 'Lynae + Yangyang: Xuanling + Chisa' team — this side of the citation was
+    // missing, which under the new mutual-citation-weighted recommendation scoring
+    // (TeamsTab.jsx's curatedVotes) silently kept a real, dump-confirmed pairing at the weaker
+    // one-way weight instead of the full mutual-corroboration weight.
+    teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui', 'Yangyang: Xuanling + Lynae + Chisa'] },
   'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, fitting into either Fusion Burst or Tune Strain team archetypes.',
     skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
