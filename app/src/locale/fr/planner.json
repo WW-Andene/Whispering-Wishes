@@ -98,6 +98,7 @@
   "recommendationWeaponReliantDespiteAlts": "{{name}} dépend de son arme signature ; les alternatives sont moins performantes.",
   "recommendationWeaponAlreadyHaveAlt": "Vous possédez déjà {{alt}}, une bonne alternative.",
   "recommendationWeaponAltExists": "Ne dépend pas de son arme signature — {{alts}} est presque aussi efficace.",
+  "recommendationWeaponNotEssentialReason": "{{name}} n'est pas lié à cette arme signature — une alternative comparable est indiquée ci-dessous.",
   "recommendationGoodForHeader": "{{name}} fonctionne bien avec ces personnages de votre roster",
   "recommendationGoodForEmpty": "Aucune synergie confirmée avec votre roster actuel pour le moment",
   "recommendationAllOwnedTitle": "Vous possédez déjà tous les personnages en vedette de cette mise à jour",

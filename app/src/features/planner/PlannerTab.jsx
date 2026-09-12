@@ -933,7 +933,7 @@ function PlannerTab({
                     <div className="flex items-center gap-3">
                       {DEFAULT_COLLECTION_IMAGES[topWeapon.name] && (
                         <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/25 relative">
-                          <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${getImageFraming(`info-${topWeapon.name}`).zoom / 100}) translate(${-getImageFraming(`info-${topWeapon.name}`).x}%, ${-getImageFraming(`info-${topWeapon.name}`).y}%)` }} onError={hideOnError} />
+                          <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${getImageFraming(`collection-${topWeapon.name}`).zoom / 100}) translate(${-getImageFraming(`collection-${topWeapon.name}`).x}%, ${-getImageFraming(`collection-${topWeapon.name}`).y}%)` }} onError={hideOnError} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
@@ -943,22 +943,25 @@ function PlannerTab({
                         </span>
                       </div>
                     </div>
+                    {/* Direct user feedback: the "Not Essential" verdict left nothing explaining the
+                        signature weapon itself — this line now always states why the signature is
+                        skippable, with the concrete alternative (picture + real stat/passive) below it. */}
                     <p className="text-gray-500 text-xs">
                       {topWeapon.reliantDespiteAlts
                         ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
                         : topWeapon.mustHave
                           ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
-                          : null}
+                          : t('planner.recommendationWeaponNotEssentialReason', { name: top.name })}
                     </p>
                     {!topWeapon.mustHave && altWeaponName && (
                       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
                         {DEFAULT_COLLECTION_IMAGES[altWeaponName] && (
                           <div className="w-10 h-10 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25 relative">
-                            <img src={DEFAULT_COLLECTION_IMAGES[altWeaponName]} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${getImageFraming(`info-${altWeaponName}`).zoom / 100}) translate(${-getImageFraming(`info-${altWeaponName}`).x}%, ${-getImageFraming(`info-${altWeaponName}`).y}%)` }} onError={hideOnError} />
+                            <img src={DEFAULT_COLLECTION_IMAGES[altWeaponName]} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${getImageFraming(`collection-${altWeaponName}`).zoom / 100}) translate(${-getImageFraming(`collection-${altWeaponName}`).x}%, ${-getImageFraming(`collection-${altWeaponName}`).y}%)` }} onError={hideOnError} />
                           </div>
                         )}
                         <div className="min-w-0 space-y-0.5">
-                          <p className="text-gray-300 text-xs font-medium truncate">
+                          <p className="text-gray-300 text-xs font-medium">
                             {topWeapon.ownedAlt
                               ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: altWeaponName })
                               : t('planner.recommendationWeaponAltExists', { alts: altWeaponName })}
