@@ -1508,7 +1508,17 @@ const CHARACTER_DATA = {
     // merely a banner-featured 4★, not a ranked recommendation); Feather Edge is the dump's own explicit
     // "Best 4★ option" (65.53%), matching the alt4 convention used everywhere else in this table.
     weaponAlts: { alt5: ['Red Spring'], alt4: ['Feather Edge'], alt3: ['Sword of Night'] },
-    teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Qingxiao/Qingxiao.md, Example Teams): "Best
+    // Team" is Denia + Mornye with no recommended alternatives (dropping Mornye causes "very
+    // significant team DPS losses"); the "Lynae Team" explicitly allows Ciaccona/Shorekeeper as
+    // near-equal Mornye alternatives ("alternatives to Mornye don't suffer as significant a
+    // drop-off here").
+    teams: [
+      'Qingxiao + Denia + Mornye',
+      'Qingxiao + Lynae + Mornye',
+      'Qingxiao + Lynae + Ciaccona',
+      'Qingxiao + Lynae + Shorekeeper',
+    ] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'A loner treading into illusive depths, of Mengzhou. On-field Fusion DPS who alternates Yin Vessel and Yang Font stances, with ATK and Heavy Attack DMG scaling off Max HP, entering a Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
