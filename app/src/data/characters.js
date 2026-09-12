@@ -498,7 +498,22 @@ const CHARACTER_DATA = {
     // Changli/Sanhua). Swapped bestWeapon to Moongazer's Sigil, moving Verity's Handle into alt5.
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Moongazer's Sigil",
     weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Stonard'], alt3: ['Gauntlets of Night'] },
-    teams: ['Xiangli Yao + Lynae + Mornye', 'Xiangli Yao + Yinlin + Verina'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Xiangli Yao/Xiangli Yao.md, Synergies):
+    // Lynae/Yinlin named as his two best DPS partners ("easily his best partners"); Jianxin and
+    // Yangyang named as good/best non-limited fallback options; Mornye/Shorekeeper/Verina named as
+    // his best generalist Supports, with Mornye explicitly restricted to Lynae pairings ("special
+    // synergy with Lynae specifically... generally the best choice when Lynae is in use"). Changli
+    // omitted — the source explicitly says she is "NOT recommended for casual players... underperforms
+    // badly without heavy swap-weaving."
+    teams: [
+      'Xiangli Yao + Lynae + Mornye',
+      'Xiangli Yao + Lynae + Shorekeeper',
+      'Xiangli Yao + Lynae + Verina',
+      'Xiangli Yao + Yinlin + Shorekeeper',
+      'Xiangli Yao + Yinlin + Verina',
+      'Xiangli Yao + Jianxin + Shorekeeper',
+      'Xiangli Yao + Yangyang + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (URL is /the-shorekeeper, Chrome UA +
   // google.com referer + jsRender) and the source's character #1505 sheet. desc: title "Euphonic
   // Chrysalis" (the source) prepended and blurb rewritten from the source's own profile text to match the
