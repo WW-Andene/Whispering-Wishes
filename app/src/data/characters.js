@@ -610,7 +610,10 @@ const CHARACTER_DATA = {
     // (85.10%, #4 overall, "not a necessity") narrowly misses the 2-slot cutoff, same trimming
     // convention used elsewhere.
     weaponAlts: { alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
-    teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
+    // Added 'Zani + Phoebe + Shorekeeper' (2026-09-13) from her own dump's Example Teams ("Zani
+    // Team": Zani + Phoebe + The Shorekeeper) — already cross-confirmed on both Zani's and Phoebe's
+    // own teams fields.
+    teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper', 'Zani + Phoebe + Shorekeeper'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1603 sheet. desc: title "Sanguine Blossom" (the source) prepended and
   // blurb rewritten from the source's own profile text to match the roster's convention (previous desc was
