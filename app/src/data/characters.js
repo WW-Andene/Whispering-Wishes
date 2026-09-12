@@ -756,7 +756,18 @@ const CHARACTER_DATA = {
     // actual (if outclassed-by-Zhezhi/Yinlin) niche partner for her.
     bestEchoes: ['Lorelei', 'Midnight Veil 5pc'], bestWeapon: 'Whispers of Sirens',
     weaponAlts: { alt5: ['Rime-Draped Sprouts', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Cantarella + Phrolova + Qiuyuan', 'Cantarella + Jinhsi + Shorekeeper'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Cantarella/Cantarella.md, Synergies): Phrolova
+    // named "easily Phrolova's best teammate" ("a perfect pair"); Carlotta/Jinhsi named as her Skill-
+    // DMG-dealer DPS substitutes; Shorekeeper/Verina named as her two best generalist Supports "by a
+    // wide margin."
+    teams: [
+      'Cantarella + Phrolova + Qiuyuan',
+      'Cantarella + Phrolova + Shorekeeper',
+      'Cantarella + Phrolova + Verina',
+      'Cantarella + Jinhsi + Shorekeeper',
+      'Cantarella + Jinhsi + Verina',
+      'Cantarella + Carlotta + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1507 sheet. desc: title "Scorched Radiance" (the source) prepended and
   // blurb rewritten — the previous desc said she "builds Frazzle stacks via Resonance Skill counters and
