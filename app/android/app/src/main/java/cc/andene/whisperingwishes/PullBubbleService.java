@@ -1279,6 +1279,10 @@ public class PullBubbleService extends Service {
     // (already sitting correctly positioned and invisible) and removes this temporary one.
     private static final float POP_SCALE = 2.4f;
     private static final int POP_GROW_DURATION_MS = 200;
+    // How far past its resting (fill-the-bubble) size the white flash disperses before it's
+    // fully faded — see addPopReveal's own comment on flashSizePx.
+    private static final float DISPERSE_SCALE = 2.2f;
+    private static final int FLASH_DISPERSE_DURATION_MS = 380;
     // Direct user request 2026-09-10: the popped item holds at full size until either tapped
     // (see the tap listener below) or, per direct follow-up request, 1.5s pass (was 3s) —
     // whichever comes first — a tap advances immediately, an untapped item still moves the
@@ -1305,25 +1309,18 @@ public class PullBubbleService extends Service {
         // that entire class of race instead of trying to out-guess window-manager ordering —
         // container is now the actual window content, sized for the flash's bloom; root (the
         // circular icon) and flash are both its children, centered inside it.
-        // Direct user report 2026-09-10: the flash/spark burst looked "very small, on fire
-        // inside the bubble" instead of a big radiant burst. Root cause: the window itself
-        // (params/container below) was sized to exactly flashSizePx — flash's own RESTING
-        // size — but flash then animates up past that (now 2x), and the spark streaks are
-        // even longer than flashSizePx to begin with. Both got clipped at the window's own surface
-        // edge (the same class of bug as the icon-clipping fix above, just for the burst this
-        // time), so only the small unclipped center fraction was ever visible. burstWindowSizePx
-        // is now sized to comfortably contain the FULLY EXPANDED burst instead of flash's
-        // resting size, and flash/spark's own sizes are bumped up for a bigger effect on top of
-        // that fix.
-        int flashSizePx = (int) (popSizePx * 1.6f);
-        // Widened from 2.5x to 4.6x flashSizePx (direct follow-up to the shockwave-ring
-        // explosion rework below): the ring's own resting size is 1.4x flashSizePx and it
-        // scales up to 3x that during the burst — a 4.2x-flashSizePx diameter at its peak,
-        // plus the sparks now reaching further out too (scaleX up to 1.4x their own
-        // already-oversized resting length). 2.5x would clip both well before they finish
-        // expanding, the exact bug this window-sizing already exists to avoid (see the
-        // comment above on the ORIGINAL small-window clipping bug).
-        int burstWindowSizePx = (int) (flashSizePx * 4.6f);
+        // burstWindowSizePx must comfortably contain the flash's FULLY EXPANDED, dispersed size
+        // (see DISPERSE_SCALE below), not just its resting size — otherwise the window's own
+        // surface clips the burst right as it's expanding past the icon's edge (the same class
+        // of bug as the icon-clipping fix above, just for the burst).
+        // Direct user request 2026-09-13: replace the spark/shockwave-ring burst with a plain
+        // blurred white flash — starts exactly filling the bubble (flashSizePx == popSizePx, so
+        // it reads as the icon itself flashing white, not a separate smaller effect on top of
+        // it) and then disperses outward past the icon's own edge while fading, instead of
+        // shooting out spark shards/a ring. DISPERSE_SCALE below is how far past its resting
+        // (fill-the-bubble) size the flash expands before it's fully faded.
+        int flashSizePx = popSizePx;
+        int burstWindowSizePx = (int) (flashSizePx * DISPERSE_SCALE * 1.2f);
         int centerX = dm.widthPixels / 2;
         int centerY = dm.heightPixels / 2;
 
@@ -1351,31 +1348,18 @@ public class PullBubbleService extends Service {
         }
         container.addView(root, new FrameLayout.LayoutParams(popSizePx, popSizePx, Gravity.CENTER));
 
-        // BUG FIX (direct user report, "bubble shaped instead of exploding from the inside
-        // out, the flash is centered and anticlimactic"): the old burst was ONE soft radial
-        // gradient blob that just scaled up 2x and faded in place — reading as a bubble
-        // gently inflating, not an explosion. Now built from three distinct, faster-paced
-        // layers instead of one blob: a bright, tight, very-short-lived core flash (the
-        // "detonation" instant), a hard-edged shockwave RING that rockets outward past the
-        // icon's own edge and fades (the actual "exploding outward" motion a filled blob
-        // can't read as), and the existing spark streaks — see addShockwaveRing()/
-        // addSparkStreaks() below.
+        // Direct user request 2026-09-13: a single blurred white flash, sized to exactly fill
+        // the bubble at rest (feathered edge via the radial gradient's soft outer stop, instead
+        // of a hard-edged circle, for the "blurred" look) that then disperses outward past the
+        // icon's own edge while fading — replaces the old spark-shard/shockwave-ring burst.
         GradientDrawable burst = new GradientDrawable();
         burst.setShape(GradientDrawable.OVAL);
         burst.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         burst.setGradientRadius(flashSizePx / 2f);
-        burst.setColors(new int[]{Color.parseColor("#FFFFFFFF"), Color.parseColor("#59B9E8FF"), Color.TRANSPARENT});
+        burst.setColors(new int[]{Color.parseColor("#FFFFFFFF"), Color.parseColor("#CCFFFFFF"), Color.TRANSPARENT});
         FrameLayout flash = new FrameLayout(this);
         flash.setBackground(burst);
         container.addView(flash, new FrameLayout.LayoutParams(flashSizePx, flashSizePx, Gravity.CENTER));
-        // Shockwave ring — added AFTER flash so it draws on top, same single-window/
-        // deterministic-z-order reasoning as flash and sparks.
-        View shockwave = addShockwaveRing(container, flashSizePx, rarityHex(result.rarity));
-        // Sparks — direct user follow-up request alongside the shorter hold: thin streaks of
-        // light radiating outward from the flash's own center, on top of it, for a more
-        // "holographic" burst than the plain radial gradient alone. Added after flash so they
-        // draw on top, same single-window/deterministic-z-order reasoning as flash itself.
-        List<View> sparks = addSparkStreaks(container, flashSizePx);
 
         int overlayType = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 ? WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
@@ -1403,24 +1387,15 @@ public class PullBubbleService extends Service {
         // small tile spawning near the corner bubble) — it's only glaring here because this is
         // a large icon popping up at screen center. Fix: set the hidden initial state BEFORE
         // addView, so there's no "default" frame to flash in the first place.
-        flash.setScaleX(0.25f);
-        flash.setScaleY(0.25f);
+        // Flash starts at its resting size (1x — exactly filling the bubble, since
+        // flashSizePx == popSizePx) and fully opaque, so it reads as the icon itself flashing
+        // white rather than a separate effect growing in on top of it.
+        flash.setScaleX(1f);
+        flash.setScaleY(1f);
         flash.setAlpha(1f);
         root.setScaleX(0.5f);
         root.setScaleY(0.5f);
         root.setAlpha(0f);
-        // Same "hidden state before addView" fix as flash/root above (see its own comment) —
-        // sparks need it too, or they'd get the identical one-frame-flash-then-glitch treatment.
-        for (View spark : sparks) {
-            spark.setScaleX(0.15f);
-            spark.setAlpha(0.9f);
-        }
-        // Shockwave ring starts pinned at the flash's own resting size (a thin ring right at
-        // the detonation point) so its outward rocket-to-3x below reads as expanding FROM the
-        // flash, not from some separate arbitrary starting size.
-        shockwave.setScaleX(0.3f);
-        shockwave.setScaleY(0.3f);
-        shockwave.setAlpha(1f);
 
         try {
             windowManager.addView(container, params);
@@ -1432,24 +1407,13 @@ public class PullBubbleService extends Service {
             return;
         }
 
-        // Flash + shockwave + spark burst — one-shot, independent of the icon's own
-        // grow/hold/shrink sequence below; all just fade out and are left alone (removed
-        // along with the rest of container at the very end, no need to tear them down
-        // separately). The flash is now a QUICK bright core (110ms, not 240ms) that peaks
-        // and dies fast — a real detonation instant, not a slow-fading glow — while the
-        // shockwave ring is the one that actually carries the "exploding outward" motion,
-        // rocketing well past the icon's own edge (3x) before fading.
-        flash.animate().scaleX(1.3f).scaleY(1.3f).alpha(0f).setDuration(110)
+        // Flash burst — one-shot, independent of the icon's own grow/hold/shrink sequence below;
+        // just fades out and is left alone (removed along with the rest of container at the very
+        // end, no need to tear it down separately). Grows from filling the bubble out to
+        // DISPERSE_SCALE while fading, reading as the flash dispersing outward off the icon.
+        flash.animate().scaleX(DISPERSE_SCALE).scaleY(DISPERSE_SCALE).alpha(0f).setDuration(FLASH_DISPERSE_DURATION_MS)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .start();
-        shockwave.animate().scaleX(3f).scaleY(3f).alpha(0f).setDuration(280)
-                .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                .start();
-        for (View spark : sparks) {
-            spark.animate().scaleX(1.4f).alpha(0f).setDuration(260)
-                    .setInterpolator(new android.view.animation.DecelerateInterpolator())
-                    .start();
-        }
 
         root.animate().scaleX(1f).scaleY(1f).alpha(1f).setDuration(POP_GROW_DURATION_MS)
                 .setInterpolator(new android.view.animation.OvershootInterpolator(1.6f))
@@ -1508,78 +1472,6 @@ public class PullBubbleService extends Service {
                     handler.postDelayed(shrinkAndAdvance, POP_AUTO_ADVANCE_MS);
                 })
                 .start();
-    }
-
-    // Direct user follow-up request: "holographic spark and flash" alongside the shorter hold —
-    // adds a handful of thin light streaks radiating outward from the flash's own center, on top
-    // of it, as children of the SAME container (see addPopReveal's own header comment for why
-    // that matters — no separate window, no cross-window z-order race). Each spark is a plain
-    // horizontal bar with a linear gradient (transparent → bright → transparent) so it reads as
-    // a thin streak of light rather than a flat rectangle, rotated to its own angle around the
-    // center. Returns the created views so the caller can set their initial hidden state before
-    // addView and animate them alongside flash's own burst.
-    // Shockwave ring — direct user request: the old burst (one soft radial-gradient blob
-    // just scaling up in place) read as a bubble inflating, not an explosion. A hard-edged
-    // ring that starts thin/small and rockets outward while fading is the actual visual
-    // grammar of "exploding from the inside out" — the expanding edge itself is what sells
-    // outward motion, which a filled/blurred blob has no clear edge to show. Stroke-only
-    // (no fill — GradientDrawable.OVAL with setColor(TRANSPARENT)) so only the ring itself
-    // is visible, tinted the item's own rarity color to tie it to the reveal. Added as a
-    // child of the same container as flash/sparks (see addPopReveal's own header comment
-    // for why that single-window approach matters), sized generously larger than
-    // flashSizePx so its outward 3x scale animation still has surface room to render.
-    private View addShockwaveRing(FrameLayout container, int flashSizePx, String rarityHex) {
-        int ringSizePx = (int) (flashSizePx * 1.4f);
-        GradientDrawable ring = new GradientDrawable();
-        ring.setShape(GradientDrawable.OVAL);
-        ring.setColor(Color.TRANSPARENT);
-        ring.setStroke((int) (3f * getResources().getDisplayMetrics().density), Color.parseColor(rarityHex));
-        View shockwave = new View(this);
-        shockwave.setBackground(ring);
-        container.addView(shockwave, new FrameLayout.LayoutParams(ringSizePx, ringSizePx, Gravity.CENTER));
-        return shockwave;
-    }
-
-    private static final int SPARK_COUNT = 6;
-    // BUG FIX (direct user report, "the spark is just a centered flash inside the bubble
-    // instead of being a flash/shard projection"): each spark used to be a bar CENTERED on
-    // the burst point (transparent → bright → transparent gradient, Gravity.CENTER placement,
-    // default pivot = the view's own middle) — rotating around its own center makes BOTH ends
-    // project outward in opposite directions from a shared middle, and the gradient's
-    // brightest pixel sits exactly on that middle. The net visual result is a bright blob
-    // right at the center with faint tails, which reads as "a flash" — not six shards
-    // radiating outward. Fixed by anchoring each shard's BASE (bright end) at the burst's
-    // true center and letting it taper to transparent only at the outward tip — a real
-    // outward-projecting shard, not a two-way bar pivoting on itself.
-    private List<View> addSparkStreaks(FrameLayout container, int flashSizePx) {
-        List<View> sparks = new ArrayList<>();
-        // Direct user request: was reading as "very small, on fire inside the bubble" — bumped
-        // up alongside fixing the window-clipping bug (see this method's header comment).
-        int sparkLengthPx = (int) (flashSizePx * 2.2f);
-        int sparkThicknessPx = Math.max(3, flashSizePx / 22);
-        for (int i = 0; i < SPARK_COUNT; i++) {
-            // One-directional taper: bright at the base (center), fading to nothing at the tip
-            // — the old {TRANSPARENT, bright, TRANSPARENT} shape was what put the bright pixel
-            // in the middle instead of at the shard's outward-facing tip.
-            GradientDrawable streak = new GradientDrawable(
-                    GradientDrawable.Orientation.LEFT_RIGHT,
-                    new int[]{Color.parseColor("#F2FFFFFF"), Color.TRANSPARENT});
-            View spark = new View(this);
-            spark.setBackground(streak);
-            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(sparkLengthPx, sparkThicknessPx, Gravity.CENTER);
-            container.addView(spark, lp);
-            // Gravity.CENTER placement puts the view's own (unrotated) center at the burst's
-            // true center — pivoting there is exactly the old bug. Move the pivot to the
-            // shard's own base (left edge, vertically centered) and nudge the view right by
-            // half its length so that base lands back on the true center; rotating around
-            // THAT point makes the whole shard sweep outward from the center in one direction.
-            spark.setPivotX(0f);
-            spark.setPivotY(sparkThicknessPx / 2f);
-            spark.setTranslationX(sparkLengthPx / 2f);
-            spark.setRotation((360f / SPARK_COUNT) * i);
-            sparks.add(spark);
-        }
-        return sparks;
     }
 
     // Builds one result tile (rarity ring + dark mask + portrait), adds it to the window at a
