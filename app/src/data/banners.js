@@ -736,6 +736,7 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Helios Cleaver': './banners/characters/helios-cleaver/Kj719h8m-Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': './banners/characters/dauntless-evernight/PvhJ1Cw2-Dauntless-Evernight.webp',
   'Autumntrace': './banners/characters/autumntrace/static.nanoka.cc-T_IconWeapon21010074_UI.webp',
+  'Broadblade#41': './banners/characters/broadblade-41/Weapon_Broadblade41.webp', // user-supplied 2026-09-12
   // 1-Cost Echo images
   'Whiff Whaff': './banners/characters/whiff-whaff/DDyTMyQR-Whiff-Whaff-Icon.webp',
   'Snip Snap': './banners/characters/snip-snap/LDv0brpC-Snip-Snap-Icon.webp',
