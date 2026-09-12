@@ -840,7 +840,29 @@ const CHARACTER_DATA = {
     // Xuanling): this list was missing her own dump's #1 real partner entirely — Data dump/Chisa/
     // Chisa.md line 224/227: "By current strength: Yangyang: Xuanling (highest ceiling)..." and
     // "Best Team: Yangyang: Xuanling + Suisui + Lynae/Rebecca + Phrolova + Chisa." Added.
-    teams: ['Chisa + Yangyang: Xuanling + Suisui', 'Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
+    // Expanded 2026-09-12, reading Chisa's OWN dump directly (Data dump/Chisa/Chisa.md's
+    // "### Example Teams" section, lines 226-231), taken as directly authoritative for her own
+    // recommendations:
+    //   Best Team: Yangyang: Xuanling + Suisui + Lynae/Rebecca + Phrolova + Chisa — this restates
+    //     info already fully captured via Yangyang: Xuanling's and Suisui's own dumps (her Best
+    //     Team trio + her Alternative Premium's Lynae/Rebecca/Phrolova alternates, all already in
+    //     both their teams fields), so no new trio to add here.
+    //   Aemeath Fusion Burst Team: Aemeath + Denia + Chisa (already had).
+    //   Hiyuki Team: Hiyuki + Lynae + Chisa (new — her own explicit "Hiyuki Team" pick; the existing
+    //     'Chisa + Hiyuki + Lucilla' entry is a separate, also-valid alternate per Hiyuki's own dump's
+    //     {Lucilla/Lynae} 2nd-pick structure, not a replacement for this one).
+    //   Cartethyia Team: Cartethyia + Ciaccona + Rover (Aero)/Chisa → Cartethyia+Ciaccona+Chisa (new).
+    //   Phoebe Expert Team: Phoebe + Rover (Spectro) + Ciaccona/Chisa → Phoebe+Rover: Spectro+Chisa
+    //     (new — a niche "Expert" pick her own dump explicitly flags as "not generally recommended,"
+    //     kept as a real but lower-confidence dump-sourced entry rather than omitted).
+    teams: [
+      'Chisa + Yangyang: Xuanling + Suisui',
+      'Chisa + Aemeath + Denia',
+      'Chisa + Hiyuki + Lucilla',
+      'Chisa + Hiyuki + Lynae',
+      'Chisa + Cartethyia + Ciaccona',
+      'Chisa + Phoebe + Rover: Spectro',
+    ] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'A Startorch Academy prep student whose head-turning, electric style hides an inner focus as explosive as a coiled spring. Spectro sub-DPS who swaps in for a quick burst then buffs the team\'s All DMG on Outro, pairing especially well with Tune Strain comps.',
     skills: ['Chroma Drift', 'Lynae-Style Palettes', 'Prismatic Overblast', 'Time to Show Some Colors!'],
