@@ -633,7 +633,17 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc'], bestWeapon: 'Tragicomedy',
     weaponAlts: { alt5: ['Solsworn Ciphers', 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
-    teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Phrolova + Cantarella'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Roccia/Roccia.md, Synergies/Example Teams):
+    // Camellya named "Camellya's best in slot buffer"; Phrolova named as "one of the best third-slot
+    // teammates to the Phrolova-Cantarella trio"; Rover: Havoc named "easily Havoc Rover's best
+    // buffer"; Verina/Shorekeeper named as generalist Healing Supports slotting into any of her teams.
+    teams: [
+      'Roccia + Camellya + Shorekeeper',
+      'Roccia + Camellya + Verina',
+      'Roccia + Phrolova + Cantarella',
+      'Roccia + Rover: Havoc + Shorekeeper',
+      'Roccia + Rover: Havoc + Verina',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1506 sheet. desc: title "Graceful Luminescence" (the source) prepended
   // and blurb rewritten — previous desc only described her Confession/support mode ("applies Frazzle...
