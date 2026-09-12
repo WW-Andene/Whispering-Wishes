@@ -1282,7 +1282,13 @@ public class PullBubbleService extends Service {
     // How far past its resting (fill-the-bubble) size the white flash disperses before it's
     // fully faded — see addPopReveal's own comment on flashSizePx.
     private static final float DISPERSE_SCALE = 2.2f;
-    private static final int FLASH_DISPERSE_DURATION_MS = 380;
+    // Direct user follow-up request ("make the flash more visible"): a brief hold at full
+    // opacity before the fade starts, so the eye actually registers the bright flash instead of
+    // it already fading the instant it appears — the scale (dispersion) animation still runs
+    // over the combined hold+fade duration, so the flash keeps growing the whole time, it just
+    // doesn't start dimming until FLASH_HOLD_MS in.
+    private static final int FLASH_HOLD_MS = 90;
+    private static final int FLASH_FADE_DURATION_MS = 320;
     // Direct user request 2026-09-10: the popped item holds at full size until either tapped
     // (see the tap listener below) or, per direct follow-up request, 1.5s pass (was 3s) —
     // whichever comes first — a tap advances immediately, an untapped item still moves the
@@ -1356,7 +1362,12 @@ public class PullBubbleService extends Service {
         burst.setShape(GradientDrawable.OVAL);
         burst.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         burst.setGradientRadius(flashSizePx / 2f);
-        burst.setColors(new int[]{Color.parseColor("#FFFFFFFF"), Color.parseColor("#CCFFFFFF"), Color.TRANSPARENT});
+        // Direct user follow-up request ("make the flash more visible"): GradientDrawable spreads
+        // its color stops evenly across the radius, so the old 3-color {white, 80%-white,
+        // transparent} was already fading out by the halfway point. Repeating solid white for
+        // the first 3 of 4 evenly-spaced stops pushes the falloff to the outer quarter instead —
+        // reads as a bright, solid white fill instead of a soft glow.
+        burst.setColors(new int[]{Color.parseColor("#FFFFFFFF"), Color.parseColor("#FFFFFFFF"), Color.parseColor("#FFFFFFFF"), Color.TRANSPARENT});
         FrameLayout flash = new FrameLayout(this);
         flash.setBackground(burst);
         container.addView(flash, new FrameLayout.LayoutParams(flashSizePx, flashSizePx, Gravity.CENTER));
@@ -1409,9 +1420,15 @@ public class PullBubbleService extends Service {
 
         // Flash burst — one-shot, independent of the icon's own grow/hold/shrink sequence below;
         // just fades out and is left alone (removed along with the rest of container at the very
-        // end, no need to tear it down separately). Grows from filling the bubble out to
-        // DISPERSE_SCALE while fading, reading as the flash dispersing outward off the icon.
-        flash.animate().scaleX(DISPERSE_SCALE).scaleY(DISPERSE_SCALE).alpha(0f).setDuration(FLASH_DISPERSE_DURATION_MS)
+        // end, no need to tear it down separately). Scale (the dispersion) runs across the whole
+        // hold+fade span so the flash keeps visibly growing throughout; alpha is a SEPARATE
+        // animate() call with its own startDelay so the fade-out doesn't begin until after the
+        // hold — two independent property animations on the same view rather than one combined
+        // call, since ViewPropertyAnimator applies a single startDelay to everything in one call.
+        flash.animate().scaleX(DISPERSE_SCALE).scaleY(DISPERSE_SCALE).setDuration(FLASH_HOLD_MS + FLASH_FADE_DURATION_MS)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+        flash.animate().alpha(0f).setStartDelay(FLASH_HOLD_MS).setDuration(FLASH_FADE_DURATION_MS)
                 .setInterpolator(new android.view.animation.DecelerateInterpolator())
                 .start();
 
