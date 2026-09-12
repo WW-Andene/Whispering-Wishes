@@ -888,7 +888,7 @@ function PlannerTab({
                   <div className="flex gap-3">
                     {imgUrl && (
                       <div className="w-14 h-14 rounded-lg overflow-hidden border border-yellow-500/40 flex-shrink-0 bg-black/25">
-                        <img src={imgUrl} alt="" className="w-full h-full object-cover object-top pointer-events-none" style={{ transform: 'scale(1.6)', transformOrigin: 'top center' }} onError={hideOnError} />
+                        <img src={imgUrl} alt="" className="w-full h-full object-cover pointer-events-none" style={{ objectPosition: 'center 18%', transform: 'scale(1.8)', transformOrigin: 'center 18%' }} onError={hideOnError} />
                       </div>
                     )}
                     <div className="flex-1 min-w-0 space-y-1">
