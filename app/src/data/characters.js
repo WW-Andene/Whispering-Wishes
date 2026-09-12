@@ -562,7 +562,20 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Crownless', 'Havoc Eclipse 5pc'], bestWeapon: 'Red Spring',
     weaponAlts: { alt5: ['Emerald Sentence', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Lumingloss'], alt3: ['Sword of Night'] },
-    teams: ['Camellya + Roccia + Shorekeeper', 'Camellya + Sanhua + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Camellya/Camellya.md, Synergies): Lynae
+    // named as her "best Hybrid choice"; Roccia/Sanhua named as "comparable premium options"
+    // (Sanhua the better F2P pick); Danjin named as a fallback if Sanhua is taken; Mornye/
+    // Shorekeeper/Verina named as her best generalist Supports, with Mornye explicitly restricted
+    // to Lynae pairings ("best paired specifically with Lynae").
+    teams: [
+      'Camellya + Lynae + Mornye',
+      'Camellya + Lynae + Shorekeeper',
+      'Camellya + Roccia + Shorekeeper',
+      'Camellya + Roccia + Verina',
+      'Camellya + Sanhua + Shorekeeper',
+      'Camellya + Sanhua + Verina',
+      'Camellya + Danjin + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1107 sheet. desc: title "Reshaping Dimensions" (the source) prepended and
   // blurb rewritten from the source's own profile text to match the roster's convention. skills/ascension/
