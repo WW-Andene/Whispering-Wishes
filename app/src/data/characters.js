@@ -2824,7 +2824,14 @@ const CHARACTER_DATA = {
   // (normalizedDpsPowerScore/calcSubDpsFieldMultRatio in calcEngine.js, subDpsMembers in
   // calcTeamStats.js) whenever Augusta is placed as a sub-DPS rather than the main carry.
   ['Augusta',       6601, 23, 15],  // Heavy ATK + Shield
-  ['Galbrena',      2600, 24, 16],  // Echo Skill + Heavy ATK
+  // totalMult corrected 2026-09-13 (found via the same "why is X ranked so low" audit that caught
+  // Qingxiao's stale value above): 2600 had no audit trail either. Recomputed per this table's own
+  // documented definition against her exact modeled rotation (CHARACTER_ROTATIONS['Galbrena']) and
+  // real SKILL_MULTIPLIERS values: Intro 94.12 + Basic Stage 2/3 (×2 passes, 131.53+142.98 each) +
+  // Echo Stage 4 177.86 + Ascent of Malice 103.14 + Hellfire Absolution 1109.04 + Seraphic Execution
+  // Stage 2 139.19 + Stages 3/4/5 (×2 passes, 243.17+181.47+224.27 each) + Outro 795.0 = 4265.19 —
+  // over 1.6x the stale 2600.
+  ['Galbrena',      4265, 24, 16],  // Echo Skill + Heavy ATK
   ['Luuk Herssen',  2400, 23, 16],  // Basic ATK chains
   ['Aemeath',       3800, 24, 15],  // Strongest DPS: Res. Liberation + Fusion Burst/Tune Rupture extra multipliers
   // totalMult corrected 2026-08-18: 2800 was lower than several T1.5/T2 units (Jinhsi 3200, Camellya
