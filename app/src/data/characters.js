@@ -443,7 +443,21 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Nightmare: Lampylumen Myriad', 'Empyrean Anthem 5pc'], bestWeapon: 'Rime-Draped Sprouts',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
-    teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
+    // Rebuilt from own dump (Data dump/Zhezhi/Zhezhi.md, Synergies + Example Teams): DPS partners
+    // named are Carlotta ("her DPS of choice since version 2.0"), Jinhsi ("best partner since her
+    // release"), Lingyang ("acceptable fallback"); Support partners named are Shorekeeper/Verina
+    // ("best generalist Supports"), with Verina explicitly called out as able to "equal Shorekeeper
+    // in Jinhsi teams"; the Example Teams section also names Mornye as a general Support alternative
+    // at S1+ (or R4 Discord+ as a Verina alternative), and Hiyuki+Chisa as a situational option.
+    teams: [
+      'Zhezhi + Jinhsi + Shorekeeper',
+      'Zhezhi + Jinhsi + Verina',
+      'Zhezhi + Jinhsi + Mornye',
+      'Zhezhi + Carlotta + Shorekeeper',
+      'Zhezhi + Carlotta + Verina',
+      'Zhezhi + Lingyang + Shorekeeper',
+      'Zhezhi + Hiyuki + Chisa',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1305 sheet. desc: title "Matter Weaver" (the source) prepended and blurb
   // rewritten from the source's own profile text to match the roster's convention; skills/base stats/
