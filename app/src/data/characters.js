@@ -226,7 +226,18 @@ const CHARACTER_DATA = {
     // Added 'Encore + Lupa + Mornye' (2026-09-12): confirmed on Encore's own dump ("Mornye has
     // special synergy with Encore+Lupa, letting Encore run Hyper Carry while Lupa keeps her full Mono
     // Fusion buffs") and independently on Lupa's own dump (Brant's-duo/generalist-support text).
-    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa', 'Encore + Lupa + Mornye'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Encore/Encore.md, Synergies): Lupa named her
+    // "new best teammate"; Sanhua "one of her strongest teammates regardless"; Brant "better than the
+    // Changli pairing"; Mornye/Shorekeeper/Verina her named generalist Supports (Mornye has "special
+    // synergy with Encore+Lupa").
+    teams: [
+      'Encore + Brant + Lupa',
+      'Encore + Sanhua + Lupa',
+      'Encore + Lupa + Mornye',
+      'Encore + Sanhua + Shorekeeper',
+      'Encore + Sanhua + Verina',
+      'Encore + Brant + Shorekeeper',
+    ] },
   // desc corrected against the wiki's Jianxin infobox (2026-08-17 audit): the wiki's
   // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
   // shown on the source's character page for her — the two sources disagree here, the wiki's live
