@@ -788,7 +788,15 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Lady of the Sea', 'Crown of Valor 3pc + Sierra Gale 2pc'], bestWeapon: "Moongazer's Sigil",
     weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Guardian Gauntlets'] },
-    teams: ['Iuno + Augusta + Shorekeeper', 'Iuno + Lynae + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
+    // BUG FIX 2026-09-12 (per direct user instruction to prioritize the source dump's own
+    // synergy reasoning over the engine's numeric scoring): this list was missing her own dump's
+    // explicitly-named "best team overall" entirely — Data dump/Iuno/Iuno.md line 315-318/338:
+    // "Yangyang: Xuanling is actually a stronger pick than [Iuno's] Augusta pairing... Yangyang:
+    // Xuanling + Augusta + Iuno + Chisa/Shorekeeper (best team overall) — Chisa is only
+    // best-in-slot specifically alongside Yangyang: Xuanling." Added the missing Yangyang:
+    // Xuanling + Chisa pairing (a real, separate team from the Augusta + Shorekeeper one already
+    // listed, not a duplicate).
+    teams: ['Iuno + Yangyang: Xuanling + Chisa', 'Iuno + Augusta + Shorekeeper', 'Iuno + Lynae + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
   'Galbrena': { rarity: 5, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Black Shores Consultant known as the Discord Slayer, seizing power from darkness. On-field Fusion DPS who deals primary damage through Echo Skill and Heavy ATK combos in quick burst rotations.',
     skills: ['Slayer\'s Trigger', 'Edge Transcended', 'Hellfire Absolution', 'Beyond Threshold'],
@@ -842,7 +850,12 @@ const CHARACTER_DATA = {
     // (68.5%) are the best 4★s; Pistols of Night is the 3★ fallback (matches the "<Weapon Type> of Night"
     // naming convention used for other characters' 3★ slot).
     weaponAlts: { alt5: ['Phasic Homogenizer', 'The Last Dance'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
-    teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa'] },
+    // BUG FIX 2026-09-12 (per direct user instruction to prioritize the source dump's own
+    // synergy reasoning over the engine's numeric scoring): Data dump/Lynae/Lynae.md line 166
+    // ("Lynae + Chisa: Hiyuki / Aemeath / Yangyang: Xuanling / Lynae / Chisa") names 3
+    // interchangeable headliners for the SAME Lynae+Chisa support duo — Hiyuki was already
+    // captured below, Yangyang: Xuanling was missing entirely. Added.
+    teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa', 'Lynae + Yangyang: Xuanling + Chisa'] },
   'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
     desc: 'A Spacetrek Collective Research Institute engineer and Department of Exostrider Engineering professor at Startorch Academy. DEF-scaling Fusion healer who keeps the team topped up through her Skill and Liberation while speeding up their Off-Tune Buildup.',
     skills: ['Ground State Calibration', 'Resolution', 'Critical Protocol', 'Convergence'],
@@ -926,7 +939,15 @@ const CHARACTER_DATA = {
     // is the 3★ fallback (the source doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
     // naming convention used elsewhere.
     weaponAlts: { alt5: ['Spectrum Blaster', 'Static Mist'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
-    teams: ['Rebecca + Yangyang: Xuanling + Lucy', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
+    // BUG FIX 2026-09-12 (per direct user instruction to prioritize the source dump's own
+    // synergy reasoning over the engine's numeric scoring): 'Rebecca + Yangyang: Xuanling + Lucy'
+    // conflated two SEPARATE real teams into one invalid mashup — Data dump/Rebecca/Rebecca.md
+    // line 316-331: Yangyang: Xuanling is her own dedicated 2nd-slot headliner ("Best Team:
+    // Yangyang: Xuanling + Rebecca + Suisui/Chisa"), while Lucy is a DIFFERENT headliner entirely
+    // (mutual Hack-mechanic synergy, her own separate "Edgerunners Team: Lucy + Rebecca + Mornye +
+    // Shorekeeper/Verina") — the two never appear in the same real team. Corrected to the real
+    // Yangyang: Xuanling pairing and kept Lucy's own real team separately below.
+    teams: ['Rebecca + Yangyang: Xuanling + Suisui', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
   'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'President and head of Startorch Academy, former chief editor of the New Federation\'s top academic journal. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
     skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
