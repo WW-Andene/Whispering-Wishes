@@ -1747,7 +1747,16 @@ const CHARACTER_DATA = {
     // component of all mono Aero teams", the real Aero-Erosion pairing this table intended. The prior
     // 2026-08-18 note's premise (an Aero Main DPS benefiting from his Outro's Aero DMG Amplify) still
     // holds — it just named the wrong character.
-    teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Aalto/Aalto.md, Synergies): Rover: Aero named
+    // his other core mono-Aero partner alongside Ciaccona; Iuno named a viable (if non-optimal)
+    // replacement alongside Jiyan.
+    teams: [
+      'Aalto + Ciaccona + Shorekeeper',
+      'Aalto + Ciaccona + Verina',
+      'Aalto + Rover: Aero + Shorekeeper',
+      'Aalto + Jiyan + Verina',
+      'Aalto + Iuno + Shorekeeper',
+    ] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
     // desc fixed 2026-09-08 (full re-audit): "You'an" -> "You'tan" — Data dump/Baizhi/Baizhi.md spells
     // her companion's name consistently as "You'tan" throughout (Kit, Resonance Skill, Liberation,
