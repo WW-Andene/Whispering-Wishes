@@ -855,31 +855,23 @@ const CHARACTER_DATA = {
     // ("Lynae + Chisa: Hiyuki / Aemeath / Yangyang: Xuanling / Lynae / Chisa") names 3
     // interchangeable headliners for the SAME Lynae+Chisa support duo — Hiyuki was already
     // captured below, Yangyang: Xuanling was missing entirely. Added.
-    // Rebuilt 2026-09-12, reading Lynae's OWN dump first (Data dump/Lynae/Lynae.md's "### Example
-    // Teams" section, lines 165-169) then CROSS-CHECKING each resulting trio against the OTHER
-    // named character's own dump before keeping it — the same headliner-list × fixed-support-duo
-    // parsing validated on Yangyang: Xuanling, but this pass also caught two entries that parse
-    // cleanly out of Lynae's own text yet don't survive corroboration:
-    //   - 'Lynae + Luuk Herssen + Mornye' (from "Best Team: Aemeath/Qingxiao/Luuk Herssen + Lynae +
-    //     Mornye") — DROPPED. Luuk Herssen's own dump (line 151) states his real Best Team is
-    //     "Luuk Herssen + Denia + Lynae/Sanhua + Mornye/Shorekeeper/Verina" — a 4-person comp where
-    //     Denia is mandatory and Lynae/Mornye are each just one alternate slot within it, not a
-    //     standalone confirmed trio the way Aemeath/Qingxiao's own dumps confirm theirs.
-    //   - 'Lynae + Phoebe + Rover: Spectro' (from "Phoebe Team: Phoebe + Lynae + Rover (Spectro)")
-    //     — DROPPED. Phoebe's own dump (lines 179-187) treats these as buffers for TWO DIFFERENT
-    //     Resonance modes: Lynae is named as her best Absolution-mode generalist buffer, while
-    //     Rover: Spectro is listed as a Confession-mode Frazzle applier alongside Ciaccona/Chisa —
-    //     not confirmed as members of the same team.
-    // Kept trios, each independently confirmed on the OTHER character's own dump too:
-    //   - Aemeath + Lynae + Mornye — Aemeath's dump (line 233): "Best Tune Rupture Team: Aemeath +
-    //     Lynae + Mornye."
-    //   - Qingxiao + Lynae + Mornye — Qingxiao's dump (line 142): "Lynae Team: Qingxiao + Lynae +
-    //     Mornye/Ciaccona/Shorekeeper."
-    //   - Hiyuki + Lynae + Chisa — Hiyuki's dump (line 202): "Best Team: Hiyuki + {Lucilla/Lynae} +
-    //     {Suisui/Chisa/Mornye/Verina}. Only pair Mornye with Lynae specifically."
-    //   - Aemeath + Lynae + Chisa — Aemeath's dump (line 233) names Chisa as a viable 3rd-slot
-    //     alternative to Mornye alongside Aemeath+Lynae ("viable if run in Fusion Burst mode too").
-    //   - Yangyang: Xuanling + Lynae + Chisa — confirmed on both sides (see her own teams field).
+    // Rebuilt 2026-09-12, reading Lynae's OWN dump directly (Data dump/Lynae/Lynae.md's "###
+    // Example Teams" section, lines 165-169), applying the same 1st-pick(Main DPS)/2nd-pick
+    // (Lynae, by her own Sub-DPS/buffer role)/3rd-pick(generalist Support) structure already
+    // validated on Yangyang: Xuanling's dump, taken as directly authoritative for Lynae's own
+    // recommendations the same way Xuanling's dump was taken as authoritative for hers — not held
+    // to a stricter third-party-corroboration standard than she was:
+    //   Best Team: 1st pick Aemeath (Alt: Qingxiao, Luuk Herssen) + 2nd pick Lynae + 3rd pick Mornye.
+    //   Lynae + Chisa: 1st pick Hiyuki (Alt: Aemeath, Yangyang: Xuanling) + 2nd pick Lynae + 3rd
+    //     pick Chisa.
+    // 'Lynae + Luuk Herssen + Mornye' was briefly dropped over an apparent conflict with Luuk
+    // Herssen's own dump (his Best Team text adds Denia as a 4th member) — restored: that's a
+    // richer 4-person comp on HIS page, not a contradiction of Lynae's own direct claim that
+    // Luuk+Lynae+Mornye is a valid team for her.
+    // 'Lynae + Phoebe + Rover: Spectro' stays dropped — that one wasn't from this same 1st/2nd/3rd-
+    // pick line at all; Phoebe's own dump explicitly splits Lynae (Absolution mode) and Rover:
+    // Spectro (Confession mode) as picks for two different Resonance Modes, a genuinely separate
+    // issue from the Luuk Herssen case.
     // "Alternative Liberation Teams" and "Other Alternative Teams" (lines 167-168) list 4+ names
     // each (2 interchangeable headliners + Lynae/Mornye + a Shorekeeper/Verina choice) — a real
     // 4-person Whimpering Wastes-shaped comp this flat 3-name `teams` string format can't represent
@@ -887,6 +879,7 @@ const CHARACTER_DATA = {
     teams: [
       'Lynae + Aemeath + Mornye',
       'Lynae + Qingxiao + Mornye',
+      'Lynae + Luuk Herssen + Mornye',
       'Lynae + Hiyuki + Chisa',
       'Lynae + Aemeath + Chisa',
       'Lynae + Yangyang: Xuanling + Chisa',
@@ -928,7 +921,12 @@ const CHARACTER_DATA = {
     // real 4★s (Celestial Spiral 65.9%, Aether Strike 63.9%, both weapons.js rarity 4); alt3 unchanged
     // (Gauntlets of Night, the "<Weapon Type> of Night" 3★ fallback convention used elsewhere).
     weaponAlts: { alt5: ['Pulsation Bracer', 'Blazing Justice'], alt4: ['Celestial Spiral', 'Aether Strike'], alt3: ['Gauntlets of Night'] },
-    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye'] },
+    // Added 'Luuk Herssen + Lynae + Mornye' (2026-09-12): reciprocal to Lynae's own dump-confirmed
+    // 'Lynae + Luuk Herssen + Mornye' entry (her "Best Team" line names Luuk Herssen as one of the
+    // interchangeable 1st-pick headliners alongside Aemeath/Qingxiao) — his own dump's separate
+    // Best Team line names Denia as his top pick, but that doesn't contradict Lynae being a real,
+    // dump-confirmed alternate 2nd-pick on his page too.
+    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye', 'Luuk Herssen + Lynae + Mornye'] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who alternates between two Resonance Modes across her Basic Attack combo, banking momentum that fuels a pair of heavy-hitting Liberation casts for her core damage.',
     skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'Overture of Departure'],
