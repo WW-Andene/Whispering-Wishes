@@ -96,6 +96,10 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: "Bloodpact's Pledge",
     weaponAlts: { alt5: ['Laser Shearer'], alt4: ['Overture', 'Lunar Cutter'], alt3: ['Sword of Voyager'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump states "her
+    // kit is weapon-locked to her own signature" despite one listed alt5 — a real must-have claim
+    // the alt5-count heuristic alone can't detect.
+    signatureReliant: true,
     // Expanded 2026-09-13 from her own dump (Data dump/Rover Aero/Rover Aero.md, Example Teams):
     // added the "Jiyan Team" (Jiyan + Ciaccona + Rover: Aero), the third of the three named
     // combinations from her own Synergies text.
@@ -420,6 +424,9 @@ const CHARACTER_DATA = {
     // Main DPS Iuno") — added ahead of the Calcharo pairing, which is no longer top-tier for her.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Jinzhou Keeper'], alt3: ['Rectifier of Night'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump states she
+    // "relies heavily on her signature Stringmaster to reach full strength" despite listed alt5s.
+    signatureReliant: true,
     // Expanded 2026-09-13 from her own dump (Data dump/Yinlin/Yinlin.md, Synergies): "near-mandatory
     // alongside a big Main DPS carry" — best synergies Xiangli Yao and Calcharo (both amplified by her
     // Electro/Liberation DMG Amp Outro), Iuno ("best synergy nowadays"), Jinhsi ("competitive pair to
@@ -950,6 +957,9 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Kelpie', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell'], alt3: ['Pistols of Night'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump states "a
+    // lot of her potential is locked behind her Signature weapon" despite listed alt5s.
+    signatureReliant: true,
     // Added 'Ciaccona + Zani + Phoebe' (2026-09-13): confirmed on Ciaccona's own dump ("Spectro
     // Frazzle Teams: Phoebe + Zani + Ciaccona + Rover: Aero/Shorekeeper") and independently on
     // Zani's own dump (Synergies naming Ciaccona a real Frazzle-applier alternative).
@@ -983,6 +993,9 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 5pc'], bestWeapon: "Defier's Thorn",
     weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Feather Edge'], alt3: ['Guardian Sword'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump's Cons list
+    // her as "signature-weapon-reliant" explicitly, despite listed alt5s.
+    signatureReliant: true,
     // Expanded 2026-09-13 from her own dump's Example Teams: Ciaccona named her best Sub DPS;
     // Rover: Aero/Chisa/Shorekeeper the three best 3rd-slot supports (Shorekeeper mainly for
     // Whimpering Wastes); Sanhua named her best F2P Main-DPS-enabling pairing.
@@ -1247,6 +1260,10 @@ const CHARACTER_DATA = {
     // set-icon lookup entirely (no exact key match) and only ever displayed a single unlabeled row.
     bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc (personal DMG)', 'Fallacy of No Return', 'Rejuvenating Glow 5pc (best overall team ATK)'], bestWeapon: 'Kumokiri',
     weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump's Cons list
+    // "Needs her Signature weapon to stand out from Aero Rover in the Cartethyia team" despite
+    // listed alt5s.
+    signatureReliant: true,
     // BUG FIX 2026-09-12 (direct user report: "why is Chisa not even top 3?" for Yangyang:
     // Xuanling): this list was missing her own dump's #1 real partner entirely — Data dump/Chisa/
     // Chisa.md line 224/227: "By current strength: Yangyang: Xuanling (highest ceiling)..." and
@@ -1439,6 +1456,10 @@ const CHARACTER_DATA = {
     // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere (the source doesn't
     // rank a 3★ for her at all — she "lacks strong F2P weapon alternatives" per its own review).
     weaponAlts: { alt5: ['Blazing Justice', 'Pulsation Bracer'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump's Cons list
+    // "her Signature weapon is a strongly desired upgrade to reach top-level performance" despite
+    // listed alt5s.
+    signatureReliant: true,
     // Expanded 2026-09-13 from her own dump (Data dump/Sigrika/Sigrika.md, Synergies/Example Teams):
     // Lucilla named alongside Qiuyuan as her "by far strongest synergies"; Lynae named as her
     // fallback generalist buffer, with Mornye/Verina/Rover: Aero named 3rd-slot options for that team.
@@ -1528,6 +1549,9 @@ const CHARACTER_DATA = {
     // Battle Pass 4★s (ahead of Waltz in Masquerade); Rectifier of Night is the 3★ fallback (the source
     // doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Whispers of Sirens', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump calls her
+    // "more Signature-reliant than Qiuyuan" despite listed alt5s.
+    signatureReliant: true,
     // Expanded 2026-09-13 from her own dump (Data dump/Lucilla/Lucilla.md, Example Teams): added
     // Suisui as her named Glacio Chafe alternative to Chisa, and Galbrena for the Echo Skill
     // Hypercarry team.
@@ -1551,6 +1575,9 @@ const CHARACTER_DATA = {
     // is the 3★ fallback (the source doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
     // naming convention used elsewhere.
     weaponAlts: { alt5: ['Lux & Umbra', 'Skull Thrasher'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump's Cons list
+    // her as "fairly Signature-dependent to hit a standard modern level" despite listed alt5s.
+    signatureReliant: true,
     // Rebuilt 2026-09-13 from her own dump (Data dump/Lucy/Lucy.md, Synergies/Example Teams): Rebecca
     // is named "by far her best partner... no alternative comes close" — no other DPS is named
     // anywhere in the source. Dropped 'Lucy + Iuno + Shorekeeper': neither Lucy's nor Iuno's own dump
@@ -1609,6 +1636,9 @@ const CHARACTER_DATA = {
     // Battle Pass 4★s (ahead of Waltz in Masquerade, Fusion Accretion, Jinzhou Keeper); Rectifier of
     // Night is the 3★ fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Stringmaster', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump's Cons list
+    // "heavily Signature-weapon-dependent in Tune Strain mode" despite listed alt5s.
+    signatureReliant: true,
     // teams corrected 2026-09-02 against a fresh the source dump: the prior 'Denia + Lynae + Mornye' entry
     // was wrong — Lynae never appears anywhere on Denia's page (Kit/Review/Build/Gameplay and
     // teams/Calculations, all checked), and it contradicted the reciprocal entries already in this same
@@ -1719,6 +1749,10 @@ const CHARACTER_DATA = {
     // merely a banner-featured 4★, not a ranked recommendation); Feather Edge is the dump's own explicit
     // "Best 4★ option" (65.53%), matching the alt4 convention used everywhere else in this table.
     weaponAlts: { alt5: ['Red Spring'], alt4: ['Feather Edge'], alt3: ['Sword of Night'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): her own dump's Cons list
+    // "strong desire for her signature weapon" alongside near-mandatory teammates, despite one
+    // listed alt5.
+    signatureReliant: true,
     // Expanded 2026-09-13 from her own dump (Data dump/Qingxiao/Qingxiao.md, Example Teams): "Best
     // Team" is Denia + Mornye with no recommended alternatives (dropping Mornye causes "very
     // significant team DPS losses"); the "Lynae Team" explicitly allows Ciaccona/Shorekeeper as
@@ -1759,6 +1793,11 @@ const CHARACTER_DATA = {
     // explicitly the dump's own "best 4★" (73.1%) and Meditations on Mercy its own "best no-gacha/F2P"
     // (59.9%) — kept as alt4/alt3 per the established weaponAlts shape (alt5/alt4/alt3 tiers).
     weaponAlts: { alt5: ['Thunderflare Dominion', 'Verdant Summit', 'Radiance Cleaver'], alt4: ['Aureate Zenith'], alt3: ['Meditations on Mercy'] },
+    // signatureReliant added 2026-09-13 (Plan tab weapon-verdict audit): his own dump's Cons list
+    // him as "one of the most Signature-weapon-reliant characters in the game (permanent
+    // alternatives are notably worse, not just slightly)" despite 3 listed alt5s — the exact case
+    // that surfaced this whole audit (direct user report he showed as "Not Essential").
+    signatureReliant: true,
     // teams sourced directly from the dump's own "Example Teams" section (his own dump is
     // authoritative for his own teams field — no third-party corroboration required): Best Team
     // (Iuno + Shorekeeper/Verina), Mono Fusion (Mortefi + Mornye/Lupa), F2P (Rebecca/Mortefi +

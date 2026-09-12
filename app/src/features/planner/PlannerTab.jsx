@@ -428,18 +428,55 @@ function PlannerTab({
       const synergyWeight = ownedSynergyPartners.reduce((sum, p) => sum + 1 / (partnerFirstIndex.get(p) + 1), 0);
       return { name, d, owned, tierScore, fillsRoleGap, ownedSynergyPartners, synergyWeight };
     });
+    // Direct user request: element is "a small bonus, especially if I don't already have a
+    // strong DPS/support for [that] element" — a real but minor signal, kept as its own LOWEST-
+    // priority tiebreak (never blended into synergyWeight) so it only ever decides between
+    // otherwise-equal candidates, matching the Teams tab's own lexicographic-chain precedent
+    // rather than one weighted number. Scoped to damage-role coverage (Main DPS/Sub DPS of that
+    // element) — a support/buff's element-specific coverage would need parsing CHAR_BUFF_TABLE's
+    // free-text buff conditions, which isn't reliable enough to trust for a ranking signal.
+    const ownedElementsWithDps = new Set(
+      ownedArrExcludingRover.filter(n => CHARACTER_DATA[n].role === 'Main DPS' || CHARACTER_DATA[n].role === 'Sub DPS').map(n => CHARACTER_DATA[n].element)
+    );
+    scored.forEach(s => { s.fillsElementGap = !ownedElementsWithDps.has(s.d.element); });
     scored.sort((a, b) => {
       if (a.owned !== b.owned) return a.owned ? 1 : -1;
       if (a.tierScore !== b.tierScore) return b.tierScore - a.tierScore;
       if (a.fillsRoleGap !== b.fillsRoleGap) return a.fillsRoleGap ? -1 : 1;
-      return b.synergyWeight - a.synergyWeight;
+      if (a.synergyWeight !== b.synergyWeight) return b.synergyWeight - a.synergyWeight;
+      if (a.fillsElementGap !== b.fillsElementGap) return a.fillsElementGap ? -1 : 1;
+      return 0;
     });
 
     const top = scored[0];
-    // A featured weapon whose forCharacter is the top pick — a concrete secondary nudge when
-    // it's also unowned, rather than a separate unrelated weapon suggestion.
+    // Direct user feedback: "their signature weapon is on the banner" said nothing useful on its
+    // own. Now a real Must-Have/Not-Essential verdict: no listed alt5 5★ alternative at all means
+    // the signature is close to mandatory to unlock the kit; otherwise it's a nice-to-have, and if
+    // the player already owns one of the listed alt5/alt4 alternatives, that's named directly
+    // instead of a generic "alternatives exist" — real data (weaponAlts), never invented.
     const featuredWeapons = activeBanners?.weapons || [];
-    const topWeapon = top ? featuredWeapons.find(w => w.forCharacter === top.name && !ownedWeapNames.has(w.name)) : null;
+    const topWeaponRaw = top ? featuredWeapons.find(w => w.forCharacter === top.name) : null;
+    let topWeapon = null;
+    if (topWeaponRaw) {
+      const alt5 = top.d.weaponAlts?.alt5 || [];
+      const alt4 = top.d.weaponAlts?.alt4 || [];
+      const ownedAlt = [...alt5, ...alt4].find(w => ownedWeapNames.has(w));
+      // Direct user correction: "no alt5 listed" alone missed characters whose own dump
+      // explicitly calls them signature-reliant DESPITE having listed alternatives (Jingran:
+      // "one of the most Signature-weapon-reliant characters in the game," 3 alt5s listed) — a
+      // real per-character audit added `signatureReliant` to CHARACTER_DATA for exactly these
+      // cases, sourced from each one's own dump text. reliantDespiteAlts distinguishes that case
+      // from "no alternative exists at all" for the reason text below.
+      const noAlt5AtAll = alt5.length === 0;
+      topWeapon = {
+        ...topWeaponRaw,
+        owned: ownedWeapNames.has(topWeaponRaw.name),
+        mustHave: noAlt5AtAll || !!top.d.signatureReliant,
+        reliantDespiteAlts: !noAlt5AtAll && !!top.d.signatureReliant,
+        ownedAlt,
+        altOptions: alt5,
+      };
+    }
     const allOwned = scored.every(s => s.owned);
 
     return { scored, top, topWeapon, allOwned };
@@ -825,7 +862,7 @@ function PlannerTab({
             <div className="p-3 bg-white/5 rounded-lg text-center space-y-1">
               <p className="text-gray-100 text-sm font-medium">{t('planner.recommendationAllOwnedTitle')}</p>
               <p className="text-gray-400 text-sm">
-                {bannerRecommendation.topWeapon
+                {bannerRecommendation.topWeapon && !bannerRecommendation.topWeapon.owned
                   ? t('planner.recommendationAllOwnedWithWeapon', { weapon: bannerRecommendation.topWeapon.name, character: bannerRecommendation.topWeapon.forCharacter })
                   : t('planner.recommendationAllOwnedNoWeapon')}
               </p>
@@ -855,13 +892,36 @@ function PlannerTab({
                         {top.fillsRoleGap && (
                           <li>{t(top.d.role === 'Main DPS' ? 'planner.recommendationFillsMainDps' : 'planner.recommendationFillsSupport')}</li>
                         )}
-                        {topWeapon && (
-                          <li>{t('planner.recommendationWeaponNote', { weapon: topWeapon.name })}</li>
+                        {!top.fillsRoleGap && top.fillsElementGap && (
+                          <li>{t('planner.recommendationFillsElementGap', { element: top.d.element })}</li>
                         )}
                       </ul>
                     </div>
                   </div>
                 </div>
+                {/* Direct user feedback: "their signature weapon is on the banner" said nothing
+                    useful on its own — replaced with a real Must-Have/Not-Essential verdict and
+                    why, naming an owned alternative directly when one exists rather than a vague
+                    "alternatives exist" line. */}
+                {topWeapon && !topWeapon.owned && (
+                  <div className="p-3 bg-white/5 rounded-lg space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-gray-100 text-sm font-medium truncate">{topWeapon.name}</span>
+                      <span className={`kuro-badge text-2xs flex-shrink-0 ${topWeapon.mustHave ? 'kuro-badge-red' : 'kuro-badge-cyan'}`}>
+                        {t(topWeapon.mustHave ? 'planner.recommendationWeaponMustHave' : 'planner.recommendationWeaponNotEssential')}
+                      </span>
+                    </div>
+                    <p className="text-gray-500 text-sm">
+                      {topWeapon.reliantDespiteAlts
+                        ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
+                        : topWeapon.mustHave
+                          ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
+                          : topWeapon.ownedAlt
+                            ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: topWeapon.ownedAlt })
+                            : t('planner.recommendationWeaponAltExists', { alts: topWeapon.altOptions.join(', ') })}
+                    </p>
+                  </div>
+                )}
                 {/* Direct user correction: this must be about the player's OWNED roster, not a
                     list of other characters on the same banner — "who is this Best Pick good
                     for, among what I already have." Sourced from top.name's own curated `teams`
