@@ -40,7 +40,7 @@ const CHARACTER_DATA = {
     // source's own explicitly-named "great Frazzle-team partner" (Synergies section), matching the
     // Example Teams section's "Premium Phoebe Teams" naming (Ciaccona named as Absolution Phoebe's
     // best/only real partner, best paired with Shorekeeper specifically).
-    teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Phoebe + Rover: Spectro + Ciaccona'] },
+    teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Phoebe + Rover: Spectro + Ciaccona', 'Phoebe + Rover: Spectro + Shorekeeper'] },
   // Fixed 2026-09-03 against a real browser snapshot, superseding the 2026-08-18 note below
   // where they conflict. bestEchoes named 'Impermanence Heron' — never mentioned anywhere in this
   // source (that's Rover: Aero's/Rover: Spectro's echo); the source's only Main Echo option for Havoc
