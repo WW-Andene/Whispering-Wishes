@@ -1795,7 +1795,17 @@ const CHARACTER_DATA = {
     // this source's Synergies section for Chixia (which explicitly names Brant, Changli, Lupa, Verina,
     // and Shorekeeper only); swapped to Shorekeeper, one of the two explicitly-named generalist Healing
     // Support options, matching the source's own "Changli Team" example.
-    teams: ['Chixia + Brant + Verina', 'Chixia + Changli + Shorekeeper'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Chixia/Chixia.md, Synergies/Example Teams):
+    // Lupa named her "newest best team archetype" (best paired with Encore or Brant as a 3rd
+    // Basic-ATK-scaling Fusion DPS); Verina/Shorekeeper both named generalist supports for each pair.
+    teams: [
+      'Chixia + Brant + Verina',
+      'Chixia + Brant + Shorekeeper',
+      'Chixia + Changli + Shorekeeper',
+      'Chixia + Changli + Verina',
+      'Chixia + Lupa + Brant',
+      'Chixia + Lupa + Encore',
+    ] },
   'Danjin': { rarity: 4, element: 'Havoc', weapon: 'Sword', role: 'Sub DPS',
     // desc expanded 2026-08-18 (the wiki + the source): lore half is the wiki's "Scarlet Shade" Midnight Ranger
     // who hunts thieves/bandits for retribution; gameplay half is the source's Hybrid framing — a fast
@@ -1844,7 +1854,16 @@ const CHARACTER_DATA = {
     // demoting Emerald of Genesis into weaponAlts.alt5.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Blazing Brilliance',
     weaponAlts: { alt5: ['Emerald of Genesis'], alt4: ['Lumingloss', 'Endless Collapse'], alt3: ['Sword of Night'] },
-    teams: ['Yangyang + Xiangli Yao + Shorekeeper', 'Yangyang + Changli + Verina', 'Yangyang + Carlotta + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Yangyang/Yangyang.md, Synergies): both
+    // Verina/Shorekeeper are named her generalist supports for every listed DPS, not just one each.
+    teams: [
+      'Yangyang + Xiangli Yao + Shorekeeper',
+      'Yangyang + Xiangli Yao + Verina',
+      'Yangyang + Changli + Verina',
+      'Yangyang + Changli + Shorekeeper',
+      'Yangyang + Carlotta + Verina',
+      'Yangyang + Carlotta + Shorekeeper',
+    ] },
   // Sanhua corrected 2026-08-18 via the source's Kit/Build/Gameplay tabs: desc lore confirmed via the wiki's
   // Official Introduction ("the loyal and reliable guard of Jinzhou Magistrate Jinhsi") — was already
   // accurate. bestWeapon changed from 'Emerald of Genesis' (the source's #3 pick at 100.00%) to 'Blazing
@@ -1865,7 +1884,21 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Blazing Brilliance',
     weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse', 'Lunar Cutter', 'Lumingloss', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
-    teams: ['Sanhua + Encore + Verina', 'Sanhua + Camellya + Verina', 'Sanhua + Phoebe + Rover: Spectro'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Sanhua/Sanhua.md, Synergies/Example Teams):
+    // Encore named "by far Encore's best teammate, period"; Brant a natural Hypercarry-Brant
+    // partner; Rover: Havoc a budget option (outclassed by Roccia/Danjin but still viable); Carlotta
+    // a comparable option if lacking Zhezhi/Yangyang. Verina/Shorekeeper are both named her
+    // generalist supports.
+    teams: [
+      'Sanhua + Encore + Verina',
+      'Sanhua + Encore + Shorekeeper',
+      'Sanhua + Camellya + Verina',
+      'Sanhua + Camellya + Shorekeeper',
+      'Sanhua + Phoebe + Rover: Spectro',
+      'Sanhua + Brant + Verina',
+      'Sanhua + Rover: Havoc + Shorekeeper',
+      'Sanhua + Carlotta + Verina',
+    ] },
   // corrected 2026-08-18 via the wiki's Taoqi/Combat page + the source's Kit/Build/Gameplay tabs (previously
   // had no weaponAlts at all, and only a partial CHARACTER_DATA entry). desc: her Outro Iron Will is a
   // "Resonance Skill DMG Amplified by 38%" per the wiki's own Forte Details text (matches her infobox
@@ -1896,7 +1929,14 @@ const CHARACTER_DATA = {
     // trimmed per the same convention already applied to Lumi/Baizhi this session.
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc'], bestWeapon: 'Discord',
     weaponAlts: { alt4: ['Dauntless Evernight'] },
-    teams: ['Taoqi + Carlotta + Shorekeeper', 'Taoqi + Jinhsi + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Taoqi/Taoqi.md, Synergies): added the
+    // Verina/Shorekeeper alternative for each named DPS ("generalist Healing Supports" for both).
+    teams: [
+      'Taoqi + Carlotta + Shorekeeper',
+      'Taoqi + Carlotta + Verina',
+      'Taoqi + Jinhsi + Verina',
+      'Taoqi + Jinhsi + Shorekeeper',
+    ] },
   // corrected 2026-08-18 via the wiki's Yuanwu/Combat page (Forte Details, rendered) + the source's
   // Kit/Build/Review/Gameplay tabs (previously only had a partial CHARACTER_DATA entry, no
   // weaponAlts). desc: dropped "generates shields via Resonance Liberation" — Blazing Might's own
@@ -2040,7 +2080,16 @@ const CHARACTER_DATA = {
     // excluding situational Special Echo Sets from bestEchoes.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Ages of Harvest',
     weaponAlts: { alt5: ['Verdant Summit', 'Lustrous Razor'], alt4: ['Autumntrace', 'Waning Redshift'] },
-    teams: ['Lumi + Jinhsi', 'Lumi + Carlotta'] },
+    // Rebuilt 2026-09-13 from her own dump (Data dump/Lumi/Lumi.md, Synergies/Example Teams): the
+    // prior 2 entries were malformed (missing a 3rd member). Jinhsi's own team explicitly requires
+    // Verina, NOT Shorekeeper ("Shorekeeper does NOT work in this team since Jinhsi's Forte needs
+    // Coordinated Attacks, which neither Lumi nor Shorekeeper provide, unlike Verina"); Carlotta's
+    // team allows either per the dump's generic Verina/Shorekeeper Support line.
+    teams: [
+      'Lumi + Jinhsi + Verina',
+      'Lumi + Carlotta + Verina',
+      'Lumi + Carlotta + Shorekeeper',
+    ] },
   // corrected/added 2026-08-18: desc rewritten — a real bio (Black Shores Consultant/"Spiritchaser
   // Taoist" who wanders investigating the strange and mysterious, selling talismans and divination as
   // her trade) plus a gameplay-role summary (the wiki's Combat page + the source's Kit/Review tabs): she
@@ -2072,7 +2121,15 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Helix' },
     bestEchoes: ['Fallacy of No Return', 'Rejuvenating Glow 5pc', 'Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: 'Stringmaster',
     weaponAlts: { alt5: ['Lethean Elegy', 'Rime-Draped Sprouts', 'Luminous Hymn', 'Cosmic Ripples'], alt4: ['Waltz in Masquerade'] },
-    teams: ['Buling + Carlotta', 'Buling + Phrolova'] },
+    // Rebuilt 2026-09-13 — the prior 2 entries were malformed (missing a 3rd member). Buling's own
+    // dump names Carlotta/Phrolova as her best DPS to buff; the actual trios are cross-confirmed
+    // directly on Carlotta's own dump ("Carlotta + Taoqi/Yangyang + Verina/Buling") and Phrolova's
+    // own dump ("F2P Team: Phrolova + Danjin + Shorekeeper/Rover: Havoc/Buling").
+    teams: [
+      'Buling + Carlotta + Taoqi',
+      'Buling + Carlotta + Yangyang',
+      'Buling + Phrolova + Danjin',
+    ] },
 };
 
 // Structured combat data — derived from desc fields. Merged into CHARACTER_DATA.
