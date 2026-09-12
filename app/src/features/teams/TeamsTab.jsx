@@ -490,33 +490,43 @@ function TeamsTab({
               });
               // BUG FIX 2026-09-13 (direct user report: Aemeath badged "#1" but displayed SECOND in
               // the grid, behind Jingran's "#2"): the two tied top scorers (both 104.0 after the
-              // accessibility fold-in above) were being ranked by two DIFFERENT tie-break rules. The
-              // grid's own sort (further below) breaks ties by rarity then "newest first" (higher
-              // allCharNames index wins) — Jingran, added to the roster more recently, wins that tie
-              // and displays first. But the badge-numbering sort below used to compare ONLY the raw
-              // score with no tie-break at all, so a stable sort just preserved candidateScores' Map
-              // insertion order (ascending allCharNames index) for ties — the OPPOSITE direction,
-              // handing Aemeath the "#1" badge while Jingran sat in the actual #1 grid slot. Both
-              // sorts now share this one comparator so the printed badge number always matches the
-              // tile's real position in the grid.
-              const compareCandidates = (a, b) => {
+              // accessibility fold-in above) were being ranked by two DIFFERENT tie-break rules. Both
+              // the badge numbering and the recommended-vs-not split below now share one comparator
+              // (scoreCompare) so ties resolve identically everywhere.
+              const scoreCompare = (a, b) => {
                 const aScore = candidateScores.get(a) || 0;
                 const bScore = candidateScores.get(b) || 0;
                 if (aScore !== bScore) return bScore - aScore;
                 const aRar = CHARACTER_DATA[a]?.rarity || 0;
                 const bRar = CHARACTER_DATA[b]?.rarity || 0;
                 if (aRar !== bRar) return bRar - aRar;
-                // Within each group, sort newest first (later in array = newer)
-                return allCharNames.indexOf(b) - allCharNames.indexOf(a);
+                // Within each group, sort newest first (later release = newer)
+                return RELEASE_ORDER.indexOf(b) - RELEASE_ORDER.indexOf(a);
               };
               // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible
               // character has a real score, badging literally everyone would make the highlight
               // meaningless, so keep it to a bounded top slice of the ranked list.
               const REC_BADGE_COUNT = 8;
               const recommendedNames = new Map(
-                [...candidateScores.keys()].sort(compareCandidates).slice(0, REC_BADGE_COUNT)
+                [...candidateScores.keys()].sort(scoreCompare).slice(0, REC_BADGE_COUNT)
                   .map(name => [name, candidateScores.get(name)])
               );
+              // Direct user request 2026-09-13: past the top-8 recommended badges, order by release
+              // date + rarity instead of continuing the raw synergy score — once you're outside the
+              // actual recommendations, a rank-order by a score most players never see is a less
+              // useful browsing order than "newest/rarest first," which is also this file's existing
+              // convention elsewhere (e.g. line ~184's reversed RELEASE_ORDER). Recommended characters
+              // stay sorted among themselves by their real score (so the badge numbers still read
+              // top-to-bottom correctly); everyone else sorts by rarity then release date.
+              const compareCandidates = (a, b) => {
+                const aRec = recommendedNames.has(a), bRec = recommendedNames.has(b);
+                if (aRec !== bRec) return aRec ? -1 : 1;
+                if (aRec && bRec) return scoreCompare(a, b);
+                const aRar = CHARACTER_DATA[a]?.rarity || 0;
+                const bRar = CHARACTER_DATA[b]?.rarity || 0;
+                if (aRar !== bRar) return bRar - aRar;
+                return RELEASE_ORDER.indexOf(b) - RELEASE_ORDER.indexOf(a);
+              };
 
               // Filter characters for selector
               const filteredChars = allCharNames.filter(name => {
