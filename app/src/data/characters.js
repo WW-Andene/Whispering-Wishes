@@ -120,7 +120,10 @@ const CHARACTER_DATA = {
     // Waning Redshift wasn't in the source's recommendations for him at all.
     bestEchoes: ['Nightmare: Kelpie', 'Windward Pilgrimage 5pc'], bestWeapon: 'Verdant Summit',
     weaponAlts: { alt5: ['Thunderflare Dominion', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Broadblade of Night'] },
-    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper'] },
+    // Added 'Jiyan + Rebecca + Shorekeeper' (2026-09-12): confirmed on Jiyan's own dump (line 173:
+    // "Rebecca/Mortefi (free/accessible Heavy DMG...)") and independently on Rebecca's own dump
+    // ("Alternative Heavy Attack Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina").
+    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper', 'Jiyan + Rebecca + Shorekeeper'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     // desc rewritten 2026-08-31 against the wiki/Calcharo/Combat (Chrome/Windows UA +
     // google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare) and cross-checked against
@@ -868,7 +871,11 @@ const CHARACTER_DATA = {
     // teams corrected 2026-08-18: 'Brant + Lupa' wasn't corroborated by any current source found;
     // current secondary options cited are Mortefi + Verina or Phrolova + Lupa — kept the Lupa pairing
     // and swapped Brant for Phrolova (both were cited; this is the more conservative single-field edit).
-    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa'] },
+    // Added 'Galbrena + Rebecca + Shorekeeper' (2026-09-12): confirmed on Galbrena's own dump ("Best
+    // teammates: ...Phrolova/Iuno/Rebecca (Heavy DMG Amp Outros); Mornye/Shorekeeper/Verina
+    // (generalist supports)") and independently on Rebecca's own dump ("Alternative Heavy Attack
+    // Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina").
+    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa', 'Galbrena + Rebecca + Shorekeeper'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who supports from off-field, boosting the active Resonator\'s Crit DMG via his Liberation and amplifying the next Resonator\'s Echo Skill damage through his Outro.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
@@ -1073,11 +1080,41 @@ const CHARACTER_DATA = {
     // (mutual Hack-mechanic synergy, her own separate "Edgerunners Team: Lucy + Rebecca + Mornye +
     // Shorekeeper/Verina") — the two never appear in the same real team. Corrected to the real
     // Yangyang: Xuanling pairing and kept Lucy's own real team separately below.
-    // Added 'Rebecca + Augusta + Shorekeeper' (2026-09-12): confirmed on Rebecca's own dump (line
-    // 336: "Alternative Heavy Attack Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/
-    // Verina") and independently on Augusta's own dump (her Best Team line names Rebecca as a
-    // 1st-pick alternate).
-    teams: ['Rebecca + Yangyang: Xuanling + Suisui', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper', 'Rebecca + Augusta + Shorekeeper'] },
+    // Expanded 2026-09-12, reading Rebecca's OWN dump directly (Data dump/Rebecca/Rebecca.md's
+    // "Example Teams" section, lines 330-336), taken as directly authoritative for her own
+    // recommendations:
+    //   Edgerunners Team: Lucy + Rebecca + Mornye/Shorekeeper/Verina (already had Mornye/Shorekeeper;
+    //     added Verina).
+    //   Phoebe Team: Phoebe + Rebecca + Rover: Spectro (new, fixed trio).
+    //   Alternative Heavy Attack Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina
+    //     (no Mornye restriction stated on THIS page, unlike Augusta's own dump's Rebecca/Lynae-only
+    //     restriction for Augusta's teams — full 3×3 cross product added).
+    //   Best Team (Yangyang: Xuanling + Rebecca + Suisui + Chisa) — a 4-name line; the
+    //     Rebecca+Suisui+Xuanling portion is already captured (confirmed on Xuanling's own dump too),
+    //     and the extra Chisa name doesn't resolve to an unambiguous 3rd literal trio beyond that
+    //     (same "don't force a specific trio out of a 4+-name line" precedent used for Lynae's
+    //     "Alternative Liberation Teams" case) — left uncoded rather than guessed.
+    // Cross-corroborated: Jiyan's own dump independently confirms Rebecca as a real synergy AND the
+    // same "Mornye niche, only with Rebecca/Lynae" restriction (from Jiyan's side); Lucy's own dump
+    // confirms Lucy+Rebecca+Shorekeeper (already had); Galbrena's own dump names Rebecca as a
+    // generalist Heavy DMG buffer/F2P alt (prose only, no literal trio, so no forced reciprocal
+    // beyond what's added to Rebecca's own list below).
+    teams: [
+      'Rebecca + Yangyang: Xuanling + Suisui',
+      'Rebecca + Lucy + Mornye',
+      'Rebecca + Lucy + Shorekeeper',
+      'Rebecca + Lucy + Verina',
+      'Rebecca + Phoebe + Rover: Spectro',
+      'Rebecca + Augusta + Shorekeeper',
+      'Rebecca + Augusta + Mornye',
+      'Rebecca + Augusta + Verina',
+      'Rebecca + Jiyan + Shorekeeper',
+      'Rebecca + Jiyan + Mornye',
+      'Rebecca + Jiyan + Verina',
+      'Rebecca + Galbrena + Shorekeeper',
+      'Rebecca + Galbrena + Mornye',
+      'Rebecca + Galbrena + Verina',
+    ] },
   'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'President and head of Startorch Academy, former chief editor of the New Federation\'s top academic journal. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
     skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
