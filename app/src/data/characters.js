@@ -4137,8 +4137,14 @@ const SKILL_MULTIPLIERS = {
     ['Mid-air', 'Attack', '92.45%'],
     ['Dodge Counter', 'Nether Dive', '49.70%×4', "Yin Vessel Dodge Counter; considered Heavy Attack DMG per its own kit text."],
     ['Dodge Counter', 'Light Watch', '74.57%+74.57%+99.43%', "Yang Font Dodge Counter; considered Heavy Attack DMG per its own kit text."],
-    ['Skill', 'Encroaching Yin / Scorching Yang', '65.61%+32.81%×3'],
-    ['Skill', "Netherworld Traverse / Afterlife's Guide", '51.69%+25.85%×2+38.77%×4 / 65.87%×2+131.74%', 'Considered Heavy Attack DMG per its own kit text.'],
+    // Split into 4 separate exact-named rows (2026-09-12) — the prior combined 'X / Y' row names
+    // only ever matched a CHARACTER_ROTATIONS step via findSkillMultiplierRow's fuzzy substring
+    // fallback (each step names only one skill, never both), which logged a console warning on
+    // every load; splitting removes the fuzzy match entirely with the exact same values.
+    ['Skill', 'Encroaching Yin', '65.61%+32.81%×3'],
+    ['Skill', 'Scorching Yang', '65.61%+32.81%×3'],
+    ['Skill', 'Netherworld Traverse', '51.69%+25.85%×2+38.77%×4', 'Considered Heavy Attack DMG per its own kit text.'],
+    ['Skill', "Afterlife's Guide", '65.87%×2+131.74%', 'Considered Heavy Attack DMG per its own kit text.'],
     ['Heavy ATK', 'Soul Raid', '16.40%×2+21.09%×3+138.22% (+ Max HP scaling)'],
     ['Heavy ATK', 'Stardome Meander', '24.04%+24.04%+48.08%+144.22% (+ Max HP scaling)'],
     ['Liberation', 'Burial of Thousand Souls', '93.15%×8'],
@@ -6723,11 +6729,13 @@ const CHARACTER_ROTATIONS = {
   // Rotation used, matching the convention of using the lower-sequence/most-accessible rotation as the
   // stored CHARACTER_ROTATIONS entry (see Phoebe's own comment above) — the dump's separate S2+
   // rotation (openable Stardome Meander pre-Intro) is a real, sourced alternative not modeled here.
-  // Skill fields below are kept as short SUBSTRINGS of their matching SKILL_MULTIPLIERS['Jingran']
-  // row names (findSkillMultiplierRow's fuzzy match requires the row name to CONTAIN the step
-  // string, e.g. Zani/Augusta's own fix comments elsewhere in this file) — Netherworld Traverse/
-  // Afterlife's Guide are typed 'Skill' here (not 'Basic ATK') to match the row they actually live
-  // under, even though they fire off the Basic Attack input in-game.
+  // Skill fields below match their SKILL_MULTIPLIERS['Jingran'] row names EXACTLY (that table's
+  // Encroaching Yin/Scorching Yang/Netherworld Traverse/Afterlife's Guide rows were split into 4
+  // individually-named rows on 2026-09-12, replacing the combined 'X / Y' rows that only ever
+  // matched via findSkillMultiplierRow's fuzzy substring fallback and logged a console warning on
+  // every load) — Netherworld Traverse/Afterlife's Guide are typed 'Skill' here (not 'Basic ATK')
+  // to match the row they actually live under, even though they fire off the Basic Attack input
+  // in-game.
   'Jingran': [
     { type: 'Intro', skill: 'Question the Tombs', note: 'Swap into him — fires automatically, consumes all Ghost Shroud and converts it 1:1 into Fortune in Disguise stacks (Fusion DMG Bonus scaling with Max HP).' },
     { type: 'Liberation', skill: 'Burial of Thousand Souls', note: 'Cast right after Intro — reduces current HP to 50% Max HP if above it, grants 200 Qi and 3 Wayfarer\'s Mark stacks, and enters the 15s Yinghuo state (empowers his next Forte Heavy Attacks via Chimei Wangliang summons).' },
