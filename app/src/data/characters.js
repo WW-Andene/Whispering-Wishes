@@ -672,7 +672,19 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Luminous Hymn',
     weaponAlts: { alt5: ['Lethean Elegy', 'Stringmaster'], alt4: ['Augment', "Ocean's Gift"], alt3: ['Rectifier of Night'] },
-    teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Rover: Spectro + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Phoebe/Phoebe.md, Synergies/Example Teams):
+    // Confession Phoebe's only synergy is Zani (via Frazzle Outro buff). Absolution (DPS) Phoebe's
+    // Frazzle appliers are Rover: Spectro/Ciaccona/Chisa, with Lynae named as her strongest generalist
+    // 2nd-slot buffer ("her best team"), Rebecca a close 2nd, Phrolova more damage-oriented.
+    teams: [
+      'Phoebe + Zani + Shorekeeper',
+      'Phoebe + Rover: Spectro + Lynae',
+      'Phoebe + Rover: Spectro + Verina',
+      'Phoebe + Ciaccona + Lynae',
+      'Phoebe + Ciaccona + Shorekeeper',
+      'Phoebe + Chisa + Lynae',
+      'Phoebe + Rover: Spectro + Rebecca',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1206 sheet. desc: title "Flamebound Compass" (the source) prepended and
   // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes all
