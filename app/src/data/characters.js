@@ -855,7 +855,42 @@ const CHARACTER_DATA = {
     // ("Lynae + Chisa: Hiyuki / Aemeath / Yangyang: Xuanling / Lynae / Chisa") names 3
     // interchangeable headliners for the SAME Lynae+Chisa support duo — Hiyuki was already
     // captured below, Yangyang: Xuanling was missing entirely. Added.
-    teams: ['Lynae + Aemeath + Mornye', 'Lynae + Hiyuki + Chisa', 'Lynae + Yangyang: Xuanling + Chisa'] },
+    // Rebuilt 2026-09-12, reading Lynae's OWN dump first (Data dump/Lynae/Lynae.md's "### Example
+    // Teams" section, lines 165-169) then CROSS-CHECKING each resulting trio against the OTHER
+    // named character's own dump before keeping it — the same headliner-list × fixed-support-duo
+    // parsing validated on Yangyang: Xuanling, but this pass also caught two entries that parse
+    // cleanly out of Lynae's own text yet don't survive corroboration:
+    //   - 'Lynae + Luuk Herssen + Mornye' (from "Best Team: Aemeath/Qingxiao/Luuk Herssen + Lynae +
+    //     Mornye") — DROPPED. Luuk Herssen's own dump (line 151) states his real Best Team is
+    //     "Luuk Herssen + Denia + Lynae/Sanhua + Mornye/Shorekeeper/Verina" — a 4-person comp where
+    //     Denia is mandatory and Lynae/Mornye are each just one alternate slot within it, not a
+    //     standalone confirmed trio the way Aemeath/Qingxiao's own dumps confirm theirs.
+    //   - 'Lynae + Phoebe + Rover: Spectro' (from "Phoebe Team: Phoebe + Lynae + Rover (Spectro)")
+    //     — DROPPED. Phoebe's own dump (lines 179-187) treats these as buffers for TWO DIFFERENT
+    //     Resonance modes: Lynae is named as her best Absolution-mode generalist buffer, while
+    //     Rover: Spectro is listed as a Confession-mode Frazzle applier alongside Ciaccona/Chisa —
+    //     not confirmed as members of the same team.
+    // Kept trios, each independently confirmed on the OTHER character's own dump too:
+    //   - Aemeath + Lynae + Mornye — Aemeath's dump (line 233): "Best Tune Rupture Team: Aemeath +
+    //     Lynae + Mornye."
+    //   - Qingxiao + Lynae + Mornye — Qingxiao's dump (line 142): "Lynae Team: Qingxiao + Lynae +
+    //     Mornye/Ciaccona/Shorekeeper."
+    //   - Hiyuki + Lynae + Chisa — Hiyuki's dump (line 202): "Best Team: Hiyuki + {Lucilla/Lynae} +
+    //     {Suisui/Chisa/Mornye/Verina}. Only pair Mornye with Lynae specifically."
+    //   - Aemeath + Lynae + Chisa — Aemeath's dump (line 233) names Chisa as a viable 3rd-slot
+    //     alternative to Mornye alongside Aemeath+Lynae ("viable if run in Fusion Burst mode too").
+    //   - Yangyang: Xuanling + Lynae + Chisa — confirmed on both sides (see her own teams field).
+    // "Alternative Liberation Teams" and "Other Alternative Teams" (lines 167-168) list 4+ names
+    // each (2 interchangeable headliners + Lynae/Mornye + a Shorekeeper/Verina choice) — a real
+    // 4-person Whimpering Wastes-shaped comp this flat 3-name `teams` string format can't represent
+    // without guessing which specific trio was meant, so deliberately left uncoded.
+    teams: [
+      'Lynae + Aemeath + Mornye',
+      'Lynae + Qingxiao + Mornye',
+      'Lynae + Hiyuki + Chisa',
+      'Lynae + Aemeath + Chisa',
+      'Lynae + Yangyang: Xuanling + Chisa',
+    ] },
   'Mornye': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Healer',
     desc: 'A Spacetrek Collective Research Institute engineer and Department of Exostrider Engineering professor at Startorch Academy. DEF-scaling Fusion healer who keeps the team topped up through her Skill and Liberation while speeding up their Off-Tune Buildup.',
     skills: ['Ground State Calibration', 'Resolution', 'Critical Protocol', 'Convergence'],
@@ -907,7 +942,12 @@ const CHARACTER_DATA = {
     // Endless Collapse 73.9%); Sword of Night is the 3★ fallback, matching the "<Weapon Type> of Night"
     // naming convention used for other characters' 3★ slot.
     weaponAlts: { alt5: ['Emerald of Genesis', 'Red Spring'], alt4: ['Feather Edge', 'Somnoire Anchor'], alt3: ['Sword of Night'] },
-    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye'] },
+    // Added 'Aemeath + Lynae + Chisa' (2026-09-12): Aemeath's own dump line 233 ("Best Tune Rupture
+    // Team: Aemeath + Lynae + Mornye. Alternatives for the 3rd slot: Shorekeeper, Verina... Chisa
+    // (viable if run in Fusion Burst mode too)") names Chisa as a valid 3rd-slot alternative to
+    // Mornye alongside Aemeath+Lynae — reciprocal to Lynae's own dump-confirmed 'Lynae + Aemeath +
+    // Chisa' entry, which this side was missing.
+    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye', 'Aemeath + Lynae + Chisa'] },
   'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. On-field Aero DPS who consumes Rune stacks to empower Echo Skill and Heavy ATK for Aero burst DMG with crowd control.',
     skills: ['One, Two, Three', 'Royan Close Quarters Combat', 'Where Trust Leads Me!', 'Solsworn Etymology'],
@@ -1055,7 +1095,11 @@ const CHARACTER_DATA = {
     // Fables of Wisdom (71.8%, her best F2P no-gacha pick) are the 4★s; Sword of Night is the 3★
     // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Blazing Brilliance', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
-    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye'] },
+    // Added 'Hiyuki + Lynae + Chisa' (2026-09-12): Hiyuki's own dump line 202 ("Best Team: Hiyuki +
+    // {Lucilla/Lynae} + {Suisui/Chisa/Mornye/Verina}. Only pair Mornye with Lynae specifically")
+    // confirms Chisa as a valid 2nd-slot alongside Lynae — reciprocal to Lynae's own dump-confirmed
+    // 'Lynae + Hiyuki + Chisa' entry, which this side was missing.
+    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye', 'Hiyuki + Lynae + Chisa'] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG) via Resonance Skill, closing with a team-wide DMG Amplification Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
