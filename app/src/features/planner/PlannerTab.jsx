@@ -951,7 +951,7 @@ function PlannerTab({
                         ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
                         : topWeapon.mustHave
                           ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
-                          : t('planner.recommendationWeaponNotEssentialReason', { name: top.name })}
+                          : t('planner.recommendationWeaponNotEssentialReason', { name: top.name, alt: altWeaponName })}
                     </p>
                     {!topWeapon.mustHave && altWeaponName && (
                       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
