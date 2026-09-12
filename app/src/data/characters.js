@@ -374,7 +374,23 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
     bestEchoes: ['Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
     weaponAlts: { alt5: ['Kumokiri', 'Wildfire Mark'], alt4: ['Aureate Zenith', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
-    teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
+    // Expanded 2026-09-13, continuing the authoritative-source-first process: her own
+    // Synergies/Example Teams text names Zhezhi/Yinlin/Cantarella as premium Coordinated-Attack
+    // 1st-picks (Zhezhi generally best; Cantarella swappable for Zhezhi in her own "Best Team"
+    // line), Brant/Changli as Quickswap alternatives ("Verina must run with Brant+Changli"), and
+    // Yuanwu/Mortefi + Shorekeeper/Verina as her best Supports (Yuanwu preferred for Budget unless
+    // Mortefi has heavy investment).
+    teams: [
+      'Jinhsi + Zhezhi + Shorekeeper',
+      'Jinhsi + Zhezhi + Verina',
+      'Jinhsi + Yinlin + Verina',
+      'Jinhsi + Yinlin + Shorekeeper',
+      'Jinhsi + Cantarella + Shorekeeper',
+      'Jinhsi + Brant + Verina',
+      'Jinhsi + Changli + Verina',
+      'Jinhsi + Yuanwu + Verina',
+      'Jinhsi + Mortefi + Verina',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, multipliers, ascension mats,
   // and bestEchoes all re-confirmed accurate. weaponAlts corrected against the source's calc %: alt5's Red
@@ -407,7 +423,10 @@ const CHARACTER_DATA = {
     // Added 'Changli + Aemeath + Lupa' (2026-09-12): confirmed on Changli's own dump ("Best Team:
     // Changli buffs Aemeath via Outro here, Lupa buffs Changli") and independently on Lupa's own
     // dump ("Classic Mono Fusion: Aemeath/Changli/Galbrena/Encore/Brant + Lupa").
-    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina', 'Changli + Aemeath + Lupa'] },
+    // Added 'Changli + Jinhsi + Verina' (2026-09-13): confirmed on Changli's own dump (naming
+    // Jinhsi one of her top quickswap/Whimpering Wastes partners) and independently on Jinhsi's
+    // own dump ("Quickswap Team... Verina must run with Brant+Changli").
+    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina', 'Changli + Aemeath + Lupa', 'Changli + Jinhsi + Verina'] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc content (title prepended to match the roster's
   // convention), skills, base stats, multipliers, buffs, ascension mats, bestEchoes, and both example
@@ -597,7 +616,10 @@ const CHARACTER_DATA = {
     // confirmed on Brant's own dump ("Fusion DPS partners for a Brant+Lupa duo: Galbrena/Aemeath/
     // Changli/Encore/Chixia" plus "Generalist supports: Mornye (best with Lupa)") and independently
     // on Lupa's own dump for each.
-    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper', 'Brant + Lupa + Galbrena', 'Brant + Lupa + Aemeath', 'Brant + Lupa + Mornye'] },
+    // Added 'Brant + Jinhsi + Verina' (2026-09-13): confirmed on Brant's own dump ("More
+    // Alternative Teams (with Jinhsi, Verina...)") and independently on Jinhsi's own dump
+    // ("Quickswap Team... Verina must run with Brant+Changli").
+    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper', 'Brant + Lupa + Galbrena', 'Brant + Lupa + Aemeath', 'Brant + Lupa + Mornye', 'Brant + Jinhsi + Verina'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1607 sheet. desc: title "Sea of Dreams" (the source) prepended and blurb
   // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
@@ -680,7 +702,12 @@ const CHARACTER_DATA = {
     // text is explicit that "Phoebe + Spectro Rover is the best Zani team when fully optimized" (with
     // Shorekeeper named separately as "the best option for Zani teams WITHOUT quickswap") — swapped
     // the 2nd slot's ordering to lead with the source's own "best" framing.
-    teams: ['Zani + Phoebe + Rover: Spectro', 'Zani + Phoebe + Shorekeeper'] },
+    // Expanded 2026-09-13, continuing the authoritative-source-first process: her own Synergies
+    // text names Ciaccona as another Frazzle-applier alternative to Rover: Spectro ("a worse
+    // alternative") and Verina alongside Shorekeeper as generalist non-Quickswap picks. Ciaccona
+    // independently confirmed on her own dump ("a solid Zani Frazzle-support alternative to
+    // Spectro Rover alone"); Verina is a one-way citation (not confirmed on her own dump).
+    teams: ['Zani + Phoebe + Rover: Spectro', 'Zani + Phoebe + Shorekeeper', 'Zani + Phoebe + Ciaccona', 'Zani + Phoebe + Verina'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1407 sheet. desc: title "Woven Melodies" (the source) prepended and blurb
   // rewritten — the previous desc said she "applies Erosion via Coordinated Attacks", but Ciaccona has
@@ -709,7 +736,10 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Kelpie', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell'], alt3: ['Pistols of Night'] },
-    teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
+    // Added 'Ciaccona + Zani + Phoebe' (2026-09-13): confirmed on Ciaccona's own dump ("Spectro
+    // Frazzle Teams: Phoebe + Zani + Ciaccona + Rover: Aero/Shorekeeper") and independently on
+    // Zani's own dump (Synergies naming Ciaccona a real Frazzle-applier alternative).
+    teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa', 'Ciaccona + Zani + Phoebe'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1409 sheet. desc: title "Feathered Tempest" (the source) prepended and
   // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes/
