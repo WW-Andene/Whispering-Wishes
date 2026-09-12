@@ -1295,7 +1295,20 @@ const CHARACTER_DATA = {
     // Xuanling + Lynae + Mornye — any non-Negative-Status DPS... fully interchangeable") explicitly
     // lists Yangyang: Xuanling as a headliner option, and Yangyang: Xuanling's own dump's
     // "Alternative Premium Teams" line confirms the same combo ("Only run Mornye alongside Lynae").
-    teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia', 'Mornye + Lynae + Yangyang: Xuanling'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Mornye/Mornye.md, Example Teams): "Lynae +
+    // Mornye" names Hiyuki/Iuno as further interchangeable 1st-slot DPS alongside Aemeath/Yangyang:
+    // Xuanling; "Mono Fusion" names Galbrena/Brant/Encore alongside Aemeath as Lupa+Mornye 1st-slot
+    // DPS options.
+    teams: [
+      'Mornye + Lynae + Aemeath',
+      'Mornye + Luuk Herssen + Denia',
+      'Mornye + Lynae + Yangyang: Xuanling',
+      'Mornye + Lynae + Hiyuki',
+      'Mornye + Lynae + Iuno',
+      'Mornye + Lupa + Galbrena',
+      'Mornye + Lupa + Brant',
+      'Mornye + Lupa + Encore',
+    ] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles through his Aureole of Execution's enhanced forms, dealing bonus damage against Tune Strain - Interfered enemies.",
     skills: ['Such is Light', 'Reunion of All the Fallen', 'Rewritten in Winter\'s Margins', 'Before Injection of Dawn'],
