@@ -2832,7 +2832,18 @@ const CHARACTER_DATA = {
   // explicitly called "arguably the strongest DPS" and "an insane ToA/Matrix DPS" by the source's own
   // review — raised to 3500 to sit alongside the other T0 Main DPS (Yangyang: Xuanling 3600, Hiyuki 3400).
   ['Sigrika',       3500, 24, 16],  // Echo Skill + Heavy ATK Aero DPS, Rune consumption
-  ['Qingxiao',      2900, 24, 17],  // Stance-builder into Ephemeral Transcendence burst
+  // totalMult corrected 2026-09-13 (found via a direct "why is Qingxiao ranked so low" user report):
+  // 2900 had no audit trail at all — unlike every neighboring row in this table, it was never
+  // actually summed against her real kit. Recomputed per this table's own documented definition
+  // ("sum of ATK% multipliers in one full rotation") from her exact modeled rotation
+  // (CHARACTER_ROTATIONS['Qingxiao']) against her real SKILL_MULTIPLIERS row values: Intro 132.63 +
+  // Mid-air Stage 1-3 (90.48+89.79+139.21) + Basic ATK Stage 1-4 (60.26+74.18+97.44+108.45) + Skill
+  // 139.18 + Heavy ATK 438.41 + Forte Basic Stage 1-4 (89.79+115.55+125.28+180.96) + Forte Heavy
+  // 695.90 + Liberation 1670.11 + Outro 800 = 5047.62 — nearly double the stale 2900, and enough to
+  // make her one of the highest totalMult values in the roster (previously the stale value made her
+  // look mid-tier and directly tanked her score in both this ranking and the real Team
+  // Suggestions/Calc tab engines, which read this same field).
+  ['Qingxiao',      5048, 24, 17],  // Stance-builder into Ephemeral Transcendence burst
   // Fixed 2026-08-25: same unit bug as Cartethyia above (was 3000, an ATK%-scale number applied
   // against his HP base -- baseHp 15375 vs baseAtk 313, ~49x larger). Rescaled by that same ratio
   // (3000 / (15375/313) ≈ 61) so his real damage formula output (mDmg = baseHp * mult/100 * ...) lands
