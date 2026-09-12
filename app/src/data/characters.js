@@ -353,7 +353,22 @@ const CHARACTER_DATA = {
     // Main DPS Iuno") — added ahead of the Calcharo pairing, which is no longer top-tier for her.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Jinzhou Keeper'], alt3: ['Rectifier of Night'] },
-    teams: ['Yinlin + Iuno + Shorekeeper', 'Yinlin + Jinhsi + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Yinlin/Yinlin.md, Synergies): "near-mandatory
+    // alongside a big Main DPS carry" — best synergies Xiangli Yao and Calcharo (both amplified by her
+    // Electro/Liberation DMG Amp Outro), Iuno ("best synergy nowadays"), Jinhsi ("competitive pair to
+    // Zhezhi, slightly worse"), Youhu ("buffs Yinlin the most of any partner"). Verina/Shorekeeper
+    // named as her generalist Healing Supports. Augusta explicitly deprioritized ("worse option than
+    // Mortefi — only worth slotting if Mortefi is taken") — omitted as too conditional for a curated entry.
+    teams: [
+      'Yinlin + Iuno + Shorekeeper',
+      'Yinlin + Iuno + Verina',
+      'Yinlin + Jinhsi + Shorekeeper',
+      'Yinlin + Jinhsi + Verina',
+      'Yinlin + Xiangli Yao + Shorekeeper',
+      'Yinlin + Xiangli Yao + Verina',
+      'Yinlin + Calcharo + Shorekeeper',
+      'Yinlin + Youhu + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, all skill multipliers
   // (independently spot-checked section-by-section against the wiki's own Forte table, matches exactly),
