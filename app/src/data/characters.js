@@ -191,7 +191,16 @@ const CHARACTER_DATA = {
     // Brant's own weaponAlts completeness fix).
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Wildfire Mark',
     weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest', 'Verdant Summit'], alt4: ['Autumntrace', 'Aureate Zenith', 'Waning Redshift', 'Helios Cleaver', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
-    teams: ['Calcharo + Lynae + Mornye', 'Calcharo + Yinlin + Shorekeeper'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Calcharo/Calcharo.md, Synergies): Lynae named
+    // his best overall buffer; Yinlin his most reliable Outro buffer; Mornye/Shorekeeper/Verina his 3
+    // best generalist Supports (Mornye restricted to Lynae pairings per the source).
+    teams: [
+      'Calcharo + Lynae + Mornye',
+      'Calcharo + Lynae + Shorekeeper',
+      'Calcharo + Lynae + Verina',
+      'Calcharo + Yinlin + Shorekeeper',
+      'Calcharo + Yinlin + Verina',
+    ] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
     // desc rewritten 2026-08-31 against wuthering.gg/characters/encore (Lv.1 skill-detail widget, cross-checked
     // against the wiki/Encore/Combat's Forte/Resonance Chain text) for exact Mayhem
