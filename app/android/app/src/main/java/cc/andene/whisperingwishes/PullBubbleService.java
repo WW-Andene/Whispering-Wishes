@@ -1541,6 +1541,16 @@ public class PullBubbleService extends Service {
     }
 
     private static final int SPARK_COUNT = 6;
+    // BUG FIX (direct user report, "the spark is just a centered flash inside the bubble
+    // instead of being a flash/shard projection"): each spark used to be a bar CENTERED on
+    // the burst point (transparent → bright → transparent gradient, Gravity.CENTER placement,
+    // default pivot = the view's own middle) — rotating around its own center makes BOTH ends
+    // project outward in opposite directions from a shared middle, and the gradient's
+    // brightest pixel sits exactly on that middle. The net visual result is a bright blob
+    // right at the center with faint tails, which reads as "a flash" — not six shards
+    // radiating outward. Fixed by anchoring each shard's BASE (bright end) at the burst's
+    // true center and letting it taper to transparent only at the outward tip — a real
+    // outward-projecting shard, not a two-way bar pivoting on itself.
     private List<View> addSparkStreaks(FrameLayout container, int flashSizePx) {
         List<View> sparks = new ArrayList<>();
         // Direct user request: was reading as "very small, on fire inside the bubble" — bumped
@@ -1548,14 +1558,25 @@ public class PullBubbleService extends Service {
         int sparkLengthPx = (int) (flashSizePx * 2.2f);
         int sparkThicknessPx = Math.max(3, flashSizePx / 22);
         for (int i = 0; i < SPARK_COUNT; i++) {
+            // One-directional taper: bright at the base (center), fading to nothing at the tip
+            // — the old {TRANSPARENT, bright, TRANSPARENT} shape was what put the bright pixel
+            // in the middle instead of at the shard's outward-facing tip.
             GradientDrawable streak = new GradientDrawable(
                     GradientDrawable.Orientation.LEFT_RIGHT,
-                    new int[]{Color.TRANSPARENT, Color.parseColor("#F2FFFFFF"), Color.TRANSPARENT});
+                    new int[]{Color.parseColor("#F2FFFFFF"), Color.TRANSPARENT});
             View spark = new View(this);
             spark.setBackground(streak);
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(sparkLengthPx, sparkThicknessPx, Gravity.CENTER);
-            spark.setRotation((360f / SPARK_COUNT) * i);
             container.addView(spark, lp);
+            // Gravity.CENTER placement puts the view's own (unrotated) center at the burst's
+            // true center — pivoting there is exactly the old bug. Move the pivot to the
+            // shard's own base (left edge, vertically centered) and nudge the view right by
+            // half its length so that base lands back on the true center; rotating around
+            // THAT point makes the whole shard sweep outward from the center in one direction.
+            spark.setPivotX(0f);
+            spark.setPivotY(sparkThicknessPx / 2f);
+            spark.setTranslationX(sparkLengthPx / 2f);
+            spark.setRotation((360f / SPARK_COUNT) * i);
             sparks.add(spark);
         }
         return sparks;
