@@ -34,6 +34,8 @@ import EchoFarmPlanner from './EchoFarmPlanner.jsx';
 import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
 import { calcStats } from '../../core/calcStats.js';
 import { computePullAllocation } from '../../core/pullAllocation.js';
+import { TIER_SCORES } from '../teams/calcEngine.js';
+import { isHealerRole, isSupportRole } from '../../engine/math/roleMatch.js';
 
 
 // Computes the full material/shell/EXP-potion requirement for one Ascension Planner target.
@@ -149,6 +151,7 @@ function PlannerTab({
   dispatch,
   activeBanners,
   bannerEndDate,
+  collectionData,
   toast,
   confirm,
 }) {
@@ -358,6 +361,63 @@ function PlannerTab({
     const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
     return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, incomeByEndWithUpdates, totalAstriteByEndWithUpdates, convenesByEnd, convenesByEndWithUpdates, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, probByEndWithUpdates, availablePulls, pullsByEnd };
   }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome, cumulativeIncomeByPhaseWithUpdates]);
+
+  // ── Banner Recommendation ── direct user request: after Goal Progress, a section that gives
+  // a realistic "who/what to pull" suggestion based on the player's own collection and this
+  // patch's actual featured banners — not a generic tier-list dump. Priority mirrors the Teams
+  // tab's own "no picks yet" ranking philosophy (dump-sourced tier first, then a concrete,
+  // dump-cited reason, only using raw power as a last-resort tiebreak): an unowned character
+  // always outranks an owned one (a recommendation to pull something already owned isn't useful),
+  // then ToA tier (CHARACTER_DATA.tier.toa, literal dump text via TIER_SCORES), then whether they
+  // fill a real gap in the player's own roster (no Main DPS yet / no Support-or-Healer yet), then
+  // how many characters they already own are named in their own curated `teams` field — the same
+  // dump-sourced citation data the Teams tab's recommendation engine reads, so "recommend Jingran
+  // because you own Iuno" is a real, sourced claim, not an invented one.
+  const bannerRecommendation = useMemo(() => {
+    const ownedCharNames = new Set([
+      ...Object.keys(collectionData?.chars5Counts || {}),
+      ...Object.keys(collectionData?.chars4Counts || {}),
+    ]);
+    const ownedWeapNames = new Set([
+      ...Object.keys(collectionData?.weaps5Counts || {}),
+      ...Object.keys(collectionData?.weaps4Counts || {}),
+    ]);
+    const ownedArr = [...ownedCharNames].filter(n => CHARACTER_DATA[n]);
+    const hasMainDps = ownedArr.some(n => CHARACTER_DATA[n].role === 'Main DPS');
+    const hasSupportOrHealer = ownedArr.some(n => isHealerRole(CHARACTER_DATA[n].role) || isSupportRole(CHARACTER_DATA[n].role));
+
+    const featuredChars = (activeBanners?.characters || []).map(c => c.name).filter(n => n && CHARACTER_DATA[n]);
+    if (featuredChars.length === 0) return null;
+
+    const scored = featuredChars.map(name => {
+      const d = CHARACTER_DATA[name];
+      const owned = ownedCharNames.has(name);
+      const tierScore = TIER_SCORES[d.tier?.toa] ?? -1;
+      const fillsRoleGap = (d.role === 'Main DPS' && !hasMainDps) || ((isHealerRole(d.role) || isSupportRole(d.role)) && !hasSupportOrHealer);
+      // Real, dump-sourced synergy: this character's OWN curated `teams` field naming a
+      // character the player already owns — the exact same citation data the Teams tab reads,
+      // never an invented pairing.
+      const ownedSynergyPartners = [...new Set(
+        (d.teams || []).flatMap(team => team.split('+').map(m => m.trim())).filter(m => m !== name && ownedCharNames.has(m))
+      )];
+      return { name, d, owned, tierScore, fillsRoleGap, ownedSynergyPartners };
+    });
+    scored.sort((a, b) => {
+      if (a.owned !== b.owned) return a.owned ? 1 : -1;
+      if (a.tierScore !== b.tierScore) return b.tierScore - a.tierScore;
+      if (a.fillsRoleGap !== b.fillsRoleGap) return a.fillsRoleGap ? -1 : 1;
+      return b.ownedSynergyPartners.length - a.ownedSynergyPartners.length;
+    });
+
+    const top = scored[0];
+    // A featured weapon whose forCharacter is the top pick — a concrete secondary nudge when
+    // it's also unowned, rather than a separate unrelated weapon suggestion.
+    const featuredWeapons = activeBanners?.weapons || [];
+    const topWeapon = top ? featuredWeapons.find(w => w.forCharacter === top.name && !ownedWeapNames.has(w.name)) : null;
+    const allOwned = scored.every(s => s.owned);
+
+    return { scored, top, topWeapon, allOwned };
+  }, [activeBanners, collectionData]);
 
   // Collapsible section toggle
   const toggleSection = useCallback((key) => setCollapsed(p => ({ ...p, [key]: !p[key] })), []);
@@ -720,6 +780,89 @@ function PlannerTab({
           {planData.goalNeeded >= 16000 && (
             <p className="text-gray-500 text-sm text-center mt-1">{t('planner.costNote', { cost: formatNumber(Math.ceil(planData.goalNeeded / 60)) })}</p>
           )}
+        </CardBody>
+        )}
+      </Card>
+
+      {/* ── 6b. Recommendations ────────────────────────────────────────────── */}
+      <Card>
+        <div className="cursor-pointer" role="button" tabIndex={0} onClick={() => toggleSection('recommendation')} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSection('recommendation'); } }} aria-expanded={!collapsed.recommendation}>
+          <CardHeader action={<ChevronDown size={14} className={`text-gray-400 transition-transform duration-200 ${collapsed.recommendation ? '' : 'rotate-180'}`} />}>{t('planner.recommendationTitle')}</CardHeader>
+        </div>
+        {!collapsed.recommendation && (
+        <CardBody className="space-y-3">
+          <p className="text-gray-500 text-xs text-center -mt-1">{t('planner.recommendationSubtitle')}</p>
+          {!bannerRecommendation && (
+            <p className="text-gray-500 text-sm text-center py-2">{t('planner.recommendationNoBanner')}</p>
+          )}
+          {bannerRecommendation && bannerRecommendation.allOwned && (
+            <div className="p-3 bg-white/5 rounded-lg text-center space-y-1">
+              <p className="text-gray-100 text-sm font-medium">{t('planner.recommendationAllOwnedTitle')}</p>
+              <p className="text-gray-400 text-sm">
+                {bannerRecommendation.topWeapon
+                  ? t('planner.recommendationAllOwnedWithWeapon', { weapon: bannerRecommendation.topWeapon.name, character: bannerRecommendation.topWeapon.forCharacter })
+                  : t('planner.recommendationAllOwnedNoWeapon')}
+              </p>
+            </div>
+          )}
+          {bannerRecommendation && !bannerRecommendation.allOwned && bannerRecommendation.top && (() => {
+            const { top, topWeapon, scored } = bannerRecommendation;
+            const imgUrl = DEFAULT_COLLECTION_IMAGES[top.name];
+            const others = scored.slice(1);
+            return (
+              <>
+                <div className="p-3 bg-white/5 rounded-lg" style={{ borderLeft: '3px solid #eab308' }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star size={14} className="text-yellow-400 flex-shrink-0" fill="currentColor" />
+                    <span className="text-yellow-400 text-xs font-semibold uppercase tracking-wider">{t('planner.recommendationBestPick')}</span>
+                  </div>
+                  <div className="flex gap-3">
+                    {imgUrl && (
+                      <div className="w-14 h-14 rounded-lg overflow-hidden border border-yellow-500/40 flex-shrink-0 bg-black/25">
+                        <img src={imgUrl} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-gray-100 font-bold">{top.name}</span>
+                        {top.d.tier?.toa && <span className="kuro-badge kuro-badge-yellow text-2xs">{t('planner.recommendationTierBadge', { tier: top.d.tier.toa })}</span>}
+                      </div>
+                      <ul className="text-gray-400 text-sm space-y-0.5 list-disc list-inside">
+                        {top.fillsRoleGap && (
+                          <li>{t(top.d.role === 'Main DPS' ? 'planner.recommendationFillsMainDps' : 'planner.recommendationFillsSupport')}</li>
+                        )}
+                        {top.ownedSynergyPartners.length > 0 && (
+                          <li>{t('planner.recommendationSynergy', { names: top.ownedSynergyPartners.join(', ') })}</li>
+                        )}
+                        {topWeapon && (
+                          <li>{t('planner.recommendationWeaponNote', { weapon: topWeapon.name })}</li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                {others.length > 0 && (
+                  <div>
+                    <p className="text-gray-500 text-xs uppercase tracking-wider mb-1.5">{t('planner.recommendationAlsoFeatured')}</p>
+                    <div className="space-y-1.5">
+                      {others.map(o => (
+                        <div key={o.name} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+                          {DEFAULT_COLLECTION_IMAGES[o.name] && (
+                            <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
+                              <img src={DEFAULT_COLLECTION_IMAGES[o.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                            </div>
+                          )}
+                          <span className="text-gray-300 text-sm flex-1 truncate">{o.name}</span>
+                          {o.d.tier?.toa && <span className="text-gray-500 text-2xs">{o.d.tier.toa}</span>}
+                          <span className={`text-2xs ${o.owned ? 'text-emerald-400' : 'text-gray-500'}`}>{t(o.owned ? 'planner.recommendationOwnedBadge' : 'planner.recommendationUnownedBadge')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </CardBody>
         )}
       </Card>
