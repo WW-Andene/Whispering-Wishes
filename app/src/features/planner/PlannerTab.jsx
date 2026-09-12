@@ -881,10 +881,6 @@ function PlannerTab({
             const { top, topWeapon } = bannerRecommendation;
             const imgUrl = DEFAULT_COLLECTION_IMAGES[top.name];
             const topFraming = getImageFraming(`collection-${top.name}`);
-            // Direct user feedback: the "not essential" verdict named an alternative but gave no
-            // usable reason to trust it — grounded now in that alternative's own sourced stat/passive
-            // (WEAPON_DATA), the same data the Weapons/Calc tabs read, rather than an unsupported
-            // "performs nearly as well" claim with nothing behind it.
             const altWeaponInfo = (topWeapon?.ownedAlt || topWeapon?.altOptions?.[0])
               ? WEAPON_DATA[topWeapon.ownedAlt || topWeapon.altOptions[0]]
               : null;
@@ -943,9 +939,6 @@ function PlannerTab({
                         </span>
                       </div>
                     </div>
-                    {/* Direct user feedback: the "Not Essential" verdict left nothing explaining the
-                        signature weapon itself — this line now always states why the signature is
-                        skippable, with the concrete alternative (picture + real stat/passive) below it. */}
                     <p className="text-gray-500 text-xs">
                       {topWeapon.reliantDespiteAlts
                         ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
