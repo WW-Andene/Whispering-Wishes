@@ -470,6 +470,17 @@ function TeamsTab({
               const ACCESSIBILITY_REFERENCE = 6;
               const ACCESSIBILITY_FLOOR = 0.6;
               const ACCESSIBILITY_CEILING = 1.3;
+              // 2026-09-13 (direct user pushback: Qingxiao — a real T0 DPS whose own dump explicitly
+              // calls her "one of the strongest/most accessible DPS releases in a while" — dropped
+              // out of the top 8 purely because her real kit only supports one team archetype with
+              // "no recommended alternatives"): the flat 0.6 floor treats a top-tier DPS with one
+              // perfect team the same as a genuinely mediocre niche character with equally few
+              // options, which isn't the same situation — a T0 unit's one team is still a great pick,
+              // where a T3/T4 unit's one team is a real red flag. Raise the floor for elite-tier
+              // characters so the accessibility discount can't drag a top-tier DPS down as hard as a
+              // weaker one for the same team count; everyone else keeps the original 0.6 floor.
+              const ELITE_ACCESSIBILITY_FLOOR = 0.85;
+              const ELITE_TIERS = new Set(['T0', 'T0.5']);
               const candidateScores = new Map();
               allCharNames.forEach(name => {
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
@@ -482,7 +493,9 @@ function TeamsTab({
                 const dumpBonus = Math.max(curatedVotes.get(name) || 0, exactTrioMatch(name) ? FULL_TRIO_MATCH_WEIGHT : 0);
                 if (placedNow.length === 0) {
                   const teamsCount = CHARACTER_DATA[name]?.teams?.length || 0;
-                  const accessibilityFactor = Math.max(ACCESSIBILITY_FLOOR, Math.min(ACCESSIBILITY_CEILING, teamsCount / ACCESSIBILITY_REFERENCE));
+                  const isElite = ELITE_TIERS.has(CHARACTER_DATA[name]?.tier?.toa);
+                  const floor = isElite ? ELITE_ACCESSIBILITY_FLOOR : ACCESSIBILITY_FLOOR;
+                  const accessibilityFactor = Math.max(floor, Math.min(ACCESSIBILITY_CEILING, teamsCount / ACCESSIBILITY_REFERENCE));
                   candidateScores.set(name, score * accessibilityFactor);
                 } else {
                   candidateScores.set(name, score + dumpBonus);
