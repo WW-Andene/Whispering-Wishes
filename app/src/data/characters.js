@@ -1594,7 +1594,23 @@ const CHARACTER_DATA = {
     // Hiyuki + Lucilla + Lynae + Suisui" — Lucilla/Lynae are the alternate 2nd-pick per Hiyuki's own
     // dump's "{Lucilla/Lynae}" structure, not simultaneous members) and independently on Hiyuki's own
     // dump line 202's "{Suisui/Chisa/Mornye/Verina}" 3rd-pick list.
-    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye', 'Hiyuki + Lynae + Chisa', 'Hiyuki + Lynae + Suisui'] },
+    // Expanded 2026-09-13: added the Verina 3rd-slot alternative her own dump names for both
+    // Lucilla/Lynae ("Best Team": Hiyuki + {Lucilla/Lynae} + {Suisui/Chisa/Mornye/Verina}), and the
+    // "Alternative Team" last-resort options (Yinlin/Zhezhi/Changli/Jianxin + Suisui/Chisa when Lynae
+    // isn't available) — Zhezhi's own dump independently confirms 'Zhezhi + Hiyuki + Chisa'.
+    teams: [
+      'Hiyuki + Lucilla + Chisa',
+      'Hiyuki + Lucilla + Suisui',
+      'Hiyuki + Lucilla + Verina',
+      'Hiyuki + Lynae + Mornye',
+      'Hiyuki + Lynae + Chisa',
+      'Hiyuki + Lynae + Suisui',
+      'Hiyuki + Lynae + Verina',
+      'Hiyuki + Yinlin + Chisa',
+      'Hiyuki + Zhezhi + Chisa',
+      'Hiyuki + Changli + Chisa',
+      'Hiyuki + Jianxin + Chisa',
+    ] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG) via Resonance Skill, closing with a team-wide DMG Amplification Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
