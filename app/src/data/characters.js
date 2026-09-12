@@ -326,7 +326,19 @@ const CHARACTER_DATA = {
     // Freezing Frost's (whose main echo is Lampylumen Myriad) — only the paired set name was wrong.
     bestEchoes: ['Mech Abomination', 'Endless Resonance 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
-    teams: ['Lingyang + Lynae + Zhezhi', 'Lingyang + Sanhua + Verina'] },
+    // Rebuilt 2026-09-13 from his own dump (Data dump/Lingyang/Lingyang.md, Synergies/Example Teams):
+    // "Best Team" is Lynae + Mornye ("Mornye is only best here when paired WITH Lynae specifically");
+    // Zhezhi is his other named best partner (a separate pairing, not combined with Lynae in the same
+    // team per the source); Sanhua is his named F2P alternative when Zhezhi is unavailable.
+    // Verina/Shorekeeper are his named generalist Healing Supports.
+    teams: [
+      'Lingyang + Lynae + Mornye',
+      'Lingyang + Lynae + Shorekeeper',
+      'Lingyang + Zhezhi + Shorekeeper',
+      'Lingyang + Zhezhi + Verina',
+      'Lingyang + Sanhua + Verina',
+      'Lingyang + Sanhua + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source/
   // character/1503 — desc, skills, base stats, multipliers, buffs, ascension mats, echoes, alt4/alt3
   // weapons, and teams all independently re-confirmed accurate, no changes needed there. CHAR_BUFF_TABLE's
