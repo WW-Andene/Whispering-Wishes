@@ -140,7 +140,19 @@ const CHARACTER_DATA = {
     // Added 'Jiyan + Mortefi + Shorekeeper' (2026-09-12): confirmed on Jiyan's own dump (line 173,
     // grouping Rebecca/Mortefi together as free/accessible Heavy DMG buffers) and independently on
     // Mortefi's own dump (Synergies: "Jiyan (tailor-made partner)").
-    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper', 'Jiyan + Rebecca + Shorekeeper', 'Jiyan + Mortefi + Shorekeeper'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Jiyan/Jiyan.md, Synergies/Example Teams):
+    // added Phrolova ("excellent Dual DPS"), Iuno+Verina/Rover: Aero alternatives (the Erosion
+    // team's casual pick), and the Lynae+Mornye fallback team.
+    teams: [
+      'Jiyan + Iuno + Ciaccona',
+      'Jiyan + Iuno + Shorekeeper',
+      'Jiyan + Iuno + Verina',
+      'Jiyan + Iuno + Rover: Aero',
+      'Jiyan + Rebecca + Shorekeeper',
+      'Jiyan + Mortefi + Shorekeeper',
+      'Jiyan + Phrolova + Shorekeeper',
+      'Jiyan + Lynae + Mornye',
+    ] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     // desc rewritten 2026-08-31 against the wiki/Calcharo/Combat (Chrome/Windows UA +
     // google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare) and cross-checked against
@@ -786,7 +798,20 @@ const CHARACTER_DATA = {
     // Added 'Brant + Jinhsi + Verina' (2026-09-13): confirmed on Brant's own dump ("More
     // Alternative Teams (with Jinhsi, Verina...)") and independently on Jinhsi's own dump
     // ("Quickswap Team... Verina must run with Brant+Changli").
-    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper', 'Brant + Lupa + Galbrena', 'Brant + Lupa + Aemeath', 'Brant + Lupa + Mornye', 'Brant + Jinhsi + Verina'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Brant/Brant.md, Synergies): added
+    // Encore/Chixia (both named Mono Fusion Brant+Lupa DPS partners) and Carlotta (a Skill-DMG
+    // Main DPS alternative alongside Jinhsi).
+    teams: [
+      'Brant + Lupa + Changli',
+      'Brant + Changli + Shorekeeper',
+      'Brant + Lupa + Galbrena',
+      'Brant + Lupa + Aemeath',
+      'Brant + Lupa + Mornye',
+      'Brant + Lupa + Encore',
+      'Brant + Lupa + Chixia',
+      'Brant + Jinhsi + Verina',
+      'Brant + Carlotta + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1607 sheet. desc: title "Sea of Dreams" (the source) prepended and blurb
   // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
@@ -885,7 +910,18 @@ const CHARACTER_DATA = {
     // alternative") and Verina alongside Shorekeeper as generalist non-Quickswap picks. Ciaccona
     // independently confirmed on her own dump ("a solid Zani Frazzle-support alternative to
     // Spectro Rover alone"); Verina is a one-way citation (not confirmed on her own dump).
-    teams: ['Zani + Phoebe + Rover: Spectro', 'Zani + Phoebe + Shorekeeper', 'Zani + Phoebe + Ciaccona', 'Zani + Phoebe + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Zani/Zani.md, Synergies): added Iuno/
+    // Phrolova/Mortefi, all named Heavy ATK DMG Amp alternatives to Phoebe (Phrolova for high
+    // personal damage, Mortefi as an F2P higher-buffing pick, Iuno as a sustain middle ground).
+    teams: [
+      'Zani + Phoebe + Rover: Spectro',
+      'Zani + Phoebe + Shorekeeper',
+      'Zani + Phoebe + Ciaccona',
+      'Zani + Phoebe + Verina',
+      'Zani + Iuno + Shorekeeper',
+      'Zani + Phrolova + Shorekeeper',
+      'Zani + Mortefi + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1407 sheet. desc: title "Woven Melodies" (the source) prepended and blurb
   // rewritten — the previous desc said she "applies Erosion via Coordinated Attacks", but Ciaccona has
@@ -1163,7 +1199,22 @@ const CHARACTER_DATA = {
     // Added 'Galbrena + Lupa + Mornye' (2026-09-12): confirmed on Lupa's own dump ("Best Team:
     // Jingran/Aemeath/Galbrena + Lupa + Mortefi/Denia/Mornye" — Mornye is the generalist alternate
     // working with all three headliners, Galbrena included).
-    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa', 'Galbrena + Rebecca + Shorekeeper', 'Galbrena + Lupa + Mornye'] },
+    // Rebuilt/expanded 2026-09-13 from his own dump (Data dump/Galbrena/Galbrena.md, Example
+    // Teams): 'Galbrena + Phrolova + Lupa' was corrected to 'Galbrena + Phrolova + Shorekeeper' —
+    // the dump's "Premium Alt" pairs Phrolova/Iuno with Shorekeeper/Verina, not Lupa (that's the
+    // separate Mono Fusion team, which uses Brant/Mortefi, not Phrolova). Added Lucilla ("Echo
+    // Hypercarry"), Brant/Mortefi ("Mono Fusion Alt"), and Iuno ("Premium Alt").
+    teams: [
+      'Galbrena + Qiuyuan + Shorekeeper',
+      'Galbrena + Qiuyuan + Lucilla',
+      'Galbrena + Phrolova + Shorekeeper',
+      'Galbrena + Phrolova + Verina',
+      'Galbrena + Iuno + Shorekeeper',
+      'Galbrena + Rebecca + Shorekeeper',
+      'Galbrena + Lupa + Mornye',
+      'Galbrena + Lupa + Brant',
+      'Galbrena + Lupa + Mortefi',
+    ] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who supports from off-field, boosting the active Resonator\'s Crit DMG via his Liberation and amplifying the next Resonator\'s Echo Skill damage through his Outro.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
@@ -1825,7 +1876,18 @@ const CHARACTER_DATA = {
     // in weapons.js): Emerald of Genesis (100.00%, standard 5★), Commando of Conviction (81.08%) and
     // Endless Collapse (80.72%) as top 4★s, Originite: Type II as the 3★ craftable option.
     weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Commando of Conviction', 'Endless Collapse'], alt3: ['Originite: Type II'] },
-    teams: ['Danjin + Camellya + Shorekeeper', 'Danjin + Camellya + Verina', 'Danjin + Cantarella + Verina', 'Danjin + Phrolova + Cantarella'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Danjin/Danjin.md, Synergies/Example Teams):
+    // added Rover: Havoc ("Havoc Rover" team), Roccia ("great for Main DPS Danjin"), and Mortefi
+    // ("the budget Main-DPS-Danjin option").
+    teams: [
+      'Danjin + Camellya + Shorekeeper',
+      'Danjin + Camellya + Verina',
+      'Danjin + Cantarella + Verina',
+      'Danjin + Phrolova + Cantarella',
+      'Danjin + Rover: Havoc + Shorekeeper',
+      'Danjin + Roccia + Shorekeeper',
+      'Danjin + Mortefi + Shorekeeper',
+    ] },
   // Audited 2026-08-18 via the wiki (infobox/MediaWiki API) + the source Kit/Build/
   // Gameplay tabs. desc: the wiki infobox `role` field is "Concerto Efficiency;Traction;Resonance
   // Liberation Regeneration"; the source frames her as a fully quickswap-friendly Hybrid whose Outro
