@@ -1388,7 +1388,18 @@ const CHARACTER_DATA = {
     // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere (the source doesn't
     // rank a 3★ for her at all — she "lacks strong F2P weapon alternatives" per its own review).
     weaponAlts: { alt5: ['Blazing Justice', 'Pulsation Bracer'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
-    teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Qiuyuan + Ciaccona'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Sigrika/Sigrika.md, Synergies/Example Teams):
+    // Lucilla named alongside Qiuyuan as her "by far strongest synergies"; Lynae named as her
+    // fallback generalist buffer, with Mornye/Verina/Rover: Aero named 3rd-slot options for that team.
+    teams: [
+      'Sigrika + Qiuyuan + Shorekeeper',
+      'Sigrika + Phrolova + Qiuyuan',
+      'Sigrika + Qiuyuan + Ciaccona',
+      'Sigrika + Qiuyuan + Lucilla',
+      'Sigrika + Lynae + Mornye',
+      'Sigrika + Lynae + Verina',
+      'Sigrika + Lynae + Rover: Aero',
+    ] },
   'Rebecca': { rarity: 5, element: 'Electro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Edgerunner and Fury-Type Arsenal from the Cyberpunk: Edgerunners collab. Electro Hybrid who mode-switches between Huntress and Guts stances, then leaves behind a turret on Outro that buffs the team\'s damage.',
     skills: ["Mix-'n'-Match", "Tactical Tweaks", "Party 'til Dawn!", "My Turn!"],
