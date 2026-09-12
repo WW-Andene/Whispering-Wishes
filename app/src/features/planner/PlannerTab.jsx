@@ -36,6 +36,7 @@ import { calcStats } from '../../core/calcStats.js';
 import { computePullAllocation } from '../../core/pullAllocation.js';
 import { TIER_SCORES } from '../teams/calcEngine.js';
 import { isHealerRole, isSupportRole } from '../../engine/math/roleMatch.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 
 
 // Computes the full material/shell/EXP-potion requirement for one Ascension Planner target.
@@ -155,6 +156,7 @@ function PlannerTab({
   toast,
   confirm,
 }) {
+  const { getImageFraming } = useImageFramingContext();
   const [showIncomePanel, setShowIncomePanel] = useState(false);
   // Calendar notes stored in localStorage
   const [calendarNotes, setCalendarNotes] = usePersistedState('ww-calendar-notes', {});
@@ -878,6 +880,16 @@ function PlannerTab({
           {bannerRecommendation && !bannerRecommendation.allOwned && bannerRecommendation.top && (() => {
             const { top, topWeapon } = bannerRecommendation;
             const imgUrl = DEFAULT_COLLECTION_IMAGES[top.name];
+            const topFraming = getImageFraming(`collection-${top.name}`);
+            // Direct user feedback: the "not essential" verdict named an alternative but gave no
+            // usable reason to trust it — grounded now in that alternative's own sourced stat/passive
+            // (WEAPON_DATA), the same data the Weapons/Calc tabs read, rather than an unsupported
+            // "performs nearly as well" claim with nothing behind it.
+            const altWeaponInfo = (topWeapon?.ownedAlt || topWeapon?.altOptions?.[0])
+              ? WEAPON_DATA[topWeapon.ownedAlt || topWeapon.altOptions[0]]
+              : null;
+            const altWeaponName = topWeapon?.ownedAlt || topWeapon?.altOptions?.[0];
+            const altPassiveSummary = altWeaponInfo?.passive ? altWeaponInfo.passive.split('. ')[0].replace(/\.$/, '') : null;
             return (
               <>
                 <div className="p-3 bg-white/5 rounded-lg" style={{ borderLeft: '3px solid #eab308' }}>
@@ -887,8 +899,8 @@ function PlannerTab({
                   </div>
                   <div className="flex gap-3">
                     {imgUrl && (
-                      <div className="w-14 h-14 rounded-lg overflow-hidden border border-yellow-500/40 flex-shrink-0 bg-black/25">
-                        <img src={imgUrl} alt="" className="w-full h-full object-cover pointer-events-none" style={{ objectPosition: 'center top', transform: 'translateX(2%) translateY(-35%) scale(1.9)', transformOrigin: '48% top' }} onError={hideOnError} />
+                      <div className="w-14 h-14 rounded-lg overflow-hidden border border-yellow-500/40 flex-shrink-0 bg-black/25 relative">
+                        <img src={imgUrl} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${topFraming.zoom / 100}) translate(${-topFraming.x}%, ${-topFraming.y}%)` }} onError={hideOnError} />
                       </div>
                     )}
                     <div className="flex-1 min-w-0 space-y-1">
@@ -918,26 +930,47 @@ function PlannerTab({
                     "alternatives exist" line. */}
                 {topWeapon && !topWeapon.owned && (
                   <div className="p-3 bg-white/5 rounded-lg space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-gray-100 text-sm font-medium truncate">{topWeapon.name}</span>
-                      <span className={`kuro-badge text-2xs flex-shrink-0 ${topWeapon.mustHave ? 'kuro-badge-red' : 'kuro-badge-cyan'}`}>
-                        {t(topWeapon.mustHave ? 'planner.recommendationWeaponMustHave' : 'planner.recommendationWeaponNotEssential')}
-                      </span>
-                    </div>
-                    {DEFAULT_COLLECTION_IMAGES[topWeapon.name] && (
-                      <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/10 bg-black/25">
-                        <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                    <div className="flex items-center gap-3">
+                      {DEFAULT_COLLECTION_IMAGES[topWeapon.name] && (
+                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/25 relative">
+                          <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${getImageFraming(`info-${topWeapon.name}`).zoom / 100}) translate(${-getImageFraming(`info-${topWeapon.name}`).x}%, ${-getImageFraming(`info-${topWeapon.name}`).y}%)` }} onError={hideOnError} />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                        <span className="text-gray-100 text-sm font-medium truncate">{topWeapon.name}</span>
+                        <span className={`kuro-badge text-2xs flex-shrink-0 ${topWeapon.mustHave ? 'kuro-badge-red' : 'kuro-badge-cyan'}`}>
+                          {t(topWeapon.mustHave ? 'planner.recommendationWeaponMustHave' : 'planner.recommendationWeaponNotEssential')}
+                        </span>
                       </div>
-                    )}
+                    </div>
                     <p className="text-gray-500 text-xs">
                       {topWeapon.reliantDespiteAlts
                         ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
                         : topWeapon.mustHave
                           ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
-                          : topWeapon.ownedAlt
-                            ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: topWeapon.ownedAlt })
-                            : t('planner.recommendationWeaponAltExists', { alts: topWeapon.altOptions.join(', ') })}
+                          : null}
                     </p>
+                    {!topWeapon.mustHave && altWeaponName && (
+                      <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+                        {DEFAULT_COLLECTION_IMAGES[altWeaponName] && (
+                          <div className="w-10 h-10 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25 relative">
+                            <img src={DEFAULT_COLLECTION_IMAGES[altWeaponName]} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${getImageFraming(`info-${altWeaponName}`).zoom / 100}) translate(${-getImageFraming(`info-${altWeaponName}`).x}%, ${-getImageFraming(`info-${altWeaponName}`).y}%)` }} onError={hideOnError} />
+                          </div>
+                        )}
+                        <div className="min-w-0 space-y-0.5">
+                          <p className="text-gray-300 text-xs font-medium truncate">
+                            {topWeapon.ownedAlt
+                              ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: altWeaponName })
+                              : t('planner.recommendationWeaponAltExists', { alts: altWeaponName })}
+                          </p>
+                          {altPassiveSummary && (
+                            <p className="text-gray-500 text-2xs">
+                              {altWeaponInfo.rarity}★ {altWeaponInfo.stat} • {altPassiveSummary}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Direct user correction: this must be about the player's OWNED roster, not a
@@ -949,16 +982,19 @@ function PlannerTab({
                   <p className="text-gray-500 text-xs uppercase tracking-wider mb-1.5">{t('planner.recommendationGoodForHeader', { name: top.name })}</p>
                   {top.ownedSynergyPartners.length > 0 ? (
                     <div className="space-y-1.5">
-                      {top.ownedSynergyPartners.map(name => (
+                      {top.ownedSynergyPartners.map(name => {
+                        const partnerFraming = getImageFraming(`collection-${name}`);
+                        return (
                         <div key={name} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
                           {DEFAULT_COLLECTION_IMAGES[name] && (
-                            <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
-                              <img src={DEFAULT_COLLECTION_IMAGES[name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                            <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25 relative">
+                              <img src={DEFAULT_COLLECTION_IMAGES[name]} alt="" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${partnerFraming.zoom / 100}) translate(${-partnerFraming.x}%, ${-partnerFraming.y}%)` }} onError={hideOnError} />
                             </div>
                           )}
                           <span className="text-gray-300 text-sm truncate">{name}</span>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-gray-500 text-sm p-2 bg-white/5 rounded-lg text-center">{t('planner.recommendationGoodForEmpty')}</p>
