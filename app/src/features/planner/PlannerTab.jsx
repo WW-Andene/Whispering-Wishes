@@ -383,8 +383,17 @@ function PlannerTab({
       ...Object.keys(collectionData?.weaps4Counts || {}),
     ]);
     const ownedArr = [...ownedCharNames].filter(n => CHARACTER_DATA[n]);
-    const hasMainDps = ownedArr.some(n => CHARACTER_DATA[n].role === 'Main DPS');
-    const hasSupportOrHealer = ownedArr.some(n => isHealerRole(CHARACTER_DATA[n].role) || isSupportRole(CHARACTER_DATA[n].role));
+    // BUG FIX (direct user report: "how come Hiyuki and Mornye are good with Jingran?" — both
+    // showed the generic fallback reason instead of the real "fills your Main DPS/Support gap"
+    // text): Rover attunements are always counted "owned" (App.jsx: free starter character),
+    // and Rover: Havoc (Main DPS)/Rover: Aero (Healer) being permanently in ownedArr silently
+    // satisfied both role-gap checks below even on a completely fresh account with nothing
+    // pulled — the exact same false signal already found and fixed in the Teams tab's own
+    // "no picks yet" ranking. Excluded here for the same reason: Rover being trivially owned
+    // isn't a meaningful "you already have a Main DPS/Support" signal.
+    const ownedArrExcludingRover = ownedArr.filter(n => !n.startsWith('Rover:'));
+    const hasMainDps = ownedArrExcludingRover.some(n => CHARACTER_DATA[n].role === 'Main DPS');
+    const hasSupportOrHealer = ownedArrExcludingRover.some(n => isHealerRole(CHARACTER_DATA[n].role) || isSupportRole(CHARACTER_DATA[n].role));
 
     const featuredChars = (activeBanners?.characters || []).map(c => c.name).filter(n => n && CHARACTER_DATA[n]);
     if (featuredChars.length === 0) return null;
@@ -806,9 +815,8 @@ function PlannerTab({
             </div>
           )}
           {bannerRecommendation && !bannerRecommendation.allOwned && bannerRecommendation.top && (() => {
-            const { top, topWeapon, scored } = bannerRecommendation;
+            const { top, topWeapon } = bannerRecommendation;
             const imgUrl = DEFAULT_COLLECTION_IMAGES[top.name];
-            const others = scored.slice(1);
             return (
               <>
                 <div className="p-3 bg-white/5 rounded-lg" style={{ borderLeft: '3px solid #eab308' }}>
@@ -830,9 +838,6 @@ function PlannerTab({
                         {top.fillsRoleGap && (
                           <li>{t(top.d.role === 'Main DPS' ? 'planner.recommendationFillsMainDps' : 'planner.recommendationFillsSupport')}</li>
                         )}
-                        {top.ownedSynergyPartners.length > 0 && (
-                          <li>{t('planner.recommendationSynergy', { names: top.ownedSynergyPartners.join(', ') })}</li>
-                        )}
                         {topWeapon && (
                           <li>{t('planner.recommendationWeaponNote', { weapon: topWeapon.name })}</li>
                         )}
@@ -840,41 +845,30 @@ function PlannerTab({
                     </div>
                   </div>
                 </div>
-                {others.length > 0 && (
-                  <div>
-                    <p className="text-gray-500 text-xs uppercase tracking-wider mb-1.5">{t('planner.recommendationGoodForHeader')}</p>
+                {/* Direct user correction: this must be about the player's OWNED roster, not a
+                    list of other characters on the same banner — "who is this Best Pick good
+                    for, among what I already have." Sourced from top.name's own curated `teams`
+                    field citing an owned character, the same dump-citation data the Teams tab
+                    reads — never an invented pairing. */}
+                <div>
+                  <p className="text-gray-500 text-xs uppercase tracking-wider mb-1.5">{t('planner.recommendationGoodForHeader', { name: top.name })}</p>
+                  {top.ownedSynergyPartners.length > 0 ? (
                     <div className="space-y-1.5">
-                      {others.map(o => {
-                        // Direct user request: replace the plain "featured this patch"
-                        // tier/owned badges with a one-line reason describing who each pick
-                        // actually suits — reusing the exact same dump-sourced signals
-                        // (role-gap fill, owned-roster synergy) the Best Pick's own reasoning
-                        // draws from, condensed to a single line per character.
-                        const goodForKey = o.owned
-                          ? 'planner.recommendationGoodForOwned'
-                          : o.fillsRoleGap
-                            ? (o.d.role === 'Main DPS' ? 'planner.recommendationGoodForMainDpsGap' : 'planner.recommendationGoodForSupportGap')
-                            : o.ownedSynergyPartners.length > 0
-                              ? 'planner.recommendationGoodForSynergy'
-                              : 'planner.recommendationGoodForGeneral';
-                        const goodForText = t(goodForKey, { name: o.ownedSynergyPartners[0] });
-                        return (
-                          <div key={o.name} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
-                            {DEFAULT_COLLECTION_IMAGES[o.name] && (
-                              <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
-                                <img src={DEFAULT_COLLECTION_IMAGES[o.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <span className="text-gray-300 text-sm block truncate">{o.name}</span>
-                              <span className="text-gray-500 text-2xs block truncate">{goodForText}</span>
+                      {top.ownedSynergyPartners.map(name => (
+                        <div key={name} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+                          {DEFAULT_COLLECTION_IMAGES[name] && (
+                            <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
+                              <img src={DEFAULT_COLLECTION_IMAGES[name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
                             </div>
-                          </div>
-                        );
-                      })}
+                          )}
+                          <span className="text-gray-300 text-sm truncate">{name}</span>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <p className="text-gray-500 text-sm p-2 bg-white/5 rounded-lg text-center">{t('planner.recommendationGoodForEmpty')}</p>
+                  )}
+                </div>
               </>
             );
           })()}
