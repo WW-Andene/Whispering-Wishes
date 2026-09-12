@@ -793,15 +793,43 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Lady of the Sea', 'Crown of Valor 3pc + Sierra Gale 2pc'], bestWeapon: "Moongazer's Sigil",
     weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Guardian Gauntlets'] },
-    // BUG FIX 2026-09-12 (per direct user instruction to prioritize the source dump's own
-    // synergy reasoning over the engine's numeric scoring): this list was missing her own dump's
-    // explicitly-named "best team overall" entirely — Data dump/Iuno/Iuno.md line 315-318/338:
-    // "Yangyang: Xuanling is actually a stronger pick than [Iuno's] Augusta pairing... Yangyang:
-    // Xuanling + Augusta + Iuno + Chisa/Shorekeeper (best team overall) — Chisa is only
-    // best-in-slot specifically alongside Yangyang: Xuanling." Added the missing Yangyang:
-    // Xuanling + Chisa pairing (a real, separate team from the Augusta + Shorekeeper one already
-    // listed, not a duplicate).
-    teams: ['Iuno + Yangyang: Xuanling + Chisa', 'Iuno + Augusta + Shorekeeper', 'Iuno + Lynae + Shorekeeper', 'Iuno + Jiyan + Shorekeeper'] },
+    // REBUILT 2026-09-12 from a fresh prydwen.gg build-guide snapshot the user provided directly
+    // (superseding the prior text-scrape dump, which had gone stale) — Data dump/Iuno/Iuno.md's
+    // "Example Teams" section, read icon-order and taken directly as authoritative for Iuno's own
+    // recommendations:
+    //   Best Team: Jingran/Augusta + Iuno + Shorekeeper/Verina.
+    //   Main DPS Iuno: Iuno + Lynae/Ciaccona/Yinlin/Jianxin + Mornye/Shorekeeper/Verina (Mornye
+    //     restricted to Lynae only).
+    //   Jiyan Team: Jiyan + Iuno + Ciaccona/Rover: Aero/Shorekeeper.
+    //   Galbrena Team: Galbrena + Iuno + Shorekeeper/Verina.
+    //   Frazzle Teams: Zani/Phoebe + Iuno + Rover: Spectro.
+    // The previous 'Iuno + Yangyang: Xuanling + Chisa' entry is REMOVED: the updated source's
+    // Example Teams section no longer lists Yangyang: Xuanling anywhere at all — retroactively
+    // confirming the earlier direct correction in this same session that treating Iuno's internal
+    // Augusta-comparison text as evidence for a Xuanling pairing was inventing data, not reading it.
+    // Jingran is a new character not yet in this codebase's data — deferred per direct instruction,
+    // so only Augusta's half of the Best Team pick is captured below; add Jingran's combos when he's
+    // added.
+    teams: [
+      'Iuno + Augusta + Shorekeeper',
+      'Iuno + Augusta + Verina',
+      'Iuno + Lynae + Mornye',
+      'Iuno + Lynae + Shorekeeper',
+      'Iuno + Lynae + Verina',
+      'Iuno + Ciaccona + Shorekeeper',
+      'Iuno + Ciaccona + Verina',
+      'Iuno + Yinlin + Shorekeeper',
+      'Iuno + Yinlin + Verina',
+      'Iuno + Jianxin + Shorekeeper',
+      'Iuno + Jianxin + Verina',
+      'Iuno + Jiyan + Ciaccona',
+      'Iuno + Jiyan + Rover: Aero',
+      'Iuno + Jiyan + Shorekeeper',
+      'Iuno + Galbrena + Shorekeeper',
+      'Iuno + Galbrena + Verina',
+      'Iuno + Zani + Rover: Spectro',
+      'Iuno + Phoebe + Rover: Spectro',
+    ] },
   'Galbrena': { rarity: 5, element: 'Fusion', weapon: 'Pistols', role: 'Main DPS',
     desc: 'Black Shores Consultant known as the Discord Slayer, seizing power from darkness. On-field Fusion DPS who deals primary damage through Echo Skill and Heavy ATK combos in quick burst rotations.',
     skills: ['Slayer\'s Trigger', 'Edge Transcended', 'Hellfire Absolution', 'Beyond Threshold'],

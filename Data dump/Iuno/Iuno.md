@@ -334,16 +334,17 @@ Outro 7,577 · Echo 22,805.
   Main-DPS-Iuno teams for general Aero buffs. Shorekeeper/Verina are the best generalist picks
   (DMG-Amp Outro, high ATK buffs, Shorekeeper also brings Crit buffs).
 
-**Example Teams**:
-1. **Yangyang: Xuanling + Augusta + Iuno + Chisa/Shorekeeper** (best team overall) — Chisa is only
-   best-in-slot specifically alongside Yangyang: Xuanling; prioritize Shorekeeper when running Augusta
-   instead.
-2. **Iuno (Main DPS) + Lynae/Ciaccona + Yinlin/Jianxin/Mornye + Shorekeeper/Verina** — Mornye only
-   best alongside Lynae; Rover: Aero only over Shorekeeper specifically with Ciaccona in the 2nd slot
-   (otherwise use Shorekeeper; Ciaccona+Lynae together is also excellent).
-3. **Jiyan + Iuno + Ciaccona + Rover: Aero + Shorekeeper**.
-4. **Galbrena + Iuno + Shorekeeper + Verina**.
-5. **Zani + Phoebe + Iuno + Rover: Spectro** (Frazzle team).
+**Example Teams** (updated 2026-09-12 from a fresh prydwen.gg snapshot — supersedes the prior
+"Yangyang: Xuanling + Augusta + Iuno" Best Team entry below, which no longer appears on the live
+page at all; kept as history only in the git log, not restated here):
+1. **Best Team: Jingran/Augusta + Iuno + Shorekeeper/Verina** — Jingran is a new character not yet
+   added to this codebase's data (deferred per direct instruction); Augusta's half of this pick is
+   unaffected and still fully valid.
+2. **Main DPS Iuno: Iuno + Lynae/Ciaccona/Yinlin/Jianxin + Mornye/Shorekeeper/Verina** — Mornye only
+   best alongside Lynae.
+3. **Jiyan Team: Jiyan + Iuno + Ciaccona/Rover: Aero/Shorekeeper**.
+4. **Galbrena Team: Galbrena + Iuno + Shorekeeper/Verina**.
+5. **Frazzle Teams: Zani/Phoebe + Iuno + Rover: Spectro**.
 
 ## Full kit audit (2026-09-08)
 
