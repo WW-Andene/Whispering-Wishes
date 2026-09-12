@@ -1252,6 +1252,7 @@ function WhisperingWishesInner() {
                 dispatch={dispatch}
                 activeBanners={activeBanners}
                 bannerEndDate={bannerEndDate}
+                collectionData={collectionData}
                 toast={toast}
                 confirm={confirm}
               />

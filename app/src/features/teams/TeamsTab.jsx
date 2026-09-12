@@ -444,56 +444,98 @@ function TeamsTab({
               // curatedVotes' citation filter could use it — kept under its original name here so
               // scoreTeamComposition's call site below reads the same as before.)
               const assumedMainDps = anchorDps;
-              // 2026-09-13 (direct user pushback on the "no picks yet" ranking — Jingran/Aemeath/
-              // Cartethyia topping the empty-selector list despite being highly kit-specific or
-              // near-entirely dependent on one partner, ahead of characters like Hiyuki/Qingxiao
-              // whose real strength just needs a buffed team to show up): with NOTHING placed yet,
-              // `score` collapses to pure solo tier+raw-damage (dumpBonus is always 0 — curatedVotes/
-              // exactTrioMatch both need an already-placed member to cite). That solo number is a bad
-              // proxy for "how good a first pick is this," since a character's raw totalMult is often
-              // itself measured off an ideal calc build ALREADY assuming their best teammate/signature
-              // (Cartethyia's own dump: "at S0 she's tightly teammate-restricted, needs Ciaccona +
-              // Rover: Aero"; Jingran's own dump: "one of the most Signature-weapon-reliant characters
-              // in the game") — crediting that number at face value rewards reliance instead of
-              // discounting it. Folding in accessibility (how many curated team compositions this
-              // character's own dump actually supports — a direct proxy for how many different
-              // partners can make them work, not just one specific ideal pairing) tempers that: a
-              // kit-restrictive character's raw damage credit gets scaled down, a flexible one's stays
-              // full or gets a modest boost. Deliberately scoped to ONLY the true empty-selector case
-              // (placedNow.length === 0) — once a real anchor is placed, curatedVotes/exactTrioMatch
-              // already measure real synergy directly, so this coarse proxy would just add noise.
-              // ACCESSIBILITY_REFERENCE (6) is the roster's own median teams.length as of this pass —
-              // a character right at the median scores as if unadjusted; sparser/richer characters
-              // scale down/up from there. Floor/ceiling (0.6/1.3) keep either end from swinging so hard
-              // it distorts tier order on its own (a 2-entry niche character isn't worthless, and a
-              // 20-entry generalist like Iuno shouldn't run away with the list either).
+              // REDESIGNED 2026-09-13 (direct user correction: the established recommendation
+              // priority for this whole feature is "1st what the data dump says, 2nd kit/role
+              // reasoning, 3rd raw computed damage" — the accessibility×totalMult blend below used to
+              // give this a single weighted number that was STILL, underneath, mostly raw damage
+              // dressed up, since dumpBonus is always 0 with nothing placed yet (curatedVotes/
+              // exactTrioMatch both need an already-placed member to cite from). Replaced with a real
+              // lexicographic priority chain the user specified directly: Owned > Dump > Kit >
+              // Accessibility > Output. Each level is a hard override of everything below it — a
+              // higher-priority difference always wins outright, never averaged against a
+              // lower-priority one — computed ONLY for the true empty-selector case
+              // (placedNow.length === 0); once a real anchor is placed, curatedVotes/exactTrioMatch
+              // measure real synergy directly and this whole chain is skipped.
+              //   1. Owned — a character already in the player's collection is immediately
+              //      actionable; an unowned "better on paper" pick isn't a real option yet.
+              //   2. Dump — each character's own dump-sourced ToA tier (CHARACTER_DATA.tier.toa) is
+              //      literally dump text, not a derived number — this is the actual "what the dump
+              //      says" signal for a first pick, the same source citedVotes/exactTrioMatch draw on
+              //      once a team exists.
+              //   3. Kit — role suitability as a starting pick: Main DPS first (the character an
+              //      empty team is normally built around), then Sub DPS, then Support/Healer.
+              //   4. Accessibility — how many curated team compositions this character's own dump
+              //      actually supports (teams.length, referenced against the roster's own median of 6,
+              //      floored/ceilinged at 0.6x-1.3x, with a raised 0.85x floor for T0/T0.5 characters
+              //      so an elite DPS with one perfect team isn't punished as hard as a genuinely
+              //      mediocre niche pick with the same count — see the Qingxiao case this was built
+              //      to fix).
+              //   5. Output — normalizedDpsPowerScore's raw totalMult-derived damage score, the
+              //      lowest-priority tiebreaker only, exactly matching the established "3rd, raw
+              //      computed damage" priority instead of driving the ranking.
               const ACCESSIBILITY_REFERENCE = 6;
               const ACCESSIBILITY_FLOOR = 0.6;
               const ACCESSIBILITY_CEILING = 1.3;
+              const ELITE_ACCESSIBILITY_FLOOR = 0.85;
+              const ELITE_TIERS = new Set(['T0', 'T0.5']);
+              const TIER_RANK = { 'T0': 6, 'T0.5': 5, 'T1': 4, 'T1.5': 3, 'T2': 2, 'T3': 1, 'T4': 0 };
+              const ROLE_RANK = { 'Main DPS': 2, 'Sub DPS': 1 }; // Support/Healer/other default to 0
+              const ownedNamesForRec = new Set([
+                ...Object.keys(collectionData?.chars5Counts || {}),
+                ...Object.keys(collectionData?.chars4Counts || {}),
+              ]);
+              const noPicksRank = (name) => {
+                const d = CHARACTER_DATA[name];
+                // Rover attunements are always counted "owned" (App.jsx: "free starter character -
+                // always count as obtained"), regardless of what the player actually pulled — that's
+                // not a meaningful Owned signal for them (every account has it), and crediting it
+                // literally would permanently plant all 4 Rovers at the very top of this list ahead
+                // of every pulled DPS. Direct user follow-up ("middle ground — Rover can be good in
+                // certain contexts, just not automatically top"): Rover never gets the Owned-tier
+                // boost, but still competes normally on Dump/Kit/Accessibility/Output below, so a
+                // genuinely strong Rover attunement can still rank well on its own merits.
+                const owned = (ownedNamesForRec.has(name) && !name.startsWith('Rover:')) ? 1 : 0;
+                const dumpTier = TIER_RANK[d?.tier?.toa] ?? -1;
+                const kit = ROLE_RANK[d?.role] ?? 0;
+                const teamsCount = d?.teams?.length || 0;
+                const floor = ELITE_TIERS.has(d?.tier?.toa) ? ELITE_ACCESSIBILITY_FLOOR : ACCESSIBILITY_FLOOR;
+                const accessibility = Math.max(floor, Math.min(ACCESSIBILITY_CEILING, teamsCount / ACCESSIBILITY_REFERENCE));
+                const { score: output } = scoreTeamComposition([name], ownedWeapsForRec, undefined);
+                return [owned, dumpTier, kit, accessibility, output];
+              };
+              const noPicksRanks = new Map();
               const candidateScores = new Map();
               allCharNames.forEach(name => {
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
-                const hypotheticalTeam = placedNow.length > 0 ? [...placedNow, name] : [name];
+                if (placedNow.length === 0) {
+                  noPicksRanks.set(name, noPicksRank(name));
+                  return;
+                }
+                const hypotheticalTeam = [...placedNow, name];
                 const { score } = scoreTeamComposition(hypotheticalTeam, ownedWeapsForRec, assumedMainDps);
                 // An exact literal-trio match is strictly stronger dump evidence than a pairwise
                 // citation of the same candidate — take whichever is higher rather than summing them
                 // (a candidate already fully confirmed by name shouldn't be double-counted just
                 // because they also happen to satisfy a weaker pairwise citation).
                 const dumpBonus = Math.max(curatedVotes.get(name) || 0, exactTrioMatch(name) ? FULL_TRIO_MATCH_WEIGHT : 0);
-                if (placedNow.length === 0) {
-                  const teamsCount = CHARACTER_DATA[name]?.teams?.length || 0;
-                  const accessibilityFactor = Math.max(ACCESSIBILITY_FLOOR, Math.min(ACCESSIBILITY_CEILING, teamsCount / ACCESSIBILITY_REFERENCE));
-                  candidateScores.set(name, score * accessibilityFactor);
-                } else {
-                  candidateScores.set(name, score + dumpBonus);
-                }
+                candidateScores.set(name, score + dumpBonus);
               });
+              // Lexicographic comparison of the 5-level priority tuples above — the first level that
+              // differs decides the outcome outright, lower levels never get a vote.
+              const compareNoPicksTuples = (a, b) => {
+                const ta = noPicksRanks.get(a), tb = noPicksRanks.get(b);
+                for (let i = 0; i < ta.length; i++) { if (ta[i] !== tb[i]) return tb[i] - ta[i]; }
+                return 0;
+              };
               // BUG FIX 2026-09-13 (direct user report: Aemeath badged "#1" but displayed SECOND in
               // the grid, behind Jingran's "#2"): the two tied top scorers (both 104.0 after the
               // accessibility fold-in above) were being ranked by two DIFFERENT tie-break rules. Both
               // the badge numbering and the recommended-vs-not split below now share one comparator
               // (scoreCompare) so ties resolve identically everywhere.
               const scoreCompare = (a, b) => {
+                // Empty-selector state: the lexicographic Owned>Dump>Kit>Accessibility>Output chain
+                // decides ranking entirely — no score-based fallback applies here.
+                if (placedNow.length === 0) return compareNoPicksTuples(a, b);
                 const aScore = candidateScores.get(a) || 0;
                 const bScore = candidateScores.get(b) || 0;
                 if (aScore !== bScore) return bScore - aScore;
@@ -507,9 +549,9 @@ function TeamsTab({
               // character has a real score, badging literally everyone would make the highlight
               // meaningless, so keep it to a bounded top slice of the ranked list.
               const REC_BADGE_COUNT = 8;
+              const rankedPool = placedNow.length === 0 ? [...noPicksRanks.keys()] : [...candidateScores.keys()];
               const recommendedNames = new Map(
-                [...candidateScores.keys()].sort(scoreCompare).slice(0, REC_BADGE_COUNT)
-                  .map(name => [name, candidateScores.get(name)])
+                rankedPool.sort(scoreCompare).slice(0, REC_BADGE_COUNT).map(name => [name, true])
               );
               // Direct user request 2026-09-13: past the top-8 recommended badges, order by release
               // date + rarity instead of continuing the raw synergy score — once you're outside the
