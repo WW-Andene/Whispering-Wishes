@@ -759,7 +759,12 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Helix' },
     bestEchoes: ['Nightmare: Hecate', 'Dream of the Lost 3pc + Havoc Eclipse 2pc'], bestWeapon: 'Lethean Elegy',
     weaponAlts: { alt5: ['Stringmaster', 'Whispers of Sirens'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper'] },
+    // Added 'Phrolova + Yangyang: Xuanling + Suisui' (2026-09-12): confirmed on Yangyang: Xuanling's
+    // own dump (Alternative Premium Teams: 1st-pick Phrolova + 2nd-pick Suisui — see her own teams
+    // field) and independently on Phrolova's own dump (line 292: "Yangyang: Xuanling... + Phrolova +
+    // Suisui/Chisa/Shorekeeper — Suisui and Chisa are only best specifically with Yangyang: Xuanling
+    // on the team").
+    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper', 'Phrolova + Yangyang: Xuanling + Suisui'] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro Heavy ATK DPS who self-shields and builds a resource through her attacks toward a Forte finisher. At enough stacks she can instead enter a time-stopped state for an extended combo ending in a finisher that shields teammates on their Intro cast; her Outro buffs the next Resonator\'s All-Attribute DMG, refunding extra stacks if they Outro back to her.',
     skills: ['Hunter\'s Path', 'Warrior\'s Blade', 'Sunward Conquest', 'Call Me By the Sun'],
@@ -1097,7 +1102,11 @@ const CHARACTER_DATA = {
     // {Lucilla/Lynae} + {Suisui/Chisa/Mornye/Verina}. Only pair Mornye with Lynae specifically")
     // confirms Chisa as a valid 2nd-slot alongside Lynae — reciprocal to Lynae's own dump-confirmed
     // 'Lynae + Hiyuki + Chisa' entry, which this side was missing.
-    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye', 'Hiyuki + Lynae + Chisa'] },
+    // Added 'Hiyuki + Lynae + Suisui' (2026-09-12): confirmed on Suisui's own dump ("Hiyuki Team:
+    // Hiyuki + Lucilla + Lynae + Suisui" — Lucilla/Lynae are the alternate 2nd-pick per Hiyuki's own
+    // dump's "{Lucilla/Lynae}" structure, not simultaneous members) and independently on Hiyuki's own
+    // dump line 202's "{Suisui/Chisa/Mornye/Verina}" 3rd-pick list.
+    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye', 'Hiyuki + Lynae + Chisa', 'Hiyuki + Lynae + Suisui'] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG) via Resonance Skill, closing with a team-wide DMG Amplification Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
@@ -1111,7 +1120,27 @@ const CHARACTER_DATA = {
     // the 4★s; Rectifier of Night is the 3★ fallback (the source doesn't rank a 3★ for her), matching the
     // "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Stellar Symphony'], alt4: ['Variation', 'Call of the Abyss'], alt3: ['Rectifier of Night'] },
-    teams: ['Suisui + Yangyang: Xuanling + Chisa', 'Suisui + Hiyuki + Lynae', 'Suisui + Aemeath + Denia'] },
+    // Expanded 2026-09-12, reading Suisui's OWN dump directly (Data dump/Suisui/Suisui.md's
+    // "### Example Teams" section, lines 206-209), taken as directly authoritative for her own
+    // recommendations:
+    //   Best Team: Yangyang: Xuanling + Chisa + Rebecca/Phrolova + Suisui (Phrolova strongest in WW)
+    //     → trios: Xuanling+Chisa+Suisui (already had), Xuanling+Rebecca+Suisui, Xuanling+Phrolova+Suisui.
+    //   Hiyuki Team: Hiyuki + Lucilla + Lynae + Suisui → trios: Hiyuki+Lucilla+Suisui (already had),
+    //     Hiyuki+Lynae+Suisui (new — Lucilla/Lynae are alternates per Hiyuki's own dump line 202's
+    //     "{Lucilla/Lynae}" 2nd-pick structure, not simultaneous team members).
+    //   Aemeath Team: Aemeath + Denia + Suisui (already had).
+    // Xuanling+Rebecca+Suisui and Xuanling+Phrolova+Suisui both independently confirmed on Yangyang:
+    // Xuanling's own dump too (her Alternative Premium Teams line); Hiyuki+Lynae+Suisui independently
+    // confirmed on Hiyuki's own dump (line 202's {Suisui/Chisa/Mornye/Verina} 3rd-pick list) and on
+    // Aemeath's own dump (line 232's "Best Fusion Burst Team: Aemeath + Denia + {Chisa/Suisui/Lupa}").
+    teams: [
+      'Suisui + Yangyang: Xuanling + Chisa',
+      'Suisui + Yangyang: Xuanling + Rebecca',
+      'Suisui + Yangyang: Xuanling + Phrolova',
+      'Suisui + Hiyuki + Lynae',
+      'Suisui + Hiyuki + Lucilla',
+      'Suisui + Aemeath + Denia',
+    ] },
   'Qingxiao': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Main DPS',
     desc: 'Paragon of Mengzhou. On-field Aero DPS who builds resources through Sheathed/Drawn Stance attacks, then unleashes Ephemeral Transcendence for an empowered combo finisher.',
     skills: ['Strings to Steel', 'Severing Note', 'Billows Beneath Heaven', 'Tonality Shift'],
