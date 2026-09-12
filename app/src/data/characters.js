@@ -1250,7 +1250,13 @@ const CHARACTER_DATA = {
     // Example Teams sections confirm: Fusion Burst pairs her only with Aemeath (Chisa or Lupa 3rd slot);
     // Tune Strain pairs her with either Qingxiao or Luuk Herssen, always alongside Mornye ("not
     // recommended for Tune Strain without Mornye involved").
-    teams: ['Aemeath + Denia + Chisa', 'Qingxiao + Denia + Mornye'] },
+    // Filled out 2026-09-12: 'Aemeath + Denia + Suisui'/'Aemeath + Denia + Lupa' (her own Synergies
+    // text lists Chisa/Mornye/Lupa as her 3rd-slot options with Aemeath — Suisui isn't named on
+    // Denia's own page, but IS confirmed on both Aemeath's and Suisui's own dumps, so kept as a real,
+    // cross-corroborated trio) and 'Luuk Herssen + Denia + Mornye' (her own Tune Strain line: "no
+    // listed alternative to Mornye" alongside either Qingxiao or Luuk Herssen) were previously only
+    // captured on the OTHER character's own teams field, not Denia's — added here too.
+    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Denia + Suisui', 'Aemeath + Denia + Lupa', 'Qingxiao + Denia + Mornye', 'Luuk Herssen + Denia + Mornye'] },
   'Hiyuki': { rarity: 5, element: 'Glacio', weapon: 'Sword', role: 'Main DPS',
     desc: "Miko of Flaming Sakura from Ashinohara, now the last member of Lahai-Roi's Special Response Force. On-field Glacio DPS who converts team Glacio Chafe into Glacio Bite via her Forte, switching between Present Self and Foreclaimed Self for an Iai-Stance burst finisher.",
     skills: ['Flaming Sakura Blade Art', 'Frostblight', 'Foreclaiming', 'Frostedge'],
