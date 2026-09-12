@@ -3052,7 +3052,19 @@ const CHAR_BUFF_TABLE = {
     // Tune interaction) -- confirmed wrong by her own tuneBreak.boostToTeam already being 0 below
     // (deliberately not crediting broad team-wide Tune Break Boost for this effect). Removed the
     // incorrect debuffs entry; the real effect stays represented, correctly scoped, via tuneBreak.
-    debuffs: [],
+    // BUG FIX 2026-09-12 (direct user pushback: "why is Mornye #8 when she is literally matching
+    // Lynae's kit?"): her single strongest, kit-defining synergy — Interfered Marker (Data dump/
+    // Mornye/Mornye.md line 76: "targets also affected by Tune Rupture/Strain-Interfered take
+    // increased DMG from all nearby team members — +0.25% per 1% of Mornye's Energy Regen over
+    // 100%, up to +40%") — was completely unmodeled (this array was empty). This is exactly her
+    // own dump's "strongest synergy category" (line 213-215), explicitly naming Lynae as one of
+    // only 5 real partners (Aemeath/Qingxiao/Luuk Herssen/Lynae/Denia) who can actually apply the
+    // Tune Rupture/Strain-Interfered mark this buff requires — modeled as a mechanic-gated
+    // 'amplify' debuff (same convention as Zani's Frazzle-locked amp), gated via the new 'tune
+    // rupture'/'tune strain' entries in calcEngine.js's MECHANIC_DAMAGE_APPLIERS.
+    debuffs: [
+      { stat: 'amplify', value: 40, condition: 'Interfered Marker: nearby team members deal more DMG to a Tune Rupture-Interfered or Tune Strain-Interfered marked target — up to +40% at 260% Energy Regen; requires a teammate who applies Tune Rupture/Strain' },
+    ],
     tuneBreak: {
       boostToTeam: 0,
       baseTuneBreakBoost: 10,

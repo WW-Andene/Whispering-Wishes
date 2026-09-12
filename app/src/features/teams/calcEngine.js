@@ -571,6 +571,18 @@ const ELEMENT_NAMES = ['fusion', 'spectro', 'aero', 'glacio', 'electro', 'havoc'
 // what's actually confirmed, and extends the same way the last two audits' fixes did (grouped mode
 // buffs, element-gated elemDmg) instead of another one-off hardcode.
 const MECHANIC_DAMAGE_APPLIERS = { frazzle: ['Zani'], erosion: [] };
+// Added 2026-09-12 (direct user pushback: "why is Mornye #8 when she is literally matching
+// Lynae's kit?"): Mornye's Interfered Marker (Data dump/Mornye/Mornye.md line 76) needs a
+// DIFFERENT gate shape than MECHANIC_DAMAGE_APPLIERS above and can't reuse it. That map answers
+// "is the DPS BEING BUFFED's own damage typed as this mechanic" (Zani's Heavy Slash really is
+// Frazzle-typed) — but Interfered Marker instead benefits "ALL nearby team members" hitting a
+// target ONCE SOMEONE ON THE TEAM has applied Tune Rupture/Strain-Interfered to it, regardless of
+// whose damage type anything is. Checked against the whole hypothetical team below, not just
+// mainDps. A plain substring match on "tune rupture"/"tune strain" in MECHANIC_DAMAGE_APPLIERS
+// would have also silently re-gated Denia's own unrelated 'Tune Strain mode' outro condition
+// (mode-select text, not a mechanic requirement) since it contains the same substring — kept
+// fully separate, keyed off Mornye's own unique "interfered marker" condition text instead.
+const MORNYE_INTERFERED_MARKER_APPLIERS = ['Aemeath', 'Qingxiao', 'Luuk Herssen', 'Lynae', 'Denia'];
 export function universalStatApplies(condition, targetElementLower, targetName) {
   const cond = (condition || '').toLowerCase();
   if (!cond) return true;
@@ -931,7 +943,15 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
     // this only rejects when the condition explicitly names a DIFFERENT element than the DPS's own. A
     // condition with no element mentioned at all (most of them: pure activation-trigger text, e.g.
     // Denia's "Tune Strain mode..." allDmg outro) stays universal, exactly as its stat name promises.
-    const amplifyBuffApplies = (b) => universalStatApplies(b.condition, dpsEl, mainDps);
+    const amplifyBuffApplies = (b) => {
+      // Mornye's Interfered Marker special case (see MORNYE_INTERFERED_MARKER_APPLIERS's own
+      // comment) — benefits mainDps whenever ANY member of the whole hypothetical team (not
+      // specifically mainDps) can apply Tune Rupture/Strain-Interfered.
+      if ((b.condition || '').toLowerCase().includes('interfered marker')) {
+        return members.some(x => MORNYE_INTERFERED_MARKER_APPLIERS.includes(x));
+      }
+      return universalStatApplies(b.condition, dpsEl, mainDps);
+    };
     // A type-specific buff (basicDmg/heavyDmg/echoDmg/skillDmg/coordDmg) only routes into the DPS's
     // damage at all if their dmgFocus actually includes that attack type — routeTypeBonuses in this
     // same file enforces the identical gate for the real damage calc, so scoring has to match it or
