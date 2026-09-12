@@ -406,16 +406,33 @@ function PlannerTab({
       // Real, dump-sourced synergy: this character's OWN curated `teams` field naming a
       // character the player already owns — the exact same citation data the Teams tab reads,
       // never an invented pairing.
-      const ownedSynergyPartners = [...new Set(
-        (d.teams || []).flatMap(team => team.split('+').map(m => m.trim())).filter(m => m !== name && ownedCharNames.has(m))
-      )];
-      return { name, d, owned, tierScore, fillsRoleGap, ownedSynergyPartners };
+      // BUG FIX (direct user correction, Hiyuki case): raw match COUNT treats every citation as
+      // equally strong evidence, but a character's `teams` array is ordered roughly best-first
+      // (Hiyuki's own dump: "Lucilla wins out" over Lynae as her best buffer, then "Suisui/Chisa/
+      // Mornye/Verina... ranked in order" as her supports, then Yinlin/Zhezhi/Changli/Jianxin as
+      // explicit "last resort" — and her `teams` array is genuinely grouped in that same
+      // best-to-worst order). A late "last resort" match (e.g. Jianxin) shouldn't count for as
+      // much as an early "this is literally her best partner" match (e.g. Lucilla). Weight each
+      // owned partner by 1/(firstIndex+1) — the earliest (best) team entry citing them — and sum,
+      // so being cited early counts far more than being cited often. Two owned characters BOTH
+      // named in the SAME early entry (a real, complete dump-endorsed team) score especially high,
+      // since each independently gets that entry's full weight.
+      const teamsList = d.teams || [];
+      const partnerFirstIndex = new Map();
+      teamsList.forEach((team, idx) => {
+        team.split('+').map(m => m.trim()).forEach(m => {
+          if (m !== name && ownedCharNames.has(m) && !partnerFirstIndex.has(m)) partnerFirstIndex.set(m, idx);
+        });
+      });
+      const ownedSynergyPartners = [...partnerFirstIndex.keys()].sort((a, b) => partnerFirstIndex.get(a) - partnerFirstIndex.get(b));
+      const synergyWeight = ownedSynergyPartners.reduce((sum, p) => sum + 1 / (partnerFirstIndex.get(p) + 1), 0);
+      return { name, d, owned, tierScore, fillsRoleGap, ownedSynergyPartners, synergyWeight };
     });
     scored.sort((a, b) => {
       if (a.owned !== b.owned) return a.owned ? 1 : -1;
       if (a.tierScore !== b.tierScore) return b.tierScore - a.tierScore;
       if (a.fillsRoleGap !== b.fillsRoleGap) return a.fillsRoleGap ? -1 : 1;
-      return b.ownedSynergyPartners.length - a.ownedSynergyPartners.length;
+      return b.synergyWeight - a.synergyWeight;
     });
 
     const top = scored[0];
