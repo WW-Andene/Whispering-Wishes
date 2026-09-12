@@ -96,7 +96,10 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: "Bloodpact's Pledge",
     weaponAlts: { alt5: ['Laser Shearer'], alt4: ['Overture', 'Lunar Cutter'], alt3: ['Sword of Voyager'] },
-    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Iuno + Ciaccona + Rover: Aero'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Rover Aero/Rover Aero.md, Example Teams):
+    // added the "Jiyan Team" (Jiyan + Ciaccona + Rover: Aero), the third of the three named
+    // combinations from her own Synergies text.
+    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Iuno + Ciaccona + Rover: Aero', 'Jiyan + Ciaccona + Rover: Aero'] },
   'Rover: Electro': { rarity: 5, element: 'Electro', weapon: 'Sword', role: 'Sub DPS',
     desc: 'A wanderer who awoke with no memory on the shores of Solaris. Electro attunement: a Parry Stance hybrid — hold Basic ATK for interrupt immunity and 60% DMG reduction, then spend Electric Surge on a team ATK buff or Apex Resonance, unlocking the multi-element Thrum of All Sounds Forte combo. Currently the weakest attunement, lacking a strong DPS partner.',
     skills: ['Deterrence', 'Thunderclap', "Myriad Omens' Mandate", 'Ultimate Tactics'],
