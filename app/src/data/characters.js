@@ -772,7 +772,31 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Waveworn Residue' },
     bestEchoes: ['The False Sovereign', 'Crown of Valor 3pc + Void Thunder 2pc'], bestWeapon: 'Thunderflare Dominion',
     weaponAlts: { alt5: ['Verdant Summit', 'Ages of Harvest'], alt4: ['Aureate Zenith', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
-    teams: ['Augusta + Iuno + Shorekeeper', 'Augusta + Mortefi + Shorekeeper', 'Augusta + Mortefi + Verina'] },
+    // Expanded 2026-09-12, reading Augusta's OWN dump directly (Data dump/Augusta/Augusta.md's
+    // "Example Teams" section, line 294): "Best Team: Augusta + Iuno/Lynae/Rebecca/Mortefi +
+    // Shorekeeper/Verina/Mornye — Mornye is niche, only worth considering with Rebecca or Lynae on
+    // the team (for their respective Hack/Tune Rupture synergies)." Taken directly as authoritative
+    // for her own recommendations, applying the same 1st-pick(alternates)/2nd-pick(alternates,
+    // Mornye restricted) parsing already validated elsewhere this session.
+    // Cross-corroborated (not required, but confirmed): Iuno's own dump line 316-318 names Augusta
+    // as a best Hybrid-Iuno teammate; Rebecca's own dump line 336 ("Alternative Heavy Attack Teams:
+    // Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina") independently confirms
+    // Augusta+Rebecca+Shorekeeper/Mornye/Verina AND the same Mornye-with-Rebecca allowance; Mortefi's
+    // own dump line 147 names Augusta as his best F2P-accessible synergy partner. Lynae's own dump
+    // only has a loose prose mention ("working excellently with... Augusta"), not a literal trio, so
+    // no reciprocal entry was added to her own teams field for this.
+    teams: [
+      'Augusta + Iuno + Shorekeeper',
+      'Augusta + Iuno + Verina',
+      'Augusta + Lynae + Shorekeeper',
+      'Augusta + Lynae + Verina',
+      'Augusta + Lynae + Mornye',
+      'Augusta + Rebecca + Shorekeeper',
+      'Augusta + Rebecca + Verina',
+      'Augusta + Rebecca + Mornye',
+      'Augusta + Mortefi + Shorekeeper',
+      'Augusta + Mortefi + Verina',
+    ] },
   // desc rewritten 2026-08-31 against the wiki/Iuno/Combat "Forte > Details" (Chrome/
   // Windows UA + google.com referer + jsRender, load+9s wait): prior desc was flavor text with no exact
   // resource numbers. Sentience (0-100 cap): Intro Skill +40, Resonance Liberation +60, Closing/Unfinished
@@ -1049,7 +1073,11 @@ const CHARACTER_DATA = {
     // (mutual Hack-mechanic synergy, her own separate "Edgerunners Team: Lucy + Rebecca + Mornye +
     // Shorekeeper/Verina") — the two never appear in the same real team. Corrected to the real
     // Yangyang: Xuanling pairing and kept Lucy's own real team separately below.
-    teams: ['Rebecca + Yangyang: Xuanling + Suisui', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper'] },
+    // Added 'Rebecca + Augusta + Shorekeeper' (2026-09-12): confirmed on Rebecca's own dump (line
+    // 336: "Alternative Heavy Attack Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/
+    // Verina") and independently on Augusta's own dump (her Best Team line names Rebecca as a
+    // 1st-pick alternate).
+    teams: ['Rebecca + Yangyang: Xuanling + Suisui', 'Rebecca + Lucy + Mornye', 'Rebecca + Jiyan + Shorekeeper', 'Rebecca + Augusta + Shorekeeper'] },
   'Lucilla': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'President and head of Startorch Academy, former chief editor of the New Federation\'s top academic journal. Dual-mode Glacio Hybrid who buffs Glacio Chafe DMG or Echo Skill DMG depending on Resonance Mode, built around a 5-input Photo-consuming Ultimate.',
     skills: ['Snapshot', 'Phantom Frame', 'Clear As Day', 'Clip It'],
