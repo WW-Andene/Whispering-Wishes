@@ -58,7 +58,18 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Dreamless', 'Havoc Eclipse 5pc'], bestWeapon: 'Emerald of Genesis',
     weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
-    teams: ['Rover: Havoc + Roccia + Verina', 'Rover: Havoc + Danjin + Shorekeeper'] },
+    // Expanded 2026-09-13 from its own dump (Data dump/Rover Havoc/Rover Havoc.md, Synergies):
+    // Roccia named his best buffer; Danjin his 2nd-best ("extremely strong F2P pair"); Sanhua a
+    // 3rd-best option; Phrolova one of the highest-damage Phrolova-team partners; Verina/Shorekeeper
+    // his generalist Healing Supports.
+    teams: [
+      'Rover: Havoc + Roccia + Verina',
+      'Rover: Havoc + Roccia + Shorekeeper',
+      'Rover: Havoc + Danjin + Shorekeeper',
+      'Rover: Havoc + Danjin + Phrolova',
+      'Rover: Havoc + Sanhua + Shorekeeper',
+      'Rover: Havoc + Phrolova + Cantarella',
+    ] },
   // Fixed 2026-09-02 against a real browser snapshot (confirmed genuine via its own
   // Snapshot-Content-Location header). Prior data had 3 real, confidently-sourced bugs: bestWeapon
   // was 'Emerald of Genesis' — not even mentioned anywhere in the source's Best Weapons section,
