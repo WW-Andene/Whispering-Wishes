@@ -40,7 +40,7 @@ const CHARACTER_DATA = {
     // source's own explicitly-named "great Frazzle-team partner" (Synergies section), matching the
     // Example Teams section's "Premium Phoebe Teams" naming (Ciaccona named as Absolution Phoebe's
     // best/only real partner, best paired with Shorekeeper specifically).
-    teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Phoebe + Rover: Spectro + Ciaccona'] },
+    teams: ['Phoebe + Rover: Spectro + Verina', 'Zani + Rover: Spectro + Verina', 'Phoebe + Rover: Spectro + Ciaccona', 'Phoebe + Rover: Spectro + Shorekeeper'] },
   // Fixed 2026-09-03 against a real browser snapshot, superseding the 2026-08-18 note below
   // where they conflict. bestEchoes named 'Impermanence Heron' — never mentioned anywhere in this
   // source (that's Rover: Aero's/Rover: Spectro's echo); the source's only Main Echo option for Havoc
@@ -58,7 +58,18 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Dreamless', 'Havoc Eclipse 5pc'], bestWeapon: 'Emerald of Genesis',
     weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
-    teams: ['Rover: Havoc + Roccia + Verina', 'Rover: Havoc + Danjin + Shorekeeper'] },
+    // Expanded 2026-09-13 from its own dump (Data dump/Rover Havoc/Rover Havoc.md, Synergies):
+    // Roccia named his best buffer; Danjin his 2nd-best ("extremely strong F2P pair"); Sanhua a
+    // 3rd-best option; Phrolova one of the highest-damage Phrolova-team partners; Verina/Shorekeeper
+    // his generalist Healing Supports.
+    teams: [
+      'Rover: Havoc + Roccia + Verina',
+      'Rover: Havoc + Roccia + Shorekeeper',
+      'Rover: Havoc + Danjin + Shorekeeper',
+      'Rover: Havoc + Danjin + Phrolova',
+      'Rover: Havoc + Sanhua + Shorekeeper',
+      'Rover: Havoc + Phrolova + Cantarella',
+    ] },
   // Fixed 2026-09-02 against a real browser snapshot (confirmed genuine via its own
   // Snapshot-Content-Location header). Prior data had 3 real, confidently-sourced bugs: bestWeapon
   // was 'Emerald of Genesis' — not even mentioned anywhere in the source's Best Weapons section,
@@ -85,7 +96,10 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Unending Destruction', forgery: 'Metallic Drip' },
     bestEchoes: ['Bell-Borne Geochelone', 'Rejuvenating Glow 5pc'], bestWeapon: "Bloodpact's Pledge",
     weaponAlts: { alt5: ['Laser Shearer'], alt4: ['Overture', 'Lunar Cutter'], alt3: ['Sword of Voyager'] },
-    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Iuno + Ciaccona + Rover: Aero'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Rover Aero/Rover Aero.md, Example Teams):
+    // added the "Jiyan Team" (Jiyan + Ciaccona + Rover: Aero), the third of the three named
+    // combinations from her own Synergies text.
+    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Iuno + Ciaccona + Rover: Aero', 'Jiyan + Ciaccona + Rover: Aero'] },
   'Rover: Electro': { rarity: 5, element: 'Electro', weapon: 'Sword', role: 'Sub DPS',
     desc: 'A wanderer who awoke with no memory on the shores of Solaris. Electro attunement: a Parry Stance hybrid — hold Basic ATK for interrupt immunity and 60% DMG reduction, then spend Electric Surge on a team ATK buff or Apex Resonance, unlocking the multi-element Thrum of All Sounds Forte combo. Currently the weakest attunement, lacking a strong DPS partner.',
     skills: ['Deterrence', 'Thunderclap', "Myriad Omens' Mandate", 'Ultimate Tactics'],
@@ -177,7 +191,16 @@ const CHARACTER_DATA = {
     // Brant's own weaponAlts completeness fix).
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: 'Wildfire Mark',
     weaponAlts: { alt5: ['Lustrous Razor', 'Ages of Harvest', 'Verdant Summit'], alt4: ['Autumntrace', 'Aureate Zenith', 'Waning Redshift', 'Helios Cleaver', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
-    teams: ['Calcharo + Lynae + Mornye', 'Calcharo + Yinlin + Shorekeeper'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Calcharo/Calcharo.md, Synergies): Lynae named
+    // his best overall buffer; Yinlin his most reliable Outro buffer; Mornye/Shorekeeper/Verina his 3
+    // best generalist Supports (Mornye restricted to Lynae pairings per the source).
+    teams: [
+      'Calcharo + Lynae + Mornye',
+      'Calcharo + Lynae + Shorekeeper',
+      'Calcharo + Lynae + Verina',
+      'Calcharo + Yinlin + Shorekeeper',
+      'Calcharo + Yinlin + Verina',
+    ] },
   'Encore': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Main DPS',
     // desc rewritten 2026-08-31 against wuthering.gg/characters/encore (Lv.1 skill-detail widget, cross-checked
     // against the wiki/Encore/Combat's Forte/Resonance Chain text) for exact Mayhem
@@ -203,7 +226,18 @@ const CHARACTER_DATA = {
     // Added 'Encore + Lupa + Mornye' (2026-09-12): confirmed on Encore's own dump ("Mornye has
     // special synergy with Encore+Lupa, letting Encore run Hyper Carry while Lupa keeps her full Mono
     // Fusion buffs") and independently on Lupa's own dump (Brant's-duo/generalist-support text).
-    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa', 'Encore + Lupa + Mornye'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Encore/Encore.md, Synergies): Lupa named her
+    // "new best teammate"; Sanhua "one of her strongest teammates regardless"; Brant "better than the
+    // Changli pairing"; Mornye/Shorekeeper/Verina her named generalist Supports (Mornye has "special
+    // synergy with Encore+Lupa").
+    teams: [
+      'Encore + Brant + Lupa',
+      'Encore + Sanhua + Lupa',
+      'Encore + Lupa + Mornye',
+      'Encore + Sanhua + Shorekeeper',
+      'Encore + Sanhua + Verina',
+      'Encore + Brant + Shorekeeper',
+    ] },
   // desc corrected against the wiki's Jianxin infobox (2026-08-17 audit): the wiki's
   // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
   // shown on the source's character page for her — the two sources disagree here, the wiki's live
@@ -258,7 +292,16 @@ const CHARACTER_DATA = {
     // her Outro; the Iuno+Shorekeeper / Xiangli Yao+Shorekeeper pairing is also cited directly in
     // the source's own endgame-stats ER estimate). Xiangli Yao + Shorekeeper kept, confirmed as her other
     // named example team.
-    teams: ['Jianxin + Iuno + Shorekeeper', 'Jianxin + Xiangli Yao + Shorekeeper'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Jianxin/Jianxin.md, Synergies/Example Teams):
+    // added the "F2P Jinhsi Team" (Mortefi's Ultimate + her Forte triggers Marcato Coordinated
+    // Attacks refilling Jinhsi's Incandescence) and Verina alternatives.
+    teams: [
+      'Jianxin + Iuno + Shorekeeper',
+      'Jianxin + Iuno + Verina',
+      'Jianxin + Xiangli Yao + Shorekeeper',
+      'Jianxin + Xiangli Yao + Verina',
+      'Jianxin + Mortefi + Jinhsi',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API, Cloudflare bypassed via
   // Chrome UA + google.com referer + jsRender) and the source/character/1104 — base stats, skills,
   // multipliers, buffs, ascension mats all independently re-confirmed accurate, no changes needed there.
@@ -294,7 +337,19 @@ const CHARACTER_DATA = {
     // Freezing Frost's (whose main echo is Lampylumen Myriad) — only the paired set name was wrong.
     bestEchoes: ['Mech Abomination', 'Endless Resonance 5pc'], bestWeapon: 'Abyss Surges',
     weaponAlts: { alt5: ["Moongazer's Sigil", 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
-    teams: ['Lingyang + Lynae + Zhezhi', 'Lingyang + Sanhua + Verina'] },
+    // Rebuilt 2026-09-13 from his own dump (Data dump/Lingyang/Lingyang.md, Synergies/Example Teams):
+    // "Best Team" is Lynae + Mornye ("Mornye is only best here when paired WITH Lynae specifically");
+    // Zhezhi is his other named best partner (a separate pairing, not combined with Lynae in the same
+    // team per the source); Sanhua is his named F2P alternative when Zhezhi is unavailable.
+    // Verina/Shorekeeper are his named generalist Healing Supports.
+    teams: [
+      'Lingyang + Lynae + Mornye',
+      'Lingyang + Lynae + Shorekeeper',
+      'Lingyang + Zhezhi + Shorekeeper',
+      'Lingyang + Zhezhi + Verina',
+      'Lingyang + Sanhua + Verina',
+      'Lingyang + Sanhua + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source/
   // character/1503 — desc, skills, base stats, multipliers, buffs, ascension mats, echoes, alt4/alt3
   // weapons, and teams all independently re-confirmed accurate, no changes needed there. CHAR_BUFF_TABLE's
@@ -353,7 +408,22 @@ const CHARACTER_DATA = {
     // Main DPS Iuno") — added ahead of the Calcharo pairing, which is no longer top-tier for her.
     bestEchoes: ['Impermanence Heron', 'Moonlit Clouds 5pc'], bestWeapon: 'Stringmaster',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Rime-Draped Sprouts'], alt4: ['Augment', 'Jinzhou Keeper'], alt3: ['Rectifier of Night'] },
-    teams: ['Yinlin + Iuno + Shorekeeper', 'Yinlin + Jinhsi + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Yinlin/Yinlin.md, Synergies): "near-mandatory
+    // alongside a big Main DPS carry" — best synergies Xiangli Yao and Calcharo (both amplified by her
+    // Electro/Liberation DMG Amp Outro), Iuno ("best synergy nowadays"), Jinhsi ("competitive pair to
+    // Zhezhi, slightly worse"), Youhu ("buffs Yinlin the most of any partner"). Verina/Shorekeeper
+    // named as her generalist Healing Supports. Augusta explicitly deprioritized ("worse option than
+    // Mortefi — only worth slotting if Mortefi is taken") — omitted as too conditional for a curated entry.
+    teams: [
+      'Yinlin + Iuno + Shorekeeper',
+      'Yinlin + Iuno + Verina',
+      'Yinlin + Jinhsi + Shorekeeper',
+      'Yinlin + Jinhsi + Verina',
+      'Yinlin + Xiangli Yao + Shorekeeper',
+      'Yinlin + Xiangli Yao + Verina',
+      'Yinlin + Calcharo + Shorekeeper',
+      'Yinlin + Youhu + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, all skill multipliers
   // (independently spot-checked section-by-section against the wiki's own Forte table, matches exactly),
@@ -374,7 +444,23 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Waveworn Residue' },
     bestEchoes: ['Jué', 'Celestial Light 5pc'], bestWeapon: 'Ages of Harvest',
     weaponAlts: { alt5: ['Kumokiri', 'Wildfire Mark'], alt4: ['Aureate Zenith', 'Waning Redshift'], alt3: ['Broadblade of Night'] },
-    teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Jinhsi + Yinlin + Verina'] },
+    // Expanded 2026-09-13, continuing the authoritative-source-first process: her own
+    // Synergies/Example Teams text names Zhezhi/Yinlin/Cantarella as premium Coordinated-Attack
+    // 1st-picks (Zhezhi generally best; Cantarella swappable for Zhezhi in her own "Best Team"
+    // line), Brant/Changli as Quickswap alternatives ("Verina must run with Brant+Changli"), and
+    // Yuanwu/Mortefi + Shorekeeper/Verina as her best Supports (Yuanwu preferred for Budget unless
+    // Mortefi has heavy investment).
+    teams: [
+      'Jinhsi + Zhezhi + Shorekeeper',
+      'Jinhsi + Zhezhi + Verina',
+      'Jinhsi + Yinlin + Verina',
+      'Jinhsi + Yinlin + Shorekeeper',
+      'Jinhsi + Cantarella + Shorekeeper',
+      'Jinhsi + Brant + Verina',
+      'Jinhsi + Changli + Verina',
+      'Jinhsi + Yuanwu + Verina',
+      'Jinhsi + Mortefi + Verina',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc, skills, base stats, multipliers, ascension mats,
   // and bestEchoes all re-confirmed accurate. weaponAlts corrected against the source's calc %: alt5's Red
@@ -407,7 +493,20 @@ const CHARACTER_DATA = {
     // Added 'Changli + Aemeath + Lupa' (2026-09-12): confirmed on Changli's own dump ("Best Team:
     // Changli buffs Aemeath via Outro here, Lupa buffs Changli") and independently on Lupa's own
     // dump ("Classic Mono Fusion: Aemeath/Changli/Galbrena/Encore/Brant + Lupa").
-    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina', 'Changli + Aemeath + Lupa'] },
+    // Added 'Changli + Jinhsi + Verina' (2026-09-13): confirmed on Changli's own dump (naming
+    // Jinhsi one of her top quickswap/Whimpering Wastes partners) and independently on Jinhsi's
+    // own dump ("Quickswap Team... Verina must run with Brant+Changli").
+    // Expanded 2026-09-13 from her own dump (Data dump/Changli/Changli.md, Synergies/Example Teams):
+    // added Chixia ("currently the ONLY character able to fully utilize Changli's Outro") and Xiangli
+    // Yao ("the infamous hardcore Dual DPS pair").
+    teams: [
+      'Changli + Lupa + Brant',
+      'Changli + Encore + Verina',
+      'Changli + Aemeath + Lupa',
+      'Changli + Jinhsi + Verina',
+      'Changli + Chixia + Lupa',
+      'Changli + Xiangli Yao + Lupa',
+    ] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc content (title prepended to match the roster's
   // convention), skills, base stats, multipliers, buffs, ascension mats, bestEchoes, and both example
@@ -424,7 +523,21 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Monument Bell', forgery: 'Helix' },
     bestEchoes: ['Nightmare: Lampylumen Myriad', 'Empyrean Anthem 5pc'], bestWeapon: 'Rime-Draped Sprouts',
     weaponAlts: { alt5: ['Whispers of Sirens', 'Lethean Elegy'], alt4: ['Augment', 'Radiant Dawn'], alt3: ['Rectifier of Night'] },
-    teams: ['Zhezhi + Jinhsi + Shorekeeper', 'Zhezhi + Carlotta + Shorekeeper'] },
+    // Rebuilt from own dump (Data dump/Zhezhi/Zhezhi.md, Synergies + Example Teams): DPS partners
+    // named are Carlotta ("her DPS of choice since version 2.0"), Jinhsi ("best partner since her
+    // release"), Lingyang ("acceptable fallback"); Support partners named are Shorekeeper/Verina
+    // ("best generalist Supports"), with Verina explicitly called out as able to "equal Shorekeeper
+    // in Jinhsi teams"; the Example Teams section also names Mornye as a general Support alternative
+    // at S1+ (or R4 Discord+ as a Verina alternative), and Hiyuki+Chisa as a situational option.
+    teams: [
+      'Zhezhi + Jinhsi + Shorekeeper',
+      'Zhezhi + Jinhsi + Verina',
+      'Zhezhi + Jinhsi + Mornye',
+      'Zhezhi + Carlotta + Shorekeeper',
+      'Zhezhi + Carlotta + Verina',
+      'Zhezhi + Lingyang + Shorekeeper',
+      'Zhezhi + Hiyuki + Chisa',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1305 sheet. desc: title "Matter Weaver" (the source) prepended and blurb
   // rewritten from the source's own profile text to match the roster's convention; skills/base stats/
@@ -450,7 +563,22 @@ const CHARACTER_DATA = {
     // Changli/Sanhua). Swapped bestWeapon to Moongazer's Sigil, moving Verity's Handle into alt5.
     bestEchoes: ['Nightmare: Thundering Mephis', 'Void Thunder 5pc'], bestWeapon: "Moongazer's Sigil",
     weaponAlts: { alt5: ["Verity's Handle", 'Blazing Justice'], alt4: ['Aether Strike', 'Stonard'], alt3: ['Gauntlets of Night'] },
-    teams: ['Xiangli Yao + Lynae + Mornye', 'Xiangli Yao + Yinlin + Verina'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Xiangli Yao/Xiangli Yao.md, Synergies):
+    // Lynae/Yinlin named as his two best DPS partners ("easily his best partners"); Jianxin and
+    // Yangyang named as good/best non-limited fallback options; Mornye/Shorekeeper/Verina named as
+    // his best generalist Supports, with Mornye explicitly restricted to Lynae pairings ("special
+    // synergy with Lynae specifically... generally the best choice when Lynae is in use"). Changli
+    // omitted — the source explicitly says she is "NOT recommended for casual players... underperforms
+    // badly without heavy swap-weaving."
+    teams: [
+      'Xiangli Yao + Lynae + Mornye',
+      'Xiangli Yao + Lynae + Shorekeeper',
+      'Xiangli Yao + Lynae + Verina',
+      'Xiangli Yao + Yinlin + Shorekeeper',
+      'Xiangli Yao + Yinlin + Verina',
+      'Xiangli Yao + Jianxin + Shorekeeper',
+      'Xiangli Yao + Yangyang + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (URL is /the-shorekeeper, Chrome UA +
   // google.com referer + jsRender) and the source's character #1505 sheet. desc: title "Euphonic
   // Chrysalis" (the source) prepended and blurb rewritten from the source's own profile text to match the
@@ -482,7 +610,10 @@ const CHARACTER_DATA = {
     // (85.10%, #4 overall, "not a necessity") narrowly misses the 2-slot cutoff, same trimming
     // convention used elsewhere.
     weaponAlts: { alt4: ['Variation', 'Rectifier#25'], alt3: ['Rectifier of Night'] },
-    teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper'] },
+    // Added 'Zani + Phoebe + Shorekeeper' (2026-09-13) from her own dump's Example Teams ("Zani
+    // Team": Zani + Phoebe + The Shorekeeper) — already cross-confirmed on both Zani's and Phoebe's
+    // own teams fields.
+    teams: ['Jinhsi + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Shorekeeper', 'Camellya + Roccia + Shorekeeper', 'Zani + Phoebe + Shorekeeper'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1603 sheet. desc: title "Sanguine Blossom" (the source) prepended and
   // blurb rewritten from the source's own profile text to match the roster's convention (previous desc was
@@ -499,7 +630,20 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Dreamless Feather', forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Crownless', 'Havoc Eclipse 5pc'], bestWeapon: 'Red Spring',
     weaponAlts: { alt5: ['Emerald Sentence', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Lumingloss'], alt3: ['Sword of Night'] },
-    teams: ['Camellya + Roccia + Shorekeeper', 'Camellya + Sanhua + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Camellya/Camellya.md, Synergies): Lynae
+    // named as her "best Hybrid choice"; Roccia/Sanhua named as "comparable premium options"
+    // (Sanhua the better F2P pick); Danjin named as a fallback if Sanhua is taken; Mornye/
+    // Shorekeeper/Verina named as her best generalist Supports, with Mornye explicitly restricted
+    // to Lynae pairings ("best paired specifically with Lynae").
+    teams: [
+      'Camellya + Lynae + Mornye',
+      'Camellya + Lynae + Shorekeeper',
+      'Camellya + Roccia + Shorekeeper',
+      'Camellya + Roccia + Verina',
+      'Camellya + Sanhua + Shorekeeper',
+      'Camellya + Sanhua + Verina',
+      'Camellya + Danjin + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1107 sheet. desc: title "Reshaping Dimensions" (the source) prepended and
   // blurb rewritten from the source's own profile text to match the roster's convention. skills/ascension/
@@ -517,7 +661,27 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Phlogiston' },
     bestEchoes: ['Sentry Construct', 'Frosty Resolve 5pc'], bestWeapon: 'The Last Dance',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'Woodland Aria'], alt4: ['Undying Flame', 'Pistols#26'], alt3: ['Pistols of Night'] },
-    teams: ['Carlotta + Zhezhi + Shorekeeper', 'Carlotta + Zhezhi + Buling'] },
+    // Expanded 2026-09-13, continuing the authoritative-source-first process: her own
+    // dump's Example Teams ("Best: Carlotta + Lynae/Zhezhi/Brant/Cantarella + Mornye +
+    // Shorekeeper/Verina"; "F2P: Carlotta + Taoqi/Yangyang + Verina/Buling") and Synergies text
+    // (Mornye "best with Lynae" specifically, matching the Mornye-restriction pattern already
+    // used elsewhere) give the full cross product below.
+    teams: [
+      'Carlotta + Lynae + Mornye',
+      'Carlotta + Lynae + Shorekeeper',
+      'Carlotta + Lynae + Verina',
+      'Carlotta + Zhezhi + Shorekeeper',
+      'Carlotta + Zhezhi + Verina',
+      'Carlotta + Zhezhi + Buling',
+      'Carlotta + Brant + Shorekeeper',
+      'Carlotta + Brant + Verina',
+      'Carlotta + Cantarella + Shorekeeper',
+      'Carlotta + Cantarella + Verina',
+      'Carlotta + Taoqi + Verina',
+      'Carlotta + Taoqi + Buling',
+      'Carlotta + Yangyang + Verina',
+      'Carlotta + Yangyang + Buling',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1606 sheet. desc: title "Stage in the Box" (the source) prepended and
   // blurb rewritten to match the roster's convention (previous desc wrongly described her as dealing
@@ -537,7 +701,17 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Cadence' },
     bestEchoes: ['Nightmare: Impermanence Heron', 'Midnight Veil 5pc'], bestWeapon: 'Tragicomedy',
     weaponAlts: { alt5: ['Solsworn Ciphers', 'Blazing Justice'], alt4: ['Aether Strike', 'Celestial Spiral'], alt3: ['Gauntlets of Night'] },
-    teams: ['Roccia + Camellya + Shorekeeper', 'Roccia + Phrolova + Cantarella'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Roccia/Roccia.md, Synergies/Example Teams):
+    // Camellya named "Camellya's best in slot buffer"; Phrolova named as "one of the best third-slot
+    // teammates to the Phrolova-Cantarella trio"; Rover: Havoc named "easily Havoc Rover's best
+    // buffer"; Verina/Shorekeeper named as generalist Healing Supports slotting into any of her teams.
+    teams: [
+      'Roccia + Camellya + Shorekeeper',
+      'Roccia + Camellya + Verina',
+      'Roccia + Phrolova + Cantarella',
+      'Roccia + Rover: Havoc + Shorekeeper',
+      'Roccia + Rover: Havoc + Verina',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1506 sheet. desc: title "Graceful Luminescence" (the source) prepended
   // and blurb rewritten — previous desc only described her Confession/support mode ("applies Frazzle...
@@ -566,7 +740,19 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Helix' },
     bestEchoes: ['Capitaneus', 'Eternal Radiance 5pc'], bestWeapon: 'Luminous Hymn',
     weaponAlts: { alt5: ['Lethean Elegy', 'Stringmaster'], alt4: ['Augment', "Ocean's Gift"], alt3: ['Rectifier of Night'] },
-    teams: ['Phoebe + Zani + Shorekeeper', 'Phoebe + Rover: Spectro + Verina'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Phoebe/Phoebe.md, Synergies/Example Teams):
+    // Confession Phoebe's only synergy is Zani (via Frazzle Outro buff). Absolution (DPS) Phoebe's
+    // Frazzle appliers are Rover: Spectro/Ciaccona/Chisa, with Lynae named as her strongest generalist
+    // 2nd-slot buffer ("her best team"), Rebecca a close 2nd, Phrolova more damage-oriented.
+    teams: [
+      'Phoebe + Zani + Shorekeeper',
+      'Phoebe + Rover: Spectro + Lynae',
+      'Phoebe + Rover: Spectro + Verina',
+      'Phoebe + Ciaccona + Lynae',
+      'Phoebe + Ciaccona + Shorekeeper',
+      'Phoebe + Chisa + Lynae',
+      'Phoebe + Rover: Spectro + Rebecca',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1206 sheet. desc: title "Flamebound Compass" (the source) prepended and
   // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes all
@@ -597,7 +783,10 @@ const CHARACTER_DATA = {
     // confirmed on Brant's own dump ("Fusion DPS partners for a Brant+Lupa duo: Galbrena/Aemeath/
     // Changli/Encore/Chixia" plus "Generalist supports: Mornye (best with Lupa)") and independently
     // on Lupa's own dump for each.
-    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper', 'Brant + Lupa + Galbrena', 'Brant + Lupa + Aemeath', 'Brant + Lupa + Mornye'] },
+    // Added 'Brant + Jinhsi + Verina' (2026-09-13): confirmed on Brant's own dump ("More
+    // Alternative Teams (with Jinhsi, Verina...)") and independently on Jinhsi's own dump
+    // ("Quickswap Team... Verina must run with Brant+Changli").
+    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper', 'Brant + Lupa + Galbrena', 'Brant + Lupa + Aemeath', 'Brant + Lupa + Mornye', 'Brant + Jinhsi + Verina'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1607 sheet. desc: title "Sea of Dreams" (the source) prepended and blurb
   // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
@@ -635,7 +824,18 @@ const CHARACTER_DATA = {
     // actual (if outclassed-by-Zhezhi/Yinlin) niche partner for her.
     bestEchoes: ['Lorelei', 'Midnight Veil 5pc'], bestWeapon: 'Whispers of Sirens',
     weaponAlts: { alt5: ['Rime-Draped Sprouts', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Cantarella + Phrolova + Qiuyuan', 'Cantarella + Jinhsi + Shorekeeper'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Cantarella/Cantarella.md, Synergies): Phrolova
+    // named "easily Phrolova's best teammate" ("a perfect pair"); Carlotta/Jinhsi named as her Skill-
+    // DMG-dealer DPS substitutes; Shorekeeper/Verina named as her two best generalist Supports "by a
+    // wide margin."
+    teams: [
+      'Cantarella + Phrolova + Qiuyuan',
+      'Cantarella + Phrolova + Shorekeeper',
+      'Cantarella + Phrolova + Verina',
+      'Cantarella + Jinhsi + Shorekeeper',
+      'Cantarella + Jinhsi + Verina',
+      'Cantarella + Carlotta + Shorekeeper',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1507 sheet. desc: title "Scorched Radiance" (the source) prepended and
   // blurb rewritten — the previous desc said she "builds Frazzle stacks via Resonance Skill counters and
@@ -680,7 +880,12 @@ const CHARACTER_DATA = {
     // text is explicit that "Phoebe + Spectro Rover is the best Zani team when fully optimized" (with
     // Shorekeeper named separately as "the best option for Zani teams WITHOUT quickswap") — swapped
     // the 2nd slot's ordering to lead with the source's own "best" framing.
-    teams: ['Zani + Phoebe + Rover: Spectro', 'Zani + Phoebe + Shorekeeper'] },
+    // Expanded 2026-09-13, continuing the authoritative-source-first process: her own Synergies
+    // text names Ciaccona as another Frazzle-applier alternative to Rover: Spectro ("a worse
+    // alternative") and Verina alongside Shorekeeper as generalist non-Quickswap picks. Ciaccona
+    // independently confirmed on her own dump ("a solid Zani Frazzle-support alternative to
+    // Spectro Rover alone"); Verina is a one-way citation (not confirmed on her own dump).
+    teams: ['Zani + Phoebe + Rover: Spectro', 'Zani + Phoebe + Shorekeeper', 'Zani + Phoebe + Ciaccona', 'Zani + Phoebe + Verina'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1407 sheet. desc: title "Woven Melodies" (the source) prepended and blurb
   // rewritten — the previous desc said she "applies Erosion via Coordinated Attacks", but Ciaccona has
@@ -709,7 +914,20 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Phlogiston' },
     bestEchoes: ['Nightmare: Kelpie', 'Gusts of Welkin 5pc'], bestWeapon: 'Woodland Aria',
     weaponAlts: { alt5: ['Phasic Homogenizer', 'Lux & Umbra'], alt4: ['Romance in Farewell'], alt3: ['Pistols of Night'] },
-    teams: ['Ciaccona + Cartethyia + Rover: Aero', 'Ciaccona + Cartethyia + Chisa'] },
+    // Added 'Ciaccona + Zani + Phoebe' (2026-09-13): confirmed on Ciaccona's own dump ("Spectro
+    // Frazzle Teams: Phoebe + Zani + Ciaccona + Rover: Aero/Shorekeeper") and independently on
+    // Zani's own dump (Synergies naming Ciaccona a real Frazzle-applier alternative).
+    // Expanded 2026-09-13 from her own dump's Example Teams list: "Best Team" Sigrika + Qiuyuan +
+    // Ciaccona; "Jiyan Iuno Dual DPS" Jiyan + Iuno + Ciaccona; "Main DPS Ciaccona" Ciaccona + Lynae +
+    // Sanhua (Sanhua named her Main-DPS-enabler "best option by far").
+    teams: [
+      'Ciaccona + Cartethyia + Rover: Aero',
+      'Ciaccona + Cartethyia + Chisa',
+      'Ciaccona + Zani + Phoebe',
+      'Ciaccona + Sigrika + Qiuyuan',
+      'Ciaccona + Jiyan + Iuno',
+      'Ciaccona + Lynae + Sanhua',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1409 sheet. desc: title "Feathered Tempest" (the source) prepended and
   // blurb rewritten to match the roster's convention. skills/ascension/skill materials/bestEchoes/
@@ -729,7 +947,15 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 5pc'], bestWeapon: "Defier's Thorn",
     weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Feather Edge'], alt3: ['Guardian Sword'] },
-    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Cartethyia + Ciaccona + Chisa'] },
+    // Expanded 2026-09-13 from her own dump's Example Teams: Ciaccona named her best Sub DPS;
+    // Rover: Aero/Chisa/Shorekeeper the three best 3rd-slot supports (Shorekeeper mainly for
+    // Whimpering Wastes); Sanhua named her best F2P Main-DPS-enabling pairing.
+    teams: [
+      'Cartethyia + Ciaccona + Rover: Aero',
+      'Cartethyia + Ciaccona + Chisa',
+      'Cartethyia + Ciaccona + Shorekeeper',
+      'Cartethyia + Rover: Aero + Sanhua',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1207 sheet. desc: title "Howling Flame" (the source) prepended and blurb
   // rewritten — the previous desc said she "shreds enemy Fusion RES" as if unconditional, but her Glory
@@ -811,7 +1037,22 @@ const CHARACTER_DATA = {
     // field) and independently on Phrolova's own dump (line 292: "Yangyang: Xuanling... + Phrolova +
     // Suisui/Chisa/Shorekeeper — Suisui and Chisa are only best specifically with Yangyang: Xuanling
     // on the team").
-    teams: ['Phrolova + Cantarella + Qiuyuan', 'Phrolova + Cantarella + Shorekeeper', 'Phrolova + Yangyang: Xuanling + Suisui'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Phrolova/Phrolova.md, Synergies/Example
+    // Teams): Lucilla/Sigrika named as good 2nd-slot alternatives to Cantarella; Roccia/Danjin named
+    // as 3rd-slot alternatives to Qiuyuan/Shorekeeper; Galbrena/Jiyan/Phoebe as her other
+    // Heavy-Attack-DPS pairings alongside Yangyang: Xuanling.
+    teams: [
+      'Phrolova + Cantarella + Qiuyuan',
+      'Phrolova + Cantarella + Shorekeeper',
+      'Phrolova + Yangyang: Xuanling + Suisui',
+      'Phrolova + Lucilla + Qiuyuan',
+      'Phrolova + Sigrika + Qiuyuan',
+      'Phrolova + Roccia + Cantarella',
+      'Phrolova + Danjin + Shorekeeper',
+      'Phrolova + Galbrena + Shorekeeper',
+      'Phrolova + Jiyan + Shorekeeper',
+      'Phrolova + Phoebe + Rover: Spectro',
+    ] },
   'Augusta': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'Ephor of Septimont, a sun rising ablaze from the crucible of blood and sand. On-field Electro Heavy ATK DPS who self-shields and builds a resource through her attacks toward a Forte finisher. At enough stacks she can instead enter a time-stopped state for an extended combo ending in a finisher that shields teammates on their Intro cast; her Outro buffs the next Resonator\'s All-Attribute DMG, refunding extra stacks if they Outro back to her.',
     skills: ['Hunter\'s Path', 'Warrior\'s Blade', 'Sunward Conquest', 'Call Me By the Sun'],
@@ -930,7 +1171,16 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fenrico', 'Law of Harmony 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
     weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Commando of Conviction'], alt3: ['Guardian Sword'] },
-    teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Qiuyuan/Qiuyuan.md, Example Teams/Synergies):
+    // "Best Team" names Sigrika + Qiuyuan + Ciaccona; Shorekeeper/Verina named his two best
+    // generalist Supports (Shorekeeper "the best 3rd slot for Galbrena+Qiuyuan," Verina a close
+    // accessible alternative).
+    teams: [
+      'Qiuyuan + Galbrena + Shorekeeper',
+      'Qiuyuan + Galbrena + Verina',
+      'Qiuyuan + Phrolova + Cantarella',
+      'Qiuyuan + Sigrika + Ciaccona',
+    ] },
   'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Support/Healer',
     desc: '"Just an ordinary student," she calmly introduces herself, a faint iridescent shimmer flickering in her eyes. Havoc support/healer who leans on a heavy-hitting Liberation for burst damage while healing, shielding, and shredding enemy DEF for the team.',
     // skills[3] corrected 2026-08-17: was 'Reverberance - Return' (her actual Intro Skill name) — the
@@ -1013,10 +1263,15 @@ const CHARACTER_DATA = {
     // each (2 interchangeable headliners + Lynae/Mornye + a Shorekeeper/Verina choice) — a real
     // 4-person Whimpering Wastes-shaped comp this flat 3-name `teams` string format can't represent
     // without guessing which specific trio was meant, so deliberately left uncoded.
+    // Added 'Lynae + Carlotta + Mornye' (2026-09-13): "Other Alternative Teams" above names
+    // Carlotta ambiguously (same 4+-name issue), but Carlotta's OWN dump unambiguously confirms
+    // it ("Best: Carlotta + Lynae/Zhezhi/Brant/Cantarella + Mornye + Shorekeeper/Verina") — one
+    // clear side is enough to keep it, per the established standard.
     teams: [
       'Lynae + Aemeath + Mornye',
       'Lynae + Qingxiao + Mornye',
       'Lynae + Luuk Herssen + Mornye',
+      'Lynae + Carlotta + Mornye',
       'Lynae + Hiyuki + Chisa',
       'Lynae + Aemeath + Chisa',
       'Lynae + Yangyang: Xuanling + Chisa',
@@ -1040,7 +1295,20 @@ const CHARACTER_DATA = {
     // Xuanling + Lynae + Mornye — any non-Negative-Status DPS... fully interchangeable") explicitly
     // lists Yangyang: Xuanling as a headliner option, and Yangyang: Xuanling's own dump's
     // "Alternative Premium Teams" line confirms the same combo ("Only run Mornye alongside Lynae").
-    teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia', 'Mornye + Lynae + Yangyang: Xuanling'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Mornye/Mornye.md, Example Teams): "Lynae +
+    // Mornye" names Hiyuki/Iuno as further interchangeable 1st-slot DPS alongside Aemeath/Yangyang:
+    // Xuanling; "Mono Fusion" names Galbrena/Brant/Encore alongside Aemeath as Lupa+Mornye 1st-slot
+    // DPS options.
+    teams: [
+      'Mornye + Lynae + Aemeath',
+      'Mornye + Luuk Herssen + Denia',
+      'Mornye + Lynae + Yangyang: Xuanling',
+      'Mornye + Lynae + Hiyuki',
+      'Mornye + Lynae + Iuno',
+      'Mornye + Lupa + Galbrena',
+      'Mornye + Lupa + Brant',
+      'Mornye + Lupa + Encore',
+    ] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles through his Aureole of Execution's enhanced forms, dealing bonus damage against Tune Strain - Interfered enemies.",
     skills: ['Such is Light', 'Reunion of All the Fallen', 'Rewritten in Winter\'s Margins', 'Before Injection of Dawn'],
@@ -1063,7 +1331,16 @@ const CHARACTER_DATA = {
     // interchangeable 1st-pick headliners alongside Aemeath/Qingxiao) — his own dump's separate
     // Best Team line names Denia as his top pick, but that doesn't contradict Lynae being a real,
     // dump-confirmed alternate 2nd-pick on his page too.
-    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye', 'Luuk Herssen + Lynae + Mornye'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Luuk Herssen/Luuk Herssen.md, Example Team):
+    // the single "Best Team" line is Denia + Lynae/Sanhua + Mornye/Shorekeeper/Verina — added
+    // Shorekeeper/Verina alternatives for his strongest-named 2nd-slot pick, Denia.
+    teams: [
+      'Luuk Herssen + Denia + Mornye',
+      'Luuk Herssen + Denia + Shorekeeper',
+      'Luuk Herssen + Denia + Verina',
+      'Luuk Herssen + Sanhua + Mornye',
+      'Luuk Herssen + Lynae + Mornye',
+    ] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who alternates between two Resonance Modes across her Basic Attack combo, banking momentum that fuels a pair of heavy-hitting Liberation casts for her core damage.',
     skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'Overture of Departure'],
@@ -1082,7 +1359,21 @@ const CHARACTER_DATA = {
     // (viable if run in Fusion Burst mode too)") names Chisa as a valid 3rd-slot alternative to
     // Mornye alongside Aemeath+Lynae — reciprocal to Lynae's own dump-confirmed 'Lynae + Aemeath +
     // Chisa' entry, which this side was missing.
-    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye', 'Aemeath + Lynae + Chisa'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Aemeath/Aemeath.md, Example Teams): "Best
+    // Fusion Burst Team" also lists Suisui/Lupa alongside Chisa; "Best Tune Rupture Team" also lists
+    // Shorekeeper/Verina alongside Mornye; added "Mono Fusion" (Lupa + Brant/Changli/Galbrena).
+    teams: [
+      'Aemeath + Denia + Chisa',
+      'Aemeath + Denia + Suisui',
+      'Aemeath + Denia + Lupa',
+      'Aemeath + Lynae + Mornye',
+      'Aemeath + Lynae + Chisa',
+      'Aemeath + Lynae + Shorekeeper',
+      'Aemeath + Lynae + Verina',
+      'Aemeath + Lupa + Brant',
+      'Aemeath + Lupa + Changli',
+      'Aemeath + Lupa + Galbrena',
+    ] },
   'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. On-field Aero DPS who consumes Rune stacks to empower Echo Skill and Heavy ATK for Aero burst DMG with crowd control.',
     skills: ['One, Two, Three', 'Royan Close Quarters Combat', 'Where Trust Leads Me!', 'Solsworn Etymology'],
@@ -1097,7 +1388,18 @@ const CHARACTER_DATA = {
     // fallback, matching the "<Weapon Type> of Night" naming convention used elsewhere (the source doesn't
     // rank a 3★ for her at all — she "lacks strong F2P weapon alternatives" per its own review).
     weaponAlts: { alt5: ['Blazing Justice', 'Pulsation Bracer'], alt4: ['Aether Strike', 'Legend of Drunken Hero'], alt3: ['Gauntlets of Night'] },
-    teams: ['Sigrika + Qiuyuan + Shorekeeper', 'Sigrika + Phrolova + Qiuyuan', 'Sigrika + Qiuyuan + Ciaccona'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Sigrika/Sigrika.md, Synergies/Example Teams):
+    // Lucilla named alongside Qiuyuan as her "by far strongest synergies"; Lynae named as her
+    // fallback generalist buffer, with Mornye/Verina/Rover: Aero named 3rd-slot options for that team.
+    teams: [
+      'Sigrika + Qiuyuan + Shorekeeper',
+      'Sigrika + Phrolova + Qiuyuan',
+      'Sigrika + Qiuyuan + Ciaccona',
+      'Sigrika + Qiuyuan + Lucilla',
+      'Sigrika + Lynae + Mornye',
+      'Sigrika + Lynae + Verina',
+      'Sigrika + Lynae + Rover: Aero',
+    ] },
   'Rebecca': { rarity: 5, element: 'Electro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Edgerunner and Fury-Type Arsenal from the Cyberpunk: Edgerunners collab. Electro Hybrid who mode-switches between Huntress and Guts stances, then leaves behind a turret on Outro that buffs the team\'s damage.',
     skills: ["Mix-'n'-Match", "Tactical Tweaks", "Party 'til Dawn!", "My Turn!"],
@@ -1175,7 +1477,16 @@ const CHARACTER_DATA = {
     // Battle Pass 4★s (ahead of Waltz in Masquerade); Rectifier of Night is the 3★ fallback (the source
     // doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Whispers of Sirens', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Lucilla + Hiyuki + Chisa', 'Lucilla + Sigrika + Shorekeeper', 'Lucilla + Phrolova + Qiuyuan'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Lucilla/Lucilla.md, Example Teams): added
+    // Suisui as her named Glacio Chafe alternative to Chisa, and Galbrena for the Echo Skill
+    // Hypercarry team.
+    teams: [
+      'Lucilla + Hiyuki + Chisa',
+      'Lucilla + Hiyuki + Suisui',
+      'Lucilla + Sigrika + Shorekeeper',
+      'Lucilla + Phrolova + Qiuyuan',
+      'Lucilla + Sigrika + Galbrena',
+    ] },
   'Lucy': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Main DPS',
     desc: 'The Netrunner, from the Cyberpunk: Edgerunners collab. Spectro DPS who builds up her Hack resource into an enhanced Heavy Attack and a battlefield-freezing Ultimate with selectable debuffs.',
     skills: ['Locked Thread', 'Protocol Breach', 'Netrunner', 'Outdated Hallucination'],
@@ -1189,7 +1500,12 @@ const CHARACTER_DATA = {
     // is the 3★ fallback (the source doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
     // naming convention used elsewhere.
     weaponAlts: { alt5: ['Lux & Umbra', 'Skull Thrasher'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
-    teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper', 'Lucy + Iuno + Shorekeeper'] },
+    // Rebuilt 2026-09-13 from her own dump (Data dump/Lucy/Lucy.md, Synergies/Example Teams): Rebecca
+    // is named "by far her best partner... no alternative comes close" — no other DPS is named
+    // anywhere in the source. Dropped 'Lucy + Iuno + Shorekeeper': neither Lucy's nor Iuno's own dump
+    // supports this pairing at all, contradicting the "no alternative comes close" text directly.
+    // Replaced with the Verina 3rd-slot fallback her own dump does name.
+    teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper', 'Lucy + Rebecca + Verina'] },
   'Yangyang: Xuanling': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'Xuan Watcher of Xuanfang Hold and sister of Suisui. On-field Havoc DPS who alternates Azure and Feather Sword Stances, applying and consuming Havoc Bane for massive self-buffed Crit DMG.',
     skills: ['Succor and Smite', "Feather's Edge", 'Hush of a Thousand Voices', 'Skybound Feather'],
@@ -1278,7 +1594,23 @@ const CHARACTER_DATA = {
     // Hiyuki + Lucilla + Lynae + Suisui" — Lucilla/Lynae are the alternate 2nd-pick per Hiyuki's own
     // dump's "{Lucilla/Lynae}" structure, not simultaneous members) and independently on Hiyuki's own
     // dump line 202's "{Suisui/Chisa/Mornye/Verina}" 3rd-pick list.
-    teams: ['Hiyuki + Lucilla + Chisa', 'Hiyuki + Lucilla + Suisui', 'Hiyuki + Lynae + Mornye', 'Hiyuki + Lynae + Chisa', 'Hiyuki + Lynae + Suisui'] },
+    // Expanded 2026-09-13: added the Verina 3rd-slot alternative her own dump names for both
+    // Lucilla/Lynae ("Best Team": Hiyuki + {Lucilla/Lynae} + {Suisui/Chisa/Mornye/Verina}), and the
+    // "Alternative Team" last-resort options (Yinlin/Zhezhi/Changli/Jianxin + Suisui/Chisa when Lynae
+    // isn't available) — Zhezhi's own dump independently confirms 'Zhezhi + Hiyuki + Chisa'.
+    teams: [
+      'Hiyuki + Lucilla + Chisa',
+      'Hiyuki + Lucilla + Suisui',
+      'Hiyuki + Lucilla + Verina',
+      'Hiyuki + Lynae + Mornye',
+      'Hiyuki + Lynae + Chisa',
+      'Hiyuki + Lynae + Suisui',
+      'Hiyuki + Lynae + Verina',
+      'Hiyuki + Yinlin + Chisa',
+      'Hiyuki + Zhezhi + Chisa',
+      'Hiyuki + Changli + Chisa',
+      'Hiyuki + Jianxin + Chisa',
+    ] },
   'Suisui': { rarity: 5, element: 'Glacio', weapon: 'Rectifier', role: 'Support/Healer',
     desc: 'Director of the Zhaoming Commerce Guild and sister of Yangyang: Xuanling. HP-scaling Glacio healer who alternates Zephyr Stance (healing) and Drizzle Stance (Glacio DMG) via Resonance Skill, closing with a team-wide DMG Amplification Outro.',
     skills: ['Unraveled Spring', 'Vernal Screen', 'Song of Thoroughfare', 'Tinkling Jade'],
@@ -1336,7 +1668,17 @@ const CHARACTER_DATA = {
     // merely a banner-featured 4★, not a ranked recommendation); Feather Edge is the dump's own explicit
     // "Best 4★ option" (65.53%), matching the alt4 convention used everywhere else in this table.
     weaponAlts: { alt5: ['Red Spring'], alt4: ['Feather Edge'], alt3: ['Sword of Night'] },
-    teams: ['Qingxiao + Denia + Mornye', 'Qingxiao + Lynae + Mornye'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Qingxiao/Qingxiao.md, Example Teams): "Best
+    // Team" is Denia + Mornye with no recommended alternatives (dropping Mornye causes "very
+    // significant team DPS losses"); the "Lynae Team" explicitly allows Ciaccona/Shorekeeper as
+    // near-equal Mornye alternatives ("alternatives to Mornye don't suffer as significant a
+    // drop-off here").
+    teams: [
+      'Qingxiao + Denia + Mornye',
+      'Qingxiao + Lynae + Mornye',
+      'Qingxiao + Lynae + Ciaccona',
+      'Qingxiao + Lynae + Shorekeeper',
+    ] },
   'Jingran': { rarity: 5, element: 'Fusion', weapon: 'Broadblade', role: 'Main DPS',
     desc: 'A loner treading into illusive depths, of Mengzhou. On-field Fusion DPS who alternates Yin Vessel and Yang Font stances, with ATK and Heavy Attack DMG scaling off Max HP, entering a Yinghuo state via Resonance Liberation for empowered follow-up strikes.',
     skills: ['Edge of Life and Death', 'Malevolent Encounter', 'Burial of Thousand Souls', 'Question the Tombs'],
@@ -1405,7 +1747,16 @@ const CHARACTER_DATA = {
     // component of all mono Aero teams", the real Aero-Erosion pairing this table intended. The prior
     // 2026-08-18 note's premise (an Aero Main DPS benefiting from his Outro's Aero DMG Amplify) still
     // holds — it just named the wrong character.
-    teams: ['Aalto + Ciaccona + Shorekeeper', 'Aalto + Jiyan + Verina'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Aalto/Aalto.md, Synergies): Rover: Aero named
+    // his other core mono-Aero partner alongside Ciaccona; Iuno named a viable (if non-optimal)
+    // replacement alongside Jiyan.
+    teams: [
+      'Aalto + Ciaccona + Shorekeeper',
+      'Aalto + Ciaccona + Verina',
+      'Aalto + Rover: Aero + Shorekeeper',
+      'Aalto + Jiyan + Verina',
+      'Aalto + Iuno + Shorekeeper',
+    ] },
   'Baizhi': { rarity: 4, element: 'Glacio', weapon: 'Rectifier', role: 'Healer',
     // desc fixed 2026-09-08 (full re-audit): "You'an" -> "You'tan" — Data dump/Baizhi/Baizhi.md spells
     // her companion's name consistently as "You'tan" throughout (Kit, Resonance Skill, Liberation,
