@@ -145,19 +145,21 @@
              HTML zone tool with the real cassette-widget.png as its background, drag-to-move
              + numeric x/y/w/h fields, all in % of the full artwork canvas) rather than derived
              from a screenshot or a pixel-scan guess — this is the first round with the user's
-             own hand on the actual button placement instead of Claude re-deriving it. Exported
-             zones (title x40.2/y44.25/w42/h22, prev x34/y80.5/w10.5/h7, next x44.6/y80.5/
-             w11.2/h7, loop x56/y80.5/w12.4/h7, play x68.5/y80.5/w12/h7, shuffle x12.3/y21/
-             w19/h42) converted straight to weights (weight = span width/height in that %
-             space, spacer weights = the gaps between/around them) — no old-canvas remapping
-             needed since these were placed directly on the CURRENT (2050x1209) artwork. Also
+             own hand on the actual button placement instead of Claude re-deriving it. Also
              collapsed each row's redundant multi-spacer padding (previously split into two+
              separate FrameLayout children per side for no visible reason) down to one spacer
-             per side — same rendered result, fewer nodes. -->
+             per side — same rendered result, fewer nodes.
+
+             Eighth round: re-placed by the user in the same editor, adjusting the button row's
+             own vertical position/height and the small gaps between buttons (title and shuffle
+             unchanged from the seventh round). Exported zones (title x40.2/y44/w42/h22, prev
+             x34/y78.9/w10.5/h10, next x44.7/y78.9/w11/h10, loop x56/y78.9/w12.4/h10, play
+             x68.6/y78.9/w12/h10, shuffle x12.3/y21/w19/h42) converted straight to weights the
+             same way as the seventh round. -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="44.25" />
+            android:layout_weight="44" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -204,18 +206,18 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="14.25" />
+            android:layout_weight="12.9" />
 
-        <!-- Row 2/3 — the 4 real physical button labels, seventh-round weights (see file
-             header): 34/10.5/0.1/11.2/0.2/12.4/0.1/12/19.5 — the sub-1 spacers are the small
+        <!-- Row 2/3 — the 4 real physical button labels, eighth-round weights (see file
+             header): 34/10.5/0.2/11/0.3/12.4/0.2/12/19.4 — the sub-1 spacers are the small
              real gaps between adjacent buttons in the user's own placement, not rounding
              noise. Left to right: Prev, Next, Loop, Play/Stop. Vertical position is this
-             single LinearLayout's own weight=7 within content_normal's flat
-             44.25/22/14.25/7/12.5 (wsum=100). -->
+             single LinearLayout's own weight=10 within content_normal's flat
+             44/22/12.9/10/11.1 (wsum=100). -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="7"
+            android:layout_weight="10"
             android:orientation="horizontal">
             <FrameLayout
                 android:layout_width="0dp"
@@ -253,11 +255,11 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.1" />
+                android:layout_weight="0.2" />
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="11.2">
+                android:layout_weight="11">
                 <ImageButton
                     android:id="@+id/widget_soundtrack_next"
                     android:layout_width="match_parent"
@@ -277,7 +279,7 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.2" />
+                android:layout_weight="0.3" />
             <!-- Loop toggle. Selected-state overlay: RemoteViews can't runtime-swap a view's
                  own background, so the "on" highlight is a second view toggled by visibility,
                  layered under the fixed-size icon above. -->
@@ -309,7 +311,7 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="0.1" />
+                android:layout_weight="0.2" />
             <!-- Play/Stop — same fixed-size pattern, now 18dp to match the other three icons
                  (was 22dp/"slightly larger" — direct user request to size it the same). -->
             <FrameLayout
@@ -336,12 +338,12 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="19.5" />
+                android:layout_weight="19.4" />
         </LinearLayout>
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="12.5" />
+            android:layout_weight="11.1" />
     </LinearLayout>
 
     <!-- Shuffle toggle, moved into the middle of the yellow diagram panel on the left
