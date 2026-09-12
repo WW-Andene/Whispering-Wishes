@@ -25,8 +25,8 @@ function renderRewardsWithIcons(rewardsText) {
     if (!iconSrc) return part;
     return (
       <React.Fragment key={i}>
-        <img src={iconSrc} alt="" className="inline w-4 h-4 -mt-0.5 mr-1" onError={hideOnError} />
         {part}
+        <img src={iconSrc} alt="" className="inline w-4 h-4 -mt-0.5 ml-1" onError={hideOnError} />
       </React.Fragment>
     );
   });
