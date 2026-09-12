@@ -1,133 +1,113 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — features/tracker/StandardBannerSection.jsx
-// Standard (permanent) banner section with particle overlay.
+// Standard (permanent) banner section.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
+// BUG FIX (direct user request 2026-09-11): full-animation mode used to show a bespoke
+// twinkling-star/dust-mote canvas overlay (StandardBannerOverlay) unique to this banner,
+// instead of the same "breath-zoom" slow scale-pulse every other banner's art gets in
+// full-animation mode (BannerCard.jsx, CharacterDetailModal.jsx, etc. — see kuro.css's
+// `.animations-full .breath-zoom` rule). Removed that overlay entirely and applied
+// `breath-zoom` to this banner's own img instead, for the same look as everywhere else.
+
+import React, { useState, memo } from 'react';
+import { ChevronUp } from 'lucide-react';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { generateMaskGradient, TEXT_SHADOW_STYLE } from '../../shared/components/BannerCard.jsx';
 import { ConvenePullPills } from '../../shared/components/ConvenePullPills.jsx';
 import { ConvenePullSimModal } from '../../shared/components/ConvenePullSimModal.jsx';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { storageAvailable } from '../../core/storage.js';
 import { STANDARD_WEAPON_TARGET_KEY } from '../../shared/constants/appConstants.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { t } from '../../utils/i18n.js';
 
-const StandardBannerOverlay = memo(() => {
-  const canvasRef = useRef(null);
+// Direct user request 2026-09-11: the Standard banner's old horizontally-scrolling row of
+// weapon/character tags is replaced by a single (^) button that opens this kuro-styled panel —
+// a grid of preview pictures (5x5 for the Standard Weapon banner's target picker, 3x3 for the
+// Standard Character banner's roster) instead of small text pills. Clicking a preview picture
+// opens its detail modal (same click-to-open pattern as BannerCard's featured-4★ previews);
+// for the weapon banner, the panel entry itself is also the target-select control.
+const StandardPoolPicker = memo(({ isOpen, onClose, title, items, itemKey, columns, selectable, targetWeapon, selectTarget, setDetailModal }) => {
+  const { getImageFraming } = useImageFramingContext();
+  const gridColsClass = columns === 3 ? 'grid-cols-3' : 'grid-cols-5';
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+  const renderTile = (item) => {
+    const name = typeof item === 'string' ? item : item[itemKey];
+    const selected = selectable && targetWeapon === name;
+    const previewImg = DEFAULT_COLLECTION_IMAGES[name];
+    const framingKey = `collection-${name}`;
+    const framing = getImageFraming(framingKey);
+    return (
+      <div key={name} className="flex flex-col items-center gap-1">
+        <div
+          className={`w-full aspect-square rounded-md overflow-hidden border bg-black/25 cursor-pointer ${selected ? 'border-yellow-400 ring-2 ring-yellow-500/50' : 'border-cyan-400/40'}`}
+          onClick={() => setDetailModal?.({ show: true, type: selectable ? 'weapon' : 'character', name, imageUrl: previewImg, framing })}
+          title={t('tracker.conveneSim.viewDetailAria', { name })}
+        >
+          {previewImg && (
+            <img
+              src={previewImg}
+              alt=""
+              aria-hidden="true"
+              className="w-full h-full object-contain pointer-events-none"
+              style={{ transform: `scale(${framing.zoom / 100}) translate(${-framing.x}%, ${-framing.y}%)` }}
+              onError={hideOnError}
+            />
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={selectable ? () => selectTarget(name) : undefined}
+          className={`w-full text-2xs px-1 py-0.5 rounded truncate text-center ${selectable ? 'cursor-pointer' : 'cursor-default'} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
+          title={selectable ? t('tracker.conveneSim.targetWeaponHint') : name}
+        >
+          {selected && '★ '}{name}
+        </button>
+      </div>
+    );
+  };
 
-    const rect = canvas.parentElement.getBoundingClientRect();
-    const w = rect.width || 400;
-    const h = rect.height || 190;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    ctx.scale(dpr, dpr);
-
-    // Twinkling 6-point stars (Sigrika uses 4-point golden — these are 6-point silver)
-    const stars = Array.from({ length: 22 }, () => ({
-      x: Math.random() * w, y: h * 0.08 + Math.random() * h * 0.88,
-      size: 1.8 + Math.random() * 3,
-      phase: Math.random() * Math.PI * 2,
-      speed: 0.6 + Math.random() * 1.2,
-      // Staggered blink: each star fades in and out independently
-      blinkOffset: Math.random() * 6,
-    }));
-
-    // Small drifting dust motes
-    const dust = Array.from({ length: 12 }, () => ({
-      x: Math.random() * w, y: Math.random() * h,
-      vy: -0.1 - Math.random() * 0.15,
-      vx: (Math.random() - 0.5) * 0.12,
-      size: 0.8 + Math.random() * 1.2,
-      phase: Math.random() * Math.PI * 2,
-      alpha: 0.4 + Math.random() * 0.3,
-    }));
-
-    let animId, t = 0;
-    const frame = () => {
-      ctx.clearRect(0, 0, w, h);
-      t += 0.016;
-
-      // 6-point twinkling stars
-      for (const s of stars) {
-        // Blink pattern: fully bright for a moment, then fade out
-        const cycle = (t * s.speed + s.blinkOffset) % 4;
-        let a;
-        if (cycle < 0.8) a = Math.sin(cycle / 0.8 * Math.PI); // fade in and out
-        else a = 0; // dark
-        a *= 0.9;
-        if (a < 0.05) continue;
-
-        const sz = s.size * (0.7 + a * 0.3);
-        ctx.save();
-        ctx.globalAlpha = a;
-        ctx.fillStyle = 'rgba(220,235,255,1)';
-        ctx.shadowColor = 'rgba(180,210,255,0.8)';
-        ctx.shadowBlur = 10;
-
-        // 6-point star shape
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const angle = (i / 6) * Math.PI * 2 - Math.PI / 2;
-          const innerAngle = ((i + 0.5) / 6) * Math.PI * 2 - Math.PI / 2;
-          ctx.lineTo(s.x + Math.cos(angle) * sz * 1.8, s.y + Math.sin(angle) * sz * 1.8);
-          ctx.lineTo(s.x + Math.cos(innerAngle) * sz * 0.4, s.y + Math.sin(innerAngle) * sz * 0.4);
-        }
-        ctx.closePath();
-        ctx.fill();
-
-        // Bright center dot
-        ctx.shadowBlur = 0;
-        ctx.globalAlpha = a * 0.8;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, sz * 0.35, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      // Drifting dust
-      for (const d of dust) {
-        d.x += d.vx + Math.sin(t * 0.3 + d.phase) * 0.08;
-        d.y += d.vy;
-        if (d.y < -5) { d.y = h + 5; d.x = Math.random() * w; }
-
-        const pulse = d.alpha * (0.5 + Math.sin(t * 0.8 + d.phase) * 0.5);
-        if (pulse < 0.06) continue;
-
-        ctx.save();
-        ctx.globalAlpha = pulse;
-        ctx.fillStyle = 'rgba(210,225,250,1)';
-        ctx.shadowColor = 'rgba(180,200,240,0.5)';
-        ctx.shadowBlur = 6;
-        ctx.beginPath();
-        ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      animId = requestAnimationFrame(frame);
-    };
-    animId = requestAnimationFrame(frame);
-    return () => cancelAnimationFrame(animId);
-  }, []);
+  // Direct user clarification 2026-09-11: the Standard Weapon pool is two distinct
+  // collections (the five original standard 5★ weapons, and five added later), not
+  // one flat list — grouped and labeled separately here whenever items carry a
+  // `collection` field (banners.js's standardWeapons). standardCharacters has no
+  // such field and falls through to the single flat grid below.
+  const hasCollections = (items || []).some(i => i && typeof i === 'object' && i.collection != null);
+  const collections = hasCollections
+    ? [...new Map((items || []).map(i => [i.collection, true])).keys()].sort((a, b) => a - b)
+    : null;
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ zIndex: 2, width: '100%', height: '100%' }}
-      aria-hidden="true"
-    />
+    <FocusTrapModal isOpen={isOpen} onClose={onClose} centered padding="p-3" onClick={onClose}>
+      <div className="kuro-card w-full max-w-sm max-h-[80vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-medium)]" data-sheet-header>
+          <h3 className="text-white text-lg font-semibold">{title}</h3>
+          <button onClick={onClose} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label={t('tracker.conveneSim.closePickerAria')}>
+            <ChevronUp size={16} />
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3 space-y-3">
+          {collections ? collections.map(col => (
+            <div key={col}>
+              <div className="text-gray-400 text-2xs uppercase tracking-wider mb-1">{t('tracker.conveneSim.collectionLabel', { number: col })}</div>
+              <div className={`grid gap-2 ${gridColsClass}`}>
+                {items.filter(i => i.collection === col).map(renderTile)}
+              </div>
+            </div>
+          )) : (
+            <div className={`grid gap-2 ${gridColsClass}`}>
+              {(items || []).map(renderTile)}
+            </div>
+          )}
+        </div>
+      </div>
+    </FocusTrapModal>
   );
 });
-StandardBannerOverlay.displayName = 'StandardBannerOverlay';
+StandardPoolPicker.displayName = 'StandardPoolPicker';
 
 // Standard banner card — eliminates ~110 lines of copy-paste between standard char/weap banners
 const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, items, itemKey, profileData, visualSettings, imagePosition, kind, calc, setDetailModal }) => {
@@ -136,6 +116,7 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
   const isFull = visualSettings?.animationsEnabled === 'full';
   const [pullSim, setPullSim] = useState(null);
   const [pullSimId, setPullSimId] = useState(0);
+  const [pickerOpen, setPickerOpen] = useState(false);
   // Winter Brume's "Target Weapon" system (standardWeap only, see
   // conveneSimulator.js's file header) — persisted so the pick survives
   // between visits, same as a real Epitomized-Path-style selection would.
@@ -159,13 +140,12 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
         <img
           src={bannerImage}
           alt={altText}
-          className="absolute inset-0 w-full h-full object-cover"
+          className={`absolute inset-0 w-full h-full object-cover ${isFull ? 'breath-zoom' : ''}`}
           style={{ zIndex: 1, opacity: stdOpacity, maskImage: stdMask, WebkitMaskImage: stdMask, objectPosition: imagePosition ?? 'center top' }}
           loading="eager"
           onError={hideOnError}
         />
       )}
-      {bannerImage && isFull && <StandardBannerOverlay w={0} h={0} />}
       {/* Bottom-right, same as BannerCard's pills elsewhere. The pity/convene stat bar this
           used to share the banner card with now lives in TrackerTab's header row instead
           (see PityTrackerCompact usage there), so the pills no longer need to reserve space
@@ -196,35 +176,29 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
           <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">
             {kind === 'standardWeap' ? t('tracker.conveneSim.targetWeaponLabel') : 'Available 5★'}
           </div>
-          <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-0.5">
-            {(items || []).map(item => {
-              const name = typeof item === 'string' ? item : item[itemKey];
-              const selectable = kind === 'standardWeap';
-              const selected = selectable && targetWeapon === name;
-              const thumb = DEFAULT_COLLECTION_IMAGES[name];
-              return (
-                <span
-                  key={name}
-                  onClick={selectable ? (e) => { e.stopPropagation(); selectTarget(name); } : undefined}
-                  className={`flex items-center gap-1 text-[8px] pl-0.5 pr-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0 backdrop-blur-sm ${selectable ? 'cursor-pointer' : ''} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
-                  title={selectable ? t('tracker.conveneSim.targetWeaponHint') : undefined}
-                >
-                  {thumb && (
-                    <img
-                      src={thumb}
-                      alt=""
-                      className="w-4 h-4 rounded-full object-cover flex-shrink-0"
-                      loading="lazy"
-                      onError={hideOnError}
-                    />
-                  )}
-                  {selected && '★ '}{name}
-                </span>
-              );
-            })}
-          </div>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setPickerOpen(true); }}
+            className="flex items-center gap-1.5 text-sm text-cyan-300 bg-cyan-500/30 backdrop-blur-sm px-2 py-1 rounded"
+            aria-label={t('tracker.conveneSim.openPickerAria')}
+          >
+            {kind === 'standardWeap' && targetWeapon ? <>★ {targetWeapon}</> : t('tracker.conveneSim.openPickerLabel')}
+            <ChevronUp size={12} />
+          </button>
         </div>
       </div>
+      <StandardPoolPicker
+        isOpen={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        title={kind === 'standardWeap' ? t('tracker.conveneSim.targetWeaponLabel') : title}
+        items={items}
+        itemKey={itemKey}
+        columns={kind === 'standardWeap' ? 5 : 3}
+        selectable={kind === 'standardWeap'}
+        targetWeapon={targetWeapon}
+        selectTarget={selectTarget}
+        setDetailModal={setDetailModal}
+      />
     </div>
   );
 });

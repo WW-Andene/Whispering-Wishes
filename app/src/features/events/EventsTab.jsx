@@ -14,6 +14,8 @@ import { getActiveBanners } from '../../shared/components/bannerUtils.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
+import { getCurrencyIcon } from '../../shared/utils/elementVisuals.js';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 const LOCALIZED_EVENT_ENTRIES = Object.entries(getLocalizedEvents(getLocale()));
 
@@ -163,7 +165,10 @@ function EventsTab({
               <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-center justify-between">
                   <span className="text-yellow-400 text-base font-medium">{progressStats.hasProgress ? t('events.weeklyProgress') : t('events.weeklyRewards')}</span>
-                  <span className="text-yellow-400 font-bold text-xl kuro-number">{progressStats.hasProgress ? `${formatNumber(progressStats.earnedAstrite)} / ${formatNumber(progressStats.totalAstrite)}` : formatNumber(progressStats.totalAstrite)} {t('events.astrite')}</span>
+                  <span className="text-yellow-400 font-bold text-xl kuro-number">
+                    <img src={getCurrencyIcon('Astrite')} alt="" className="inline w-4 h-4 -mt-0.5 mr-1" onError={hideOnError} />
+                    {progressStats.hasProgress ? `${formatNumber(progressStats.earnedAstrite)} / ${formatNumber(progressStats.totalAstrite)}` : formatNumber(progressStats.totalAstrite)} {t('events.astrite')}
+                  </span>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden flex">

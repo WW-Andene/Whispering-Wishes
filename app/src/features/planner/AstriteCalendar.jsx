@@ -77,6 +77,10 @@ const getActiveEvents = (date) => {
   for (const [key, ev] of Object.entries(EVENTS)) {
     if (ev.dailyReset || ev.weeklyReset || !ev.currentEnd) continue;
     if (ev.permanent) continue; // Skip permanent content
+    // BUG FIX 2026-09-11: Pioneer Podcast is handled below via PIONEER_PODCAST_HISTORY
+    // (its rewards string is no longer a leading number — parseInt on it now yields 0/NaN
+    // here anyway) — skip it in this generic loop so it isn't pushed twice for the same day.
+    if (key === 'pioneerPodcast') continue;
     const color = EVENT_COLORS[key];
     if (!color) continue;
     const a = parseInt(ev.rewards, 10) || 0;

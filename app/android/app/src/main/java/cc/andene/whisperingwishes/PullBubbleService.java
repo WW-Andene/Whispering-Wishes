@@ -1316,21 +1316,34 @@ public class PullBubbleService extends Service {
         // resting size, and flash/spark's own sizes are bumped up for a bigger effect on top of
         // that fix.
         int flashSizePx = (int) (popSizePx * 1.6f);
-        int burstWindowSizePx = (int) (flashSizePx * 2.5f);
+        // Widened from 2.5x to 4.6x flashSizePx (direct follow-up to the shockwave-ring
+        // explosion rework below): the ring's own resting size is 1.4x flashSizePx and it
+        // scales up to 3x that during the burst — a 4.2x-flashSizePx diameter at its peak,
+        // plus the sparks now reaching further out too (scaleX up to 1.4x their own
+        // already-oversized resting length). 2.5x would clip both well before they finish
+        // expanding, the exact bug this window-sizing already exists to avoid (see the
+        // comment above on the ORIGINAL small-window clipping bug).
+        int burstWindowSizePx = (int) (flashSizePx * 4.6f);
         int centerX = dm.widthPixels / 2;
         int centerY = dm.heightPixels / 2;
 
         FrameLayout container = new FrameLayout(this);
 
         FrameLayout root = new FrameLayout(this);
-        root.setBackground(circleDrawable("#40000000", rarityHex(result.rarity)));
+        // BUG FIX (direct user report, "too transparent"): this backing fill used to be
+        // "#40000000" (only 25% opaque black) with a SEPARATE darkening mask added behind
+        // the portrait image — but that mask was added BEFORE the ImageView, so the fully
+        // opaque portrait always drew over it and it never did anything. Whenever the
+        // decoded portrait bitmap has any transparent/translucent pixels of its own (most
+        // character art does, right at the circular clip's edge), those pixels let the
+        // 75%-see-through backing show the wallpaper straight through, reading as a washed-
+        // out, "too transparent" bubble. Fixed by making the backing itself solidly opaque
+        // (no separate mask needed) so nothing behind this window can ever show through.
+        root.setBackground(circleDrawable("#F5000000", rarityHex(result.rarity)));
         clipToCircle(root);
         String assetPath = result.name != null ? assetMap.optString(result.name, null) : null;
         Bitmap bitmap = assetPath != null ? WidgetAssetUtils.decodeAsset(this, assetPath, RESULT_ICON_PX) : null;
         if (bitmap != null) {
-            FrameLayout mask = new FrameLayout(this);
-            mask.setBackgroundColor(Color.parseColor("#80000000"));
-            root.addView(mask, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
             ImageView img = new ImageView(this);
             img.setImageBitmap(bitmap);
             img.setScaleType(ImageView.ScaleType.CENTER_CROP);
@@ -1338,16 +1351,26 @@ public class PullBubbleService extends Service {
         }
         container.addView(root, new FrameLayout.LayoutParams(popSizePx, popSizePx, Gravity.CENTER));
 
-        // Flash — a plain radial-gradient burst, added AFTER root so it draws on top within
-        // this same window/view tree (see this method's header comment for why that matters).
+        // BUG FIX (direct user report, "bubble shaped instead of exploding from the inside
+        // out, the flash is centered and anticlimactic"): the old burst was ONE soft radial
+        // gradient blob that just scaled up 2x and faded in place — reading as a bubble
+        // gently inflating, not an explosion. Now built from three distinct, faster-paced
+        // layers instead of one blob: a bright, tight, very-short-lived core flash (the
+        // "detonation" instant), a hard-edged shockwave RING that rockets outward past the
+        // icon's own edge and fades (the actual "exploding outward" motion a filled blob
+        // can't read as), and the existing spark streaks — see addShockwaveRing()/
+        // addSparkStreaks() below.
         GradientDrawable burst = new GradientDrawable();
         burst.setShape(GradientDrawable.OVAL);
         burst.setGradientType(GradientDrawable.RADIAL_GRADIENT);
         burst.setGradientRadius(flashSizePx / 2f);
-        burst.setColors(new int[]{Color.parseColor("#F2FFFFFF"), Color.parseColor("#59B9E8FF"), Color.TRANSPARENT});
+        burst.setColors(new int[]{Color.parseColor("#FFFFFFFF"), Color.parseColor("#59B9E8FF"), Color.TRANSPARENT});
         FrameLayout flash = new FrameLayout(this);
         flash.setBackground(burst);
         container.addView(flash, new FrameLayout.LayoutParams(flashSizePx, flashSizePx, Gravity.CENTER));
+        // Shockwave ring — added AFTER flash so it draws on top, same single-window/
+        // deterministic-z-order reasoning as flash and sparks.
+        View shockwave = addShockwaveRing(container, flashSizePx, rarityHex(result.rarity));
         // Sparks — direct user follow-up request alongside the shorter hold: thin streaks of
         // light radiating outward from the flash's own center, on top of it, for a more
         // "holographic" burst than the plain radial gradient alone. Added after flash so they
@@ -1380,9 +1403,9 @@ public class PullBubbleService extends Service {
         // small tile spawning near the corner bubble) — it's only glaring here because this is
         // a large icon popping up at screen center. Fix: set the hidden initial state BEFORE
         // addView, so there's no "default" frame to flash in the first place.
-        flash.setScaleX(0.4f);
-        flash.setScaleY(0.4f);
-        flash.setAlpha(0.95f);
+        flash.setScaleX(0.25f);
+        flash.setScaleY(0.25f);
+        flash.setAlpha(1f);
         root.setScaleX(0.5f);
         root.setScaleY(0.5f);
         root.setAlpha(0f);
@@ -1392,6 +1415,12 @@ public class PullBubbleService extends Service {
             spark.setScaleX(0.15f);
             spark.setAlpha(0.9f);
         }
+        // Shockwave ring starts pinned at the flash's own resting size (a thin ring right at
+        // the detonation point) so its outward rocket-to-3x below reads as expanding FROM the
+        // flash, not from some separate arbitrary starting size.
+        shockwave.setScaleX(0.3f);
+        shockwave.setScaleY(0.3f);
+        shockwave.setAlpha(1f);
 
         try {
             windowManager.addView(container, params);
@@ -1403,15 +1432,21 @@ public class PullBubbleService extends Service {
             return;
         }
 
-        // Flash + spark burst — one-shot, independent of the icon's own grow/hold/shrink
-        // sequence below; both just fade out and are left alone (removed along with the rest of
-        // container at the very end, no need to tear them down separately). Shortened from 320ms
-        // to 240ms alongside the hold-time reduction, so the burst still reads as a distinct
-        // "flash then settle" beat instead of dragging through a noticeably larger fraction of
-        // the now much shorter 1.5s hold.
-        flash.animate().scaleX(2f).scaleY(2f).alpha(0f).setDuration(240).start();
+        // Flash + shockwave + spark burst — one-shot, independent of the icon's own
+        // grow/hold/shrink sequence below; all just fade out and are left alone (removed
+        // along with the rest of container at the very end, no need to tear them down
+        // separately). The flash is now a QUICK bright core (110ms, not 240ms) that peaks
+        // and dies fast — a real detonation instant, not a slow-fading glow — while the
+        // shockwave ring is the one that actually carries the "exploding outward" motion,
+        // rocketing well past the icon's own edge (3x) before fading.
+        flash.animate().scaleX(1.3f).scaleY(1.3f).alpha(0f).setDuration(110)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
+        shockwave.animate().scaleX(3f).scaleY(3f).alpha(0f).setDuration(280)
+                .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .start();
         for (View spark : sparks) {
-            spark.animate().scaleX(1f).alpha(0f).setDuration(240)
+            spark.animate().scaleX(1.4f).alpha(0f).setDuration(260)
                     .setInterpolator(new android.view.animation.DecelerateInterpolator())
                     .start();
         }
@@ -1483,6 +1518,28 @@ public class PullBubbleService extends Service {
     // a thin streak of light rather than a flat rectangle, rotated to its own angle around the
     // center. Returns the created views so the caller can set their initial hidden state before
     // addView and animate them alongside flash's own burst.
+    // Shockwave ring — direct user request: the old burst (one soft radial-gradient blob
+    // just scaling up in place) read as a bubble inflating, not an explosion. A hard-edged
+    // ring that starts thin/small and rockets outward while fading is the actual visual
+    // grammar of "exploding from the inside out" — the expanding edge itself is what sells
+    // outward motion, which a filled/blurred blob has no clear edge to show. Stroke-only
+    // (no fill — GradientDrawable.OVAL with setColor(TRANSPARENT)) so only the ring itself
+    // is visible, tinted the item's own rarity color to tie it to the reveal. Added as a
+    // child of the same container as flash/sparks (see addPopReveal's own header comment
+    // for why that single-window approach matters), sized generously larger than
+    // flashSizePx so its outward 3x scale animation still has surface room to render.
+    private View addShockwaveRing(FrameLayout container, int flashSizePx, String rarityHex) {
+        int ringSizePx = (int) (flashSizePx * 1.4f);
+        GradientDrawable ring = new GradientDrawable();
+        ring.setShape(GradientDrawable.OVAL);
+        ring.setColor(Color.TRANSPARENT);
+        ring.setStroke((int) (3f * getResources().getDisplayMetrics().density), Color.parseColor(rarityHex));
+        View shockwave = new View(this);
+        shockwave.setBackground(ring);
+        container.addView(shockwave, new FrameLayout.LayoutParams(ringSizePx, ringSizePx, Gravity.CENTER));
+        return shockwave;
+    }
+
     private static final int SPARK_COUNT = 6;
     private List<View> addSparkStreaks(FrameLayout container, int flashSizePx) {
         List<View> sparks = new ArrayList<>();

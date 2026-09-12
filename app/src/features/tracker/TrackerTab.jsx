@@ -12,6 +12,7 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { BannerCard, GachaInfoButton, PityTrackerCompact } from '../../shared/components/BannerCard.jsx';
 import { StandardBannerSection } from './StandardBannerSection.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
+import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { t, formatDate, getLocale } from '../../utils/i18n.js';
@@ -47,6 +48,7 @@ function TrackerTab({
     setTrackerCategoryRaw(v);
     try { localStorage.setItem('ww-tracker-cat', v); } catch {}
   }, []);
+  const { getImageFraming } = useImageFramingContext();
   const [showBannerHistory, setShowBannerHistory] = useState(false);
   const [bannerHistorySearch, setBannerHistorySearch] = useState('');
   const [bannerHistorySort, setBannerHistorySort] = useState('newest');
@@ -296,7 +298,11 @@ function TrackerTab({
                             <div key={idx} className="flex items-center gap-4">
                               {c ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                  <div
+                                    className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star cursor-pointer"
+                                    style={{ position: 'relative' }}
+                                    onClick={() => setDetailModal?.({ show: true, type: 'character', name: c, imageUrl: cImg, framing: getImageFraming(`collection-${c}`) })}
+                                  >
                                     {cImg ? (
                                       <img src={cImg} alt={c} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
                                     ) : (
@@ -308,7 +314,11 @@ function TrackerTab({
                               ) : <div className="flex-1" />}
                               {w ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                  <div
+                                    className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star cursor-pointer"
+                                    style={{ position: 'relative' }}
+                                    onClick={() => setDetailModal?.({ show: true, type: 'weapon', name: w, imageUrl: wImg, framing: getImageFraming(`collection-${w}`) })}
+                                  >
                                     {wImg ? (
                                       <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
@@ -422,7 +432,11 @@ function TrackerTab({
                             </div>
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                <div
+                                  className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star cursor-pointer"
+                                  style={{ position: 'relative' }}
+                                  onClick={() => setDetailModal?.({ show: true, type: 'character', name: character, imageUrl: cImg, framing: getImageFraming(`collection-${character}`) })}
+                                >
                                   {cImg ? (
                                     <img src={cImg} alt={character} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
                                   ) : (
@@ -433,7 +447,11 @@ function TrackerTab({
                               </div>
                               {w ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                  <div
+                                    className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star cursor-pointer"
+                                    style={{ position: 'relative' }}
+                                    onClick={() => setDetailModal?.({ show: true, type: 'weapon', name: w, imageUrl: wImg, framing: getImageFraming(`collection-${w}`) })}
+                                  >
                                     {wImg ? (
                                       <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (
@@ -499,7 +517,11 @@ function TrackerTab({
                             <div key={idx} className="flex items-center gap-4">
                               {c ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                  <div
+                                    className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star cursor-pointer"
+                                    style={{ position: 'relative' }}
+                                    onClick={() => setDetailModal?.({ show: true, type: 'character', name: c, imageUrl: cImg, framing: getImageFraming(`collection-${c}`) })}
+                                  >
                                     {cImg ? (
                                       <img src={cImg} alt={c} className={cImg === PLACEHOLDER_IMAGE ? 'w-full h-full object-contain p-0.5' : 'w-full h-full object-cover breath-zoom'} style={cImg === PLACEHOLDER_IMAGE ? undefined : { objectPosition: 'center top' }} loading="lazy" onError={hideOnError} />
                                     ) : (
@@ -511,7 +533,11 @@ function TrackerTab({
                               ) : <div className="flex-1" />}
                               {w ? (
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <div className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star" style={{ position: 'relative' }}>
+                                  <div
+                                    className="w-14 h-14 rounded-lg overflow-hidden border flex-shrink-0 bg-black/30 border-white/15 holo-5star cursor-pointer"
+                                    style={{ position: 'relative' }}
+                                    onClick={() => setDetailModal?.({ show: true, type: 'weapon', name: w, imageUrl: wImg, framing: getImageFraming(`collection-${w}`) })}
+                                  >
                                     {wImg ? (
                                       <img src={wImg} alt={wLabel} className="w-full h-full object-contain p-0.5" loading="lazy" onError={hideOnError} />
                                     ) : (

@@ -53,19 +53,21 @@ const CURRENT_BANNERS = {
   ],
   // Standard Resonator Banner (Lustrous Tide)
   standardCharacters: ['Calcharo', 'Encore', 'Jianxin', 'Lingyang', 'Verina'],
-  // Standard Weapon Banner (Utterance of Marvels)
+  // Standard Weapon Banner (Utterance of Marvels) — two distinct collections, per direct
+  // user clarification 2026-09-11: collection 1 is the five original standard 5★ weapons,
+  // collection 2 is the five added later. Not sequential "sets" of the same pool — the
+  // Standard banner's picker panel groups and labels them separately for this reason.
   standardWeapons: [
-    { name: 'Verdant Summit', type: 'Broadblade' },
-    { name: 'Lustrous Razor', type: 'Broadblade' },
-    { name: 'Emerald of Genesis', type: 'Sword' },
-    { name: 'Static Mist', type: 'Pistols' },
-    { name: 'Abyss Surges', type: 'Gauntlets' },
-    { name: 'Cosmic Ripples', type: 'Rectifier' },
-    { name: 'Radiance Cleaver', type: 'Broadblade' },
-    { name: 'Laser Shearer', type: 'Sword' },
-    { name: 'Phasic Homogenizer', type: 'Pistols' },
-    { name: 'Pulsation Bracer', type: 'Gauntlets' },
-    { name: 'Boson Astrolabe', type: 'Rectifier' },
+    { name: 'Lustrous Razor', type: 'Broadblade', collection: 1 },
+    { name: 'Emerald of Genesis', type: 'Sword', collection: 1 },
+    { name: 'Static Mist', type: 'Pistols', collection: 1 },
+    { name: 'Abyss Surges', type: 'Gauntlets', collection: 1 },
+    { name: 'Cosmic Ripples', type: 'Rectifier', collection: 1 },
+    { name: 'Radiance Cleaver', type: 'Broadblade', collection: 2 },
+    { name: 'Laser Shearer', type: 'Sword', collection: 2 },
+    { name: 'Phasic Homogenizer', type: 'Pistols', collection: 2 },
+    { name: 'Pulsation Bracer', type: 'Gauntlets', collection: 2 },
+    { name: 'Boson Astrolabe', type: 'Rectifier', collection: 2 },
   ],
 };
 
@@ -303,19 +305,13 @@ const EVENTS = {
     // (was already the right day via wuwatracker.com/fr/timeline's pixel-geometry read, just the
     // wrong hour — see the giftsOfDriftingMist block above for the technique).
     currentEnd: '2026-09-29T07:59:59Z',
-    // Direct user correction 2026-09-11: this event has TWO reward tracks, not one flat
-    // "400 Astrite" — Public Channel (free) gives Lustrous Tide only; Insider Channel
-    // (premium) additionally gives Astrite + Radiant Tide. `rewards` stays a display string
-    // (badge text — same convention as every other event here); `options` is additive detail
-    // for anything that later wants the itemized breakdown, not read by EventsTab's own
-    // astrite-total math (pioneerPodcast has no dailyReset/weeklyReset flag, so it was
-    // already excluded from that total either way).
-    // BUG FIX 2026-09-11: the badge text was truncated — dropped Insider Channel's
-    // Lustrous/Radiant Tide, showing only its Astrite amount. Lists every reward now.
-    rewards: 'Public: 5 Lustrous Tide · Insider: 680 Astrite, 2 Lustrous Tide, 5 Radiant Tide',
+    // Direct user request 2026-09-11: drop the free Public Channel track from the badge
+    // entirely — only the Insider Channel reward is shown. `options` keeps the itemized
+    // breakdown (not read by EventsTab's own astrite-total math — pioneerPodcast has no
+    // dailyReset/weeklyReset flag, so it's excluded from that total either way).
+    rewards: 'Insider Channel: 680 Astrite • 5 Radiant Tide',
     options: [
-      { name: 'Public Channel', subtitle: 'Radio publique', tier: 'free', lustrousTide: 5 },
-      { name: 'Insider Channel', subtitle: 'Radio universalis', tier: 'premium', astrite: 680, lustrousTide: 2, radiantTide: 5 },
+      { name: 'Insider Channel', subtitle: 'Radio universalis', tier: 'premium', astrite: 680, radiantTide: 5 },
     ],
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-yellow-900/30',
     accentColor: 'yellow',
@@ -345,7 +341,7 @@ const EVENTS = {
     imageUrl: './banners/_shared/Tactical-Hologram-Sparring.jpeg' // user-supplied 2026-09-11
   },
   endstateMatrix: {
-    name: 'Endstate Matrix (Phase 1)',
+    name: 'Endstate Matrix',
     subtitle: 'Boss Rush',
     description: 'High difficulty boss rush — new in v3.2',
     resetType: 'Multi-version',
@@ -356,10 +352,10 @@ const EVENTS = {
     currentStart: '2026-08-20T08:00:00Z',
     currentEnd: '2026-09-29T07:59:59Z',
     introducedVersion: '3.2',
-    // Direct user correction 2026-09-11: 400 Astrite total, paid out in 8 plateaus of 50 Astrite
-    // each (not one lump sum) — `stages` is additive detail for a future per-plateau tracker;
-    // EventsTab's own Done/Skip toggle still treats this as one event for now (see chat follow-up).
-    rewards: '400 Astrite (8× 50 Astrite plateaus)',
+    // Direct user request 2026-09-11: badge shows the flat total only — the "(8x50 Astrite
+    // plateaus)" breakdown is dropped from display text. `stages` keeps that detail for
+    // anything that wants the itemized breakdown later.
+    rewards: '400 Astrite',
     stages: { count: 8, perStage: 50 },
     gradient: 'from-neutral-900/30 via-neutral-900/20 to-pink-900/30',
     accentColor: 'pink',
@@ -739,7 +735,8 @@ const DEFAULT_COLLECTION_IMAGES = {
   'Broadblade of Voyager': './banners/characters/broadblade-of-voyager/bMYZxLtK-Weapon-Broadblade-of-Voyager.webp',
   'Helios Cleaver': './banners/characters/helios-cleaver/Kj719h8m-Weapon-Helios-Cleaver.webp',
   'Dauntless Evernight': './banners/characters/dauntless-evernight/PvhJ1Cw2-Dauntless-Evernight.webp',
-  'Autumntrace': './banners/characters/autumntrace/the source-T_IconWeapon21010074_UI.webp',
+  'Autumntrace': './banners/characters/autumntrace/static.nanoka.cc-T_IconWeapon21010074_UI.webp',
+  'Broadblade#41': './banners/characters/broadblade-41/Weapon_Broadblade41.webp', // user-supplied 2026-09-12
   // 1-Cost Echo images
   'Whiff Whaff': './banners/characters/whiff-whaff/DDyTMyQR-Whiff-Whaff-Icon.webp',
   'Snip Snap': './banners/characters/snip-snap/LDv0brpC-Snip-Snap-Icon.webp',
@@ -1416,7 +1413,9 @@ const getConveneAnimation = (name) => CONVENE_ANIMATIONS[name] || null;
 const PIONEER_PODCAST_HISTORY = [
   // endDate corrected 2026-09-10 to match BANNER_HISTORY's v3.6-p2 fix (was '2026-09-30') —
   // see that entry's own comment for the sourcing.
-  { version: '3.6', startDate: '2026-08-20', endDate: '2026-09-29', rewards: 400 },
+  // Direct user correction 2026-09-11: Insider Channel reward is 680 Astrite (see
+  // pioneerPodcast.rewards above), not the flat 400 this history table used before that split.
+  { version: '3.6', startDate: '2026-08-20', endDate: '2026-09-29', rewards: 680 },
   { version: '3.5', startDate: '2026-07-10', endDate: '2026-08-19', rewards: 400 },
   { version: '3.4', startDate: '2026-06-10', endDate: '2026-07-10', rewards: 400 },
   { version: '3.3', startDate: '2026-04-29', endDate: '2026-06-10', rewards: 400 },
