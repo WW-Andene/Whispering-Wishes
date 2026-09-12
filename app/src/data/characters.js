@@ -1477,7 +1477,16 @@ const CHARACTER_DATA = {
     // Battle Pass 4★s (ahead of Waltz in Masquerade); Rectifier of Night is the 3★ fallback (the source
     // doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming convention used elsewhere.
     weaponAlts: { alt5: ['Whispers of Sirens', 'Stringmaster'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Lucilla + Hiyuki + Chisa', 'Lucilla + Sigrika + Shorekeeper', 'Lucilla + Phrolova + Qiuyuan'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Lucilla/Lucilla.md, Example Teams): added
+    // Suisui as her named Glacio Chafe alternative to Chisa, and Galbrena for the Echo Skill
+    // Hypercarry team.
+    teams: [
+      'Lucilla + Hiyuki + Chisa',
+      'Lucilla + Hiyuki + Suisui',
+      'Lucilla + Sigrika + Shorekeeper',
+      'Lucilla + Phrolova + Qiuyuan',
+      'Lucilla + Sigrika + Galbrena',
+    ] },
   'Lucy': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Main DPS',
     desc: 'The Netrunner, from the Cyberpunk: Edgerunners collab. Spectro DPS who builds up her Hack resource into an enhanced Heavy Attack and a battlefield-freezing Ultimate with selectable debuffs.',
     skills: ['Locked Thread', 'Protocol Breach', 'Netrunner', 'Outdated Hallucination'],
