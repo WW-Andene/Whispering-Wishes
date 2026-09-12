@@ -1088,7 +1088,16 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'Curse of the Abyss', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fenrico', 'Law of Harmony 3pc + Sierra Gale 2pc'], bestWeapon: 'Emerald Sentence',
     weaponAlts: { alt5: ['Red Spring', 'Emerald of Genesis'], alt4: ['Feather Edge', 'Commando of Conviction'], alt3: ['Guardian Sword'] },
-    teams: ['Qiuyuan + Galbrena + Shorekeeper', 'Qiuyuan + Phrolova + Cantarella'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Qiuyuan/Qiuyuan.md, Example Teams/Synergies):
+    // "Best Team" names Sigrika + Qiuyuan + Ciaccona; Shorekeeper/Verina named his two best
+    // generalist Supports (Shorekeeper "the best 3rd slot for Galbrena+Qiuyuan," Verina a close
+    // accessible alternative).
+    teams: [
+      'Qiuyuan + Galbrena + Shorekeeper',
+      'Qiuyuan + Galbrena + Verina',
+      'Qiuyuan + Phrolova + Cantarella',
+      'Qiuyuan + Sigrika + Ciaccona',
+    ] },
   'Chisa': { rarity: 5, element: 'Havoc', weapon: 'Broadblade', role: 'Support/Healer',
     desc: '"Just an ordinary student," she calmly introduces herself, a faint iridescent shimmer flickering in her eyes. Havoc support/healer who leans on a heavy-hitting Liberation for burst damage while healing, shielding, and shredding enemy DEF for the team.',
     // skills[3] corrected 2026-08-17: was 'Reverberance - Return' (her actual Intro Skill name) — the
