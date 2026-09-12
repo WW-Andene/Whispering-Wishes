@@ -1178,6 +1178,18 @@ const TEAM_SET_BUFFS = {
   'Flaming Clawprint': [{ stat: 'elemDmg', value: 15, elem: 'fusion' }, { stat: 'libDmg', value: 20 }],
   'Midnight Veil': [{ stat: 'elemDmg', value: 15, elem: 'havoc' }],
   'Chromatic Foam': [{ stat: 'elemDmg', value: 25, elem: 'fusion' }], // Outro: +25% Fusion for next
+  // BUG FIX 2026-09-12 (direct user follow-up on the Suisui/Yangyang: Xuanling recommendation
+  // report — "if Suisui is BiS there is a reason, so if you don't get her #1 there is an issue"):
+  // this set — Suisui's own #1 bestEchoes pick — was entirely missing from this table, so her
+  // "Echo Set Potential" bonus never fired at all (confirmed: her result tags showed only 'Shred',
+  // never 'Echo Set Potential' like every other candidate got). Its 5pc bonus is literally named
+  // "Xuanling's Feather" (Data dump/Suisui/Suisui.md line 174): "inflicting Havoc Bane grants
+  // Xuanling's Feather (+20% Crit Rate, +35% Heavy Attack DMG Bonus, 15s)" — a bonus for whoever
+  // inflicts Havoc Bane, i.e. Yangyang: Xuanling herself in her own team. The set's OTHER half
+  // (Glacio Chafe -> team ATK scaling with ER, Hiyuki's synergy) is a different, non-DPS-targeted
+  // mechanic and isn't modeled here, matching the "only the DPS-facing bonus" convention already
+  // used for every other multi-effect set in this table.
+  'Song of Feathered Trace': [{ stat: 'heavyDmg', value: 35, elem: 'havoc' }, { stat: 'critRate', value: 20, elem: 'havoc' }],
 };
 
 // Maps CHARACTER_DATA.dmgFocus's short tags to the long-form wiki tag names COMBAT_ROLE_ICONS
