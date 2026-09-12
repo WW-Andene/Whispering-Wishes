@@ -823,7 +823,11 @@ const CHARACTER_DATA = {
     // set-icon lookup entirely (no exact key match) and only ever displayed a single unlabeled row.
     bestEchoes: ['Reminiscence: Threnodian - Leviathan', 'Thread of Severed Fate 3pc + Havoc Eclipse 2pc (personal DMG)', 'Fallacy of No Return', 'Rejuvenating Glow 5pc (best overall team ATK)'], bestWeapon: 'Kumokiri',
     weaponAlts: { alt5: ['Wildfire Mark', 'Ages of Harvest'], alt4: ['Meditations on Mercy', 'Autumntrace'], alt3: ['Guardian Broadblade'] },
-    teams: ['Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
+    // BUG FIX 2026-09-12 (direct user report: "why is Chisa not even top 3?" for Yangyang:
+    // Xuanling): this list was missing her own dump's #1 real partner entirely — Data dump/Chisa/
+    // Chisa.md line 224/227: "By current strength: Yangyang: Xuanling (highest ceiling)..." and
+    // "Best Team: Yangyang: Xuanling + Suisui + Lynae/Rebecca + Phrolova + Chisa." Added.
+    teams: ['Chisa + Yangyang: Xuanling + Suisui', 'Chisa + Aemeath + Denia', 'Chisa + Hiyuki + Lucilla'] },
   'Lynae': { rarity: 5, element: 'Spectro', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'A Startorch Academy prep student whose head-turning, electric style hides an inner focus as explosive as a coiled spring. Spectro sub-DPS who swaps in for a quick burst then buffs the team\'s All DMG on Outro, pairing especially well with Tune Strain comps.',
     skills: ['Chroma Drift', 'Lynae-Style Palettes', 'Prismatic Overblast', 'Time to Show Some Colors!'],

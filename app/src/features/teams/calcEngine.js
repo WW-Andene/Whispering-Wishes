@@ -1058,7 +1058,16 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           if (uplift > 0) score += uplift * UPLIFT_TO_SCORE * typeShareMultiplier(b.stat, mainDps);
         });
         (bt.debuffs || []).forEach(db => {
-          if (db.stat === 'defShred' || db.stat === 'resShred') {
+          // BUG FIX 2026-09-12 (direct user report: "why is Chisa not even top 3?" for Yangyang:
+          // Xuanling, a real Negative Status/Havoc Bane dealer): 'defIgnore' as a debuffs-array
+          // stat was never scored ANYWHERE in this function — estimateBuffUplift already fully
+          // supports it (calcDefMult), but this loop only ever checked for 'defShred'/'resShred'.
+          // Chisa's own Thread of Bane (18% DEF Ignore, gated to teammates who apply Negative
+          // Status DMG — see her own debuffs entry's condition) silently scored zero for every
+          // single character she could recommend for, including exact Negative-Status DPS matches
+          // like Yangyang: Xuanling. Same as defShred (element-agnostic — DEF/DEF Ignore reduces
+          // the same way regardless of the attacker's element, correctly left ungated).
+          if (db.stat === 'defShred' || db.stat === 'resShred' || db.stat === 'defIgnore') {
             // Fixed 2026-09-01 (found via a per-character solo-recommendation deep audit): RES Shred
             // reduces enemy RESISTANCE TO A SPECIFIC ELEMENT — e.g. Lupa's own debuff condition says
             // "Fusion RES ignore..." outright — so it only helps a DPS who deals THAT element's
