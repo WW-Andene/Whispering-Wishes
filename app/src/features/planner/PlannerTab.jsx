@@ -888,7 +888,7 @@ function PlannerTab({
                   <div className="flex gap-3">
                     {imgUrl && (
                       <div className="w-14 h-14 rounded-lg overflow-hidden border border-yellow-500/40 flex-shrink-0 bg-black/25">
-                        <img src={imgUrl} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                        <img src={imgUrl} alt="" className="w-full h-full object-cover object-top pointer-events-none" onError={hideOnError} />
                       </div>
                     )}
                     <div className="flex-1 min-w-0 space-y-1">
@@ -917,31 +917,27 @@ function PlannerTab({
                     why, naming an owned alternative directly when one exists rather than a vague
                     "alternatives exist" line. */}
                 {topWeapon && !topWeapon.owned && (
-                  <div className="p-3 bg-white/5 rounded-lg">
-                    <div className="flex gap-2.5">
-                      {DEFAULT_COLLECTION_IMAGES[topWeapon.name] && (
-                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
-                          <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0 space-y-0.5">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-gray-100 text-sm font-medium truncate">{topWeapon.name}</span>
-                          <span className={`kuro-badge text-2xs flex-shrink-0 ${topWeapon.mustHave ? 'kuro-badge-red' : 'kuro-badge-cyan'}`}>
-                            {t(topWeapon.mustHave ? 'planner.recommendationWeaponMustHave' : 'planner.recommendationWeaponNotEssential')}
-                          </span>
-                        </div>
-                        <p className="text-gray-500 text-xs">
-                          {topWeapon.reliantDespiteAlts
-                            ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
-                            : topWeapon.mustHave
-                              ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
-                              : topWeapon.ownedAlt
-                                ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: topWeapon.ownedAlt })
-                                : t('planner.recommendationWeaponAltExists', { alts: topWeapon.altOptions.join(', ') })}
-                        </p>
-                      </div>
+                  <div className="p-3 bg-white/5 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-gray-100 text-sm font-medium truncate">{topWeapon.name}</span>
+                      <span className={`kuro-badge text-2xs flex-shrink-0 ${topWeapon.mustHave ? 'kuro-badge-red' : 'kuro-badge-cyan'}`}>
+                        {t(topWeapon.mustHave ? 'planner.recommendationWeaponMustHave' : 'planner.recommendationWeaponNotEssential')}
+                      </span>
                     </div>
+                    {DEFAULT_COLLECTION_IMAGES[topWeapon.name] && (
+                      <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/10 bg-black/25">
+                        <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                      </div>
+                    )}
+                    <p className="text-gray-500 text-xs">
+                      {topWeapon.reliantDespiteAlts
+                        ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
+                        : topWeapon.mustHave
+                          ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
+                          : topWeapon.ownedAlt
+                            ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: topWeapon.ownedAlt })
+                            : t('planner.recommendationWeaponAltExists', { alts: topWeapon.altOptions.join(', ') })}
+                    </p>
                   </div>
                 )}
                 {/* Direct user correction: this must be about the player's OWNED roster, not a
