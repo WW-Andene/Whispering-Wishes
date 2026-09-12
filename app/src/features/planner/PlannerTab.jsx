@@ -14,7 +14,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Link2, Minus, Plus, Search, Star, Unlink2, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, AVG_UPDATE_ASTRITE, AVG_UPDATE_DAYS, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, AVG_UPDATE_ASTRITE, AVG_UPDATE_DAYS, AVG_UPDATE_P1_DAILY_ASTRITE, AVG_UPDATE_P2_DAILY_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -202,6 +202,19 @@ function PlannerTab({
     return cumulativeIncome(d) + AVG_UPDATE_DAILY_ASTRITE * d;
   }, [cumulativeIncome]);
 
+  // "By Banner End"/Goal Progress use a PHASE-SPECIFIC rate instead of the flat
+  // AVG_UPDATE_DAILY_ASTRITE above — direct user follow-up, 2026-09-13: daysLeft here is always
+  // days remaining in the CURRENT phase (activeBanners.phase), and real patches are front-loaded
+  // (Phase 1 carries new-area exploration/story rewards Phase 2 doesn't have), so applying the
+  // whole-patch average to Phase-2-only remaining days overstates it. The flat rate above is kept
+  // for the 7/30/90-day Income Projections row, which naturally spans both phases over a rolling
+  // window and isn't tied to "this specific phase's remaining days" the way Banner End is.
+  const AVG_UPDATE_PHASE_DAILY_ASTRITE = activeBanners.phase === 1 ? AVG_UPDATE_P1_DAILY_ASTRITE : AVG_UPDATE_P2_DAILY_ASTRITE;
+  const cumulativeIncomeByPhaseWithUpdates = useCallback((days) => {
+    const d = Math.max(0, days);
+    return cumulativeIncome(d) + AVG_UPDATE_PHASE_DAILY_ASTRITE * d;
+  }, [cumulativeIncome, AVG_UPDATE_PHASE_DAILY_ASTRITE]);
+
   const planData = useMemo(() => {
     const currentAstrite = (+state.calc.astrite || 0) + (+state.calc.lunite || 0);
     // Deadline: the pinned date if one is set, else the actual banner end date (direct user
@@ -212,9 +225,10 @@ function PlannerTab({
     const daysLeft = Math.max(0, Math.ceil((deadline - now) / 86400000));
     const incomeByEnd = cumulativeIncome(daysLeft);
     const totalAstriteByEnd = currentAstrite + incomeByEnd;
-    // "By Banner End" including the average-update-income addition — same daysLeft, just routed
-    // through cumulativeIncomeWithUpdates instead of the base-only cumulativeIncome.
-    const incomeByEndWithUpdates = cumulativeIncomeWithUpdates(daysLeft);
+    // "By Banner End" including the average-update-income addition — same daysLeft, routed
+    // through cumulativeIncomeByPhaseWithUpdates (the current phase's own rate, not the flat
+    // whole-patch average — see that helper's own comment above).
+    const incomeByEndWithUpdates = cumulativeIncomeByPhaseWithUpdates(daysLeft);
     const totalAstriteByEndWithUpdates = currentAstrite + incomeByEndWithUpdates;
 
     // Target AND allocation split — fully independent from the Calculator tab by default
@@ -336,7 +350,7 @@ function PlannerTab({
     }
     const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
     return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, incomeByEndWithUpdates, totalAstriteByEndWithUpdates, convenesByEnd, convenesByEndWithUpdates, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, probByEndWithUpdates, availablePulls, pullsByEnd };
-  }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome, cumulativeIncomeWithUpdates]);
+  }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome, cumulativeIncomeByPhaseWithUpdates]);
 
   // Collapsible section toggle
   const toggleSection = useCallback((key) => setCollapsed(p => ({ ...p, [key]: !p[key] })), []);
