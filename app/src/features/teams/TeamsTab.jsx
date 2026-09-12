@@ -488,12 +488,34 @@ function TeamsTab({
                   candidateScores.set(name, score + dumpBonus);
                 }
               });
+              // BUG FIX 2026-09-13 (direct user report: Aemeath badged "#1" but displayed SECOND in
+              // the grid, behind Jingran's "#2"): the two tied top scorers (both 104.0 after the
+              // accessibility fold-in above) were being ranked by two DIFFERENT tie-break rules. The
+              // grid's own sort (further below) breaks ties by rarity then "newest first" (higher
+              // allCharNames index wins) — Jingran, added to the roster more recently, wins that tie
+              // and displays first. But the badge-numbering sort below used to compare ONLY the raw
+              // score with no tie-break at all, so a stable sort just preserved candidateScores' Map
+              // insertion order (ascending allCharNames index) for ties — the OPPOSITE direction,
+              // handing Aemeath the "#1" badge while Jingran sat in the actual #1 grid slot. Both
+              // sorts now share this one comparator so the printed badge number always matches the
+              // tile's real position in the grid.
+              const compareCandidates = (a, b) => {
+                const aScore = candidateScores.get(a) || 0;
+                const bScore = candidateScores.get(b) || 0;
+                if (aScore !== bScore) return bScore - aScore;
+                const aRar = CHARACTER_DATA[a]?.rarity || 0;
+                const bRar = CHARACTER_DATA[b]?.rarity || 0;
+                if (aRar !== bRar) return bRar - aRar;
+                // Within each group, sort newest first (later in array = newer)
+                return allCharNames.indexOf(b) - allCharNames.indexOf(a);
+              };
               // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible
               // character has a real score, badging literally everyone would make the highlight
               // meaningless, so keep it to a bounded top slice of the ranked list.
               const REC_BADGE_COUNT = 8;
               const recommendedNames = new Map(
-                [...candidateScores.entries()].sort((a, b) => b[1] - a[1]).slice(0, REC_BADGE_COUNT)
+                [...candidateScores.keys()].sort(compareCandidates).slice(0, REC_BADGE_COUNT)
+                  .map(name => [name, candidateScores.get(name)])
               );
 
               // Filter characters for selector
@@ -517,20 +539,7 @@ function TeamsTab({
                 if (teamCombatRoleFilter !== 'all' && !data.combatRoles?.includes(teamCombatRoleFilter)) return false;
                 if (teamRegionFilter !== 'all' && data.region !== teamRegionFilter) return false;
                 return true;
-              }).sort((a, b) => {
-                // Higher vote count (more placed members independently recommending them) ranks first.
-                const aRec = candidateScores.get(a) || 0;
-                const bRec = candidateScores.get(b) || 0;
-                if (aRec !== bRec) return bRec - aRec;
-                // 5★ before 4★
-                const aRar = CHARACTER_DATA[a]?.rarity || 0;
-                const bRar = CHARACTER_DATA[b]?.rarity || 0;
-                if (aRar !== bRar) return bRar - aRar;
-                // Within each group, sort newest first (later in array = newer)
-                const aIdx = allCharNames.indexOf(a);
-                const bIdx = allCharNames.indexOf(b);
-                return bIdx - aIdx;
-              });
+              }).sort(compareCandidates);
 
               // P6-FIX: Element color utilities now imported from appcore-data.js (F-P6-046)
 
