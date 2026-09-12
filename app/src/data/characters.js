@@ -1359,7 +1359,21 @@ const CHARACTER_DATA = {
     // (viable if run in Fusion Burst mode too)") names Chisa as a valid 3rd-slot alternative to
     // Mornye alongside Aemeath+Lynae — reciprocal to Lynae's own dump-confirmed 'Lynae + Aemeath +
     // Chisa' entry, which this side was missing.
-    teams: ['Aemeath + Denia + Chisa', 'Aemeath + Lynae + Mornye', 'Aemeath + Lynae + Chisa'] },
+    // Expanded 2026-09-13 from her own dump (Data dump/Aemeath/Aemeath.md, Example Teams): "Best
+    // Fusion Burst Team" also lists Suisui/Lupa alongside Chisa; "Best Tune Rupture Team" also lists
+    // Shorekeeper/Verina alongside Mornye; added "Mono Fusion" (Lupa + Brant/Changli/Galbrena).
+    teams: [
+      'Aemeath + Denia + Chisa',
+      'Aemeath + Denia + Suisui',
+      'Aemeath + Denia + Lupa',
+      'Aemeath + Lynae + Mornye',
+      'Aemeath + Lynae + Chisa',
+      'Aemeath + Lynae + Shorekeeper',
+      'Aemeath + Lynae + Verina',
+      'Aemeath + Lupa + Brant',
+      'Aemeath + Lupa + Changli',
+      'Aemeath + Lupa + Galbrena',
+    ] },
   'Sigrika': { rarity: 5, element: 'Aero', weapon: 'Gauntlets', role: 'Main DPS',
     desc: 'Solsworn of the Roya Tribe and Startorch Academy Birding Fan Club member. On-field Aero DPS who consumes Rune stacks to empower Echo Skill and Heavy ATK for Aero burst DMG with crowd control.',
     skills: ['One, Two, Three', 'Royan Close Quarters Combat', 'Where Trust Leads Me!', 'Solsworn Etymology'],
