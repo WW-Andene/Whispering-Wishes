@@ -444,6 +444,32 @@ function TeamsTab({
               // curatedVotes' citation filter could use it — kept under its original name here so
               // scoreTeamComposition's call site below reads the same as before.)
               const assumedMainDps = anchorDps;
+              // 2026-09-13 (direct user pushback on the "no picks yet" ranking — Jingran/Aemeath/
+              // Cartethyia topping the empty-selector list despite being highly kit-specific or
+              // near-entirely dependent on one partner, ahead of characters like Hiyuki/Qingxiao
+              // whose real strength just needs a buffed team to show up): with NOTHING placed yet,
+              // `score` collapses to pure solo tier+raw-damage (dumpBonus is always 0 — curatedVotes/
+              // exactTrioMatch both need an already-placed member to cite). That solo number is a bad
+              // proxy for "how good a first pick is this," since a character's raw totalMult is often
+              // itself measured off an ideal calc build ALREADY assuming their best teammate/signature
+              // (Cartethyia's own dump: "at S0 she's tightly teammate-restricted, needs Ciaccona +
+              // Rover: Aero"; Jingran's own dump: "one of the most Signature-weapon-reliant characters
+              // in the game") — crediting that number at face value rewards reliance instead of
+              // discounting it. Folding in accessibility (how many curated team compositions this
+              // character's own dump actually supports — a direct proxy for how many different
+              // partners can make them work, not just one specific ideal pairing) tempers that: a
+              // kit-restrictive character's raw damage credit gets scaled down, a flexible one's stays
+              // full or gets a modest boost. Deliberately scoped to ONLY the true empty-selector case
+              // (placedNow.length === 0) — once a real anchor is placed, curatedVotes/exactTrioMatch
+              // already measure real synergy directly, so this coarse proxy would just add noise.
+              // ACCESSIBILITY_REFERENCE (6) is the roster's own median teams.length as of this pass —
+              // a character right at the median scores as if unadjusted; sparser/richer characters
+              // scale down/up from there. Floor/ceiling (0.6/1.3) keep either end from swinging so hard
+              // it distorts tier order on its own (a 2-entry niche character isn't worthless, and a
+              // 20-entry generalist like Iuno shouldn't run away with the list either).
+              const ACCESSIBILITY_REFERENCE = 6;
+              const ACCESSIBILITY_FLOOR = 0.6;
+              const ACCESSIBILITY_CEILING = 1.3;
               const candidateScores = new Map();
               allCharNames.forEach(name => {
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
@@ -454,15 +480,53 @@ function TeamsTab({
                 // (a candidate already fully confirmed by name shouldn't be double-counted just
                 // because they also happen to satisfy a weaker pairwise citation).
                 const dumpBonus = Math.max(curatedVotes.get(name) || 0, exactTrioMatch(name) ? FULL_TRIO_MATCH_WEIGHT : 0);
-                candidateScores.set(name, score + dumpBonus);
+                if (placedNow.length === 0) {
+                  const teamsCount = CHARACTER_DATA[name]?.teams?.length || 0;
+                  const accessibilityFactor = Math.max(ACCESSIBILITY_FLOOR, Math.min(ACCESSIBILITY_CEILING, teamsCount / ACCESSIBILITY_REFERENCE));
+                  candidateScores.set(name, score * accessibilityFactor);
+                } else {
+                  candidateScores.set(name, score + dumpBonus);
+                }
               });
+              // BUG FIX 2026-09-13 (direct user report: Aemeath badged "#1" but displayed SECOND in
+              // the grid, behind Jingran's "#2"): the two tied top scorers (both 104.0 after the
+              // accessibility fold-in above) were being ranked by two DIFFERENT tie-break rules. Both
+              // the badge numbering and the recommended-vs-not split below now share one comparator
+              // (scoreCompare) so ties resolve identically everywhere.
+              const scoreCompare = (a, b) => {
+                const aScore = candidateScores.get(a) || 0;
+                const bScore = candidateScores.get(b) || 0;
+                if (aScore !== bScore) return bScore - aScore;
+                const aRar = CHARACTER_DATA[a]?.rarity || 0;
+                const bRar = CHARACTER_DATA[b]?.rarity || 0;
+                if (aRar !== bRar) return bRar - aRar;
+                // Within each group, sort newest first (later release = newer)
+                return RELEASE_ORDER.indexOf(b) - RELEASE_ORDER.indexOf(a);
+              };
               // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible
               // character has a real score, badging literally everyone would make the highlight
               // meaningless, so keep it to a bounded top slice of the ranked list.
               const REC_BADGE_COUNT = 8;
               const recommendedNames = new Map(
-                [...candidateScores.entries()].sort((a, b) => b[1] - a[1]).slice(0, REC_BADGE_COUNT)
+                [...candidateScores.keys()].sort(scoreCompare).slice(0, REC_BADGE_COUNT)
+                  .map(name => [name, candidateScores.get(name)])
               );
+              // Direct user request 2026-09-13: past the top-8 recommended badges, order by release
+              // date + rarity instead of continuing the raw synergy score — once you're outside the
+              // actual recommendations, a rank-order by a score most players never see is a less
+              // useful browsing order than "newest/rarest first," which is also this file's existing
+              // convention elsewhere (e.g. line ~184's reversed RELEASE_ORDER). Recommended characters
+              // stay sorted among themselves by their real score (so the badge numbers still read
+              // top-to-bottom correctly); everyone else sorts by rarity then release date.
+              const compareCandidates = (a, b) => {
+                const aRec = recommendedNames.has(a), bRec = recommendedNames.has(b);
+                if (aRec !== bRec) return aRec ? -1 : 1;
+                if (aRec && bRec) return scoreCompare(a, b);
+                const aRar = CHARACTER_DATA[a]?.rarity || 0;
+                const bRar = CHARACTER_DATA[b]?.rarity || 0;
+                if (aRar !== bRar) return bRar - aRar;
+                return RELEASE_ORDER.indexOf(b) - RELEASE_ORDER.indexOf(a);
+              };
 
               // Filter characters for selector
               const filteredChars = allCharNames.filter(name => {
@@ -485,20 +549,7 @@ function TeamsTab({
                 if (teamCombatRoleFilter !== 'all' && !data.combatRoles?.includes(teamCombatRoleFilter)) return false;
                 if (teamRegionFilter !== 'all' && data.region !== teamRegionFilter) return false;
                 return true;
-              }).sort((a, b) => {
-                // Higher vote count (more placed members independently recommending them) ranks first.
-                const aRec = candidateScores.get(a) || 0;
-                const bRec = candidateScores.get(b) || 0;
-                if (aRec !== bRec) return bRec - aRec;
-                // 5★ before 4★
-                const aRar = CHARACTER_DATA[a]?.rarity || 0;
-                const bRar = CHARACTER_DATA[b]?.rarity || 0;
-                if (aRar !== bRar) return bRar - aRar;
-                // Within each group, sort newest first (later in array = newer)
-                const aIdx = allCharNames.indexOf(a);
-                const bIdx = allCharNames.indexOf(b);
-                return bIdx - aIdx;
-              });
+              }).sort(compareCandidates);
 
               // P6-FIX: Element color utilities now imported from appcore-data.js (F-P6-046)
 
