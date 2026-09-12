@@ -1500,7 +1500,12 @@ const CHARACTER_DATA = {
     // is the 3★ fallback (the source doesn't rank a 3★ for her), matching the "<Weapon Type> of Night"
     // naming convention used elsewhere.
     weaponAlts: { alt5: ['Lux & Umbra', 'Skull Thrasher'], alt4: ['Solar Flame', 'Relativistic Jet'], alt3: ['Pistols of Night'] },
-    teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper', 'Lucy + Iuno + Shorekeeper'] },
+    // Rebuilt 2026-09-13 from her own dump (Data dump/Lucy/Lucy.md, Synergies/Example Teams): Rebecca
+    // is named "by far her best partner... no alternative comes close" — no other DPS is named
+    // anywhere in the source. Dropped 'Lucy + Iuno + Shorekeeper': neither Lucy's nor Iuno's own dump
+    // supports this pairing at all, contradicting the "no alternative comes close" text directly.
+    // Replaced with the Verina 3rd-slot fallback her own dump does name.
+    teams: ['Lucy + Rebecca + Mornye', 'Lucy + Rebecca + Shorekeeper', 'Lucy + Rebecca + Verina'] },
   'Yangyang: Xuanling': { rarity: 5, element: 'Havoc', weapon: 'Sword', role: 'Main DPS',
     desc: 'Xuan Watcher of Xuanfang Hold and sister of Suisui. On-field Havoc DPS who alternates Azure and Feather Sword Stances, applying and consuming Havoc Bane for massive self-buffed Crit DMG.',
     skills: ['Succor and Smite', "Feather's Edge", 'Hush of a Thousand Voices', 'Skybound Feather'],
