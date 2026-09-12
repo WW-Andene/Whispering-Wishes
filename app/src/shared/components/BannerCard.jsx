@@ -177,11 +177,21 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           </div>
           {/* Direct user request 2026-09-11: the main featured 5★'s own name now opens its
               detail modal too, same click-through as the featured-4★ previews below (there
-              is no separate small preview picture for the main item — imgUrl above is the
-              card's own full-bleed background art, so the name text is the click target). */}
+              is no separate small preview picture for the main item, so the name text is the
+              click target).
+              BUG FIX (direct user report, "weird twitching detail panel instead of the real
+              one"): this used to pass imgUrl (the card's own full-bleed WIDE banner splash
+              art) as the modal's imageUrl. CharacterDetailModal/WeaponDetailModal render that
+              image with a framing transform (scale/translate) calibrated for the character's
+              own COLLECTION PORTRAIT crop, not this differently-cropped/differently-sized
+              banner art — applying a portrait-calibrated transform to the wrong image warped
+              and mis-scaled it, which combined with the header's own breath-zoom pulse read as
+              "twitching". Now uses the same collection-portrait lookup as the featured-4★
+              previews just below (previewImg), matching what every other click-through in this
+              file already passes. */}
           <h4
             className="font-bold text-xl text-white leading-tight cursor-pointer"
-            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: imgUrl, framing: getImageFraming(`collection-${item.name}`) })}
+            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
           >{item.name}</h4>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{item.title}</p>}
         </div>
