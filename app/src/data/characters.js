@@ -879,7 +879,15 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: 'When Irises Bloom', forgery: 'Metallic Drip' },
     bestEchoes: ['Reminiscence: Fleurdelys', 'Windward Pilgrimage 5pc'], bestWeapon: "Defier's Thorn",
     weaponAlts: { alt5: ['Red Spring', 'Blazing Brilliance'], alt4: ['Feather Edge'], alt3: ['Guardian Sword'] },
-    teams: ['Cartethyia + Ciaccona + Rover: Aero', 'Cartethyia + Ciaccona + Chisa'] },
+    // Expanded 2026-09-13 from her own dump's Example Teams: Ciaccona named her best Sub DPS;
+    // Rover: Aero/Chisa/Shorekeeper the three best 3rd-slot supports (Shorekeeper mainly for
+    // Whimpering Wastes); Sanhua named her best F2P Main-DPS-enabling pairing.
+    teams: [
+      'Cartethyia + Ciaccona + Rover: Aero',
+      'Cartethyia + Ciaccona + Chisa',
+      'Cartethyia + Ciaccona + Shorekeeper',
+      'Cartethyia + Rover: Aero + Sanhua',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1207 sheet. desc: title "Howling Flame" (the source) prepended and blurb
   // rewritten — the previous desc said she "shreds enemy Fusion RES" as if unconditional, but her Glory
