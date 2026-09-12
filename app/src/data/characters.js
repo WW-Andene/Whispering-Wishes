@@ -870,7 +870,12 @@ const CHARACTER_DATA = {
     // slots elsewhere in this file); Broadblade of Night is the 3★ fallback, matching the "<Weapon
     // Type> of Night" naming convention used for other characters' 3★ slot.
     weaponAlts: { alt5: ['Verdant Summit'], alt4: ['Discord', 'Broadblade#41'], alt3: ['Broadblade of Night'] },
-    teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia'] },
+    // Added 'Mornye + Lynae + Yangyang: Xuanling' (2026-09-12): confirmed on BOTH sides —
+    // Data dump/Mornye/Mornye.md line 218 ("Lynae + Mornye: Aemeath / Hiyuki / Iuno / Yangyang:
+    // Xuanling + Lynae + Mornye — any non-Negative-Status DPS... fully interchangeable") explicitly
+    // lists Yangyang: Xuanling as a headliner option, and Yangyang: Xuanling's own dump's
+    // "Alternative Premium Teams" line confirms the same combo ("Only run Mornye alongside Lynae").
+    teams: ['Mornye + Lynae + Aemeath', 'Mornye + Luuk Herssen + Denia', 'Mornye + Lynae + Yangyang: Xuanling'] },
   'Luuk Herssen': { rarity: 5, element: 'Spectro', weapon: 'Gauntlets', role: 'Main DPS',
     desc: "The attending physician of Startorch Academy's Resonator Nursing Unit, renowned for his keen intellect and unshakable composure. On-field Spectro Basic ATK DPS who cycles through his Aureole of Execution's enhanced forms, dealing bonus damage against Tune Strain - Interfered enemies.",
     skills: ['Such is Light', 'Reunion of All the Fallen', 'Rewritten in Winter\'s Margins', 'Before Injection of Dawn'],
@@ -989,14 +994,31 @@ const CHARACTER_DATA = {
     // the 3★ fallback (the source doesn't rank a 3★ for her), matching the "<Weapon Type> of Night" naming
     // convention used elsewhere.
     weaponAlts: { alt5: ['Emerald Sentence', 'Red Spring'], alt4: ['Lumingloss', 'Fables of Wisdom'], alt3: ['Sword of Night'] },
-    // Added 'Yangyang: Xuanling + Lynae + Chisa' (2026-09-12): Data dump/Yangyang Xuanling/
-    // Yangyang Xuanling.md's own Synergies section explicitly names Lynae ("Lynae also brings
-    // strong general buffs plus high personal damage"), and Lynae's own dump already lists the
-    // reciprocal 'Lynae + Yangyang: Xuanling + Chisa' team — this side of the citation was
-    // missing, which under the new mutual-citation-weighted recommendation scoring
-    // (TeamsTab.jsx's curatedVotes) silently kept a real, dump-confirmed pairing at the weaker
-    // one-way weight instead of the full mutual-corroboration weight.
-    teams: ['Yangyang: Xuanling + Chisa + Suisui', 'Yangyang: Xuanling + Phrolova + Chisa', 'Yangyang: Xuanling + Rebecca + Suisui', 'Yangyang: Xuanling + Lynae + Chisa'] },
+    // Rebuilt 2026-09-12 (direct user correction: an earlier pass built this list by inferring
+    // ambiguous slash-separated phrasing from OTHER characters' dumps — Chisa's/Lynae's — instead
+    // of reading Yangyang: Xuanling's OWN dump first, which is the actual authoritative source for
+    // her own recommended teammates. Her dump's "### Example Teams" section (Data dump/Yangyang
+    // Xuanling/Yangyang Xuanling.md lines 147-150) states, verbatim:
+    //   Best Team: Yangyang: Xuanling + Chisa + Suisui. (Run Chisa on Moonlit Clouds...)
+    //   Alternative Premium Teams: Yangyang: Xuanling + Lynae/Rebecca/Iuno/Phrolova +
+    //     Suisui/Chisa/Mornye. (Only run Mornye alongside Lynae, as an alternative to Suisui/Chisa.)
+    //   F2P Team: Yangyang: Xuanling + Mortefi + Verina.
+    // Every entry below is a literal 1st-pick × 2nd-pick combination from that Alternative Premium
+    // line, honoring the one explicit restriction (Mornye only pairs with Lynae, never with
+    // Rebecca/Iuno/Phrolova) — not a re-interpretation of a different character's ambiguous text.
+    teams: [
+      'Yangyang: Xuanling + Chisa + Suisui',
+      'Yangyang: Xuanling + Lynae + Suisui',
+      'Yangyang: Xuanling + Lynae + Chisa',
+      'Yangyang: Xuanling + Lynae + Mornye',
+      'Yangyang: Xuanling + Rebecca + Suisui',
+      'Yangyang: Xuanling + Rebecca + Chisa',
+      'Yangyang: Xuanling + Iuno + Suisui',
+      'Yangyang: Xuanling + Iuno + Chisa',
+      'Yangyang: Xuanling + Phrolova + Suisui',
+      'Yangyang: Xuanling + Phrolova + Chisa',
+      'Yangyang: Xuanling + Mortefi + Verina',
+    ] },
   'Denia': { rarity: 5, element: 'Fusion', weapon: 'Rectifier', role: 'Sub DPS',
     desc: 'Voidmatters student at Startorch Academy who secretly serves as an agent for the Fractsidus. Dual-mode Fusion Hybrid who switches between Stagecraft and Breakdown Form via her two Ultimates, fitting into either Fusion Burst or Tune Strain team archetypes.',
     skills: ["Dreamweaver's Banquet", 'Bubbles and Baits', 'Final Act', 'Formal Greetings'],
