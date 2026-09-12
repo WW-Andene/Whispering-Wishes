@@ -346,6 +346,27 @@ function TeamsTab({
                 ...Object.keys(collectionData?.weaps5Counts || {}),
                 ...Object.keys(collectionData?.weaps4Counts || {}),
               ]);
+              // 2026-09-12 (direct user instruction — recommendation priority is now "1st what the
+              // data dump says, 2nd kit/role/type reasoning, 3rd raw computed damage", NOT the other
+              // way around): a one-way mention (only the placed member's own dump names the
+              // candidate) was previously worth a flat +20, the same weight regardless of whether the
+              // candidate's OWN dump corroborates the pairing back. That let a citation that exists
+              // only inside one character's internal ranking (e.g. Iuno's own dump ranking Yangyang:
+              // Xuanling above her Augusta pairing, for HERSELF) get credited as if it were equally
+              // strong evidence as an actual two-way "both dumps name this exact pairing" confirmation
+              // — a category error the user corrected directly ("Augusta is not in Xuanling kit and
+              // vice versa stop inventing data"). Mutual corroboration (both sides' own dumps name each
+              // other) is the real dump-tier-1 signal and must dominate the tier-3 raw-damage score
+              // below it; a one-way mention stays a much smaller, secondary nudge.
+              const MUTUAL_CITATION_WEIGHT = 100;
+              const ONE_WAY_CITATION_WEIGHT = 15;
+              const citesBack = (fromName, targetName) => {
+                const d = CHARACTER_DATA[fromName];
+                if (!d?.teams) return false;
+                return d.teams.some(teamStr =>
+                  teamStr.split('+').map(m => m.trim()).includes(targetName)
+                );
+              };
               const curatedVotes = new Map();
               placedNow.forEach(charInSlot => {
                 const d = CHARACTER_DATA[charInSlot];
@@ -356,7 +377,10 @@ function TeamsTab({
                     if (m !== charInSlot && !usedInTeam.has(m)) mentionedByThisMember.add(m);
                   });
                 });
-                mentionedByThisMember.forEach(m => curatedVotes.set(m, (curatedVotes.get(m) || 0) + 1));
+                mentionedByThisMember.forEach(m => {
+                  const weight = citesBack(m, charInSlot) ? MUTUAL_CITATION_WEIGHT : ONE_WAY_CITATION_WEIGHT;
+                  curatedVotes.set(m, (curatedVotes.get(m) || 0) + weight);
+                });
               });
               // Full synergy score for every eligible candidate — drives sort order for the whole list.
               // Fixed 2026-09-01 (found via a per-character/all-pairs recommendation audit): without an
@@ -381,7 +405,7 @@ function TeamsTab({
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
                 const hypotheticalTeam = placedNow.length > 0 ? [...placedNow, name] : [name];
                 const { score } = scoreTeamComposition(hypotheticalTeam, ownedWeapsForRec, assumedMainDps);
-                candidateScores.set(name, score + (curatedVotes.get(name) || 0) * 20);
+                candidateScores.set(name, score + (curatedVotes.get(name) || 0));
               });
               // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible
               // character has a real score, badging literally everyone would make the highlight
