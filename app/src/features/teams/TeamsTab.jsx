@@ -358,6 +358,17 @@ function TeamsTab({
               // vice versa stop inventing data"). Mutual corroboration (both sides' own dumps name each
               // other) is the real dump-tier-1 signal and must dominate the tier-3 raw-damage score
               // below it; a one-way mention stays a much smaller, secondary nudge.
+              // FULL_TRIO_MATCH_WEIGHT sits above MUTUAL_CITATION_WEIGHT (2026-09-12, direct user
+              // pushback): Lynae's own dump lists the exact, literal team 'Lynae + Yangyang: Xuanling
+              // + Chisa' — the strongest possible dump-tier-1 evidence there is, a fully-documented
+              // team, not just "these two characters cite each other somewhere." Before this fix,
+              // that exact citation was scored identically to any other pairwise mutual citation, so
+              // it got outranked by Suisui (who has real but only PAIRWISE citations with Xuanling —
+              // no dump ever writes out the literal 'Xuanling + Lynae + Suisui' trio). An exact-trio
+              // match (every already-placed member plus the candidate, as a set, equals one of a
+              // placed member's own curated team strings) must outrank a mere pairwise mutual
+              // citation, since it's citing the SAME team being built, not just a related pair.
+              const FULL_TRIO_MATCH_WEIGHT = 250;
               const MUTUAL_CITATION_WEIGHT = 100;
               const ONE_WAY_CITATION_WEIGHT = 15;
               const citesBack = (fromName, targetName) => {
@@ -366,6 +377,19 @@ function TeamsTab({
                 return d.teams.some(teamStr =>
                   teamStr.split('+').map(m => m.trim()).includes(targetName)
                 );
+              };
+              // True only when some placed member's own curated team-string names EXACTLY the full
+              // hypothetical team (every already-placed member plus this candidate, no more, no
+              // fewer) — the literal documented trio, not just a pairwise relationship within it.
+              const exactTrioMatch = (candidate) => {
+                const wantedSet = new Set([...placedNow, candidate]);
+                return placedNow.some(charInSlot => {
+                  const d = CHARACTER_DATA[charInSlot];
+                  return (d?.teams || []).some(teamStr => {
+                    const parts = teamStr.split('+').map(m => m.trim());
+                    return parts.length === wantedSet.size && parts.every(p => wantedSet.has(p));
+                  });
+                });
               };
               // Anchor character the player is actually building around — same fallback chain as
               // assumedMainDps below (crown, else an already-placed Main DPS, else the first placed
@@ -425,7 +449,12 @@ function TeamsTab({
                 if (usedInTeam.has(name) || (usedRoverAttuned && name.startsWith('Rover:')) || !CHARACTER_DATA[name]) return;
                 const hypotheticalTeam = placedNow.length > 0 ? [...placedNow, name] : [name];
                 const { score } = scoreTeamComposition(hypotheticalTeam, ownedWeapsForRec, assumedMainDps);
-                candidateScores.set(name, score + (curatedVotes.get(name) || 0));
+                // An exact literal-trio match is strictly stronger dump evidence than a pairwise
+                // citation of the same candidate — take whichever is higher rather than summing them
+                // (a candidate already fully confirmed by name shouldn't be double-counted just
+                // because they also happen to satisfy a weaker pairwise citation).
+                const dumpBonus = Math.max(curatedVotes.get(name) || 0, exactTrioMatch(name) ? FULL_TRIO_MATCH_WEIGHT : 0);
+                candidateScores.set(name, score + dumpBonus);
               });
               // "Recommended" badge/highlight = top-scoring candidates only — now that every eligible
               // character has a real score, badging literally everyone would make the highlight
