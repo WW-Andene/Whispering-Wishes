@@ -90,6 +90,8 @@
   "recommendationFillsMainDps": "Vous n'avez pas encore de DPS principal — ce personnage comble ce manque",
   "recommendationFillsSupport": "Vous n'avez pas encore de Soutien/Soigneur — ce personnage comble ce manque",
   "recommendationFillsElementGap": "Vous n'avez pas encore de dégâts {{element}} — un petit bonus",
+  "recommendationFillsDamageTypeGap": "Vous n'avez pas encore de dégâts {{types}} — un petit bonus",
+  "recommendationFillsBuffGap": "Vous n'avez pas encore de soutien {{buffs}} — un petit bonus",
   "recommendationWeaponMustHave": "Indispensable",
   "recommendationWeaponNotEssential": "Pas essentielle",
   "recommendationWeaponMustHaveReason": "Aucune vraie alternative 5★ pour {{name}}.",

@@ -428,23 +428,30 @@ function PlannerTab({
       const synergyWeight = ownedSynergyPartners.reduce((sum, p) => sum + 1 / (partnerFirstIndex.get(p) + 1), 0);
       return { name, d, owned, tierScore, fillsRoleGap, ownedSynergyPartners, synergyWeight };
     });
-    // Direct user request: element is "a small bonus, especially if I don't already have a
-    // strong DPS/support for [that] element" — a real but minor signal, kept as its own LOWEST-
-    // priority tiebreak (never blended into synergyWeight) so it only ever decides between
-    // otherwise-equal candidates, matching the Teams tab's own lexicographic-chain precedent
-    // rather than one weighted number. Scoped to damage-role coverage (Main DPS/Sub DPS of that
-    // element) — a support/buff's element-specific coverage would need parsing CHAR_BUFF_TABLE's
-    // free-text buff conditions, which isn't reliable enough to trust for a ranking signal.
-    const ownedElementsWithDps = new Set(
-      ownedArrExcludingRover.filter(n => CHARACTER_DATA[n].role === 'Main DPS' || CHARACTER_DATA[n].role === 'Sub DPS').map(n => CHARACTER_DATA[n].element)
-    );
-    scored.forEach(s => { s.fillsElementGap = !ownedElementsWithDps.has(s.d.element); });
+    // Direct user request: "element is a small bonus, especially if I don't already have a
+    // strong DPS/support for [that] element or damage type or buff" — three coverage checks, not
+    // just element. Real but minor signals, all folded into ONE lowest-priority tiebreak (never
+    // blended into synergyWeight) so they only ever decide between otherwise-equal candidates,
+    // matching the Teams tab's own lexicographic-chain precedent rather than one weighted number.
+    const damageDealers = ownedArrExcludingRover.filter(n => CHARACTER_DATA[n].role === 'Main DPS' || CHARACTER_DATA[n].role === 'Sub DPS');
+    const supports = ownedArrExcludingRover.filter(n => isHealerRole(CHARACTER_DATA[n].role) || isSupportRole(CHARACTER_DATA[n].role));
+    const ownedElementsWithDps = new Set(damageDealers.map(n => CHARACTER_DATA[n].element));
+    const ownedDmgFocus = new Set(damageDealers.flatMap(n => CHARACTER_DATA[n].dmgFocus || []));
+    const ownedBuffs = new Set(supports.flatMap(n => CHARACTER_DATA[n].buffs || []));
+    scored.forEach(s => {
+      const isDps = s.d.role === 'Main DPS' || s.d.role === 'Sub DPS';
+      const isSupport = isHealerRole(s.d.role) || isSupportRole(s.d.role);
+      s.fillsElementGap = isDps && !ownedElementsWithDps.has(s.d.element);
+      s.fillsDamageTypeGap = isDps && (s.d.dmgFocus || []).length > 0 && !(s.d.dmgFocus || []).some(t => ownedDmgFocus.has(t));
+      s.fillsBuffGap = isSupport && (s.d.buffs || []).length > 0 && !(s.d.buffs || []).some(b => ownedBuffs.has(b));
+      s.fillsCoverageGap = s.fillsElementGap || s.fillsDamageTypeGap || s.fillsBuffGap;
+    });
     scored.sort((a, b) => {
       if (a.owned !== b.owned) return a.owned ? 1 : -1;
       if (a.tierScore !== b.tierScore) return b.tierScore - a.tierScore;
       if (a.fillsRoleGap !== b.fillsRoleGap) return a.fillsRoleGap ? -1 : 1;
       if (a.synergyWeight !== b.synergyWeight) return b.synergyWeight - a.synergyWeight;
-      if (a.fillsElementGap !== b.fillsElementGap) return a.fillsElementGap ? -1 : 1;
+      if (a.fillsCoverageGap !== b.fillsCoverageGap) return a.fillsCoverageGap ? -1 : 1;
       return 0;
     });
 
@@ -895,6 +902,12 @@ function PlannerTab({
                         {!top.fillsRoleGap && top.fillsElementGap && (
                           <li>{t('planner.recommendationFillsElementGap', { element: top.d.element })}</li>
                         )}
+                        {!top.fillsRoleGap && !top.fillsElementGap && top.fillsDamageTypeGap && (
+                          <li>{t('planner.recommendationFillsDamageTypeGap', { types: (top.d.dmgFocus || []).join(', ') })}</li>
+                        )}
+                        {!top.fillsRoleGap && !top.fillsElementGap && !top.fillsDamageTypeGap && top.fillsBuffGap && (
+                          <li>{t('planner.recommendationFillsBuffGap', { buffs: (top.d.buffs || []).join(', ') })}</li>
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -907,8 +920,8 @@ function PlannerTab({
                   <div className="p-3 bg-white/5 rounded-lg">
                     <div className="flex gap-2.5">
                       {DEFAULT_COLLECTION_IMAGES[topWeapon.name] && (
-                        <div className="w-10 h-10 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
-                          <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="w-full h-full object-contain pointer-events-none" onError={hideOnError} />
+                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
+                          <img src={DEFAULT_COLLECTION_IMAGES[topWeapon.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0 space-y-0.5">

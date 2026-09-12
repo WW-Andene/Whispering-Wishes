@@ -90,6 +90,8 @@
   "recommendationFillsMainDps": "You don't have a Main DPS yet — this fills that gap",
   "recommendationFillsSupport": "You don't have a Support/Healer yet — this fills that gap",
   "recommendationFillsElementGap": "You don't have a {{element}} damage dealer yet — a small bonus",
+  "recommendationFillsDamageTypeGap": "You don't have a {{types}} damage dealer yet — a small bonus",
+  "recommendationFillsBuffGap": "You don't have a {{buffs}} support yet — a small bonus",
   "recommendationWeaponMustHave": "Must Have",
   "recommendationWeaponNotEssential": "Not Essential",
   "recommendationWeaponMustHaveReason": "No real 5★ alternative for {{name}}.",
