@@ -14,7 +14,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import { Calendar, Check, ChevronDown, Link2, Minus, Plus, Search, Star, Unlink2, X } from 'lucide-react';
-import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, AVG_UPDATE_ASTRITE, AVG_UPDATE_DAYS, AVG_UPDATE_P1_DAILY_ASTRITE, AVG_UPDATE_P2_DAILY_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
+import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, AVG_UPDATE_ASTRITE, AVG_UPDATE_DAYS, AVG_UPDATE_P1_DAILY_ASTRITE, AVG_UPDATE_P2_DAILY_ASTRITE, AVG_UPDATE_DAILY_COMMISSION_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -196,7 +196,13 @@ function PlannerTab({
   // a flat per-day rate over AVG_UPDATE_DAYS — direct user request, 2026-09-13. Reuses
   // cumulativeIncome rather than reimplementing the Lunite-boost piecewise math, so this can never
   // drift from the base projection it's extending.
-  const AVG_UPDATE_DAILY_ASTRITE = AVG_UPDATE_ASTRITE / AVG_UPDATE_DAYS;
+  // FIXED 2026-09-13 (direct user catch — double counting): AVG_UPDATE_ASTRITE is a GROSS
+  // whole-patch total that already includes daily commissions (see
+  // AVG_UPDATE_DAILY_COMMISSION_ASTRITE's own comment in gachaRates.js) — the player's own
+  // baseDailyAstrite ALSO represents commissions, so adding the raw AVG_UPDATE rate on top of
+  // cumulativeIncome() double-counts that overlap. Subtract the commission-only rate first, so
+  // only the genuinely-additional portion (events/exploration/tower/etc.) gets added.
+  const AVG_UPDATE_DAILY_ASTRITE = Math.max(0, (AVG_UPDATE_ASTRITE / AVG_UPDATE_DAYS) - AVG_UPDATE_DAILY_COMMISSION_ASTRITE);
   const cumulativeIncomeWithUpdates = useCallback((days) => {
     const d = Math.max(0, days);
     return cumulativeIncome(d) + AVG_UPDATE_DAILY_ASTRITE * d;
@@ -209,7 +215,8 @@ function PlannerTab({
   // whole-patch average to Phase-2-only remaining days overstates it. The flat rate above is kept
   // for the 7/30/90-day Income Projections row, which naturally spans both phases over a rolling
   // window and isn't tied to "this specific phase's remaining days" the way Banner End is.
-  const AVG_UPDATE_PHASE_DAILY_ASTRITE = activeBanners.phase === 1 ? AVG_UPDATE_P1_DAILY_ASTRITE : AVG_UPDATE_P2_DAILY_ASTRITE;
+  // Same double-counting fix applied here (subtract the commission-only rate before adding).
+  const AVG_UPDATE_PHASE_DAILY_ASTRITE = Math.max(0, (activeBanners.phase === 1 ? AVG_UPDATE_P1_DAILY_ASTRITE : AVG_UPDATE_P2_DAILY_ASTRITE) - AVG_UPDATE_DAILY_COMMISSION_ASTRITE);
   const cumulativeIncomeByPhaseWithUpdates = useCallback((days) => {
     const d = Math.max(0, days);
     return cumulativeIncome(d) + AVG_UPDATE_PHASE_DAILY_ASTRITE * d;

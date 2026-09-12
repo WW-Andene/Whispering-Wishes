@@ -39,6 +39,20 @@ const AVG_UPDATE_DAYS = 39;
 // phase-specific rates stay consistent with the already-agreed conservative calibration.
 const AVG_UPDATE_P1_DAILY_ASTRITE = 434;
 const AVG_UPDATE_P2_DAILY_ASTRITE = 211;
+// Fixes a real double-counting bug (direct user catch, 2026-09-13): every AVG_UPDATE_* figure
+// above is a GROSS whole-patch F2P total that already includes daily commissions/dailies as one
+// of its own line items — the 3.6 sourcing breakdown (gamemarket.gg) explicitly lists "Daily
+// Activity Quests: 2,400" (over that patch's ~41 days ≈ 58.5/day) as part of the total this file's
+// AVG_UPDATE_ASTRITE was calibrated from. PlannerTab.jsx's "including average update income"
+// projections add these rates ON TOP of the player's own tracked `dailyAstrite` (which itself
+// represents "commissions + dailies", per its own UI label) — stacking both double-counts the
+// commissions portion twice. The fix is to subtract this commission-only rate from each AVG_UPDATE
+// rate before adding it to the player's own tracked income, not to remove the player's own income
+// (that portion is real and not part of the sourced totals) or to drop the whole AVG_UPDATE figure
+// (the non-commission portion — events/exploration/tower/etc. — is genuinely additional). Only one
+// patch (3.6) had an explicit "Daily Activity Quests" line item to source this from; applied
+// uniformly across the flat/P1/P2 rates for lack of a larger sample.
+const AVG_UPDATE_DAILY_COMMISSION_ASTRITE = 58.5;
 const BEGINNER_ASTRITE_PER_PULL = 128; // P14-FIX: NIT-2 — Extract magic number (beginner banner = 80% of standard cost)
 
 // Subscription and top-up prices (USD) - Updated January 2026
@@ -89,6 +103,7 @@ export {
   AVG_UPDATE_DAYS,
   AVG_UPDATE_P1_DAILY_ASTRITE,
   AVG_UPDATE_P2_DAILY_ASTRITE,
+  AVG_UPDATE_DAILY_COMMISSION_ASTRITE,
   SUBSCRIPTIONS,
   MAX_ASTRITE,
   MAX_LUNITE,
