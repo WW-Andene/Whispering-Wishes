@@ -1331,7 +1331,16 @@ const CHARACTER_DATA = {
     // interchangeable 1st-pick headliners alongside Aemeath/Qingxiao) — his own dump's separate
     // Best Team line names Denia as his top pick, but that doesn't contradict Lynae being a real,
     // dump-confirmed alternate 2nd-pick on his page too.
-    teams: ['Luuk Herssen + Denia + Mornye', 'Luuk Herssen + Sanhua + Mornye', 'Luuk Herssen + Lynae + Mornye'] },
+    // Expanded 2026-09-13 from his own dump (Data dump/Luuk Herssen/Luuk Herssen.md, Example Team):
+    // the single "Best Team" line is Denia + Lynae/Sanhua + Mornye/Shorekeeper/Verina — added
+    // Shorekeeper/Verina alternatives for his strongest-named 2nd-slot pick, Denia.
+    teams: [
+      'Luuk Herssen + Denia + Mornye',
+      'Luuk Herssen + Denia + Shorekeeper',
+      'Luuk Herssen + Denia + Verina',
+      'Luuk Herssen + Sanhua + Mornye',
+      'Luuk Herssen + Lynae + Mornye',
+    ] },
   'Aemeath': { rarity: 5, element: 'Fusion', weapon: 'Sword', role: 'Main DPS',
     desc: 'Once an Exostrider Synchronist of Rabelle College, she is now a digital ghost who sings quietly amongst stars. On-field Fusion DPS who alternates between two Resonance Modes across her Basic Attack combo, banking momentum that fuels a pair of heavy-hitting Liberation casts for her core damage.',
     skills: ['Infinity Calibration', 'Shared Voyage', 'Towards the Daybreak', 'Overture of Departure'],
