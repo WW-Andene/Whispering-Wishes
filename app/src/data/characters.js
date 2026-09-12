@@ -807,10 +807,14 @@ const CHARACTER_DATA = {
     // Example Teams section no longer lists Yangyang: Xuanling anywhere at all — retroactively
     // confirming the earlier direct correction in this same session that treating Iuno's internal
     // Augusta-comparison text as evidence for a Xuanling pairing was inventing data, not reading it.
-    // Jingran is a new character not yet in this codebase's data — deferred per direct instruction,
-    // so only Augusta's half of the Best Team pick is captured below; add Jingran's combos when he's
-    // added.
+    // Jingran was a new character not yet in this codebase's data when the above was written —
+    // deferred per direct instruction, with only Augusta's half of the Best Team pick captured.
+    // Added 2026-09-12 now that Jingran exists: Data dump/Jingran/Jingran.md's own Example Teams
+    // section independently names 'Best Team: Jingran + Iuno + Shorekeeper/Verina' too — cross-
+    // corroborated from both characters' own dumps, not a one-way citation.
     teams: [
+      'Iuno + Jingran + Shorekeeper',
+      'Iuno + Jingran + Verina',
       'Iuno + Augusta + Shorekeeper',
       'Iuno + Augusta + Verina',
       'Iuno + Lynae + Mornye',
@@ -1232,24 +1236,38 @@ const CHARACTER_DATA = {
     // weaponAlts added 2026-09-07 against a real nanoka.cc dump (Data dump/Jingran/Jingran.md) —
     // its "Recommended Weapons" list ranks Thousandfold Deliverance #1 (already bestWeapon), Radiance
     // Cleaver #2, Aureate Zenith #3; no ATK%/comparison figures given on that page to rank further alts.
-    // bestEchoes/teams remain genuinely unconfirmed — that same dump's guide content for him has no
-    // Echo-set/team-synergy/rotation section written yet (a newly-released character), not guessed.
-    // bestEchoes/teams left empty rather than a placeholder sentinel string: DamageCalculator.jsx's
-    // "Recommended" line (`m.d.bestEchoes && ...`) renders any truthy bestEchoes verbatim to the
-    // user, sentinel prose included — found via a team-recommendation audit (2026-09-01). An empty
-    // array renders nothing (falls through to the "no recommendation yet" empty state) instead of
-    // leaking placeholder prose as if it were a real echo-set suggestion.
-    bestEchoes: [], bestWeapon: 'Thousandfold Deliverance',
-    weaponAlts: { alt5: ['Radiance Cleaver', 'Aureate Zenith'] },
-    teams: [] },
-    // Re-checked 2026-09-07 against a real nanoka.cc .mht snapshot (Data dump/Jingran/Jingran.md) —
-    // he is now LIVE ("Version 3.6 (live)" on that page, captured 7/September/2026), no longer
-    // pre-release. His real kit — SKILL_MULTIPLIERS, RESONANCE_CHAIN_DATA, Minor Fortes, Inherent
-    // Skills — has now been filled in from that source (see the dump's own "App Data Comparison"
-    // section for exactly what changed). CHARACTER_ROTATIONS['Jingran'] is still correctly absent:
-    // that same dump's guide content has no rotation/combo/team section written yet for him (a
-    // newly-released character) — not fabricated here either. Do not fill it in until a real source
-    // publishes his actual optimal rotation.
+    // bestEchoes/teams REBUILT 2026-09-12 from a fresh prydwen.gg build-guide snapshot the user
+    // provided directly (Data dump/Jingran/Jingran.md), superseding the prior "not yet written"
+    // placeholder — that dump now has a full Build/Gameplay-and-Teams section.
+    // bestEchoes: [mainEcho, set] convention (see Brant's own entry above) — main echo is Myriad
+    // Snare: Rustfire Chassis (the dump's own "Best Main Echo"), set is his signature Lamp of Nether
+    // Road (100% score, "his signature set").
+    bestEchoes: ['Myriad Snare: Rustfire Chassis', 'Lamp of Nether Road 5pc'], bestWeapon: 'Thousandfold Deliverance',
+    // weaponAlts extended 2026-09-12: the dump's Best Weapons table ranks Thunderflare Dominion #2
+    // (85.1%, Augusta's own signature) and Verdant Summit #3 (82.0%) among 5★ alts; Aureate Zenith is
+    // explicitly the dump's own "best 4★" (73.1%) and Meditations on Mercy its own "best no-gacha/F2P"
+    // (59.9%) — kept as alt4/alt3 per the established weaponAlts shape (alt5/alt4/alt3 tiers).
+    weaponAlts: { alt5: ['Thunderflare Dominion', 'Verdant Summit', 'Radiance Cleaver'], alt4: ['Aureate Zenith'], alt3: ['Meditations on Mercy'] },
+    // teams sourced directly from the dump's own "Example Teams" section (his own dump is
+    // authoritative for his own teams field — no third-party corroboration required): Best Team
+    // (Iuno + Shorekeeper/Verina), Mono Fusion (Mortefi + Mornye/Lupa), F2P (Rebecca/Mortefi +
+    // Shorekeeper/Verina). None of Mortefi/Rebecca/Mornye/Lupa's own dumps under Data dump/ mention
+    // Jingran (checked 2026-09-12), so no reciprocal entries were added to their own teams fields —
+    // only Iuno's dump independently corroborates the pairing (see her own teams field/comment above).
+    teams: [
+      'Jingran + Iuno + Shorekeeper',
+      'Jingran + Iuno + Verina',
+      'Jingran + Mortefi + Mornye',
+      'Jingran + Mortefi + Lupa',
+      'Jingran + Rebecca + Shorekeeper',
+      'Jingran + Rebecca + Verina',
+      'Jingran + Mortefi + Shorekeeper',
+      'Jingran + Mortefi + Verina',
+    ] },
+    // Re-checked 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/
+    // Jingran.md) — his Standard (S0-S1) and S2+ rotations are now published (see CHARACTER_ROTATIONS
+    // below, added below this entry) and his Build/Gameplay-and-Teams sections are fully populated,
+    // superseding the 2026-09-07 "no guide content yet" note.
   // 4★ Resonators
   'Aalto': { rarity: 4, element: 'Aero', weapon: 'Pistols', role: 'Sub DPS',
     desc: 'Suave information broker who slips through the mist. Aero sub-DPS who summons a mist clone via his Skill, dealing off-field Aero DMG whenever it triggers a Coordinated Attack alongside the active Resonator.',
@@ -2207,7 +2225,20 @@ const CHARACTER_DATA = {
   // in the same order of magnitude as other Main DPS instead of ~49x inflated. His kit/build is still
   // "Unconfirmed" (unreleased, see his main CHARACTER_DATA entry) so this is a unit-conversion fix,
   // not a verified tier placement -- revisit once his real build guide exists.
-  ['Jingran',       60, 24, 15],  // HP-scaling Heavy ATK bursts, Yinghuo empowerment — totalMult is %HP, NOT %ATK
+  // totalMult corrected 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/
+  // Jingran.md): was 60 with a comment claiming "totalMult is %HP, NOT %ATK" — that dump's own closing
+  // Meta-position paragraph explicitly says the opposite: "HP-CONVERTING (like Brant is with Energy
+  // Regen), not HP-scaling like Cartethyia — his multipliers apply to ATK, with HP only feeding the
+  // ATK-conversion and %-bonus passives." His statScaling below is corrected from 'HP' to 'ATK' to
+  // match (same fix class as Brant, whose HP→ATK-conversion kit is also modeled as ATK-scaling, not
+  // HP-scaling). Value re-derived as the sum of his real per-move %ATK multipliers across the dump's
+  // own Standard (S0-S1) Rotation: Intro 198.81 + Liberation 745.20 (93.15×8) + Heavy:Stardome Meander
+  // 240.38 (×2 occurrences) + Basic Yin 2/3/4 337.04 + Heavy:Soul Raid 234.29 (×2) + Skill Scorching
+  // Yang 164.04 + Basic Afterlife's Guide 263.48 + Skill Encroaching Yin 164.04 + Basic Netherworld
+  // Traverse 258.47 + Outro 795.00 ≈ 3875. rotTime/onField left at their prior placeholder values (24s/
+  // 15s) — the dump gives an exact SOLO rotation time (13.37s) but not a full-team-rotation figure this
+  // table's own convention expects, so not swapped in as a guess.
+  ['Jingran',       3875, 24, 15],  // ATK-scaling (HP→ATK conversion) Heavy ATK bursts, Yinghuo empowerment
   ["Yangyang: Xuanling", 3600, 23, 18],  // Azure/Feather stance swap, Havoc Bane self-buff — T0/T0 ceiling
   ['Hiyuki',        3400, 23, 17],  // Present/Foreclaimed Self, Iai burst finisher — best Glacio DPS
   ['Lucy',          2000, 23, 12],  // TCP/Root Access into enhanced Heavy + Ultimate
@@ -2303,7 +2334,10 @@ const CHARACTER_DATA = {
   ['Sigrika',        'ATK'],
   ['Chixia',         'ATK'],
   ['Qingxiao',       'ATK'],
-  ['Jingran',        'HP'],
+  // statScaling corrected 2026-09-12 against a fresh dump (see the totalMult table's own comment
+  // above for the full quote): was 'HP' — Jingran is HP-CONVERTING (HP feeds an ATK-conversion
+  // passive, like Brant below), not HP-scaling like Cartethyia. His damage multipliers apply to ATK.
+  ['Jingran',        'ATK'],
   ['Yangyang: Xuanling', 'ATK'],
   ['Hiyuki',         'ATK'],
   ['Lucy',           'ATK'],
@@ -2476,10 +2510,14 @@ const CHARACTER_DATA = {
   ['Youhu',         'T4',   'T4'],
   ['Yuanwu',        'T4',   'T4'],
   // Added 2026-09-02 against a fresh the source dump: Qingxiao was entirely missing from this table (a
-  // 3.6-patch release-day gap, same as Jingran, who is left untouched here since no fresh source for
-  // him was checked this pass). Standard-list values used, matching this table's established
+  // 3.6-patch release-day gap, same as Jingran, who was left untouched then since no fresh source for
+  // him was checked that pass). Standard-list values used, matching this table's established
   // convention (e.g. Augusta/Luuk Herssen use their standard T0/T1.5-style lists, not the Value list).
   ['Qingxiao',      'T0',   'T1'],
+  // Added 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/Jingran.md):
+  // his own Review section states "Tier: DPS T0 (Tower of Adversity), T1 (Whimpering Wastes) — same
+  // split on the Value Tier List" explicitly (both lists agree, unlike some other characters above).
+  ['Jingran',       'T0',   'T1'],
 ].forEach(([name, toa, ww]) => {
   if (CHARACTER_DATA[name]) Object.assign(CHARACTER_DATA[name], { tier: { toa, ww } });
 });
@@ -6678,6 +6716,31 @@ const CHARACTER_ROTATIONS = {
     { type: 'Liberation', skill: 'Billows Beneath Heaven', note: "Press Liberation — best saved for last so her signature weapon's passive (or any pre-Ultimate buffs) are fully stacked before it fires." },
     { type: 'Echo', skill: 'Use Echo', note: "Swap-cancel your Echo skill right after the Liberation lands, just before swapping out for the Outro." },
     { type: 'Outro', skill: 'Lingering Song', note: 'Swap out to trigger this automatically — deals Aero DMG equal to 800% of her ATK.' },
+  ],
+  // Added 2026-09-12 against a fresh prydwen.gg build-guide snapshot (Data dump/Jingran/Jingran.md)
+  // — previously entirely absent (his guide content had no rotation section written yet when this
+  // repo's characters.js entry was first built from an earlier nanoka.cc snapshot). Standard (S0-S1)
+  // Rotation used, matching the convention of using the lower-sequence/most-accessible rotation as the
+  // stored CHARACTER_ROTATIONS entry (see Phoebe's own comment above) — the dump's separate S2+
+  // rotation (openable Stardome Meander pre-Intro) is a real, sourced alternative not modeled here.
+  // Skill fields below are kept as short SUBSTRINGS of their matching SKILL_MULTIPLIERS['Jingran']
+  // row names (findSkillMultiplierRow's fuzzy match requires the row name to CONTAIN the step
+  // string, e.g. Zani/Augusta's own fix comments elsewhere in this file) — Netherworld Traverse/
+  // Afterlife's Guide are typed 'Skill' here (not 'Basic ATK') to match the row they actually live
+  // under, even though they fire off the Basic Attack input in-game.
+  'Jingran': [
+    { type: 'Intro', skill: 'Question the Tombs', note: 'Swap into him — fires automatically, consumes all Ghost Shroud and converts it 1:1 into Fortune in Disguise stacks (Fusion DMG Bonus scaling with Max HP).' },
+    { type: 'Liberation', skill: 'Burial of Thousand Souls', note: 'Cast right after Intro — reduces current HP to 50% Max HP if above it, grants 200 Qi and 3 Wayfarer\'s Mark stacks, and enters the 15s Yinghuo state (empowers his next Forte Heavy Attacks via Chimei Wangliang summons).' },
+    { type: 'Heavy ATK', skill: 'Stardome Meander', note: 'From Yang Font (his default starting stance), cast Heavy Attack - Stardome Meander at 300 Qi — consumes it, deals Fusion DMG, and switches him to Yin Vessel.' },
+    { type: 'Basic ATK', skill: 'Drink Soul', note: 'In Yin Vessel, chain Basic Attack - Drink Soul stages 2 through 4 — Stage 3/4 each restore 50 Qi and are considered Heavy Attack DMG despite firing off the Basic Attack button.' },
+    { type: 'Heavy ATK', skill: 'Soul Raid', note: 'At 300 Qi in Yin Vessel, cast Heavy Attack - Soul Raid — consumes it, deals Fusion DMG, and switches him back to Yang Font.' },
+    { type: 'Skill', skill: 'Scorching Yang', note: 'In Yang Font, press Skill (Resonance Skill - Scorching Yang) — deals Fusion DMG and grants Cleanse of Impurity for 4s, enabling the Afterlife\'s Guide follow-up below.' },
+    { type: 'Skill', skill: "Afterlife's Guide", note: 'With Cleanse of Impurity active, press the Basic Attack input again (Resonance Skill - Afterlife\'s Guide, mid-air castable) — a Fusion DMG hit considered Heavy Attack DMG, restores 100 Qi.' },
+    { type: 'Heavy ATK', skill: 'Stardome Meander', note: 'Second cast of the rotation — same effect as above, switches back to Yin Vessel.' },
+    { type: 'Skill', skill: 'Encroaching Yin', note: 'In Yin Vessel, press Skill (Resonance Skill - Encroaching Yin) — deals Fusion DMG, grants Cleanse of Impurity for 4s, enabling the Netherworld Traverse follow-up below.' },
+    { type: 'Skill', skill: 'Netherworld Traverse', note: 'With Cleanse of Impurity active, press the Basic Attack input again (Resonance Skill - Netherworld Traverse, mid-air castable) — Fusion DMG considered Heavy Attack DMG, restores 100 Qi.' },
+    { type: 'Heavy ATK', skill: 'Soul Raid', note: 'Second cast of the rotation — same effect as above, switches back to Yang Font.' },
+    { type: 'Outro', skill: 'Rising Fortune and Ebbing Evil', duration: 0, note: 'Swap out to trigger this automatically — deals Fusion DMG equal to 795% of his ATK, with no team-buff component (pure damage, safe to Quickswap).' },
   ],
 };
 
