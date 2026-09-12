@@ -825,7 +825,6 @@ function PlannerTab({
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-gray-100 font-bold">{top.name}</span>
-                        {top.d.tier?.toa && <span className="kuro-badge kuro-badge-yellow text-2xs">{t('planner.recommendationTierBadge', { tier: top.d.tier.toa })}</span>}
                       </div>
                       <ul className="text-gray-400 text-sm space-y-0.5 list-disc list-inside">
                         {top.fillsRoleGap && (
@@ -843,20 +842,36 @@ function PlannerTab({
                 </div>
                 {others.length > 0 && (
                   <div>
-                    <p className="text-gray-500 text-xs uppercase tracking-wider mb-1.5">{t('planner.recommendationAlsoFeatured')}</p>
+                    <p className="text-gray-500 text-xs uppercase tracking-wider mb-1.5">{t('planner.recommendationGoodForHeader')}</p>
                     <div className="space-y-1.5">
-                      {others.map(o => (
-                        <div key={o.name} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
-                          {DEFAULT_COLLECTION_IMAGES[o.name] && (
-                            <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
-                              <img src={DEFAULT_COLLECTION_IMAGES[o.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                      {others.map(o => {
+                        // Direct user request: replace the plain "featured this patch"
+                        // tier/owned badges with a one-line reason describing who each pick
+                        // actually suits — reusing the exact same dump-sourced signals
+                        // (role-gap fill, owned-roster synergy) the Best Pick's own reasoning
+                        // draws from, condensed to a single line per character.
+                        const goodForKey = o.owned
+                          ? 'planner.recommendationGoodForOwned'
+                          : o.fillsRoleGap
+                            ? (o.d.role === 'Main DPS' ? 'planner.recommendationGoodForMainDpsGap' : 'planner.recommendationGoodForSupportGap')
+                            : o.ownedSynergyPartners.length > 0
+                              ? 'planner.recommendationGoodForSynergy'
+                              : 'planner.recommendationGoodForGeneral';
+                        const goodForText = t(goodForKey, { name: o.ownedSynergyPartners[0] });
+                        return (
+                          <div key={o.name} className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+                            {DEFAULT_COLLECTION_IMAGES[o.name] && (
+                              <div className="w-8 h-8 rounded-md overflow-hidden border border-white/10 flex-shrink-0 bg-black/25">
+                                <img src={DEFAULT_COLLECTION_IMAGES[o.name]} alt="" className="w-full h-full object-cover pointer-events-none" onError={hideOnError} />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <span className="text-gray-300 text-sm block truncate">{o.name}</span>
+                              <span className="text-gray-500 text-2xs block truncate">{goodForText}</span>
                             </div>
-                          )}
-                          <span className="text-gray-300 text-sm flex-1 truncate">{o.name}</span>
-                          {o.d.tier?.toa && <span className="text-gray-500 text-2xs">{o.d.tier.toa}</span>}
-                          <span className={`text-2xs ${o.owned ? 'text-emerald-400' : 'text-gray-500'}`}>{t(o.owned ? 'planner.recommendationOwnedBadge' : 'planner.recommendationUnownedBadge')}</span>
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
