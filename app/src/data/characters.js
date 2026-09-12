@@ -200,7 +200,10 @@ const CHARACTER_DATA = {
     // source's own list, ahead of Fusion Accretion's 87.70%) and was missing entirely.
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Cosmic Ripples',
     weaponAlts: { alt5: ['Stringmaster', 'Rime-Draped Sprouts'], alt4: ['Radiant Dawn', 'Augment'], alt3: ['Rectifier of Night'] },
-    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa'] },
+    // Added 'Encore + Lupa + Mornye' (2026-09-12): confirmed on Encore's own dump ("Mornye has
+    // special synergy with Encore+Lupa, letting Encore run Hyper Carry while Lupa keeps her full Mono
+    // Fusion buffs") and independently on Lupa's own dump (Brant's-duo/generalist-support text).
+    teams: ['Encore + Brant + Lupa', 'Encore + Sanhua + Lupa', 'Encore + Lupa + Mornye'] },
   // desc corrected against the wiki's Jianxin infobox (2026-08-17 audit): the wiki's
   // current secondary_title is "Guiding Starlance", not "Cleansing Reflections" (a stale title still
   // shown on the source's character page for her — the two sources disagree here, the wiki's live
@@ -401,7 +404,10 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "Sentinel's Dagger", forgery: 'Metallic Drip' },
     bestEchoes: ['Nightmare: Inferno Rider', 'Molten Rift 5pc'], bestWeapon: 'Blazing Brilliance',
     weaponAlts: { alt5: ['Emerald of Genesis', 'Emerald Sentence'], alt4: ['Somnoire Anchor', 'Commando of Conviction'], alt3: ['Sword of Night'] },
-    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina'] },
+    // Added 'Changli + Aemeath + Lupa' (2026-09-12): confirmed on Changli's own dump ("Best Team:
+    // Changli buffs Aemeath via Outro here, Lupa buffs Changli") and independently on Lupa's own
+    // dump ("Classic Mono Fusion: Aemeath/Changli/Galbrena/Encore/Brant + Lupa").
+    teams: ['Changli + Lupa + Brant', 'Changli + Encore + Verina', 'Changli + Aemeath + Lupa'] },
   // Full audit 2026-08-17 against the wiki (MediaWiki API) and the source's live build page
   // (Chrome UA + google.com referer + jsRender) — desc content (title prepended to match the roster's
   // convention), skills, base stats, multipliers, buffs, ascension mats, bestEchoes, and both example
@@ -587,7 +593,11 @@ const CHARACTER_DATA = {
     // this file's own convention elsewhere) are moved there instead; alt4 cleared rather than filled
     // with unsourced weapons.
     weaponAlts: { alt5: ['Laser Shearer', "Bloodpact's Pledge", 'Red Spring', 'Emerald of Genesis'], alt4: [], alt3: ['Sword of Night'] },
-    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper'] },
+    // Added 'Brant + Lupa + Galbrena'/'Brant + Lupa + Aemeath'/'Brant + Lupa + Mornye' (2026-09-12):
+    // confirmed on Brant's own dump ("Fusion DPS partners for a Brant+Lupa duo: Galbrena/Aemeath/
+    // Changli/Encore/Chixia" plus "Generalist supports: Mornye (best with Lupa)") and independently
+    // on Lupa's own dump for each.
+    teams: ['Brant + Lupa + Changli', 'Brant + Changli + Shorekeeper', 'Brant + Lupa + Galbrena', 'Brant + Lupa + Aemeath', 'Brant + Lupa + Mornye'] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1607 sheet. desc: title "Sea of Dreams" (the source) prepended and blurb
   // rewritten to match the roster's convention. organization uses 'Fisalia Family' (no leading "The")
@@ -736,7 +746,38 @@ const CHARACTER_DATA = {
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Waveworn Residue' },
     bestEchoes: ['Lioness of Glory', 'Flaming Clawprint 5pc'], bestWeapon: 'Wildfire Mark',
     weaponAlts: { alt5: ['Ages of Harvest', 'Kumokiri'], alt4: ['Waning Redshift', 'Aureate Zenith'], alt3: ['Broadblade of Night'] },
-    teams: ['Lupa + Brant + Changli', 'Lupa + Aemeath + Mornye'] },
+    // Expanded 2026-09-12 from a fresh prydwen.gg snapshot the user provided directly (Data dump/
+    // Lupa/Lupa.md's Synergies/Example Teams, updated to fold in Jingran, who didn't exist in this
+    // codebase when the section was first written), taken directly as authoritative for her own
+    // recommendations:
+    //   Best Team: Jingran/Aemeath/Galbrena + Lupa + Mortefi/Denia/Mornye — Mortefi is Jingran's
+    //     dedicated 3rd-slot partner, Denia is exclusive to Aemeath in Fusion Burst mode, Mornye is
+    //     the generalist alternate working with all three headliners.
+    //   Chixia Best Team: Chixia + Brant + Lupa (was in her own dump's prose but missing from this
+    //     flat list — added).
+    //   Encore F2P Team: Encore + Lupa + Shorekeeper/Chixia.
+    // Cross-corroborated on the OTHER character's own dump too: Changli's own dump ("Best Team:
+    // Changli buffs Aemeath via Outro here, Lupa buffs Changli") independently confirms Aemeath +
+    // Changli + Lupa; Brant's own dump ("Fusion DPS partners for a Brant+Lupa duo: Galbrena/Aemeath/
+    // Changli/Encore/Chixia" plus "Mornye best with Lupa") independently confirms
+    // Brant+Lupa+Galbrena/Aemeath/Encore/Mornye; Encore's own dump ("Mornye has special synergy with
+    // Encore+Lupa") independently confirms Encore+Lupa+Mornye.
+    teams: [
+      'Lupa + Brant + Changli',
+      'Lupa + Aemeath + Mornye',
+      'Lupa + Jingran + Mortefi',
+      'Lupa + Jingran + Mornye',
+      'Lupa + Aemeath + Denia',
+      'Lupa + Galbrena + Mornye',
+      'Lupa + Chixia + Brant',
+      'Lupa + Encore + Shorekeeper',
+      'Lupa + Aemeath + Changli',
+      'Lupa + Brant + Galbrena',
+      'Lupa + Brant + Aemeath',
+      'Lupa + Brant + Encore',
+      'Lupa + Brant + Mornye',
+      'Lupa + Encore + Mornye',
+    ] },
   // Full audit 2026-08-17 against the source's live build page (Chrome UA + google.com referer + jsRender)
   // and the source's character #1608 sheet. desc: title "Symphony of Beyond" (the source) prepended and
   // blurb rewritten — the previous desc wrongly said she "summons Hecate via Echo Skill"; Hecate is
@@ -878,7 +919,10 @@ const CHARACTER_DATA = {
     // teammates: ...Phrolova/Iuno/Rebecca (Heavy DMG Amp Outros); Mornye/Shorekeeper/Verina
     // (generalist supports)") and independently on Rebecca's own dump ("Alternative Heavy Attack
     // Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina").
-    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa', 'Galbrena + Rebecca + Shorekeeper'] },
+    // Added 'Galbrena + Lupa + Mornye' (2026-09-12): confirmed on Lupa's own dump ("Best Team:
+    // Jingran/Aemeath/Galbrena + Lupa + Mortefi/Denia/Mornye" — Mornye is the generalist alternate
+    // working with all three headliners, Galbrena included).
+    teams: ['Galbrena + Qiuyuan + Shorekeeper', 'Galbrena + Phrolova + Lupa', 'Galbrena + Rebecca + Shorekeeper', 'Galbrena + Lupa + Mornye'] },
   'Qiuyuan': { rarity: 5, element: 'Aero', weapon: 'Sword', role: 'Sub DPS',
     desc: 'Former Mingting intelligence agent, upright as bamboo seeking no vanity. Aero sub-DPS/buffer who supports from off-field, boosting the active Resonator\'s Crit DMG via his Liberation and amplifying the next Resonator\'s Echo Skill damage through his Outro.',
     skills: ['Inkwash', 'Through the Groves', 'Sundering Strike', 'Verdant Edge'],
@@ -1319,9 +1363,11 @@ const CHARACTER_DATA = {
     // teams sourced directly from the dump's own "Example Teams" section (his own dump is
     // authoritative for his own teams field — no third-party corroboration required): Best Team
     // (Iuno + Shorekeeper/Verina), Mono Fusion (Mortefi + Mornye/Lupa), F2P (Rebecca/Mortefi +
-    // Shorekeeper/Verina). None of Mortefi/Rebecca/Mornye/Lupa's own dumps under Data dump/ mention
-    // Jingran (checked 2026-09-12), so no reciprocal entries were added to their own teams fields —
-    // only Iuno's dump independently corroborates the pairing (see her own teams field/comment above).
+    // Shorekeeper/Verina). Checked 2026-09-12: only Iuno's own dump independently corroborated the
+    // pairing at the time. UPDATED 2026-09-12 (same day, after Lupa's own dump was refreshed from a
+    // fresh prydwen.gg snapshot): Lupa's own "Best Team" now independently names Jingran too (with
+    // Mortefi as his dedicated 3rd-slot partner, Mornye as the generalist alternate) — 'Jingran +
+    // Mortefi + Lupa' is now mutually confirmed on both sides, not one-way.
     teams: [
       'Jingran + Iuno + Shorekeeper',
       'Jingran + Iuno + Verina',

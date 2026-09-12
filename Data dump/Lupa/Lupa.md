@@ -285,18 +285,23 @@ Notes on real-game rotation mechanics:
 - S5: 838,625 DMG / 103,025 DPS (213.17%)
 - S6: 963,386 DMG / 118,352 DPS (244.89%)
 
-**Synergies**:
-- **Aemeath, Mornye, Galbrena, Brant, Changli, Encore** — all strong partners since she's a dedicated
-  Fusion buffer, though she works well with any Fusion damage dealer. Aemeath/Mornye are both generalist
-  Fusion buffers, elevating any strong-baseline Fusion DPS paired with Lupa (Aemeath additionally pairs
-  with Denia for Fusion Burst). Aemeath and Galbrena have the highest baseline Fusion damage, making them
-  ideal Lupa/Mornye recipients. Brant and Encore fully leverage her Outro. Changli buffs Lupa or Aemeath
-  via her own Outro, enabling several strong mono-Fusion team shapes with Lupa as the central enabler.
+**Synergies** (updated 2026-09-12 from a fresh prydwen.gg snapshot — Jingran didn't exist in this
+codebase when the section above was first written; the live page has since folded him in as a 3rd
+top-baseline-damage headliner alongside Aemeath/Galbrena, and added Mortefi as his dedicated 3rd-slot
+partner):
+- **Jingran, Aemeath, Mornye, Galbrena, Brant, Changli, Encore** — all strong partners since she's a
+  dedicated Fusion buffer, though she works well with any Fusion damage dealer. Lupa/Mornye are both
+  generalist Fusion buffers, elevating any strong-baseline Fusion DPS paired with Lupa. Jingran and
+  Aemeath have the highest baseline Fusion damage of the roster, Galbrena not far behind. Brant and
+  Encore fully leverage her Outro. Changli buffs Lupa or Aemeath via her own Outro, enabling several
+  strong mono-Fusion team shapes with Lupa as the central enabler.
 
 **Example Teams**:
-1. **Best Team**: Aemeath/Galbrena/Brant/Encore + Lupa + Denia/Mornye/Changli — Denia only viable
-   alongside Aemeath specifically in Fusion Burst mode; Changli only rivals Mornye in certain Quickswap
-   comps and is generally the weaker pick for most players (requires precise Outro-buff timing).
+1. **Best Team**: Jingran/Aemeath/Galbrena + Lupa + Mortefi/Denia/Mornye — Jingran should be
+   Outro-buffed by Mortefi (Stonewall Bracer main Echo on Moonlit Clouds) for his own best team; Mornye
+   is the generalist pick that works with all three headliners (can run the Spacetrek Explorer main
+   Echo in Jingran teams specifically); Denia is exclusive to Aemeath in Fusion Burst mode (Lupa runs
+   Moonlit Clouds 5pc, Denia runs Flaming Clawprint 5pc instead).
 2. **Classic Mono Fusion**: Aemeath/Changli/Galbrena/Encore/Brant + Lupa.
 3. **Chixia Best Team**: Chixia + Brant + Lupa.
 4. **Encore F2P Team**: Encore + Lupa + Shorekeeper/Chixia — rotate Lupa first with Chixia on the team,
