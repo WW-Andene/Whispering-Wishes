@@ -1091,7 +1091,21 @@ export function scoreTeamComposition(members, ownedWeaps = new Set(), dpsOverrid
           // debuff, since a benched, non-headline Main DPS's on-field time can't be assumed.
           if (db.stat === 'amplify' || db.stat === 'offTune') {
             if (amplifyBuffApplies(db)) {
-              const selfStateDiscount = (CHARACTER_DATA[m]?.role === 'Main DPS' && m !== mainDps) ? 0.35 : 1;
+              // BUG FIX 2026-09-12 (direct user report: "why is Mornye scored better than Suisui,
+              // that makes no sense"): same failure mode this exact discount pattern was built to
+              // catch for Galbrena above — Mornye's Interfered Marker was credited at its full,
+              // uncapped 40% value with the same 1x (no) discount every other amplify debuff gets
+              // by default, silently inflating her past Suisui's more direct, reliable buffs.
+              // Unlike a typical amplify debuff (or Galbrena's, which only needs GALBRENA's own
+              // sustained engagement), Interfered Marker needs a DIFFERENT teammate to land Tune
+              // Break DMG on an already-Observation-Marked target, lasts only 8s per proc, and per
+              // Mornye's own kit notes is itself "enemy-dependent (buildup varies by enemy class,
+              // some bosses have Tune Break Buildup immunity phases)" — a compounding reliability
+              // gap no other credited buff in this function has. Same 0.35 self-state-discount
+              // already used above for a comparable "can't assume this fires reliably" case.
+              const isInterferedMarker = (db.condition || '').toLowerCase().includes('interfered marker');
+              const selfStateDiscount = isInterferedMarker ? 0.35
+                : (CHARACTER_DATA[m]?.role === 'Main DPS' && m !== mainDps) ? 0.35 : 1;
               const u = estimateBuffUplift('amplify', db.value) * selfStateDiscount;
               if (u > 0) score += u * UPLIFT_TO_SCORE;
             }
