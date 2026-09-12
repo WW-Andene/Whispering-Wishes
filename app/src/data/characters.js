@@ -2814,8 +2814,21 @@ const CHAR_BUFF_TABLE = {
     ],
     libBuffs: [],
     selfBuffs: [{ stat: 'critRate', value: 80, target: 'self', duration: 999, condition: 'Inherent Skill Sky Over Water — Awakening Spring/Tinkling Jade hit, once every 25s (also +240% Glacio DMG on that hit)' }],
-    debuffs: [],
-    note: 'Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team rather than granting a flat DMG buff. Inherent Skill Sky Over Water grants a self Crit Rate/Glacio DMG spike on her own Awakening Spring/Tinkling Jade hits, gated to once every 25s.',
+    // BUG FIX 2026-09-12 (direct user report: "mathematically Suisui is supposed to be better [for
+    // Yangyang: Xuanling] — is there an issue with... the dump kit?"): Liberation (Ceaseless
+    // Landscape) was modeled as granting no DMG-relevant buff at all (debuffs: [] below, note
+    // claiming it only "extends stack caps") — but the real dump (Data dump/Suisui/Suisui.md line
+    // 49) states it ALSO grants "consuming Havoc Bane stacks after landing a skill... +6% DEF
+    // Ignore / +12% Havoc RES Shred for 30s (no stacking)". That's her single biggest Yangyang:
+    // Xuanling-specific synergy (a Havoc Bane consumer) and it was entirely absent from her score —
+    // the recommendation engine's resShred handling (calcEngine.js) correctly element-gates on the
+    // condition text via elemBuffApplies, so this alone was silently suppressing her real synergy
+    // score for every Havoc Bane DPS, not just Yangyang: Xuanling.
+    debuffs: [
+      { stat: 'defIgnore', value: 6, duration: 30, condition: 'Liberation (Ceaseless Landscape): consuming Havoc Bane stacks after landing a skill, no stacking' },
+      { stat: 'resShred', value: 12, duration: 30, condition: 'Liberation (Ceaseless Landscape): consuming Havoc Bane stacks after landing a skill — Havoc RES Shred, no stacking' },
+    ],
+    note: 'Outro (Rippling Waters): unconditional 25% All DMG Amp for 30s. At 400+ Floral Epistle consumed (Drizzle Stance Forte gauge) while Ceaseless Landscape is active, additionally grants up to 12% All DMG Amp (0.2% per 1% Energy Regen above 200%, capped at 260% ER) for 6s via Roaming Transcendent. Zephyr Stance heals, Drizzle Stance deals Glacio DMG + Chafe. Liberation (Song of Thoroughfare) extends negative-status stack caps for the team AND grants Havoc Bane consumers +6% DEF Ignore / +12% Havoc RES Shred for 30s — her single strongest Yangyang: Xuanling-specific synergy. Inherent Skill Sky Over Water grants a self Crit Rate/Glacio DMG spike on her own Awakening Spring/Tinkling Jade hits, gated to once every 25s.',
   },
   'Lynae': {
     outroBuffs: [
