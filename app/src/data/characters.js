@@ -123,7 +123,10 @@ const CHARACTER_DATA = {
     // Added 'Jiyan + Rebecca + Shorekeeper' (2026-09-12): confirmed on Jiyan's own dump (line 173:
     // "Rebecca/Mortefi (free/accessible Heavy DMG...)") and independently on Rebecca's own dump
     // ("Alternative Heavy Attack Teams: Augusta/Jiyan/Galbrena + Rebecca + Shorekeeper/Mornye/Verina").
-    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper', 'Jiyan + Rebecca + Shorekeeper'] },
+    // Added 'Jiyan + Mortefi + Shorekeeper' (2026-09-12): confirmed on Jiyan's own dump (line 173,
+    // grouping Rebecca/Mortefi together as free/accessible Heavy DMG buffers) and independently on
+    // Mortefi's own dump (Synergies: "Jiyan (tailor-made partner)").
+    teams: ['Jiyan + Iuno + Ciaccona', 'Jiyan + Iuno + Shorekeeper', 'Jiyan + Rebecca + Shorekeeper', 'Jiyan + Mortefi + Shorekeeper'] },
   'Calcharo': { rarity: 5, element: 'Electro', weapon: 'Broadblade', role: 'Main DPS',
     // desc rewritten 2026-08-31 against the wiki/Calcharo/Combat (Chrome/Windows UA +
     // google.com referer + jsRender, load+9s wait; 2nd attempt cleared Cloudflare) and cross-checked against
@@ -1547,7 +1550,31 @@ const CHARACTER_DATA = {
     // alt4 order corrected 2026-09-03 against a real browser snapshot: source ranks Pistols#26
     // (81.87%) ahead of Undying Flame in the listed order — was previously swapped.
     weaponAlts: { alt5: ['The Last Dance'], alt4: ['Relativistic Jet', 'Novaburst', 'Thunderbolt', 'Pistols#26', 'Undying Flame'] },
-    teams: ['Mortefi + Galbrena + Lupa', 'Mortefi + Jiyan + Verina'] },
+    // Expanded 2026-09-12, reading Mortefi's OWN dump directly (Data dump/Mortefi/Mortefi.md's
+    // "Example Teams" section, lines 158-160) — that section is explicit about a real gap: "exact
+    // roster icons weren't machine-readable in this extraction; inferred from the Synergies section
+    // text" instead. Rather than force-guess which specific headliner maps to the "Best Team" label,
+    // only the combinations the Synergies text itself literally names are added, each independently
+    // confirmed on the OTHER character's own dump too:
+    //   Augusta: "best F2P-accessible option for her" — confirmed on Augusta's own dump ("Best Team:
+    //     Augusta + Iuno/Lynae/Rebecca/Mortefi + Shorekeeper/Verina/Mornye").
+    //   Jiyan: "tailor-made partner" — confirmed on Jiyan's own dump (Rebecca/Mortefi named as
+    //     free/accessible Heavy DMG buffers).
+    //   Phoebe: "good secondary... with Rejuvenating Glow Spectro Rover" — matches Phoebe's own dump
+    //     naming Mortefi as an additional Heavy ATK buffer (prose-level, not a literal trio there).
+    //   Zani: "substitute for Phoebe's buffing... must be paired with Spectro Rover" — matches Zani's
+    //     own dump naming Mortefi as a Heavy ATK DMG Amp option (prose-level, same caveat).
+    // Galbrena+Lupa and Jiyan+Verina (already present) are the pre-existing reasonable inferences
+    // from the same Synergies text — kept as-is.
+    teams: [
+      'Mortefi + Galbrena + Lupa',
+      'Mortefi + Jiyan + Verina',
+      'Mortefi + Jiyan + Shorekeeper',
+      'Mortefi + Augusta + Shorekeeper',
+      'Mortefi + Augusta + Verina',
+      'Mortefi + Phoebe + Rover: Spectro',
+      'Mortefi + Zani + Rover: Spectro',
+    ] },
   // audited 2026-08-18: sourced from the wiki's Youhu/Combat page (rendered via the
   // MediaWiki API, section-by-section, since the raw wikitext only transcludes {{Forte Table}}/
   // {{Chain Table}} templates) and the source's Kit/Build/Review/Gameplay tabs.
