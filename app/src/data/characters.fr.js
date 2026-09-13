@@ -1122,12 +1122,17 @@ export const SKILL_NAME_FR = {
   'Cantarella': {
     'Stage 1-3': 'Étape 1-3',
     'Standard': 'Standard',
+    'Delusive Dive': 'Plongée Illusoire',
     'Graceful Step': 'Marche Élégante',
     'Flickering Reverie': 'Rêverie Vacillante',
+    'Jolt': 'Décharge',
     'Phantom Sting 1-3': 'Piqûre Spectrale 1-3',
+    'Abysmal Vortex': "Vortex Abyssal",
+    'Shadowy Sweep': "Balayage d'Ombre",
     'Perception Drain': 'Vol de Perception',
     'Flowing Suffocation': 'Étouffement Insidieux',
     'Ripple': 'Ondulation',
+    'Tidal Surge': 'Vague Montante',
     'Gentle Tentacles': 'Tentacules doux',
   },
   'Carlotta': {
@@ -1941,6 +1946,9 @@ export const MULT_DESC_FR = {
   'Brant': {
     'The Course is Set!': "+20 % DGT Fusion + 25 % d'Amplification DGT de Compétence (14 s, ou jusqu'à ce que le Résonateur buffé soit remplacé)",
   },
+  'Cantarella': {
+    'Gentle Tentacles': "+20 % DGT Havoc + 25 % d'Amplification DGT de Compétence de Résonance (14 s, se termine plus tôt en cas de changement)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2109,5 +2117,9 @@ export const SKILL_DESC_FR = {
     'Wanted Outlaw': 'Confirmée le 2026-09-08 contre la ligne « Skill Damage: 39.77%×2+59.65%×2 » du dump sous la Compétence d\'Intro Criminel recherché (correspondance exacte). Nom de compétence officiel confirmé « Wanted Outlaw » selon la propre note de bas de page du wiki (le texte de Chaîne de Résonance en jeu l\'étiquette à tort « Wanted Criminal »).',
     '"Necessary Means"': 'Correspondance exacte confirmée le 2026-08-31 contre la ligne « \'Necessary Means\' Damage » du wiki Niv.10 (correspond aussi à la ligne « Necessary Means Damage: 198.81%×2 » du dump, reconfirmée le 2026-09-08). Auparavant totalement non documentée : une fois l\'Équipement de Lame de Mort terminé, le prochain lancer de Compétence d\'Intro de Calcharo est silencieusement remplacé par ce coup au lieu de « Criminel recherché », compté comme DGT de Compétence d\'Intro.',
     'Shadowy Raid': "Correspondance exacte confirmée le 2026-08-31 contre la ligne de Compétence d'Outro du wiki Niv.10 et le texte de kit de la source (« 195,98%+391,96% de l'ATQ de Calcharo ») ; reconfirmée le 2026-09-08 contre le dump.",
+  },
+  'Cantarella': {
+    'Abysmal Vortex': "Remplace l'Attaque Aérienne en état Mirage.",
+    'Shadowy Sweep': "Remplace la Contre-attaque d'Esquive en état Mirage ; l'Attaque Normale juste après lance Piqûre Spectrale Étape 2.",
   },
 };
