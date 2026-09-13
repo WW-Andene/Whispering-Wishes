@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames, findSkillMultiplierRow } from '../../data/characters.js';
-import { SKILL_TYPE_FR, SKILL_NAME_FR } from '../../data/characters.fr.js';
+import { SKILL_TYPE_FR, SKILL_NAME_FR, CHARACTER_TAG_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { getSonataLoadouts } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt } from '../../data/banners.js';
@@ -367,7 +367,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     <div>
                       <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.damageFocus')}</div>
                       <div className="flex flex-wrap gap-1">
-                        {data.dmgFocus.map((df, i) => <span key={i} className="kuro-badge kuro-badge-amber">{df}</span>)}
+                        {data.dmgFocus.map((df, i) => <span key={i} className="kuro-badge kuro-badge-amber">{(getLocale() === 'fr' && CHARACTER_TAG_FR[df]) || df}</span>)}
                       </div>
                     </div>
                   )}
@@ -380,7 +380,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                           return (
                             <span key={tag} className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
                               {icon ? <img src={icon} alt="" className="w-3.5 h-3.5" onError={hideOnError} /> : <Sparkles size={12} className="text-gray-400" />}
-                              {tag}
+                              {(getLocale() === 'fr' && CHARACTER_TAG_FR[tag]) || tag}
                             </span>
                           );
                         })}
@@ -541,7 +541,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 <div>
                   <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.buffs')}</div>
                   <div className="flex flex-wrap gap-1">
-                    {data.buffs.map((b, i) => <span key={i} className="kuro-badge kuro-badge-emerald">{b}</span>)}
+                    {data.buffs.map((b, i) => <span key={i} className="kuro-badge kuro-badge-emerald">{(getLocale() === 'fr' && CHARACTER_TAG_FR[b]) || b}</span>)}
                   </div>
                 </div>
               )}
@@ -549,7 +549,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 <div>
                   <div className="text-sm text-gray-400 mb-1">{t('modals.characterDetail.debuffs')}</div>
                   <div className="flex flex-wrap gap-1">
-                    {data.debuffs.map((db, i) => <span key={i} className="kuro-badge kuro-badge-red">{db}</span>)}
+                    {data.debuffs.map((db, i) => <span key={i} className="kuro-badge kuro-badge-red">{(getLocale() === 'fr' && CHARACTER_TAG_FR[db]) || db}</span>)}
                   </div>
                 </div>
               )}

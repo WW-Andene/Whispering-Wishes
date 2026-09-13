@@ -8,6 +8,7 @@ import { useSessionState } from '../../hooks/useSessionState.js';
 import { toCanvasSpace, CANVAS_WIDTH } from '../../shared/scaling/canvasScale.js';
 import { ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
+import { CHARACTER_TAG_FR } from '../../data/characters.fr.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES, getLocalizedEchoData } from '../../data/echoes.js';
@@ -574,7 +575,7 @@ function CollectionTab({
                         const icon = getCombatRoleIcon(tag);
                         return {
                           value: tag,
-                          label: <span className="inline-flex items-center gap-1.5"><img src={icon} alt="" width={14} height={14} className="shrink-0" /> {tag}</span>,
+                          label: <span className="inline-flex items-center gap-1.5"><img src={icon} alt="" width={14} height={14} className="shrink-0" /> {(getLocale() === 'fr' && CHARACTER_TAG_FR[tag]) || tag}</span>,
                         };
                       }),
                     ]}
