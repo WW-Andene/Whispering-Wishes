@@ -656,7 +656,7 @@ function ProfileTab({
                     aria-checked={visualSettings.oledMode}
                     aria-label={t('profile.display.toggleOled')}
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.oledMode ? 'left-[32px] bg-black' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.oledMode ? 'left-[28px] bg-black' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.oledMode && (
@@ -682,7 +682,7 @@ function ProfileTab({
                     aria-checked={visualSettings.dyslexicFont}
                     aria-label={t('profile.display.toggleDyslexic')}
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.dyslexicFont ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.dyslexicFont ? 'left-[28px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
 
@@ -705,7 +705,7 @@ function ProfileTab({
                     aria-checked={visualSettings.colorBlindMode}
                     aria-label={t('profile.display.toggleColorBlind')}
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.colorBlindMode ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.colorBlindMode ? 'left-[28px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
 
@@ -729,7 +729,7 @@ function ProfileTab({
                     aria-checked={visualSettings.swipeNavigation}
                     aria-label={t('profile.display.toggleSwipe')}
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.swipeNavigation ? 'left-[28px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
                 {visualSettings.swipeNavigation && (
@@ -762,7 +762,7 @@ function ProfileTab({
                     <span className="absolute inset-0 flex items-center justify-center text-sm font-bold tracking-wide text-white/80 pointer-events-none select-none">
                       {visualSettings.animationsEnabled === 'off' ? 'OFF' : visualSettings.animationsEnabled === 'on' ? 'ON' : 'FULL'}
                     </span>
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[30px]' : 'left-[48px]'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all bg-white ${visualSettings.animationsEnabled === 'off' ? 'left-[4px] !bg-gray-400' : visualSettings.animationsEnabled === 'on' ? 'left-[24px]' : 'left-[44px]'}`} />
                   </button>
                 </div>
                 {visualSettings.animationsEnabled === 'off' && (
@@ -1178,7 +1178,7 @@ function ProfileTab({
                     aria-checked={visualSettings.soundEnabled}
                     aria-label={t('profile.sound.toggleMaster')}
                   >
-                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.soundEnabled ? 'left-[32px] bg-white' : 'left-[4px] bg-gray-400'}`} />
+                    <div className={`absolute top-[4px] w-[16px] h-[16px] rounded-full transition-all ${visualSettings.soundEnabled ? 'left-[28px] bg-white' : 'left-[4px] bg-gray-400'}`} />
                   </button>
                 </div>
 
