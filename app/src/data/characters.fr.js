@@ -874,7 +874,7 @@ export const SKILL_TYPE_FR = {
   'Charged ATK': 'Attaque Chargée',
   'Skill': 'Compétence de Résonance',
   'Liberation': 'Libération de Résonance',
-  'Forte': 'Forte',
+  'Forte': 'Circuit de Forte',
   'Intro': 'Intro',
   'Outro': 'Outro',
 };
