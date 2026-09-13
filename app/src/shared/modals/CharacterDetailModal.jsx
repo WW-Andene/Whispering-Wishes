@@ -468,15 +468,15 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   };
                   const skillIcon = getSkillIcon(name, skillName, type);
                   return (
-                    <div key={i} className={`px-2 py-1.5 rounded ${typeBg[type] || 'bg-white/5'}`}>
-                      <div className="flex items-start gap-1.5 flex-wrap">
-                        {skillIcon && <img src={skillIcon} alt="" className="w-4 h-4 rounded shrink-0 mt-0.5" onError={hideOnError} />}
-                        <span className={`text-sm font-medium shrink-0 ${typeColors[type] || 'text-gray-400'}`}>{(getLocale() === 'fr' && SKILL_TYPE_FR[type]) || type}</span>
-                        <span className="text-sm text-gray-200 font-medium break-words">{(getLocale() === 'fr' && SKILL_NAME_FR[name]?.[skillName]) || skillName}</span>
+                    <div key={i} className={`px-2 py-1.5 rounded space-y-0.5 ${typeBg[type] || 'bg-white/5'}`}>
+                      <div className="flex items-center gap-1.5">
+                        {skillIcon && <img src={skillIcon} alt="" className="w-4 h-4 rounded shrink-0" onError={hideOnError} />}
+                        <span className={`text-sm font-medium break-words ${typeColors[type] || 'text-gray-400'}`}>{(getLocale() === 'fr' && SKILL_TYPE_FR[type]) || type}</span>
                       </div>
-                      <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
+                      <div className="text-sm text-gray-200 font-medium break-words">{(getLocale() === 'fr' && SKILL_NAME_FR[name]?.[skillName]) || skillName}</div>
+                      <div className="text-sm text-gray-400 break-words">{mult}</div>
                       {desc && (
-                        <div className="space-y-1 mt-1">
+                        <div className="space-y-1 pt-0.5">
                           {splitIntoParagraphs((getLocale() === 'fr' && SKILL_DESC_FR[name]?.[skillName]) || desc, 140).map((para, pi) => (
                             <div key={pi} className="text-xs text-gray-500 break-words italic leading-relaxed">{para}</div>
                           ))}
