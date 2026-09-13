@@ -112,24 +112,24 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     <div className="flex items-center gap-1.5" role="timer" aria-label={`${time.days > 0 ? `${time.days} ${time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')} ` : ''}${time.hours} ${t('planner.timerHr')} ${time.minutes} ${t('planner.timerMin')} ${time.seconds} ${t('planner.timerSec')} ${t('planner.timerRemaining')}`}>
       {time.days > 0 && (
         <>
-          <div className="px-3 py-1.5 text-center min-w-[48px]" style={TIMER_BOX_STYLE}>
+          <div className="px-2 py-1 text-center min-w-[32px]" style={TIMER_BOX_STYLE}>
             <div className="text-white kuro-scoreboard">{time.days}</div>
             <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')}</div>
           </div>
           <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
         </>
       )}
-      <div className="px-3 py-1.5 text-center min-w-[48px]" style={TIMER_BOX_STYLE}>
+      <div className="px-2 py-1 text-center min-w-[32px]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.hours).padStart(2, '0')}</div>
         <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerHr')}</div>
       </div>
       <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
-      <div className="px-3 py-1.5 text-center min-w-[48px]" style={TIMER_BOX_STYLE}>
+      <div className="px-2 py-1 text-center min-w-[32px]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.minutes).padStart(2, '0')}</div>
         <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerMin')}</div>
       </div>
       <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
-      <div className="px-3 py-1.5 text-center countdown-tick min-w-[48px]" style={TIMER_BOX_STYLE}>
+      <div className="px-2 py-1 text-center countdown-tick min-w-[32px]" style={TIMER_BOX_STYLE}>
         <div className={`kuro-scoreboard ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
         <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerSec')}</div>
       </div>
