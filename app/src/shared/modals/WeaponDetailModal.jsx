@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { Swords, Star, TrendingUp, X, Play, User, Users, LayoutGrid } from 'lucide-react';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { WEAPON_TYPE_FR } from '../../data/characters.fr.js';
+import { WEAPON_TYPE_FR, STAT_NAME_FR } from '../../data/characters.fr.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { getConveneAnimation, getWeaponBannerArt, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
@@ -125,7 +125,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             )}
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/5 border border-[var(--border-medium)]">
               {getStatIcon(data.stat) && <img src={getStatIcon(data.stat)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-              <span className="text-sm text-gray-400">{data.stat}</span>
+              <span className="text-sm text-gray-400">{(getLocale() === 'fr' && STAT_NAME_FR[data.stat]) || data.stat}</span>
               <span className="text-base font-bold text-white">{data.subStatValue || ''}</span>
             </div>
             {/* Only the signature owner belongs up here (2026-09-06) — this used to list every

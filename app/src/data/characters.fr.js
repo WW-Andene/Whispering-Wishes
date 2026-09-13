@@ -1842,6 +1842,22 @@ export const WEAPON_TYPE_FR = {
   'Rectifier': 'Amplificateur',
 };
 
+// STAT_NAME_FR — WEAPON_DATA[name].stat (main-stat label shown in WeaponDetailModal.jsx's
+// stats bar and refinement-scaling section). Display-only overlay, same pattern as
+// WEAPON_TYPE_FR above: never fed into calcEngine.js/autoEquip.js, which key off the raw
+// English `stat` string (e.g. `w.stat === 'Crit DMG'`) — translating only the label shown
+// to the player leaves those comparisons untouched.
+/** @type {Record<string, string>} */
+export const STAT_NAME_FR = {
+  'Crit Rate': 'Taux Critique',
+  'Crit DMG': 'Dégâts Critiques',
+  'Energy Regen': "Régén. d'Énergie",
+  'ATK%': 'ATQ %',
+  'HP%': 'PV %',
+  'DEF%': 'DÉF %',
+  'HP': 'PV',
+};
+
 // ROLE_FR — CHARACTER_DATA[name].role (Main DPS/Sub DPS/Healer/Support), rendered as a
 // header badge in CharacterDetailModal.jsx. Reuses the same terms already established
 // in locale/fr/collection.json's role filter labels for consistency.
