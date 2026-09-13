@@ -2081,6 +2081,9 @@ export const MULT_DESC_FR = {
     'Strike Before Ready': "100 % ATQ + 50 % d'Amplification DGT de Compétence d'Écho (14 s)",
     'Sheath Fallen, New Shoots Revealed': '500 % ATQ',
   },
+  'Roccia': {
+    'Applause, Please!': "+20 % DGT Havoc + 25 % d'Amplification DGT d'Attaque Normale (14 s ou jusqu'au changement de personnage)",
+  },
 };
 
 export const SKILL_DESC_FR = {
