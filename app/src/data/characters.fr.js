@@ -76,7 +76,7 @@ export const CHARACTER_DESC_FR = {
   'Mortefi': "Chercheur au tempérament vif dont la musique éclate en crescendos violents. Hybride Fusion qui tire des Attaques Coordonnées Fusion hors du terrain (Rhapsodie Ardente) et confère un buff de DGT d'Attaque Lourde au personnage sur le terrain via l'Outro.",
   'Youhu': "Fantasque évaluatrice d'antiquités qui fait confiance à sa chance en toutes choses. Soutien Glacio qui soigne l'équipe via sa Compétence de Résonance/Forte et confère à l'attaquant en Attaque Coordonnée entrant une massive Amplification de DGT d'Attaque Coordonnée de +100 % via son Outro (Classiques Intemporels) — l'une des plus grandes sources d'amplification de dégâts pour tout type d'attaque dans le jeu.",
   'Lumi': "Navigatrice de Lollo Logistics qui trace des routes à travers des cieux tonitruants. Buffeuse hybride Electro qui alterne les postures de combat à distance Lumière Jaune et au corps-à-corps Lumière Rouge, infligeant des DGT Electro considérés comme des DGT d'Attaque Basique sur presque tout son kit, et amplifie les DGT de Compétence de Résonance du personnage suivant de 38 % pendant 10 s via son Outro (Escorte) — l'une des seules sources d'Amplification de DGT de Compétence de Résonance du jeu.",
-  'Buling': "Consultante des Rives Noires et diseuse de bonne aventure taoïste « Taoïste Chasse-Esprits » qui erre en enquêtant sur l'étrange et le mystérieux, vendant talismans et divination pour financer ses voyages. Soigneuse Electro qui génère des Trigrammes via son Attaque Basique/Compétence/Attaque Aérienne pour débloquer une Libération renforcée qui déploie Electro Flare et augmente le Bonus de DGT de Compétence de Résonance d'équipe sur les lancers d'Intro alliés, tandis que son Outro soigne le personnage actif et Amplifie les DGT d'équipe à proximité de 15 % pendant 30 s.",
+  'Buling': "Consultante des Rives Noires et diseuse de bonne aventure taoïste « Taoïste Chasse-Esprits » qui erre en enquêtant sur l'étrange et le mystérieux, vendant talismans et divination pour financer ses voyages. Soigneuse Electro qui génère des Trigrammes via son Attaque Normale/Compétence/Attaque Aérienne pour débloquer une Libération renforcée qui déploie Electro Flare et augmente le Bonus de DGT de Compétence de Résonance d'équipe sur les lancers d'Intro alliés, tandis que son Outro soigne le personnage actif et Amplifie les DGT d'équipe à proximité de 15 % pendant 30 s.",
 };
 
 // IDENTITY_DATA `title` field (displayed as the italic subtitle under the
@@ -2159,6 +2159,12 @@ export const MULT_DESC_FR = {
     'Overflowing Frost': '79,53 % + soin',
     'Rejuvinating Flow': "Soin de 1,54 % PV Max/3 s (30 s) + 15 % d'Amplification DGT (6 s)",
   },
+  'Buling': {
+    'Heavy Attack - Twin Mountains': '716 fixe + 135,20 % ATQ',
+    'Heavy Attack - Twin Thunders': '169 fixe + 18,30 % ATQ',
+    'Five Thunders Spell Array': '19,89 % par tic',
+    'Exorcism Spell': "Pas de DGT (Soin + 15 % d'Amplification DGT d'équipe, 30 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2662,5 +2668,23 @@ export const SKILL_DESC_FR = {
     'Cycle of Life': "L'Attaque Lourde/Compétence consomme de la Concentration pour un soin d'équipe continu.",
     'Overflowing Frost': "Attaque plongeante de You'tan qui soigne aussi l'équipe.",
     'Rejuvinating Flow': "Buffe et soutient le Résonateur entrant.",
+  },
+  'Buling': {
+    'Hexagram Calls, Lightning Falls: Stage 1': "Les 2 premiers coups de l'enchaînement d'Attaque Normale à 4 coups max.",
+    'Hexagram Calls, Lightning Falls: Stage 2': 'Confère Trigramme - Montagne au coup.',
+    'Hexagram Calls, Lightning Falls: Stage 3': "Également accessible via Contre-attaque d'Esquive.",
+    'Hexagram Calls, Lightning Falls: Stage 4': "Confère Trigramme - Tonnerre au coup. Peut s'enchaîner juste après la Compétence de Résonance.",
+    'Mid-air Attack': 'Consomme de l\'Endurance. Confère Trigramme - Tonnerre au coup.',
+    'Heavy Attack - Mountain Over Thunder': "Consomme 1 Trigramme - Montagne + 1 Trigramme - Tonnerre (dans cet ordre). Confère Yang Mineur.",
+    'Heavy Attack - Thunder Over Mountain': "Consomme 1 Trigramme - Tonnerre + 1 Trigramme - Montagne (dans cet ordre). Petits DGT, réduit aussi le Taux de Vibration de la cible. Confère Yang Mineur.",
+    'Heavy Attack - Twin Mountains': "Consomme 2 Trigramme - Montagne. Soigne tous les Résonateurs proches au lieu d'infliger tous les DGT. Confère Yin Mineur.",
+    'Heavy Attack - Twin Thunders': "Consomme 2 Trigramme - Tonnerre. Soigne tous les Résonateurs proches une fois/s pendant 8 s. Confère Yin Mineur.",
+    'In Shadow Thunder Stirs: Thunder Talisman': "Attire les cibles proches. Peut s'enchaîner vers l'Étape 4 d'Attaque Normale juste après le lancer.",
+    'In Shadow Thunder Stirs: Pull-in Effect': "DGT continus pendant l'attraction des cibles.",
+    'Flashing Thunder Spell': "Libération de base, utilisée quand Buling n'a ni Yin Mineur ni Yang Mineur.",
+    'Flashing Thunder Spell: Harmony': "Amélioration de Circuit de Forte, remplace la Libération de base une fois Yin Mineur et Yang Mineur détenus (Équilibre Yin-Yang). Génère un Réseau des Cinq Tonnerres.",
+    'Five Thunders Spell Array': "2 cumuls d'Électromagnétique infligés à toutes les cibles à portée toutes les 2 s pendant 24 s. Monte en puissance le Bonus de DGT de Compétence de Résonance d'équipe aux lancers d'Intro alliés.",
+    'Summon and Smite': "Soigne tous les Résonateurs proches au lancer. La Compétence Inhérente confère 4 cumuls d'Électromagnétique aux cibles touchées (une fois toutes les 10 s).",
+    'Exorcism Spell': "Soigne le Résonateur actif de 18 % de l'ATQ de Buling/s pendant 16 s. Tous les Résonateurs proches ont leurs DGT amplifiés de 15 % pendant 30 s.",
   },
 };
