@@ -1170,10 +1170,13 @@ export const SKILL_NAME_FR = {
     'Flowing Suffocation': 'Étouffement Insidieux',
     'Ripple': 'Ondulation',
     'Tidal Surge': 'Vague Montante',
-    'Gentle Tentacles': 'Tentacules doux',
-    // Best-effort — no existing precedent elsewhere in this file for these three; not verified
-    // against the game's official French client.
-    'Cruise': 'Croisière',
+    // Confirmed by the user against the game's actual French client: singular 'Tentacule', not
+    // the previous plural 'Tentacules'.
+    'Gentle Tentacles': 'Tentacule doux',
+    // Confirmed by the user against the game's actual French client. 'Dance with Shadows'/'Beneath
+    // the Sea' matched the earlier literal guesses; 'Cruise' (her Intro Skill) did not — it's
+    // 'Errance', not a literal translation of "Cruise".
+    'Cruise': 'Errance',
     'Dance with Shadows': 'Danse avec les Ombres',
     'Beneath the Sea': 'Sous la Mer',
   },
