@@ -1678,7 +1678,7 @@ export const SKILL_NAME_FR = {
     'Unmovable': 'Inébranlable',
     'Power Shift: Timed Counters Stage 1-3': "Changement de formation : Compteur renversé Étape 1-3",
     'Defense Formation': 'Formation de défense',
-    'Iron Will': 'Coup lourd',
+    'Iron Will': 'Volonté de Fer',
   },
   'Yangyang': {
     'Feather as Blade Stage 1-4': "Lame du vent Étape 1-4",
@@ -1942,6 +1942,7 @@ export const GENERIC_SKILL_DESC_FR = {
   'Confirmed 2026-08-31 against the wiki Lv.10 "Dodge Counter DMG" row under Phantom Etching. While in Deathblade Gear, Dodge Counter deals this boosted value instead of the normal-state row above, and is counted as Resonance Liberation DMG, not Dodge Counter DMG.':
     "En Équipement de Lame de Mort, la Contre-attaque d'Esquive inflige cette valeur renforcée au lieu de la ligne à l'état normal ci-dessus, et est comptée comme DGT de Libération de Résonance, pas DGT de Contre-attaque d'Esquive.",
   'Consumes STA for consecutive mid-air shots.': "Consomme de l'Endurance pour des tirs aériens consécutifs.",
+  'Plunging attack, consumes STA.': "Attaque plongeante, consomme de l'Endurance.",
 };
 
 // PHRASE_FR — bare English DMG-category terms that recur mid-sentence inside otherwise-bespoke,
@@ -2185,6 +2186,10 @@ export const MULT_DESC_FR = {
   'Sanhua': {
     'Clarity of Mind: Ice Burst': '59,65 % Épine / 79,53 % Prisme / 139,17 % Glacier',
     'Silversnow': "+38 % d'Amplification DGT d'Attaque Normale (14 s)",
+  },
+  'Taoqi': {
+    'Unmovable': '449,71 % DÉF',
+    'Iron Will': "+38 % d'Amplification DGT de Compétence de Résonance (14 s)",
   },
 };
 
@@ -2770,5 +2775,15 @@ export const SKILL_DESC_FR = {
     'Clarity of Mind: Ice Burst': "Détonation fait exploser simultanément toutes les Épines/Prismes/Glaciers de Glace actifs.",
     'Freezing Thorns': "Crée 1 Épine de Glace.",
     'Silversnow': "Buffe le Résonateur entrant.",
+  },
+  'Taoqi': {
+    'Concealed Edge Stage 1-4': "Jusqu'à 4 frappes Havoc.",
+    'Concealed Edge (hold)': "Consomme de l'Endurance. Maintenez pour entrer en Défense Inébranlable (-35 % DGT reçus).",
+    'Strategic Parry': "Lancée automatiquement si attaquée pendant Défense Inébranlable, ou après 3 s de maintien.",
+    'Fortified Defense': "DGT Havoc aux cibles environnantes. Génère 3 cumuls de Bouclier Inébranlable et se soigne (1805 + 94,50 % selon la stat Récupération PV).",
+    'Unmovable': "DGT Havoc basés sur la DÉF de Taoqi plutôt que l'ATQ.",
+    'Power Shift: Timed Counters Stage 1-3': "Attaque Normale après Attaque Lourde Parer Stratégique/Intro pour consommer le Calibre en Résolution, comptée comme DGT d'Attaque Normale. Chaque coup confère un bouclier.",
+    'Defense Formation': "Ouverture à DGT Havoc. L'Attaque Normale qui suit lance directement Compteur Renversé.",
+    'Iron Will': "Buffe les DGT de Compétence de Résonance du Résonateur entrant.",
   },
 };
