@@ -918,15 +918,25 @@ export const SKILL_NAME_FR = {
     'Lingering Song': 'Cordes incessantes',
   },
   'Jingran': {
+    // 'Encroaching Yin / Scorching Yang' and "Netherworld Traverse / Afterlife's Guide" split into
+    // their real individual keys (2026-09-13) — SKILL_MULTIPLIERS' own rows were split into 4
+    // separate exact-named entries on 2026-09-12 (see that table's comment), so the old combined
+    // keys here no longer matched anything and silently fell back to raw English. 'Attack',
+    // 'Nether Dive' and 'Light Watch' were missing entirely.
     "Drink Soul / Devil's Bane Stage 1-4": "Buveur d'Âmes / Fléau du Démon Étape 1-4",
-    'Encroaching Yin / Scorching Yang': 'Yin Envahissant / Yang Brûlant',
-    "Netherworld Traverse / Afterlife's Guide": "Traversée des Enfers / Guide de l'Au-delà",
+    'Attack': 'Attaque',
+    'Nether Dive': 'Plongée des Enfers',
+    'Light Watch': 'Veille de Lumière',
+    'Encroaching Yin': 'Yin Envahissant',
+    'Scorching Yang': 'Yang Brûlant',
+    'Netherworld Traverse': 'Traversée des Enfers',
+    "Afterlife's Guide": "Guide de l'Au-delà",
     'Soul Raid': "Razzia d'Âmes",
     'Stardome Meander': 'Méandre du Dôme Stellaire',
     'Burial of Thousand Souls': 'Enterrement des Mille Âmes',
     'Chimei Wangliang': 'Chimei Wangliang',
-    'Question the Tombs': 'Interrogation des tombeaux',
-    'Rising Fortune and Ebbing Evil': 'Fortune montante et mal descendant',
+    'Question the Tombs': 'Interrogation des Tombeaux',
+    'Rising Fortune and Ebbing Evil': 'Fortune Montante et Mal Descendant',
   },
   'Yangyang: Xuanling': {
     'Azure/Feather Stance Stage 1-4': "Posture de l'Épée d'Azur/de Plume Étape 1-4",
@@ -1693,5 +1703,11 @@ export const SKILL_DESC_FR = {
     'Critical Protocol': 'Ultime ; une frappe basée sur la DÉF qui renforce aussi ses buffs.',
     'Convergence': 'Frappe d\'ouverture au changement de personnage.',
     'Recursion': "Buff au changement de personnage donnant à l'équipe +25 % d'Amplification de tous les DGT pendant une longue durée.",
+  },
+  'Jingran': {
+    'Nether Dive': "Contre-attaque d'Esquive en Vaisseau Yin ; considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
+    'Light Watch': "Contre-attaque d'Esquive en Fontaine Yang ; considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
+    'Netherworld Traverse': "Considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
+    "Afterlife's Guide": "Considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
   },
 };
