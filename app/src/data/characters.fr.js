@@ -1193,10 +1193,17 @@ export const SKILL_NAME_FR = {
     'Unraveling - Law Zero': 'Démêlement - Loi zéro',
   },
   'Ciaccona': {
-    'Stage 1-4': 'Étape 1-4',
+    'Stage 1': 'Étape 1',
+    'Stage 2': 'Étape 2',
+    'Stage 3': 'Étape 3',
+    'Stage 4': 'Étape 4',
+    'Aimed Shot': 'Tir Visé',
+    'Fully Charged Aimed Shot': 'Tir Visé Entièrement Chargé',
+    'Attack Stage 1-2': 'Attaque Étape 1-2',
     'Harmonic Allegro': 'Allegro sauvage',
     'Quadruple Downbeat': 'Temps Fort sur Quatre',
     "Singer's Triple Cadenza": 'Cadence de cantatrice en trio',
+    'Symphonic Poem: Tonic': 'Poème Symphonique : Tonique',
     'Roaming with the Wind': 'Au gré du vent',
     'Windcalling Tune': 'Appel du vent',
   },
@@ -1974,6 +1981,10 @@ export const MULT_DESC_FR = {
     'Moment of Nihility': '954,29 % (+ soin 117,60 % ATQ)',
     'Unraveling - Law Zero': "+3 cumuls max d'État Négatif (15 s)",
   },
+  'Ciaccona': {
+    'Symphonic Poem: Tonic': '6,12 %×20 (sur la durée du champ)',
+    'Windcalling Tune': "+100 % d'Amplification DGT d'Érosion Aero (30 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2182,5 +2193,17 @@ export const SKILL_DESC_FR = {
     'Moment of Nihility': "Ultime nuke qui la soigne aussi d'une partie des DGT infligés.",
     'Reverberance - Return': "Frappe d'ouverture au changement de personnage.",
     'Unraveling - Law Zero': "Buff au changement de personnage laissant le Résonateur suivant accumuler plus d'État Négatif sur les ennemis.",
+  },
+  'Ciaccona': {
+    'Stage 4': "Inflige Érosion Aero, confère 1 Essence Musicale, et démarre Concert Solo (24 % Bonus de DGT Aero pour l'équipe proche).",
+    'Standard': "Saute en l'air et attaque.",
+    'Aimed Shot': "Tir rapide en Mode Visée. Compté comme DGT d'Attaque Lourde.",
+    'Fully Charged Aimed Shot': "Tir entièrement chargé en Mode Visée. Compté comme DGT d'Attaque Lourde.",
+    'Harmonic Allegro': "Frappe de Compétence à coups multiples qui inflige Érosion Aero.",
+    'Quadruple Downbeat': "Finisseur de Forte qui consomme 3 cumuls d'Essence Musicale. Attire les cibles proches.",
+    "Singer's Triple Cadenza": "Ultime nuke qui entre en Récital.",
+    'Symphonic Poem: Tonic': "Pulsation périodique pendant Récital, déclenchée par des prompts d'interaction vert/jaune réussis (se déclenche aussi hors du terrain).",
+    'Roaming with the Wind': "Ouverture au changement de personnage qui inflige Érosion Aero et lui permet d'enchaîner directement vers l'Étape 3 d'Attaque Normale.",
+    'Windcalling Tune': "Buff au changement de personnage qui amplifie les DGT d'Érosion Aero près du Résonateur actif.",
   },
 };
