@@ -8,9 +8,9 @@
   "daysToGoal": "Days to Goal",
   "timerDay": "D",
   "timerDays": "D",
-  "timerHr": "Hr",
-  "timerMin": "Min",
-  "timerSec": "Sec",
+  "timerHr": "H",
+  "timerMin": "M",
+  "timerSec": "S",
   "timerRemaining": "remaining",
   "endedLabel": "Ended",
 

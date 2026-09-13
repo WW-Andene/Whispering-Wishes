@@ -9,8 +9,8 @@
   "timerDay": "J",
   "timerDays": "J",
   "timerHr": "H",
-  "timerMin": "Min",
-  "timerSec": "Sec",
+  "timerMin": "M",
+  "timerSec": "S",
   "timerRemaining": "restant",
   "endedLabel": "Terminé",
 
