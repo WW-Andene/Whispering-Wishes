@@ -205,7 +205,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Sigrika': "Hypercarry en Compétence d'Écho consommant des Runes. Noms Vrais Alignés Inhérent : Bénédiction des Runes confère au Résonateur actif +3 %/+3 % DGT Aero+Compétence d'Écho par cumul (6 max) via les lancers de Compétence d'Écho des coéquipiers, +30 %/+30 % de plus aux cumuls max (48 %/48 % au total). Se réinitialise au changement d'équipe. Noms Alignés Inhérent 2 : jusqu'à 50 % DGT Écho via la RE au-dessus de 125 %. Arme signature : 32 % d'Amplification de Compétence d'Écho + 10 % d'Ignorance de DEF. Contrôle de foule via les modes Runiques.",
   'Phrolova': "Outro (Pièce Inachevée) : +20 % DGT Havoc + 25 % d'Amplification de DGT d'Attaque Lourde (14 s). Personnel : jusqu'à 60-100 % Dégâts Critiques via l'accumulation de Résonance Post-mortem. L'Intro est « Suite de Quiétude » (base) / « Suite d'Immortalité » (améliorée par Maestro).",
   'Xiangli Yao': 'DPS principal en Libération, état Intuition. L\'Outro Règle de Chaîne inflige des DGT Electro bonus (237,63 % ATQ, jusqu\'à 3 procs sur 8 s) sur les Attaques Basiques du personnage entrant plutôt que d\'accorder un buff d\'Amplification de DGT.',
-  'Rover: Spectro': 'Applicatrice de Frazzle Spectro/soutien à changement rapide. Forte : la Compétence de Résonance à 50+ Son Diminutif lance Rotation Résonnante (2 cumuls de Frazzle + Chatoiement, qui stoppe la dégradation), suivie de l\'Attaque Basique Échos Résonnants. La Libération Orchestre en Écho applique 6 cumuls de Frazzle supplémentaires. S6 (5 exemplaires) : les coups de Compétence infligent -10 % RES Spectro/20 s.',
+  'Rover: Spectro': "Applicatrice de Frazzle Spectro/soutien à changement rapide. Forte : la Compétence de Résonance à 50+ Son Diminutif lance Voix Spirale (2 cumuls de Frazzle + Chatoiement, qui stoppe la dégradation), suivie de l'Attaque Normale Voix Tourbillonnante. La Libération Orchestre en Écho applique 6 cumuls de Frazzle supplémentaires. S6 (5 exemplaires) : les coups de Compétence infligent -10 % RES Spectro/20 s.",
   'Rover: Havoc': "DPS principal Havoc sur le terrain. Maintenez l'Attaque Lourde à Umbra plein pour lancer Dévastation et entrer en Poussée Sombre. Un état amélioré d'Attaque Normale/Lourde/Compétence se terminant par la Libération Abysse qui S'éteint, un nuke en cible unique à 1520 % ATQ.",
   'Rover: Electro': 'Hybride en Posture de Parade. Maintenez l\'Attaque Basique pour l\'immunité aux interruptions + 60 % de réduction des DGT. À Poussée Électrique maximale, appuyez sur Surchoc pour un buff d\'ATQ d\'équipe ou maintenez pour entrer en Résonance Apex, débloquant le combo de Forte multi-élémentaire Thrum of All Sounds (coups Spectro/Havoc/Aero + pulsations Electro de Fléau du Tonnerre). Actuellement l\'attunement le plus faible — manque d\'une partenaire DPS solide.',
 };
@@ -1429,10 +1429,12 @@ export const SKILL_NAME_FR = {
     'Standard / Resonance / Aftertune': 'Standard / Carillonner / Retenance',
     'Plunging Attack': 'Attaque Plongeante',
     'Resonating Slashes': 'Coups résonants',
-    'Resonating Spin → Resonating Echoes': 'Voix Spirale → Voix Échoïque',
+    'Resonating Spin': 'Voix Spirale',
+    'Resonating Whirl': 'Voix Tourbillonnante',
+    'Resonating Echoes': 'Voix Échoïque',
     'Echoing Orchestra': 'Orchestre Échoïque',
     'Waveshock': 'Tremblement',
-    'Instant': 'Instance',
+    'Instant': 'Instant',
   },
   'Rover: Havoc': {
     'Tuneslayer Stage 1-5': 'Son du Jugement Étape 1-5',
@@ -2084,6 +2086,9 @@ export const MULT_DESC_FR = {
   'Roccia': {
     'Applause, Please!': "+20 % DGT Havoc + 25 % d'Amplification DGT d'Attaque Normale (14 s ou jusqu'au changement de personnage)",
   },
+  'Rover: Spectro': {
+    'Instant': 'Champ de stase (contrôle de foule uniquement, sans DGT)',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2461,5 +2466,15 @@ export const SKILL_DESC_FR = {
     'Straw Cape in Drizzly Rain': "S3+ uniquement : remplace la Compétence une fois l'Énergie de Concerto pleine hors d'Éclaboussure d'Encre de l'Esprit (une fois toutes les 20 s). Comptée comme DGT de Compétence d'Écho. Confère aussi +600 % de Multiplicateur DGT et +100 % Dégâts Critiques à Enseigner/Sauver/Sacrifier pendant 6 s.",
     'Strike Before Ready': "Buff au changement de personnage conférant au Résonateur suivant une Amplification de DGT de Compétence d'Écho.",
     'Sheath Fallen, New Shoots Revealed': "S3+ uniquement : hors Co-op, lancer Cape de Paille sous la Bruine remplace le prochain Outro par ce coup. Comptée comme DGT de Compétence d'Écho.",
+  },
+  'Rover: Spectro': {
+    'Vibration Manifestation Stage 1-4': "Enchaînement standard à 4 étapes. Chaque coup accumule du Son Diminutif vers le Forte.",
+    'Standard / Resonance / Aftertune': "Attaque Lourde chargée, vers un suivi chronométré Carillonner, vers un finisseur Retenance.",
+    'Resonating Slashes': "Recharge de 6 s. Accumule du Son Diminutif vers l'enchaînement de Forte.",
+    'Resonating Spin': "À 50+ Son Diminutif, la Compétence lance Voix Spirale (2 cumuls de Frazzle Spectro + Chatoiement).",
+    'Resonating Whirl': "Suivi immédiat d'Attaque Normale enchaîné juste après Voix Spirale.",
+    'Resonating Echoes': "Enchaînement d'Attaque Normale séparé, lancé une fois Voix Spirale entièrement terminée.",
+    'Echoing Orchestra': "Explosion différée. Applique 6 cumuls de Frazzle Spectro.",
+    'Instant': "Génère une zone de stase centrée sur le Résonateur entrant, durant 3 s.",
   },
 };
