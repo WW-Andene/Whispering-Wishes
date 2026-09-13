@@ -2108,6 +2108,13 @@ export const MULT_DESC_FR = {
     'Apex Resonance: Thrum of All Sounds': 'Valeurs par étape non disponibles',
     'Rumbling Thunders': "Confère Noyau Electro → prochain coup d'État Négatif : Amplification de tous les DGT +25 % (14 s)",
   },
+  'Shorekeeper': {
+    'Chaos Theory': '31,31 %×5 (Papillons d\'Étoile Sombre) + soin (1313+5,97 % PV)',
+    'Flare Star Butterfly / Illation / Transmutation': "37,29 % (Papillon) · 18,97 %×5 (Illation, Attaque Lourde) · 73,96 % (Transmutation, Aérienne)",
+    'End Loop': "Pas de DGT direct — soin du Domaine Stellaire (438+2,39 % PV) toutes les 3 s",
+    'Proof of Existence: Enlightenment / Discernment': "45,30 %×5 + soin (259+1,20 % PV) · 19,64 %×3 (basé sur les PV) + soin (289+1,32 % PV)",
+    'Binary Butterfly': "+15 % d'Amplification de tous les DGT",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2522,5 +2529,13 @@ export const SKILL_DESC_FR = {
     'Overshock': "Une fois la Surtension Électrique au maximum, la Compétence devient ceci à la place. Comptée comme DGT de remplacement de Compétence de Résonance via le Circuit de Forte. TAP pour déchaîner (MAINTENIR entre en Résonance Suprême à la place).",
     'Apex Resonance: Thrum of All Sounds': "Enchaînement au sol jusqu'à 7 étapes + aérien jusqu'à 6 étapes (coups Spectro/Havoc/Aero + pulsations Electro Ravage Foudre). Consomme de la Rage de Tonnerre chaque seconde tant qu'actif.",
     'Ultimate Tactics': "Recharge de 25 s.",
+  },
+  'Shorekeeper': {
+    'Origin Calculus Stage 1-4': "Chaque coup génère un Noyau Effondré.",
+    'Chaos Theory': "Recharge de 16 s. Soigne l'équipe et invoque 5 papillons traqueurs.",
+    'Flare Star Butterfly / Illation / Transmutation': "À 5 Données Empiriques, l'Attaque Lourde/Aérienne les consomme pour attirer les cibles et convertir les Noyaux Effondrés en Papillons d'Étoile Éclatante.",
+    'End Loop': "Durée de 30 s, recharge 25 s, coûte 175 Énergie, confère 20 Concerto au lancer. Évolue en Domaine Stellaire Intérieur (Taux Critique d'équipe jusqu'à +12,5 %) puis Supérieur (Dégâts Critiques d'équipe jusqu'à +25 %), montant en puissance avec son Regain d'Énergie à mesure que les alliés lancent leurs Compétences d'Intro à l'intérieur.",
+    'Proof of Existence: Enlightenment / Discernment': "Discernement n'est disponible qu'une fois par Domaine Stellaire Supérieur. Coup Critique garanti, comptée comme DGT de Libération, basée sur les PV et non l'ATQ. S6 ajoute +42 % au Multiplicateur DGT de Discernement et +500 % Dégâts Critiques sur ce coup spécifiquement (pas un buff persistant).",
+    'Binary Butterfly': "Confère aussi au Résonateur sur le terrain jusqu'à 5 récupérations gratuites d'interruption (Esquive) pendant 30 s. Pas de DGT direct.",
   },
 };
