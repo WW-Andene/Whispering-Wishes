@@ -8,7 +8,7 @@ import { useSessionState } from '../../hooks/useSessionState.js';
 import { toCanvasSpace, CANVAS_WIDTH } from '../../shared/scaling/canvasScale.js';
 import { ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { CHARACTER_TAG_FR, WEAPON_TYPE_FR } from '../../data/characters.fr.js';
+import { CHARACTER_TAG_FR, WEAPON_TYPE_FR, STAT_NAME_FR } from '../../data/characters.fr.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES, getLocalizedEchoData } from '../../data/echoes.js';
@@ -521,7 +521,7 @@ function CollectionTab({
                         ['Crit Rate', 'Crit Rate'], ['Crit DMG', 'Crit DMG'], ['Energy Regen', 'Energy Regen'],
                       ].map(([val, text]) => ({
                         value: val,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(val)} alt="" width={14} height={14} className="shrink-0" /> {text}</span>,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(val)} alt="" width={14} height={14} className="shrink-0" /> {(getLocale() === 'fr' && STAT_NAME_FR[text]) || text}</span>,
                       })),
                     ]}
                     ariaLabel={t('collection.filters.byStatScaling')}
@@ -644,7 +644,7 @@ function CollectionTab({
                       { value: 'all', label: t('collection.filters.allSubstats') },
                       ...['ATK%', 'HP%', 'DEF%', 'Crit Rate', 'Crit DMG', 'Energy Regen'].map(s => ({
                         value: s,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {s}</span>,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getStatIcon(s)} alt="" width={14} height={14} className="shrink-0" /> {(getLocale() === 'fr' && STAT_NAME_FR[s]) || s}</span>,
                       })),
                     ]}
                     ariaLabel={t('collection.filters.bySubstat')}

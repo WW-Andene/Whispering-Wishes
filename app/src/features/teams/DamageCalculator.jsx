@@ -19,7 +19,8 @@ import { RotationGuideCard } from './RotationGuideCard.jsx';
 import { EnemyTargetCard, EnemyTargetModal } from './EnemyTargetSection.jsx';
 import { calcTeamStats as calcTeamStatsImpl } from './calcTeamStats.js';
 import { renderCharacterCard } from '../profile/characterCardRenderer.js';
-import { t, formatNumber } from '../../utils/i18n.js';
+import { t, formatNumber, getLocale } from '../../utils/i18n.js';
+import { ROLE_FR, WEAPON_TYPE_FR, STAT_NAME_FR } from '../../data/characters.fr.js';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
@@ -260,7 +261,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <span className={`text-sm flex-shrink-0 ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
                       </div>
                       <div className="flex items-center flex-wrap gap-1 mt-1">
-                        <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{m.d.role}</span>
+                        <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{(getLocale() === 'fr' && ROLE_FR[m.d.role]) || m.d.role}</span>
                         <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {getElementIcon(m.d.element) && <img src={getElementIcon(m.d.element)} alt="" className="w-3.5 h-3.5 inline-block align-middle mr-0.5" onError={hideOnError} />}
@@ -268,7 +269,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         </span>
                         <span className="text-sm text-gray-500 inline-flex items-center gap-1">
                           {getWeaponTypeIcon(m.d.weapon) && <img src={getWeaponTypeIcon(m.d.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                          {m.d.weapon}
+                          {(getLocale() === 'fr' && WEAPON_TYPE_FR[m.d.weapon]) || m.d.weapon}
                         </span>
                       </div>
                     </div>
@@ -445,7 +446,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                               {equippedWeap ? (
                                 <div className="text-sm space-y-0.5">
                                   <div className="text-yellow-400/80 font-medium truncate">{eq.weapon}</div>
-                                  <div className="text-gray-500">{equippedWeap.stat} {equippedWeap.subStatValue}</div>
+                                  <div className="text-gray-500">{(getLocale() === 'fr' && STAT_NAME_FR[equippedWeap.stat]) || equippedWeap.stat} {equippedWeap.subStatValue}</div>
                                 </div>
                               ) : m.d.bestWeapon ? (
                                 <div className="text-sm space-y-0.5">

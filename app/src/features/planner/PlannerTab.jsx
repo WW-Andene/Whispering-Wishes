@@ -32,6 +32,7 @@ import { TargetInput } from '../../shared/components/TargetInput.jsx';
 import { AstriteCalendar } from './AstriteCalendar.jsx';
 import EchoFarmPlanner from './EchoFarmPlanner.jsx';
 import { t, formatNumber, formatDate, getLocale } from '../../utils/i18n.js';
+import { ROLE_FR } from '../../data/characters.fr.js';
 import { calcStats } from '../../core/calcStats.js';
 import { computePullAllocation } from '../../core/pullAllocation.js';
 import { TIER_SCORES } from '../teams/calcEngine.js';
@@ -1104,7 +1105,7 @@ function PlannerTab({
                               <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
                               <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center" style={{ background: getElementColor(cd?.element) }}>{getElementShape(cd?.element) || cd?.element?.[0]}</div>
                               <div className="absolute top-1 right-1"><Star size={8} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" /></div>
-                              {cd?.role && <div className="absolute bottom-4 inset-x-0 flex justify-center"><span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{cd.role}</span></div>}
+                              {cd?.role && <div className="absolute bottom-4 inset-x-0 flex justify-center"><span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{(getLocale() === 'fr' && ROLE_FR[cd.role]) || cd.role}</span></div>}
                               <div className="absolute bottom-0 inset-x-0 p-1 z-10"><div className="text-white text-2xs font-medium truncate text-center leading-tight">{name}</div></div>
                             </button>
                           );

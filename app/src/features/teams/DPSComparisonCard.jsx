@@ -9,7 +9,8 @@ import { getElementColor, getElementIcon } from '../../shared/utils/elementVisua
 import { haptic } from '../../utils/haptics.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { t, formatNumber } from '../../utils/i18n.js';
+import { t, formatNumber, getLocale } from '../../utils/i18n.js';
+import { ROLE_FR } from '../../data/characters.fr.js';
 
 const roleColors = {
   DPS: { bg: 'bg-red-500/15', text: 'text-red-400' },
@@ -119,7 +120,7 @@ export default function DPSComparisonCard({
                           <span className="truncate">{m.name}</span>
                         </div>
                         <div className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
-                        <span className={`text-2xs px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{m.d.role}</span>
+                        <span className={`text-2xs px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{(getLocale() === 'fr' && ROLE_FR[m.d.role]) || m.d.role}</span>
                       </div>
                     );
                   })}

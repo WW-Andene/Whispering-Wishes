@@ -8,6 +8,7 @@ import { getStatIcon, getWeaponTypeIcon } from '../../shared/utils/elementVisual
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { getLocale, t } from '../../utils/i18n.js';
+import { STAT_NAME_FR } from '../../data/characters.fr.js';
 
 const LOCALIZED_WEAPON_DATA = getLocalizedWeaponData(getLocale());
 // BANNER_HISTORY is declared newest-first (v3.6-p2 first, all the way back to v1.0-p1) — a weapon can
@@ -122,7 +123,7 @@ export default function WeaponSelector({
                                             <span className="text-sm text-gray-400">ATK {w.baseAtk}</span>
                                             <span className="text-sm text-cyan-400/80 inline-flex items-center gap-1">
                                               {getStatIcon(w.stat) && <img src={getStatIcon(w.stat)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                                              {w.stat} {w.subStatValue}
+                                              {(getLocale() === 'fr' && STAT_NAME_FR[w.stat]) || w.stat} {w.subStatValue}
                                             </span>
                                           </div>
                                         </div>
