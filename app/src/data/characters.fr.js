@@ -1771,12 +1771,64 @@ export function getGenericSkillNameFr(skillName) {
   return null;
 }
 
-// SKILL_DESC_FR — per-skill description prose (SKILL_MULTIPLIERS' 4th tuple element, the
-// italic line shown under each skill in CharacterDetailModal.jsx). Keyed by character name ->
-// { englishSkillName: frenchDesc }, same shape/pattern as SKILL_NAME_FR above. This is a large,
-// per-character task (every skill of every character); populated incrementally, starting with
-// whichever characters come up — NOT yet covering the full roster.
-/** @type {Record<string, Record<string, string>>} */
+// GENERIC_SKILL_DESC_FR — exact full skill-description strings that recur verbatim across many
+// characters' SKILL_MULTIPLIERS rows (a roster-wide scan of all 536 unique descriptions found
+// these repeating word-for-word). Used as a fallback in CharacterDetailModal.jsx AFTER the
+// per-character SKILL_DESC_FR lookup misses — also guarantees the same French wording is used
+// everywhere the same English clause appears, rather than each character's description getting
+// inconsistent ad hoc phrasing for the exact same underlying game mechanic note.
+/** @type {Record<string, string>} */
+export const GENERIC_SKILL_DESC_FR = {
+  'Swap-in opener strike.': "Frappe d'ouverture au changement de personnage.",
+  'Considered Heavy Attack DMG.': "Considérée comme DGT d'Attaque Lourde.",
+  'Considered Heavy Attack DMG per its own kit text.': "Considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
+  'Considered Echo Skill DMG.': "Considérée comme DGT de Compétence d'Écho.",
+  'Considered Resonance Liberation DMG.': 'Considérée comme DGT de Libération de Résonance.',
+  'Confirmed unused in her real rotation.': 'Confirmée inutilisée dans sa vraie rotation.',
+  'Confirmed unused in his real rotation.': 'Confirmée inutilisée dans sa vraie rotation.',
+  'Buffs the incoming Resonator.': 'Buffe le Résonateur entrant.',
+  'Basic ATK after a successful Dodge.': 'Attaque Normale après une Esquive réussie.',
+  'Charged aimed shot.': 'Tir visé chargé.',
+};
+
+// PHRASE_FR — bare English DMG-category terms that recur mid-sentence inside otherwise-bespoke,
+// not-yet-translated descriptions (e.g. Lucy's "Base (non-Forte) Heavy Attack; confirmed unused
+// in her real rotation."). Longer/more specific phrases are listed first so they match before
+// their shorter substrings (e.g. 'Heavy Attack DMG' before bare 'Heavy Attack').
+const PHRASE_FR = [
+  ['Resonance Liberation DMG', 'DGT de Libération de Résonance'],
+  ['Resonance Skill DMG', 'DGT de Compétence de Résonance'],
+  ['Echo Skill DMG', "DGT de Compétence d'Écho"],
+  ['Heavy Attack DMG', "DGT d'Attaque Lourde"],
+  ['Basic ATK DMG', "DGT d'Attaque Normale"],
+  ['Basic Attack DMG', "DGT d'Attaque Normale"],
+  ['Mid-air Attack', 'Attaque Aérienne'],
+  ['Heavy Attack', 'Attaque Lourde'],
+  ['Basic Attack', 'Attaque Normale'],
+  ['Basic ATK', 'Attaque Normale'],
+  ['Dodge Counter', "Contre-attaque d'Esquive"],
+  ['Glacio Chafe', 'Givre Glaçant'],
+  ['Havoc Bane', 'Ravage Havoc'],
+  ['Fusion Burst', 'Explosion Fusion'],
+  ['confirmed unused in her real rotation', 'confirmée inutilisée dans sa vraie rotation'],
+  ['confirmed unused in his real rotation', 'confirmée inutilisée dans sa vraie rotation'],
+];
+
+// applyGenericDescPhrases — best-effort partial translation for a skill description that has no
+// full per-character (SKILL_DESC_FR) or exact-match (GENERIC_SKILL_DESC_FR) override: replaces
+// each known bare term from PHRASE_FR wherever it appears (word-boundary matched) inside the
+// English sentence, leaving the rest of the bespoke prose in English. Always a partial
+// improvement over leaving the whole description in English, never treated as a "finished"
+// translation the way a SKILL_DESC_FR/GENERIC_SKILL_DESC_FR hit is.
+/** @param {string} desc @returns {string} */
+export function applyGenericDescPhrases(desc) {
+  let out = desc;
+  for (const [en, fr] of PHRASE_FR) {
+    out = out.replace(new RegExp(`\\b${en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), fr);
+  }
+  return out;
+}
+
 export const SKILL_DESC_FR = {
   'Hiyuki': {
     'Present Self Stage 1-3': "Enchaînement standard ; l'Étape 3 applique Givre Glaçant. Non reclassifiée — DGT d'Attaque Normale classiques.",
