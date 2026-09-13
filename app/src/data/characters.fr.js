@@ -2056,6 +2056,9 @@ export const MULT_DESC_FR = {
   'Lupa': {
     'Stand by Me, Warrior': "+20 % d'Amplification DGT Fusion + 25 % d'Amplification DGT d'Attaque Normale (14 s)",
   },
+  'Luuk Herssen': {
+    'Aureole of Execution': "Anneau 26,56 %×5+88,53 % / Brèche 95,91 %×3 / Éclat 354,11 %",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2380,5 +2383,17 @@ export const SKILL_DESC_FR = {
     'Try Focusing, Eh?': "Ouverture de base au changement de personnage.",
     'Nowhere to Run!': "Remplace la prochaine Compétence d'Intro une fois en Chasse Sauvage. Comptée comme DGT de Libération de Résonance.",
     'Stand by Me, Warrior': "Buff au changement de personnage pour le Résonateur suivant.",
+  },
+  'Luuk Herssen': {
+    'Stage 1-4': "Enchaînement standard au sol. L'Étape 3 laisse une lame persistante.",
+    'Scythe: Dissection Stage 2-3': "Enchaînement aérien (entrée Attaque Normale), monte en puissance vers son Ultime.",
+    'Scythe: Resection Stage 2-3': "Enchaînement aérien (entrée Saut), applique aussi Tension Tacet.",
+    'Golden Reflux': "Frappe de Compétence en ruée. Débloque son Auréole d'Exécution à 3 étapes.",
+    'Aureole of Execution': "Compétence renforcée à 3 étapes qui accumule des DGT d'Ultime.",
+    'Basic Attack - Golden Impale': "Coup de suivi en ruée après Anneau ou Brèche.",
+    'Gavel of Earthshaker': "Attaque plongeante qui fait détoner son Dépôt d'Ichor.",
+    "Rewritten in Winter's Margins": "Ultime nuke, plus puissant avec plus de cumuls d'Auréole.",
+    'Before Injection of Dawn': "Ouverture qui inflige aussi Tension Tacet.",
+    'Bow to the Last Light': "Nuke finisseur simple au changement de personnage.",
   },
 };
