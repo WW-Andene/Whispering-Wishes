@@ -1384,6 +1384,7 @@ export const SKILL_NAME_FR = {
     "Chamuel's Star 1-3": "Étoile de Chamuel 1-3",
     'Starflash': 'Lueur Stellaire',
     'Absolution Litany': "Liturgie d'Absolution",
+    'Utter Confession': 'Confession Totale',
     'Dawn of Enlightenment': "Aube de l'Éveil",
     'Golden Grace': 'Grâce Dorée',
     'Attentive Heart': 'Cœur bienveillant',
@@ -2063,6 +2064,10 @@ export const MULT_DESC_FR = {
   'Lynae': {
     "Let's Hit the Road!": "100 % ATQ + 15 % d'Amplification de tous les DGT / 25 % d'Amplification DGT de Libération",
   },
+  'Phoebe': {
+    'Dawn of Enlightenment': "401,6 % (+255 % de Multiplicateur DGT en Absolution / 8 cumuls de Frazzle appliqués en Confession, sans changement de Multiplicateur DGT)",
+    'Attentive Heart': "528,4 % (+255 % de Multiplicateur DGT en Absolution / confère le buff de soutien Prière Silencieuse en Confession)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2412,5 +2417,8 @@ export const SKILL_DESC_FR = {
     'Prismatic Overblast': "Barrage d'Ultime à coups multiples.",
     'Time to Show Some Colors!': "Ouverture au changement de personnage avec plusieurs coups rapides.",
     "Let's Hit the Road!": "Buff au changement de personnage conférant au Résonateur suivant une Amplification de tous les DGT ou de DGT de Libération.",
+  },
+  'Phoebe': {
+    'Utter Confession': "Lancer de Circuit de Forte du mode Confession (en parallèle de Liturgie d'Absolution). Applique 1 cumul de Frazzle Spectro, restaure la Voix Divine à 60. Non utilisée dans la rotation modélisée (Absolution uniquement).",
   },
 };
