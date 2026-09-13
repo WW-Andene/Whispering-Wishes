@@ -1105,7 +1105,9 @@ export const SKILL_NAME_FR = {
     'Seraphic Duet: Encore': 'Duo de Plumes Séraphiques : Rappel',
     'Heavenfall Edict': 'Édit Céleste',
     'Heavenfall Edict: Overdrive': 'Édit Céleste : Surcharge',
-    'Heavenfall Edict: Finale': 'Édit Céleste : Finale',
+    // 'Final' (not 'Finale') — confirmed against a French community guide; 'Édit' is masculine so
+    // 'Final' is also the grammatically correct agreement.
+    'Heavenfall Edict: Finale': 'Édit Céleste : Final',
     // No existing precedent for the mode-toggle name itself; best-effort, mirrors Yangyang: Xuanling's
     // own 'Sword Stance Switch' → 'Changement de Posture'.
     'Form Switch': 'Changement de Forme',
