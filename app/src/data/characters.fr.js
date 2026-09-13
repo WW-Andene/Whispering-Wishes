@@ -45,7 +45,7 @@ export const CHARACTER_DESC_FR = {
   'Ciaccona': "Mélodies Tissées, barde errante de Rinascita — elle chante non seulement pour la Divinité, mais aussi pour le peuple, consignant des histoires au fil de ses voyages et les transformant en chansons qui évoquent rire, émotion et larmes chez les conteurs comme chez le public. Hybride Aero qui enchaîne des annulations rapides Attaque Basique/aérienne pour invoquer des clones Sylphe d'Ensemble quasi permanents (Concert Solo : amplification des DGT Aero d'équipe), tire l'Attaque Lourde du Forte Contretemps Quadruple, puis entre dans un état de Récital prolongé via sa Libération pour appliquer des vagues répétées d'Érosion Aero ou de Spectro Frazzle même hors du terrain — confère au personnage entrant un buff de DGT d'Érosion Aero via son Outro.",
   'Cartethyia': "Tempête à Plumes, chevalière errante qui parcourt Rinascita — anciennement connue sous le nom de Vierge Bénie, vaisseau de la Divinité, et Reine de la Bourrasque et de la Marée sous le nom de Fleurdelys, elle est désormais simplement libre et sans entraves. DPS principal Aero sur le terrain à scaling PV qui accumule des Ombres de Lame via les finisseurs de son Attaque Basique/Compétence/Intro, les rappelle via l'Attaque Aérienne, se transforme en Fleurdelys via sa Libération pour un kit entièrement renforcé, bâtit de la Conviction vers la dévastatrice seconde Ultimate Lame de la Bourrasque Hurlante qui consume l'Érosion Aero accumulée pour des DGT bonus, puis confère au personnage entrant un buff de DGT Aero contre les cibles en État Négatif via son Outro.",
   'Lupa': "Flamme Hurlante, Gladiatrice de Septimont et étoile radieuse de l'arène — ardente et directe, Lupa vit comme une louve solitaire sauvage, et tant qu'elle peut savourer la montée d'adrénaline du combat, elle ne s'inquiète pas si ce même feu finit par la consumer tout entière. Hybride/buffeuse Fusion qui déverse immédiatement sa Libération Gloire Baisée par le Feu pour conférer à toute l'équipe Chasse en Meute (Amplification d'ATQ, encore renforcée par les Compétences d'Intro des coéquipiers) et Gloire (ignorance de RÉS Fusion proportionnelle au nombre de coéquipiers Fusion), accumule de la Foi du Loup via les Attaques Lourdes/Aériennes vers son finisseur du Forte Danse avec la Louve, puis confère au personnage entrant un buff de DGT Fusion et d'Attaque Normale via son Outro — conçue pour renforcer les équipes mono-Fusion comme Changli + Brant + Lupa.",
-  'Phrolova': "Symphonie de l'Au-delà, Superviseure des Fractsidus marchant sur la ligne fine entre vie et mort — une chef d'orchestre inquiétante et mortelle dont le silencieux mouvement de baguette suffit à accorder les fréquences mêmes de l'être et à diriger les symphonies des « âmes », sa musique pouvant sculpter un monde meilleur ou tout aussi facilement invoquer une légion pour semer le chaos. DPS principal Havoc qui accumule des Notes Volatiles via des combos Attaque Basique/Compétence et leurs suivis renforcés par le Forte, déchaîne sa Libération pour entrer en état de Maestro et commander sa partenaire Hecate pour des DGT Havoc soutenus hors du terrain (déclenchés davantage par les lancers de Compétence d'Écho de n'importe quel coéquipier), puis confère au personnage entrant un buff de DGT Havoc et d'Attaque Lourde via son Outro.",
+  'Phrolova': "Symphonie de l'Au-delà, Superviseure des Fractsidus marchant sur la ligne fine entre vie et mort — une chef d'orchestre inquiétante et mortelle dont le silencieux mouvement de baguette suffit à accorder les fréquences mêmes de l'être et à diriger les symphonies des « âmes », sa musique pouvant sculpter un monde meilleur ou tout aussi facilement invoquer une légion pour semer le chaos. DPS principal Havoc qui accumule des Notes Volatiles via des combos Attaque Normale/Compétence et leurs suivis renforcés par le Forte, déchaîne sa Libération pour entrer en état de Maestro et commander sa partenaire Hecate pour des DGT Havoc soutenus hors du terrain (déclenchés davantage par les lancers de Compétence d'Écho de n'importe quel coéquipier), puis confère au personnage entrant un buff de DGT Havoc et d'Attaque Lourde via son Outro.",
   'Augusta': "Éphore de Septimont, un soleil se levant embrasé du creuset de sang et de sable. DPS Electro sur le terrain qui inflige des DGT explosifs d'Attaque Lourde et de Libération avec des boucliers intégrés et un mécanisme d'arrêt du temps sur sa Compétence de Résonance.",
   'Iuno': "Prêtresse du Temple du Tétragone de Septimont qui saisit le sens dans le rythme du temps. Sous-DPS Aero qui confère un buff de DGT d'Attaque Lourde via l'Outro, soigne l'équipe à travers ses attaques Nouvelle Lune et son Domaine Pleine Lune, et se protège d'un bouclier lors des lancers de compétence, alternant entre les états de combat Demi-Lune et Nouvelle Lune.",
   'Galbrena': "Consultante des Rives Noires connue sous le nom de Tueuse de Discorde, arrachant le pouvoir à l'obscurité. DPS Fusion sur le terrain qui inflige des dégâts principaux via des combos de Compétence d'Écho et d'Attaque Lourde en rotations explosives rapides.",
@@ -1393,8 +1393,10 @@ export const SKILL_NAME_FR = {
     'Stage 1-3': 'Étape 1-3',
     'Scarlet Coda': 'Finale Écarlate',
     'Whispers in Fleeting Dream': "Murmure d'un Rêve Fuyant",
-    'Suite of Quietus': 'Suite de Quietus',
-    'Suite of Immortality': "Suite de l'Immortalité",
+    'Movement of Fate and Finality': 'Mouvement du Destin et de la Finalité',
+    'Murmurs in a Haunting Dream': "Murmures d'un Rêve Obsédant",
+    'Suite of Quietus': 'Suite de Quiétude',
+    'Suite of Immortality': "Suite d'Immortalité",
     'Maestro State: Hecate': 'État de Maestro : Hécate',
     'Curtain Call': 'Salut Final',
     'Unfinished Piece': 'Morceau à finir',
@@ -2068,6 +2070,11 @@ export const MULT_DESC_FR = {
     'Dawn of Enlightenment': "401,6 % (+255 % de Multiplicateur DGT en Absolution / 8 cumuls de Frazzle appliqués en Confession, sans changement de Multiplicateur DGT)",
     'Attentive Heart': "528,4 % (+255 % de Multiplicateur DGT en Absolution / confère le buff de soutien Prière Silencieuse en Confession)",
   },
+  'Phrolova': {
+    'Scarlet Coda': '33,0 %×2 + 12,4 %×8 + 495,1 % (+82,55 % par cumul)',
+    'Maestro State: Hecate': 'Cordes 347,9 % / Vents 330,5 % / Cadence 347,9 %',
+    'Unfinished Piece': "+20 % DGT Havoc + 25 % d'Amplification DGT d'Attaque Lourde (14 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2420,5 +2427,17 @@ export const SKILL_DESC_FR = {
   },
   'Phoebe': {
     'Utter Confession': "Lancer de Circuit de Forte du mode Confession (en parallèle de Liturgie d'Absolution). Applique 1 cumul de Frazzle Spectro, restaure la Voix Divine à 60. Non utilisée dans la rotation modélisée (Absolution uniquement).",
+  },
+  'Phrolova': {
+    'Stage 1-3': "Enchaînement standard, accumule Résonance Persistante/Notes.",
+    'Suite of Quietus': "Ouverture de base au changement de personnage.",
+    'Scarlet Coda': "Attaque Lourde renforcée, les dégâts montent avec les cumuls de Résonance Persistante.",
+    'Whispers in Fleeting Dream': "Frappe rapide de Compétence qui entre en Réincarnation.",
+    'Movement of Fate and Finality': "Suivi de Réincarnation via l'Attaque Normale. Cible unique, immobilise, met fin à la Réincarnation. Comptée comme DGT de Compétence de Résonance.",
+    'Murmurs in a Haunting Dream': "Suivi de Réincarnation via la Compétence de Résonance. Touche des groupes de renforts, met fin à la Réincarnation. Comptée comme DGT de Compétence de Résonance.",
+    'Suite of Immortality': "Intro renforcée utilisée seulement en état de Maestro, bien plus puissante que l'ouverture de base.",
+    'Maestro State: Hecate': "Invoque Hecate pour des DGT Havoc soutenus hors du terrain pendant Maestro.",
+    'Curtain Call': "Lancer d'Ultime qui met fin à Accord en Résolution et entre en Maestro.",
+    'Unfinished Piece': "Buff au changement de personnage pour le Résonateur suivant. Confère 2 attaques bonus à Hecate si lancé pendant Maestro.",
   },
 };
