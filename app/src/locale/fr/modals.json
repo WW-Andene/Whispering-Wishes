@@ -94,7 +94,7 @@
     "combatProfile": "Profil de combat",
     "elementDmg": "DGT {{element}}",
     "damageFocus": "Focus de dégâts",
-    "combatRole": "Rôle de combat",
+    "combatRole": "Style de combat",
     "statScaling": "Scaling de statistique",
     "scalingBadge": "Scaling {{stat}}",
     "viewInTeamBuilder": "Voir dans le générateur d'équipes",

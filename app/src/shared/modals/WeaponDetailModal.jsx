@@ -7,6 +7,7 @@ import React, { useState } from 'react';
 import { Swords, Star, TrendingUp, X, Play, User, Users, LayoutGrid } from 'lucide-react';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
+import { WEAPON_TYPE_FR } from '../../data/characters.fr.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { getConveneAnimation, getWeaponBannerArt, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
@@ -101,7 +102,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             <div className="flex items-center gap-2 mb-1">
               <span className={`kuro-badge ${colors.bg} ${colors.text} ${colors.border} inline-flex items-center gap-1`}>
                 {getWeaponTypeIcon(data.type) && <img src={getWeaponTypeIcon(data.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                {data.type}
+                {(getLocale() === 'fr' && WEAPON_TYPE_FR[data.type]) || data.type}
               </span>
             </div>
             <h2 className="text-2xl font-semibold text-white">{displayName}</h2>

@@ -8,7 +8,7 @@ import { useSessionState } from '../../hooks/useSessionState.js';
 import { toCanvasSpace, CANVAS_WIDTH } from '../../shared/scaling/canvasScale.js';
 import { ArrowRight, Calendar, Crown, RefreshCcw, Search, Sparkles, Sword, Upload, X } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
-import { CHARACTER_TAG_FR } from '../../data/characters.fr.js';
+import { CHARACTER_TAG_FR, WEAPON_TYPE_FR } from '../../data/characters.fr.js';
 import { isHealerRole, isSupportRole } from '../teams/calcEngine.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { ECHO_DATA, ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ALL_ECHO_SONATA_SETS, ALL_ECHO_BUFF_TYPES, getLocalizedEchoData } from '../../data/echoes.js';
@@ -494,7 +494,7 @@ function CollectionTab({
                       { value: 'all', label: t('collection.filters.allTypes') },
                       ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(wt => ({
                         value: wt,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(wt)} alt="" width={14} height={14} className="shrink-0" /> {wt}</span>,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(wt)} alt="" width={14} height={14} className="shrink-0" /> {(getLocale() === 'fr' && WEAPON_TYPE_FR[wt]) || wt}</span>,
                       })),
                     ]}
                     ariaLabel={t('collection.filters.byWeaponType')}
@@ -632,7 +632,7 @@ function CollectionTab({
                       { value: 'all', label: t('collection.filters.allTypes') },
                       ...['Broadblade', 'Sword', 'Pistols', 'Gauntlets', 'Rectifier'].map(wt => ({
                         value: wt,
-                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(wt)} alt="" width={14} height={14} className="shrink-0" /> {wt}</span>,
+                        label: <span className="inline-flex items-center gap-1.5"><img src={getWeaponTypeIcon(wt)} alt="" width={14} height={14} className="shrink-0" /> {(getLocale() === 'fr' && WEAPON_TYPE_FR[wt]) || wt}</span>,
                       })),
                     ]}
                     ariaLabel={t('collection.filters.byWeaponType')}

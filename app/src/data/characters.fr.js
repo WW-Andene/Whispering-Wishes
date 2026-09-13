@@ -1545,12 +1545,12 @@ export const SKILL_NAME_FR = {
 export const CHARACTER_TAG_FR = {
   // combatRoles (CHARACTER_DATA[name].combatRoles)
   'Main Damage Dealer': 'DPS Principal',
-  'Support and Healer': 'Soutien et Soigneur',
-  'Concerto Efficiency': 'Efficacité de Concerto',
+  'Support and Healer': 'Soin et Support',
+  'Concerto Efficiency': 'Concertant Rapide',
   'Coordinated Attack': 'Attaque Coordonnée',
   'Coordinated Attack DMG Amplification': "Amplification DGT d'Attaque Coordonnée",
   'Traction': 'Traction',
-  'DMG Amplification': 'Amplification DGT',
+  'DMG Amplification': 'Intensification des Dégâts',
   'Basic Attack Damage': "DGT d'Attaque Normale",
   'Basic Attack DMG Amplification': "Amplification DGT d'Attaque Normale",
   'Heavy Attack Damage': "DGT d'Attaque Lourde",
@@ -1575,13 +1575,13 @@ export const CHARACTER_TAG_FR = {
   'Spectro DMG Amplification': 'Amplification DGT Spectro',
   'Spectro Frazzle': 'Lumière Spectro',
   'Hack Response': 'Réponse au Hack',
-  'Interruption Resistance Boost': "Bonus de Résistance à l'Interruption",
+  'Interruption Resistance Boost': "Résistance à l'Interruption",
   'Off-Tune Buildup Efficiency': "Efficacité d'Accumulation Hors-Tonalité",
-  'Stagnation': 'Stagnation',
+  'Stagnation': 'Décélération',
   'Tune Break Boost': "Bonus d'Interruption de Tonalité",
   'Tune Rupture Response': "Réponse à la Rupture d'Accord",
   'Tune Strain Response': "Réponse à la Tension d'Accord",
-  'Vibration Strength Reduction': 'Réduction de la Force de Vibration',
+  'Vibration Strength Reduction': 'Réduction du Taux de Vibration',
   // dmgFocus (CHARACTER_DATA[name].dmgFocus) — Basic ATK/Heavy ATK/Skill/Liberation/Intro/Outro
   // already covered above via their combatRoles/SKILL_TYPE_FR equivalents; only the
   // dmgFocus-specific terms are added here.
@@ -1600,7 +1600,7 @@ export const CHARACTER_TAG_FR = {
   'Crit Rate Buff': 'Buff Taux Critique',
   'DEF Shred': 'Réduction DÉF',
   'DMG': 'DGT',
-  'DMG Amplify': 'Amplification DGT',
+  'DMG Amplify': 'Intensification des Dégâts',
   'DMG Buff': 'Buff DGT',
   'Echo DMG Buff': "Buff DGT d'Écho",
   'Echo Skill DMG Buff': "Buff DGT de Compétence d'Écho",
@@ -1630,4 +1630,17 @@ export const CHARACTER_TAG_FR = {
   'Tune Break DMG Buff': "Buff DGT d'Interruption de Tonalité",
   'Tune Strain - Interfered': "Tension d'Accord - Interférence",
   'Tune Strain - Shifting': "Tension d'Accord - Basculement",
+};
+
+// WEAPON_TYPE_FR — weapon type names (CHARACTER_DATA[name].weapon / weapon-type filter
+// dropdowns). Sword/Broadblade confirmed via Kuro's own French Play Store listing
+// ("Qingxiao (Aero, Sabre)", "Jingran (Fusion, Épée)" — see weapons.fr.js's header
+// comment); Pistols/Gauntlets/Rectifier per the user's own official-client citation.
+/** @type {Record<string, string>} */
+export const WEAPON_TYPE_FR = {
+  'Sword': 'Épée',
+  'Broadblade': 'Sabre',
+  'Pistols': 'Pistolet',
+  'Gauntlets': 'Gantelet',
+  'Rectifier': 'Amplificateur',
 };
