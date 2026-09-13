@@ -2146,6 +2146,12 @@ export const MULT_DESC_FR = {
     'Living Canvas': "65,21 % par Esprit d'Encre (jusqu'à 21 sur 30 s)",
     'Carve and Draw': "+20 % DGT Glacio + 25 % d'Amplification DGT de Compétence (14 s)",
   },
+  'Aalto': {
+    'Half Truths (aimed shot)': '35,79 % → 80,52 % entièrement chargé',
+    'Shift Trick': '59,65 % par Balle de Brume',
+    'Misty Cover': '59,65 % par Balle de Brume',
+    'Dissolving Mist': "+23 % d'Amplification DGT Aero (14 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2632,5 +2638,13 @@ export const SKILL_DESC_FR = {
     "Stroke of Genius / Creation's Zenith": "Améliorations de Compétence qui consomment une Empreinte Fantasmagorique (comptées comme DGT d'Attaque Normale). Coup de Maestro nécessite 2 cumuls de Plaisir du Peintre et confère aussi +18 % de Bonus de DGT d'Attaque Normale pendant 27 s.",
     'Living Canvas': "Recharge de 25 s. Invoque des esprits d'Attaque Coordonnée (DGT d'Attaque Normale) chaque fois que le Résonateur actif inflige des dégâts.",
     'Carve and Draw': "Confère ces buffs au Résonateur entrant, sans DGT direct.",
+  },
+  'Aalto': {
+    'Half Truths Stage 1-5': "Jusqu'à 5 tirs. L'Attaque Normale 4 répand de la Brume pendant 1,5 s.",
+    'Shift Trick': "L'Avatar de Brume attire les ennemis et tire des Balles de Brume autour de lui.",
+    'Flower in the Mist': "La Porte du Dilemme amplifie les balles qui la traversent.",
+    'Misty Cover': "La Ruée du Manteau de Brume consomme des Gouttes de Brume pour tirer des Balles de Brume.",
+    'Feint Shot': "Tirs continus rapides à l'entrée.",
+    'Dissolving Mist': "Buffe le Résonateur entrant.",
   },
 };
