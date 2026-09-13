@@ -1748,8 +1748,11 @@ const ACTION_PREFIX_FR = {
 // 2. 'Action - Form Name' names: translates the action-type prefix via ACTION_PREFIX_FR and
 //    keeps the bespoke suffix as-is (partial translation) when no full per-character override
 //    exists in SKILL_NAME_FR.
-// Returns null (not a translation) when neither pattern matches, so callers keep falling back
-// to the raw English name.
+// 3. '<Bespoke Form Name> Stage N' / '... Stage N-M' (space-separated, no dash): translates just
+//    the trailing 'Stage N' into 'Étape N', keeping the bespoke form name prefix as-is — same
+//    partial-translation trade-off as (2), for names like 'Foreclaimed Self Stage 1-3'.
+// Returns null (not a translation) when no pattern matches, so callers keep falling back to the
+// raw English name.
 /** @param {string} skillName @returns {string|null} */
 export function getGenericSkillNameFr(skillName) {
   const stageMatch = /^Stage (\d+)(-\d+)?$/.exec(skillName);
@@ -1759,6 +1762,11 @@ export function getGenericSkillNameFr(skillName) {
     const prefix = skillName.slice(0, dash);
     const suffix = skillName.slice(dash + 3);
     if (ACTION_PREFIX_FR[prefix]) return `${ACTION_PREFIX_FR[prefix]} - ${suffix}`;
+  }
+  const trailingStage = /^(.+) Stage (\d+)(-\d+)?$/.exec(skillName);
+  if (trailingStage) {
+    const prefix = ACTION_PREFIX_FR[trailingStage[1]] || GENERIC_SKILL_NAME_FR[trailingStage[1]] || trailingStage[1];
+    return `${prefix} Étape ${trailingStage[2]}${trailingStage[3] || ''}`;
   }
   return null;
 }
