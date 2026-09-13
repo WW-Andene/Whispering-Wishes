@@ -1098,11 +1098,9 @@ export const SKILL_NAME_FR = {
     'Mech Charged I / II': 'Mécha Chargée I / II',
     'Sync Strikes': 'Frappe Synchro',
     'Seraphic Duet': 'Duo de Plumes Séraphiques',
-    // "Overture"/"Encore" suffixes have no existing precedent elsewhere in this file — constructed
-    // from 'Seraphic Duet'/'Heavenfall Edict' above plus standard concert-vocabulary French; not
-    // verified against the game's official French client.
+    // Confirmed by the user: 'Overture' -> 'Ouverture' (as guessed), 'Encore' -> 'Bis' (not 'Rappel').
     'Seraphic Duet: Overture': 'Duo de Plumes Séraphiques : Ouverture',
-    'Seraphic Duet: Encore': 'Duo de Plumes Séraphiques : Rappel',
+    'Seraphic Duet: Encore': 'Duo de Plumes Séraphiques : Bis',
     'Heavenfall Edict': 'Édit Céleste',
     'Heavenfall Edict: Overdrive': 'Édit Céleste : Surcharge',
     // 'Final' (not 'Finale') — confirmed against a French community guide; 'Édit' is masculine so
