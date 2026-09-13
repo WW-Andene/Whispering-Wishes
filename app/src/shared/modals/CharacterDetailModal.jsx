@@ -746,7 +746,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
               each paired with the standard main-stat priority for that cost tier. Any trailing "(...)"
               note (role/purpose, e.g. "(personal DMG)") on the source data is pulled out as the row's label. */}
           {data.bestEchoes?.length > 0 && (() => {
-            const loadouts = getSonataLoadouts(data.bestEchoes, data.statScaling, data.element);
+            const loadouts = getSonataLoadouts(data.bestEchoes, data.statScaling, data.element, getLocale());
             const showBuildLabels = loadouts.length > 1;
             return (
           <div className="kuro-detail-box">

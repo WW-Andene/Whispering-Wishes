@@ -21,6 +21,7 @@ import { calcTeamStats as calcTeamStatsImpl } from './calcTeamStats.js';
 import { renderCharacterCard } from '../profile/characterCardRenderer.js';
 import { t, formatNumber, getLocale } from '../../utils/i18n.js';
 import { ROLE_FR, WEAPON_TYPE_FR, STAT_NAME_FR } from '../../data/characters.fr.js';
+import { ECHO_SETS_FR } from '../../data/echoes.fr.js';
 
 const DamageCalculator = forwardRef(function DamageCalculator({
   teamEquipment,
@@ -487,7 +488,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                                           } : undefined}>
                                           {isForced && <span className="text-emerald-400 mr-0.5">●</span>}
                                           {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                                          {setName} <span className="text-emerald-400/70">×{count}</span>
+                                          {(getLocale() === 'fr' && ECHO_SETS_FR[setName]?.name) || setName} <span className="text-emerald-400/70">×{count}</span>
                                         </div>
                                       );
                                     }) : allDetectedSets.length > 0 ? (

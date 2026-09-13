@@ -2,6 +2,7 @@ import React from 'react';
 import { Diamond, Star, X } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { ECHO_SETS, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES, ECHO_DATA, getLocalizedEchoData } from '../../data/echoes.js';
+import { ECHO_SETS_FR } from '../../data/echoes.fr.js';
 import { haptic } from '../../utils/haptics.js';
 import { getSetIcon, getElementIcon } from '../../shared/utils/elementVisuals.js';
 import { getLocale, t } from '../../utils/i18n.js';
@@ -220,7 +221,7 @@ export default function EchoSelector({
                                 </div>
                                 <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                   {buffs.map(b => <span key={b} className="text-sm text-gray-400">{b}</span>)}
-                                  {ed?.sets && <span className="text-sm text-gray-500">· {ed.sets.join(', ')}</span>}
+                                  {ed?.sets && <span className="text-sm text-gray-500">· {ed.sets.map(s => (getLocale() === 'fr' && ECHO_SETS_FR[s]?.name) || s).join(', ')}</span>}
                                 </div>
                               </div>
                             </div>
@@ -346,7 +347,7 @@ export default function EchoSelector({
                           return (
                             <span key={s} className={`kuro-badge border inline-flex items-center gap-1 ${isRec ? 'bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold' : 'bg-white/5 border-[var(--border-medium)] text-gray-300'}`}>
                               {setIcon && <img src={setIcon} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                              {s}{isRec ? ' ★' : ''}
+                              {(getLocale() === 'fr' && ECHO_SETS_FR[s]?.name) || s}{isRec ? ' ★' : ''}
                             </span>
                           );
                         })}

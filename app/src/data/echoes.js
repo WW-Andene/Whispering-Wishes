@@ -530,7 +530,7 @@ const cost1MainStats = (statScaling) => statScaling === 'HP' ? ['HP%', 'HP%'] : 
  * `element` is the character's own element (for the cost-3 Elemental DMG% slot) — distinct from the
  * sonata's element, since echoes can't roll their own set's DMG% as a main stat.
  */
-export function getSonataLoadouts(bestEchoes, statScaling, element) {
+export function getSonataLoadouts(bestEchoes, statScaling, element, locale) {
   if (!bestEchoes?.length) return [];
   const rows = [];
   for (let i = 0; i < bestEchoes.length; i++) {
@@ -551,7 +551,8 @@ export function getSonataLoadouts(bestEchoes, statScaling, element) {
       const m = /^(.*?)\s+(\d+)\s*pc$/i.exec(p);
       return m ? { name: m[1].trim(), count: parseInt(m[2], 10) } : { name: p.replace(/\s+\d+\s*pc$/i, '').trim(), count: 5 };
     });
-    const sonataName = parsedSets.map(s => s.name).join(' + ') || (main ? (ECHO_DATA[main.text]?.sets?.[0] || '') : '');
+    const localizeSet = (n) => (locale === 'fr' && ECHO_SETS_FR[n]?.name) || n;
+    const sonataName = parsedSets.map(s => localizeSet(s.name)).join(' + ') || (main ? localizeSet(ECHO_DATA[main.text]?.sets?.[0] || '') : '');
     const label = setSlot?.label || main?.label || null;
     // The sonata's own "element" per ECHO_SETS — not always a DMG element (can be 'Heal'/'Support'/
     // 'ATK'/'Shield') — plus the primary set's own name, both used by the UI to color the sonata

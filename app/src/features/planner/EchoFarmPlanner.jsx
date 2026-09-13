@@ -33,7 +33,8 @@ import {
   ECHO_LEVEL_CUMULATIVE_EXP, ECHO_MAX_LEVEL_BY_RARITY, SHELL_CREDIT_PER_ECHO_EXP, SHELL_CREDIT_PER_TUNE_ATTEMPT,
   DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL, getSealedTubeBreakdown,
 } from '../../data/echoFarmingData.js';
-import { t, getPluralForm } from '../../utils/i18n.js';
+import { t, getPluralForm, getLocale } from '../../utils/i18n.js';
+import { ECHO_SETS_FR } from '../../data/echoes.fr.js';
 
 // ECHO_LISTS (echoes.js) are declared newest-first per cost tier already — reused as-is here
 // so the Target Echo picker sorts the same way every other "All Sets"/echo-list filter in the
@@ -256,7 +257,7 @@ export default function EchoFarmPlanner() {
                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                   {echoSets.map(setName => (
                     <span key={setName} className="inline-flex items-center gap-1 text-2xs text-gray-400">
-                      {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" width={12} height={12} className="shrink-0" onError={hideOnError} />} {setName}
+                      {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" width={12} height={12} className="shrink-0" onError={hideOnError} />} {(getLocale() === 'fr' && ECHO_SETS_FR[setName]?.name) || setName}
                     </span>
                   ))}
                 </div>
@@ -404,7 +405,7 @@ export default function EchoFarmPlanner() {
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           {(ed.sets || []).map(setName => (
                             <span key={setName} className="inline-flex items-center gap-1 text-2xs text-gray-400">
-                              {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" width={12} height={12} className="shrink-0" onError={hideOnError} />} {setName}
+                              {getSetIcon(setName) && <img src={getSetIcon(setName)} alt="" width={12} height={12} className="shrink-0" onError={hideOnError} />} {(getLocale() === 'fr' && ECHO_SETS_FR[setName]?.name) || setName}
                             </span>
                           ))}
                         </div>
