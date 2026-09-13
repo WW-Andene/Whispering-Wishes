@@ -939,12 +939,12 @@ function PlannerTab({
                       </div>
                     </div>
                     <p className="text-gray-500 text-xs">
-                      {topWeapon.reliantDespiteAlts
-                        ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
-                        : topWeapon.mustHave
-                          ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
-                          : top.d.keyStatTarget
-                            ? t('planner.recommendationWeaponNotEssentialReasonWithTarget', { name: top.name, sig: topWeapon.name, pronoun: top.d.keyStatTarget.pronoun || 'their', statScaling: top.d.statScaling || 'ATK', targetValue: top.d.keyStatTarget.value, targetStat: top.d.keyStatTarget.stat, targetPurpose: top.d.keyStatTarget.purpose, sigPassive: sigPassiveSummary })
+                      {top.d.weaponVerdictReason
+                        ? top.d.weaponVerdictReason
+                        : topWeapon.reliantDespiteAlts
+                          ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
+                          : topWeapon.mustHave
+                            ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
                             : t('planner.recommendationWeaponNotEssentialReason', { name: top.name, sig: topWeapon.name, statScaling: top.d.statScaling || 'ATK', sigStat: sigWeaponInfo?.stat, sigPassive: sigPassiveSummary })}
                     </p>
                     {!topWeapon.mustHave && altWeaponName && (
@@ -956,9 +956,11 @@ function PlannerTab({
                         )}
                         <div className="min-w-0 space-y-0.5">
                           <p className="text-gray-300 text-xs font-medium">
-                            {topWeapon.ownedAlt
-                              ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: altWeaponName, stat: altWeaponInfo?.stat, subStatValue: altWeaponInfo?.subStatValue, passive: altPassiveSummary })
-                              : t('planner.recommendationWeaponAltExists', { alts: altWeaponName, stat: altWeaponInfo?.stat, subStatValue: altWeaponInfo?.subStatValue, passive: altPassiveSummary })}
+                            {top.d.weaponAltReason
+                              ? top.d.weaponAltReason
+                              : topWeapon.ownedAlt
+                                ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: altWeaponName, stat: altWeaponInfo?.stat, subStatValue: altWeaponInfo?.subStatValue, passive: altPassiveSummary })
+                                : t('planner.recommendationWeaponAltExists', { alts: altWeaponName, stat: altWeaponInfo?.stat, subStatValue: altWeaponInfo?.subStatValue, passive: altPassiveSummary })}
                           </p>
                         </div>
                       </div>
