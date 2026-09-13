@@ -68,7 +68,7 @@ export const CHARACTER_DESC_FR = {
   'Aalto': "Courtier en informations suave qui se faufile à travers la brume. Sous-DPS Aero qui inflige des DGT Aero hors du terrain via des Attaques Coordonnées déclenchées par son invocation de clone de brume.",
   'Baizhi': "Chercheuse dévouée de l'Académie Huaxu accompagnée de sa compagne You'tan. Soigneuse Glacio qui restaure les PV via sa Compétence de Résonance et sa Libération, offrant un soutien d'équipe constant avec un faible temps de présence sur le terrain.",
   'Chixia': "Patrouilleuse énergique qui traverse Jinzhou en trombe avec ses doubles pistolets. DPS Fusion sur le terrain qui inflige des DGT Fusion via des tirs rapides de Compétence de Résonance et des combos d'Attaque Normale.",
-  'Danjin': "Rôdeuse de Minuit qui échange son propre sang contre du pouvoir, traquant voleurs et bandits à travers Huanglong pour se venger. Hybride Havoc qui consomme des PV pour alimenter des Attaques Basiques et Lourdes renforcées, gagnant un Bonus de DGT Havoc à mesure que sa santé diminue — utilisée comme buffeuse d'Outro rapide pour un DPS Havoc ou, avec une rotation plus longue, comme DPS principal à part entière.",
+  'Danjin': "Rôdeuse de Minuit qui échange son propre sang contre du pouvoir, traquant voleurs et bandits à travers Huanglong pour se venger. Hybride Havoc qui consomme des PV pour alimenter des Attaques Normales et Lourdes renforcées, gagnant un Bonus de DGT Havoc à mesure que sa santé diminue — utilisée comme buffeuse d'Outro rapide pour un DPS Havoc ou, avec une rotation plus longue, comme DPS principal à part entière.",
   'Yangyang': "Éclaireuse libre des Rôdeurs de Minuit, hybride Efficacité de Concerto/Traction/Régén. de Libération. Sous-DPS Aero qui regroupe les ennemis via sa Compétence de Résonance et sa Libération, accumule jusqu'à 3 cumuls de Mélodie pour une explosion aérienne de Libération de Plumes, et transfère de l'Énergie de Résonance au personnage suivant via son Outro — l'une des rotations les plus rapides et les plus propices au changement rapide du jeu.",
   'Sanhua': "Garde personnelle stoïque de Jinhsi, aussi froide que le givre qu'elle commande. Sous-DPS Glacio à changement rapide qui inflige des DGT Glacio explosifs et amplifie les DGT d'Attaque Basique du personnage suivant via l'Outro.",
   'Taoqi': "Directrice inébranlable de la défense frontalière, à la volonté de fer. Soutien Havoc qui fournit des boucliers via sa Compétence de Résonance et amplifie les DGT de Compétence de Résonance de l'équipe via l'Outro.",
@@ -183,7 +183,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Zani': "Convertit le Frazzle en Braises Héliaques. L'Outro confère aux alliés touchant la cible marquée +20 % d'Amplification de DGT Spectro (20 s).",
   'Sanhua': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Basique (14 s). Changement rapide.',
   'Mortefi': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Lourde. Attaque Coordonnée hors du terrain sur Attaque Lourde.',
-  'Danjin': 'Outro : 23 % de Renforcement de DGT Havoc pour le suivant.',
+  'Danjin': "Outro : 23 % d'Amplification de DGT Havoc pour le suivant.",
   'Baizhi': "Outro : 15 % d'Amplification (6 s par tic, se rafraîchit au soin). Inhérent : 15 % ATQ pour le seul Résonateur qui récupère Euphonia (20 s), pas toute l'équipe. S6 améliore séparément un effet différent (Bonus de DGT Glacio +12 %) pour tous les personnages proches lors du même ramassage, celui-là bien pour toute l'équipe. Soin.",
   'Taoqi': 'Outro Volonté de Fer : 38 % d\'Amplification de DGT de Compétence de Résonance pour le suivant (14 s). La Compétence Défense Fortifiée confère 3 cumuls de Bouclier Inébranlable (15 % de réduction des DGT tant qu\'actif) + auto-soin.',
   'Yuanwu': 'Compétence Coin de Tonnerre : Attaque Coordonnée hors du terrain (1x/1,2 s tant qu\'un allié est sur le terrain dans le champ). La Libération Puissance Ardente confère à toute l\'équipe une Résistance à l\'Interruption (Infusion Foudre, 10 s) — aucune statistique de DGT. Outro Manipulation Électrique : pure déplétion de Force Vibratoire, sans buff de DGT. Le Bouclier ne se débloque qu\'à la Chaîne de Résonance S4.',
@@ -1621,6 +1621,8 @@ export const SKILL_NAME_FR = {
     'Sanguine Pulse': 'Pouls Sanguin',
     'Serene Vigil: Chaoscleave': 'Veille Sereine : Fendoir du Chaos',
     'Serene Vigil: Scatterbloom': 'Veille Sereine : Floraison Éparse',
+    'Serene Vigil: Chaoscleave (Full Energy)': 'Veille Sereine : Fendoir du Chaos (Énergie Pleine)',
+    'Serene Vigil: Scatterbloom (Full Energy)': 'Veille Sereine : Floraison Éparse (Énergie Pleine)',
     'Crimson Bloom': 'Floraison Cramoisie',
     'Vindication': 'Vindicte',
     'Duality': 'Dualité',
@@ -2169,6 +2171,10 @@ export const MULT_DESC_FR = {
     'POW POW (aimed shot)': '35,79 % → 80,52 % entièrement chargé',
     'Heroic Bullets: DAKA DAKA!': '19,89 % par Balle Thermobarique',
   },
+  'Danjin': {
+    'Crimson Bloom': "49,09 %×8 + 392,65 % Éclat Écarlate",
+    'Duality': "+23 % d'Amplification DGT Havoc (14 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2699,5 +2705,19 @@ export const SKILL_DESC_FR = {
     'Blazing Flames': "Rafale rapide touchant tous les ennemis proches.",
     'Grand Entrance': "Entrée rapide au double pistolet.",
     'Leaping Flames': "Onde de choc de zone autour de la cible.",
+  },
+  'Danjin': {
+    'Execution Stage 1-3': "Jusqu'à 3 frappes Havoc consécutives.",
+    'Execution (hold)': "Consomme du Forte alimenté par les PV. Soigne si la Jauge de Forte est ≥50 %.",
+    'Crimson Fragment: Carmine Gleam': "Coup de Compétence de base. Coûte 3 % des PV Max par attaque.",
+    'Crimson Erosion': "Après l'Attaque Normale 2/Contre-attaque d'Esquive/Intro. Applique Volonté Incendiaire (+20 % DGT reçus).",
+    'Sanguine Pulse': "Après l'Attaque Normale 3, jusqu'à 3 frappes consécutives.",
+    'Serene Vigil: Chaoscleave': "À 60+ Fleur de Rubis, finisseur d'Attaque Lourde. Soigne Danjin.",
+    'Serene Vigil: Scatterbloom': "Suivi d'Attaque Normale après Fendoir du Chaos.",
+    'Serene Vigil: Chaoscleave (Full Energy)': "À 120+ Fleur de Rubis, consomme 120 pour renforcer ceci et la Floraison Éparse suivante, au lieu de la version à demi-puissance.",
+    'Serene Vigil: Scatterbloom (Full Energy)': "Suivi d'Attaque Normale après un Fendoir du Chaos à Énergie Pleine.",
+    'Crimson Bloom': "Enchaînement Havoc rapide plus un finisseur Éclat Écarlate. Consomme des PV par coup.",
+    'Vindication': "Frappe inébranlable. Peut s'enchaîner vers Érosion Cramoisie.",
+    'Duality': "Buffe le Résonateur entrant.",
   },
 };
