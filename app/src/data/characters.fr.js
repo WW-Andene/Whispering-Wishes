@@ -1675,3 +1675,23 @@ export const ROLE_FR = {
   'Healer': 'Soigneur',
   'Support/Healer': 'Soutien/Soigneur',
 };
+
+// SKILL_DESC_FR — per-skill description prose (SKILL_MULTIPLIERS' 4th tuple element, the
+// italic line shown under each skill in CharacterDetailModal.jsx). Keyed by character name ->
+// { englishSkillName: frenchDesc }, same shape/pattern as SKILL_NAME_FR above. This is a large,
+// per-character task (every skill of every character); populated incrementally, starting with
+// whichever characters come up — NOT yet covering the full roster.
+/** @type {Record<string, Record<string, string>>} */
+export const SKILL_DESC_FR = {
+  'Mornye': {
+    'Stage 1-4': "Enchaînement standard, dégâts basés sur la DÉF comme tous ses dégâts. Non utilisé dans sa vraie rotation — voir Mode d'Observation à Grand Champ ci-dessous.",
+    'Wide Field Observation Mode Stage 1-3': "Son vrai combo d'Attaque Normale — remplace l'Attaque Normale classique en Mode d'Observation à Grand Champ, augmente l'Élan Relatif.",
+    'Optimal Solution': 'Marque un ennemi et inflige des dégâts basés sur la DÉF.',
+    'Distributed Array': 'Compétence de suivi à coups multiples.',
+    'Geopotential Shift': 'Frappe de Forte qui alimente aussi son kit de soin/soutien.',
+    'Inversion': 'Finisseur de Forte plus puissant.',
+    'Critical Protocol': 'Ultime ; un nuke basé sur la DÉF qui renforce aussi ses buffs.',
+    'Convergence': 'Frappe d\'ouverture au changement de personnage.',
+    'Recursion': "Buff au changement de personnage donnant à l'équipe +25 % d'Amplification de tous les DGT pendant une longue durée.",
+  },
+};

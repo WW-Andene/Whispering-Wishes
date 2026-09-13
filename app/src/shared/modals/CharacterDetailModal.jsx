@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames, findSkillMultiplierRow } from '../../data/characters.js';
-import { SKILL_TYPE_FR, SKILL_NAME_FR, CHARACTER_TAG_FR, WEAPON_TYPE_FR, ROLE_FR } from '../../data/characters.fr.js';
+import { SKILL_TYPE_FR, SKILL_NAME_FR, SKILL_DESC_FR, CHARACTER_TAG_FR, WEAPON_TYPE_FR, ROLE_FR } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { getSonataLoadouts } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt } from '../../data/banners.js';
@@ -477,7 +477,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       <div className="text-sm text-gray-400 break-words mt-0.5">{mult}</div>
                       {desc && (
                         <div className="space-y-1 mt-1">
-                          {splitIntoParagraphs(desc, 140).map((para, pi) => (
+                          {splitIntoParagraphs((getLocale() === 'fr' && SKILL_DESC_FR[name]?.[skillName]) || desc, 140).map((para, pi) => (
                             <div key={pi} className="text-xs text-gray-500 break-words italic leading-relaxed">{para}</div>
                           ))}
                         </div>
