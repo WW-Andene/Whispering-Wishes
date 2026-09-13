@@ -1153,10 +1153,16 @@ export const SKILL_NAME_FR = {
   },
   'Cartethyia': {
     'Base Form 1-4': 'Forme de Base 1-4',
+    'Dodge Counter - Cartethyia': "Contre-attaque d'Esquive - Forme de Base",
+    'Heavy Attack - Cartethyia': 'Attaque Lourde - Forme de Base',
     'Fleurdelys 1-5': 'Fleurdelys 1-5',
+    'Dodge Counter - Fleurdelys': "Contre-attaque d'Esquive - Fleurdelys",
+    'Upward Cut - Fleurdelys': 'Coupe Ascendante - Fleurdelys',
     'Fleurdelys Enhanced': 'Fleurdelys Renforcée',
     'Base Form': 'Forme de Base',
     'Fleurdelys 1-2': 'Fleurdelys 1-2',
+    'Cartethyia Plunging Attack (3 Shadows Recalled)': 'Attaque Plongeante de Cartethyia (3 Ombres Rappelées)',
+    'Fleurdelys Stage 3': 'Fleurdelys Étape 3',
     "A Knight's Heartfelt Prayers": 'Prières sincères de chevaleresse',
     'Blade of Howling Squall': 'Rage des Marées',
     "Sword to Mark Tide's Trace": 'Épée du passé des marées',
@@ -1954,6 +1960,10 @@ export const MULT_DESC_FR = {
   'Carlotta': {
     'Death Knell': '(183,64 % + 14,50 %×4) par tir',
   },
+  'Cartethyia': {
+    "A Knight's Heartfelt Prayers": 'Coûte 50 % des PV Max (25 % à S5 de la Chaîne de Résonance ; gratuit sous 50 % PV)',
+    "Wind's Divine Blessing": '+17,5 % DGT Aero contre État Négatif (20 s)',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2126,5 +2136,23 @@ export const SKILL_DESC_FR = {
   'Cantarella': {
     'Abysmal Vortex': "Remplace l'Attaque Aérienne en état Mirage.",
     'Shadowy Sweep': "Remplace la Contre-attaque d'Esquive en état Mirage ; l'Attaque Normale juste après lance Piqûre Spectrale Étape 2.",
+  },
+  'Cartethyia': {
+    'Base Form 1-4': 'Enchaînement standard en forme de base à l\'épée, monte en puissance avec les PV Max.',
+    'Dodge Counter - Cartethyia': "Contre-attaque d'Esquive en forme de base, Attaque Normale après Esquive.",
+    'Heavy Attack - Cartethyia': "Attaque Lourde en forme de base ; considérée comme DGT d'Attaque Normale selon son propre texte de kit (pas la catégorie Attaque Lourde habituelle). Invoque l'Ombre de l'Épée de la Discorde (plafond 1, 20 s).",
+    'Fleurdelys 1-5': 'Enchaînement renforcé utilisé en forme Fleurdelys.',
+    'Dodge Counter - Fleurdelys': "Contre-attaque d'Esquive en forme Fleurdelys, restaure de la Conviction au coup.",
+    'Upward Cut - Fleurdelys': 'Mouvement de Saut au sol en forme Fleurdelys, restaure de la Conviction au coup.',
+    'Fleurdelys Enhanced': 'Frappe chargée en forme Fleurdelys.',
+    'Base Form': "Frappe de Compétence qui applique 2 cumuls d'Érosion Aero et invoque l'Ombre de l'Épée de la Vertu (max 1, 20 s).",
+    'Fleurdelys 1-2': "Variantes de Compétence en forme Fleurdelys (Épée pour Répondre à l'Appel des Vagues / Que la Tempête Brise les Marées) — voir CHARACTER_ROTATIONS pour la fenêtre d'ordre de lancer entre les deux.",
+    'Cartethyia Plunging Attack (3 Shadows Recalled)': "Valeur réelle de la rotation modélisée — corrigée le 2026-09-02 contre un nouveau dump de la source (n'avait auparavant aucune ligne, un silencieux trou de DGT nul). Au moment où cette étape se déclenche dans sa vraie rotation, les 3 types d'Ombre d'Épée (Discorde/Divinité/Vertu) sont déjà actifs, donc la variante à 3 Ombres Rappelées est celle qui s'applique réellement ; les variantes à 0/1/2 Ombre (5,65 % / 5,65 % / 3,30 %×3) sont réelles aussi mais non utilisées par la rotation modélisée.",
+    'Fleurdelys Stage 3': "Maintenir l'Attaque Normale en l'air lance directement ceci (en sautant les Étapes 1-2) ; DGT Aero, restaure de la Conviction. Vraie étape de la rotation modélisée, se déclenche juste après Épée pour Répondre à l'Appel des Vagues.",
+    "A Knight's Heartfelt Prayers": "Ultime qui la transforme en forme Fleurdelys pendant 12 s et efface toute la Conviction ; pas de dégâts directs.",
+    'Blade of Howling Squall': "Finisseur d'Ultime en forme Fleurdelys, lancé à 120 Conviction ; restaure 50 % des PV Max, retire TOUS les cumuls d'Érosion Aero de la cible (chaque cumul retiré Amplifie les DGT reçus de 20 %, jusqu'à 5 cumuls = +100 %), et met fin à Manifestation.",
+    "Sword to Mark Tide's Trace": "Ouverture au changement de personnage en forme de base ; inflige 2 cumuls d'Érosion Aero et invoque l'Ombre de l'Épée de la Discorde (max 1, 20 s).",
+    'Sword to Call for Freedom': "Ouverture au changement de personnage en forme Fleurdelys.",
+    "Wind's Divine Blessing": "Buff au changement de personnage pour le coéquipier actif contre les cibles avec un État Négatif.",
   },
 };
