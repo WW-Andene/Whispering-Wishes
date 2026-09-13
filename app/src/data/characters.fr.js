@@ -1873,6 +1873,9 @@ export const CHARACTER_TAG_FR = {
   'Zhaoming Commerce Guild': 'Maison de Commerce de Zhaoming',
   'Startorch Academy': 'Académie Brandétoile',
   'Miko of Flaming Sakura': 'Miko des Sakuras en Flammes',
+  // 'Abyssomancer' is this app's own English rendering (characters.js) of Jingran's real
+  // affiliation — confirmed by the user directly as 'Abyssomancien' in French.
+  'Abyssomancer': 'Abyssomancien',
   // combatRoles (CHARACTER_DATA[name].combatRoles)
   'Main Damage Dealer': 'DPS Principal',
   'Support and Healer': 'Soin et Support',

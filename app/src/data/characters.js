@@ -3478,11 +3478,14 @@ const CHARACTER_DATA = {
   // Qingxiao's own infobox (a wiki bug, not this table's error); every other field (title, gender,
   // birthplace, nation, affiliation, VA, quote) is genuinely Jingran-specific and cross-checked against
   // his own quote/intro text and release-patch pairing with Qingxiao. birthplace/nation both Huanglong
-  // (REGION_DATA above). organization uses his only listed affiliation, 'Mengzhou' (same city/emblem as
-  // Qingxiao — both release in the 3.6 patch). Only JP VA is confirmed pre-release (Kawanishi Kengo);
-  // EN/CN/KR are blank on the infobox, left unset rather than guessed. Birthday: blank, omitted from
-  // BIRTHDAY_DATA per the established convention.
-  ['Jingran', 'Nether Qi Art', 'Huanglong', 'Mengzhou', { jp: 'Kawanishi Kengo' }],
+  // (REGION_DATA above; Mengzhou is the specific city within Huanglong he's tied to, same schema
+  // limitation as Jinzhou/Septimont elsewhere in this file — no separate city-level field exists, so
+  // it isn't tracked here). organization corrected (2026-09-13, user-provided) to his real affiliation
+  // 'Abyssomancer' — the prior 'Mengzhou' was only ever a same-city/emblem-as-Qingxiao placeholder
+  // guess, per this comment's own prior wording, not his confirmed affiliation. Only JP VA is confirmed
+  // pre-release (Kawanishi Kengo); EN/CN/KR are blank on the infobox, left unset rather than guessed.
+  // Birthday: blank, omitted from BIRTHDAY_DATA per the established convention.
+  ['Jingran', 'Nether Qi Art', 'Huanglong', 'Abyssomancer', { jp: 'Kawanishi Kengo' }],
   // 4★ Resonators — sourced via the MediaWiki API (action=parse&page=X&prop=wikitext&section=0).
   // Aalto: birthplace New Federation, nation 'The Black Shores' (REGION_DATA above, corrected from the
   // prior Huanglong bug), organization 'Black Shores' (affiliation).
