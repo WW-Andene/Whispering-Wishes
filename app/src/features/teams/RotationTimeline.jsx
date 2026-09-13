@@ -7,6 +7,7 @@ import { ChevronDown, ZoomIn, ZoomOut } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { useSessionState } from '../../hooks/useSessionState.js';
 import { t, getLocale } from '../../utils/i18n.js';
+import { SKILL_NAME_FR, GENERIC_SKILL_NAME_FR, getGenericSkillNameFr } from '../../data/characters.fr.js';
 
 // PerfectSuite values ([32] primary, [512] primary) — px/second scale and floor width for the
 // horizontally-scrollable chart below, so action sub-bars stay legible instead of being squeezed
@@ -337,7 +338,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                         const actionLeftPct = leftPct + ai * actionWidthPct;
                         return (
                           <div key={ai}
-                            title={`${sty.label}: ${a.skill}${a.note ? ' — ' + a.note : ''}`}
+                            title={`${sty.label}: ${(locale === 'fr' && (SKILL_NAME_FR[row.label]?.[a.skill] || GENERIC_SKILL_NAME_FR[a.skill] || getGenericSkillNameFr(a.skill))) || a.skill}${a.note ? ' — ' + a.note : ''}`}
                             className={`absolute rounded-sm border flex items-center justify-center overflow-hidden ${sty.cls}`}
                             style={{ left: `${actionLeftPct}%`, width: `${Math.max(actionWidthPct, 1)}%`, top: 0, bottom: 0 }}>
                             <span className="truncate px-0.5 text-2xs font-bold">{((locale === 'fr' && SHORT_STEP_LABEL_FR[a.type]) || SHORT_STEP_LABEL[a.type]) || a.type}</span>

@@ -13,6 +13,7 @@ import { useSessionState } from '../../hooks/useSessionState.js';
 import { stepStyle } from './RotationTimeline.jsx';
 import { splitIntoParagraphs } from '../../shared/utils/textFormat.js';
 import { t, getLocale } from '../../utils/i18n.js';
+import { SKILL_NAME_FR, GENERIC_SKILL_NAME_FR, getGenericSkillNameFr } from '../../data/characters.fr.js';
 
 export function RotationGuideCard({ rotationTimeline }) {
   // Simple View — hides descriptive prose (step reason, per-skill notes, inherits/Own Kit/Hands Off
@@ -80,7 +81,7 @@ export function RotationGuideCard({ rotationTimeline }) {
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border ${sty.cls}`}>{sty.label}</span>
-                                <span className="text-sm text-gray-200 font-medium">{s.skill}</span>
+                                <span className="text-sm text-gray-200 font-medium">{(getLocale() === 'fr' && (SKILL_NAME_FR[step.name]?.[s.skill] || GENERIC_SKILL_NAME_FR[s.skill] || getGenericSkillNameFr(s.skill))) || s.skill}</span>
                               </div>
                               {!simpleView && (s.note ? (
                                 <div className="space-y-0.5 mt-0.5">

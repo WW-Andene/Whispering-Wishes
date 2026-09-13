@@ -609,7 +609,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-baseline gap-x-1.5">
                           <span className={`text-2xs font-bold px-1.5 py-0.5 rounded border shrink-0 ${sty.cls}`}>{sty.label}</span>
-                          <span className="text-sm text-white font-semibold break-words">{step.skill}</span>
+                          <span className="text-sm text-white font-semibold break-words">{(getLocale() === 'fr' && (SKILL_NAME_FR[name]?.[step.skill] || GENERIC_SKILL_NAME_FR[step.skill] || getGenericSkillNameFr(step.skill))) || step.skill}</span>
                           {dmg && <span className={`text-sm font-semibold break-words ${colors.text}`}>{dmg}</span>}
                           {step.duration != null && (
                             <span className="kuro-badge kuro-badge-neutral text-2xs shrink-0">{step.duration}s</span>
