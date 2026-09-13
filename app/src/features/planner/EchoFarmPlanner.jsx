@@ -34,7 +34,7 @@ import {
   DATA_BANK_LEVELS, MAX_DATA_BANK_LEVEL, getSealedTubeBreakdown,
 } from '../../data/echoFarmingData.js';
 import { t, getPluralForm, getLocale } from '../../utils/i18n.js';
-import { ECHO_SETS_FR } from '../../data/echoes.fr.js';
+import { ECHO_SETS_FR, RANK_FR } from '../../data/echoes.fr.js';
 
 // ECHO_LISTS (echoes.js) are declared newest-first per cost tier already — reused as-is here
 // so the Target Echo picker sorts the same way every other "All Sets"/echo-list filter in the
@@ -410,7 +410,7 @@ export default function EchoFarmPlanner() {
                           ))}
                         </div>
                       </div>
-                      {rank && <span className={`kuro-badge ${RANK_BADGE_CLASS[rank] || ''} shrink-0 text-2xs`}>{rank}</span>}
+                      {rank && <span className={`kuro-badge ${RANK_BADGE_CLASS[rank] || ''} shrink-0 text-2xs`}>{(getLocale() === 'fr' && RANK_FR[rank]) || rank}</span>}
                     </button>
                   );
                 })}

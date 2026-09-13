@@ -18,6 +18,12 @@
 // English rather than inventing one. "Erosion" is translated to "Érosion"
 // since it's a plain French cognate, not a stylized proper noun.
 
+// RANK_FR — echo/boss rank badge (ECHO_DATA[name].rank, MonsterCard.jsx's rank prop and
+// EnemyEchoSelectorModal's rank filter). Same terms already established in ECHO_DATA_FR's own
+// prose below (Seigneur/Calamité/Élite/Commun for Overlord/Calamity/Elite/Common).
+/** @type {Record<string, string>} */
+export const RANK_FR = { Calamity: 'Calamité', Overlord: 'Seigneur', Elite: 'Élite', Common: 'Commun' };
+
 /** @type {Record<string, { p2?: string, p3?: string, p5?: string }>} */
 export const ECHO_SETS_FR = {
   'Freezing Frost': { name: 'Givre Glaçant', p2: '+10 % DGT Glacio', p5: 'Attaque Basique/Lourde → +10 % DGT Glacio (max x3)' },
