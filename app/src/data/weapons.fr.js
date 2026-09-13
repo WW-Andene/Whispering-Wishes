@@ -107,6 +107,7 @@ export const WEAPON_DATA_FR = {
     passive: "Panorama : ATQ +12 %. Sur le terrain : Compétence de Résonance → DGT d'Attaque Basique personnels +12 % (cumuls x3, 6 s). À 3 cumuls, la Compétence d'Outro les consomme → DGT d'Attaque Basique +52 % pendant 27 s (fonctionne hors du terrain).",
   },
   "Verity's Handle": {
+    name: 'Poignée de Vérité',
     desc: "Arme signature de Xiangli Yao. Poignée qui dévoile la vérité de la véracité. Bonus DGT avec buff de DGT de Libération prolongeable.",
     passive: "Ad Veritatem : Bonus DGT tous éléments +12 %. Libération → DGT de Libération de Résonance personnels +48 % (8 s), prolongés de +5 s par lancer de Compétence (jusqu'à 3 fois).",
   },
@@ -274,6 +275,7 @@ export const WEAPON_DATA_FR = {
     passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
   },
   "Ocean's Gift": {
+    name: "Don de l'Océan",
     desc: "Rectificateur béni par la mer, espoir d'un pêcheur. DGT Spectro cumulables contre les ennemis en Frazzle.",
     passive: "DGT sur des ennemis en Spectro Frazzle → +6 % DGT Spectro par 1 s (max x4, 6 s).",
   },
