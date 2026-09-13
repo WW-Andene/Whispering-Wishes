@@ -1850,12 +1850,29 @@ export const SKILL_NAME_FR = {
 /** @type {Record<string, string>} */
 export const CHARACTER_TAG_FR = {
   // NOTE (exception to this project's general birthplace/region/organization-stays-untranslated
-  // policy, documented at the top of this file): the user explicitly requested these two be
-  // translated. Not an exhaustive proper-noun table — only what's been confirmed so far.
+  // policy, documented at the top of this file): the user explicitly requested these be
+  // translated, and confirmed each term below against the game's actual French client — these are
+  // the real Affiliation/birthplace/region tag strings, which can differ from how the same place
+  // or faction is phrased in a character's own narrative desc prose elsewhere in this file (e.g.
+  // 'Zhaoming Commerce Guild' reads "Guilde du Commerce de Zhaoming" in Suisui's own desc prose,
+  // but the real Affiliation tag is "Maison de Commerce de Zhaoming" — prose is not touched here,
+  // only this tag table). Not an exhaustive proper-noun table — only what's been confirmed so far.
+  // Confirmed to have NO French client translation (stay in English): 'Fractsidus', 'Night City'.
   'New Federation': 'Nouvelle Fédération',
   // Matches the established rendering already used in this same character's own desc prose
   // above ("Institut de Recherche du Collectif Trek-spatial").
   'Spacetrek Collective': 'Collectif Trek-spatial',
+  'Black Shores': 'Littoral Noir',
+  'Roya Frostlands': 'Terres Givrées Royannes',
+  'Roya Tribe': 'Tribu Royanne',
+  'Troupe of Fools': 'Troupe des Fous',
+  'Order of the Deep': 'Ordre des Profondeurs',
+  'Ghost Hounds': 'Les Chasseurs de Fantômes',
+  'Lollo Logistics': 'Loulou Logistique',
+  'Ministry of Development': 'Ministère des Armées',
+  'Zhaoming Commerce Guild': 'Maison de Commerce de Zhaoming',
+  'Startorch Academy': 'Académie Brandétoile',
+  'Miko of Flaming Sakura': 'Miko des Sakuras en Flammes',
   // combatRoles (CHARACTER_DATA[name].combatRoles)
   'Main Damage Dealer': 'DPS Principal',
   'Support and Healer': 'Soin et Support',
