@@ -29,7 +29,7 @@ export const CHARACTER_DESC_FR = {
   'Jianxin': "Lance Étoilée Guide, moniale taoïste et héritière du Fengyiquan qui a dédié sa vie à maîtriser l'art martial ultime — avec le pouvoir de canaliser et transformer le Chi environnant, elle crée des barrières protectrices qui purifient à la fois le corps et l'esprit. Soutien/sous-DPS à Bouclier qui canalise l'Attaque Lourde Spirale de Chi Primordial (Progrès du Zhoutian) pour un vaste bouclier proportionnel aux PV et des soins périodiques d'équipe, regroupe les ennemis avec le Champ de Force de Purification de la Libération, et confère au personnage entrant +38 % DGT de Libération de Résonance via son Outro.",
   'Lingyang': "Bourrasque Givrée, membre enthousiaste et courageux de la Troupe de la Danse du Lion de Jinzhou et dernier Suan'ni vivant — un visiteur sincère et compatissant de la communauté humaine doté de capacités physiques incroyables, qui incarne l'esprit de la Danse du Lion avec son style unique. DPS Glacio sur le terrain qui accumule l'Esprit du Lion via sa Compétence de Résonance Poings Furieux, puis le déchaîne via l'Attaque Lourde Plongeon Glorieux pour entrer dans l'état aérien du Lion Bondissant, enchaînant des Attaques Normales améliorées, Vagabond des Montagnes et Coups de Pied Tempétueux.",
   'Verina': "L'Appel de la Nature — dotée d'une vaste connaissance de la botanique, Verina est toujours prévenante, toujours souriante, et souhaite toujours que chaque fleur soit bénie du miracle de la vie. Soigneuse Spectro qui accumule de l'Énergie de Photosynthèse via l'Attaque Normale, la Compétence et l'Intro, puis la dépense en Attaques Lourdes/Aériennes Éclosions de Fleurs Stellaires pour soigner l'équipe ; la Libération Floraison Arboricole soigne et marque les ennemis pour un soin sur Attaque Coordonnée, tandis que l'Outro Éclosion soigne le personnage entrant et confère à l'équipe une Amplification de tous les DGT.",
-  'Yinlin': "Marionnette Exécutrice — une Patrouilleuse habile et une puissante Résonatrice Naturelle de Jinzhou ; après avoir été suspendue de ses fonctions au Bureau de la Sécurité Publique, elle doit désormais traquer les maux cachés dans le secret. Sous-DPS Electro qui marque les cibles du Sceau du Pécheur via l'Attaque Basique et la Compétence d'Intro, inflige des DGT Electro hors du terrain via des Attaques Coordonnées (Salve Électromagnétique/Frappe du Jugement) une fois la Marque du Châtiment appliquée, et amplifie les DGT Electro et les DGT de Libération de Résonance du coéquipier entrant via son Outro.",
+  'Yinlin': "Marionnette Exécutrice — une Patrouilleuse habile et une puissante Résonatrice Naturelle de Jinzhou ; après avoir été suspendue de ses fonctions au Bureau de la Sécurité Publique, elle doit désormais traquer les maux cachés dans le secret. Sous-DPS Electro qui marque les cibles du Sceau du Pécheur via l'Attaque Normale et la Compétence d'Intro, inflige des DGT Electro hors du terrain via des Attaques Coordonnées (Salve Électromagnétique/Frappe du Jugement) une fois la Marque du Châtiment appliquée, et amplifie les DGT Electro et les DGT de Libération de Résonance du coéquipier entrant via son Outro.",
   'Jinhsi': "Renouveau de l'Aube, Magistrate de Jinzhou, illumine doucement les espoirs de son peuple comme des rayons de soleil hivernal — en tant que Résonatrice Désignée du Sentinel vénéré, elle fait preuve d'humilité et se consacre corps et âme à guider son peuple vers un avenir radieux. DPS Spectro sur le terrain qui accumule de l'Incandescence à partir des DGT d'Attribut ou Coordonnés de n'importe quel membre de l'équipe, entre en Incarnation via sa Compétence de Résonance, puis dépense ses cumuls via Épiphanie Lumineuse pour un nuke Éclat Stella évolutif.",
   'Changli': "Flamme Éternelle, conseillère au service de la Magistrate de Jinzhou et ancienne Secrétaire Générale dans la capitale — enveloppée de flammes, elle est destinée à brûler intensément jusqu'à ses dernières braises, s'élevant au pouvoir avec une détermination ardente et un esprit toujours stratégique. DPS Fusion sur le terrain qui entre en Vraie Vision depuis les finisseurs de son Attaque Normale/Compétence/Intro, accumule des cumuls d'Enflammement à partir des suivis de Vraie Vision, puis déchaîne l'Attaque Lourde renforcée Sacrifice Ardent — un kit rapide et propice au changement rapide qui confère aussi au personnage entrant un buff de DGT Fusion et de Libération via son Outro.",
   'Zhezhi': "Pinceau Enchanté — peintre timide et discrète de la scène artistique de Jinzhou dont les créations à l'encre prennent vie et combattent à son commandement ; sa timidité masque une dévotion farouche envers son art et ceux qu'elle appelle amis. Sous-DPS/soutien Glacio qui peint des Empreintes Fantasmagoriques durant son Attaque Basique et son combo Forte, les consomme pour déchaîner des nukes Glacio hors du terrain en Attaque Coordonnée via sa Libération de Résonance (Toile Vivante), et confère au personnage entrant un buff de DGT Glacio et DGT de Compétence via son Outro Graver et Peindre.",
@@ -354,12 +354,12 @@ export const CHARACTER_ROTATION_NOTE_FR = {
   ],
   'Yinlin': [
     'Changez pour elle — se déclenche automatiquement, touche une grande zone et applique le Sceau du Pécheur.',
-    'Appuyez UNE FOIS sur Attaque Basique (optionnellement annulez par changement ensuite) — déclenche l\'Étape 4 du combo de marionnette.',
-    'Appuyez sur Compétence — inflige des DGT Electro et l\'envoie en Mode Exécution pendant 10 s : ses 4 prochaines étapes d\'Attaque Basique/Contre-attaque Esquivée déclenchent chacune aussi une Salve Électromagnétique sur toute cible portant le Sceau du Pécheur.',
+    'Appuyez UNE FOIS sur Attaque Normale (optionnellement annulez par changement ensuite) — déclenche l\'Étape 4 du combo de marionnette.',
+    'Appuyez sur Compétence — inflige des DGT Electro et l\'envoie en Mode Exécution pendant 10 s : ses 4 prochaines étapes d\'Attaque Normale/Contre-attaque Esquivée déclenchent chacune aussi une Salve Électromagnétique sur toute cible portant le Sceau du Pécheur.',
     'MAINTENEZ Attaque Lourde — consomme de l\'Endurance pour une frappe de marionnette.',
     'Appuyez à nouveau sur Compétence juste après l\'Attaque Lourde — essayez de la tirer dès que le premier coup de l\'Attaque Lourde atterrit, pour annuler sa récupération. Ne fonctionne que si lancé peu après Rugissement Magnétique, sinon elle part en temps de recharge à la place.',
     'Appuyez sur Libération à l\'instant où Yinlin atterrit après l\'Attaque Lourde — appelle la foudre sur une grande zone et réapplique le Sceau du Pécheur.',
-    'Appuyez UNE FOIS sur Attaque Basique — restaure des Points de Jugement vers le maximum de 100.',
+    'Appuyez UNE FOIS sur Attaque Normale — restaure des Points de Jugement vers le maximum de 100.',
     'Une fois les Points de Jugement à 100/100, son Attaque Lourde est remplacée automatiquement par ceci — appuyez sur Attaque Lourde pour consommer les 100 points pour un gros coup qui améliore tout Sceau du Pécheur sur la cible en Marque du Châtiment pendant 18 s (déclenche une Frappe du Jugement automatique sur cette cible une fois par seconde tant qu\'elle subit des dégâts).',
     'Utilisez la compétence de votre Écho équipé (Héron de l\'Impermanence recommandé) juste après Chiffre Caméléon, puis changez immédiatement de personnage pour annuler son animation sans en perdre l\'effet.',
     'Se déclenche automatiquement au changement de personnage. Confère au Résonateur entrant +20 % de Renforcement de DGT Electro et +25 % de Renforcement de DGT de Libération de Résonance pendant 14 s.',
@@ -1531,10 +1531,10 @@ export const SKILL_NAME_FR = {
     "Zapstring's Dance Stage 1-4": 'Danse de Zapstring Étape 1-4',
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
-    'Magnetic Roar → Lightning Execution': 'Hurle Magnétique → Exécution Éclairée',
-    'Electromagnetic Blast': 'Explosion Magnétique',
-    'Chameleon Cipher': 'Mille Visages',
-    'Judgment Strike': 'Verdict du Foudre',
+    'Magnetic Roar → Lightning Execution': 'Rugissement Magnétique → Exécution Éclairée',
+    'Electromagnetic Blast': 'Salve Électromagnétique',
+    'Chameleon Cipher': 'Chiffre Caméléon',
+    'Judgment Strike': 'Frappe du Jugement',
     'Thundering Wrath': 'Rage Foudroyante',
     'Raging Storm': 'Orage Argentée',
     'Strategist': 'La tacticienne',
@@ -2129,6 +2129,10 @@ export const MULT_DESC_FR = {
   'Xiangli Yao': {
     'Chain Rule': '237,63 % ATQ ×3 procs (8 s, TR de 2 s)',
   },
+  'Yinlin': {
+    'Judgment Strike': '78,64 % (1/s)',
+    'Strategist': "+20 % DGT Electro + 25 % d'Amplification DGT de Libération (14 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2582,5 +2586,14 @@ export const SKILL_DESC_FR = {
     'Intuition: Divergence': "Remplace la Compétence de Résonance en Intuition. Confère 2 Capacité de Performance par lancer. Comptée comme DGT de Compétence, pas DGT de Libération.",
     'Intuition: Unfathomed': "Remplace la Contre-attaque d'Esquive en Intuition. Confère 2 Capacité de Performance par lancer. Comptée comme DGT de Libération de Résonance.",
     'Chain Rule': "Frappes laser au premier coup d'Attaque Normale du Résonateur entrant. DGT purs, sans buff d'équipe.",
+  },
+  'Yinlin': {
+    'Magnetic Roar → Lightning Execution': "Recharge de 12 s. Rugissement Magnétique place Yinlin en Mode Exécution, applique Sceau du Pécheur.",
+    'Electromagnetic Blast': "Les coups d'Attaque Normale/Contre-attaque d'Esquive (jusqu'à 4) déclenchent ceci sur les cibles marquées Sceau du Pécheur/Châtiment.",
+    'Chameleon Cipher': "À Points de Jugement pleins, l'Attaque Lourde devient Chiffre Caméléon : améliore le Sceau du Pécheur en Marque du Châtiment.",
+    'Judgment Strike': "Attaque Coordonnée déclenchée quand une cible marquée Châtiment subit des dégâts, comptée comme DGT d'Attaque Coordonnée.",
+    'Thundering Wrath': "Recharge de 16 s. Applique Sceau du Pécheur.",
+    'Raging Storm': "Applique Sceau du Pécheur.",
+    'Strategist': "Confère ces buffs au Résonateur entrant, sans DGT direct.",
   },
 };
