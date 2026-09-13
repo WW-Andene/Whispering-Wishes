@@ -1531,9 +1531,8 @@ export const SKILL_NAME_FR = {
     'Umbra: Thwackblade': 'Umbra : Lame Cinglante',
     'Umbra: Plunging Attack': 'Umbra : Attaque Plongeante',
     'Umbra: Dodge Counter': "Umbra : Contre-attaque d'Esquive",
-    // No existing precedent for this one; best-effort, not verified against the game's official
-    // French client.
-    'Dreamless': 'Sans Rêve',
+    // Confirmed by the user (matches the game's real French localization, not a literal translation).
+    'Dreamless': 'Sans-Délire',
     'Deadening Abyss': "Abysse qui S'éteint",
     'Instant of Annihilation': "Instant transformé",
     'Soundweaver': 'Cri',
