@@ -1,6 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Whispering Wishes</string>
+    <!-- Leading space (2026-09-13, direct user request): the "Display over other apps" /
+         "Superposition sur d'autres applis" system settings list — and Android's Settings > Apps
+         list generally — sorts every installed app alphabetically by THIS label (PackageManager
+         reads it from the <application> tag's android:label, not the launcher activity's own
+         title_activity_main below, which stays unprefixed so the home-screen icon still reads
+         "Whispering Wishes" exactly). A leading space sorts before every letter under default
+         Unicode collation, pushing this app to the very top of that list instead of near the
+         bottom under "W" — used so the Pocket Convene overlay permission is fast to find. -->
+    <string name="app_name">" Whispering Wishes"</string>
     <string name="title_activity_main">Whispering Wishes</string>
     <string name="package_name">cc.andene.whisperingwishes</string>
     <string name="custom_url_scheme">cc.andene.whisperingwishes</string>
