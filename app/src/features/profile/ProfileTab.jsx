@@ -598,7 +598,7 @@ function ProfileTab({
               <CardBody className="space-y-3">
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center text-gray-400" style={{ background: 'var(--bg-btn)' }}>
+                    <div className="w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center text-gray-400" style={{ background: 'var(--bg-btn)' }}>
                       <Globe size={16} />
                     </div>
                     <div>
@@ -639,7 +639,7 @@ function ProfileTab({
                 {/* OLED Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center ${visualSettings.oledMode ? 'bg-white text-black' : 'text-gray-400'}`} style={!visualSettings.oledMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Monitor size={16} />
                     </div>
                     <div>
@@ -666,7 +666,7 @@ function ProfileTab({
                 {/* Dyslexic Font Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.dyslexicFont ? 'bg-amber-500 text-white' : 'text-gray-400'}`} style={!visualSettings.dyslexicFont ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center ${visualSettings.dyslexicFont ? 'bg-amber-500 text-white' : 'text-gray-400'}`} style={!visualSettings.dyslexicFont ? { background: 'var(--bg-btn)' } : undefined}>
                       <Type size={16} />
                     </div>
                     <div>
@@ -689,7 +689,7 @@ function ProfileTab({
                 {/* Color-Blind Mode Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.colorBlindMode ? 'bg-teal-500 text-white' : 'text-gray-400'}`} style={!visualSettings.colorBlindMode ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center ${visualSettings.colorBlindMode ? 'bg-teal-500 text-white' : 'text-gray-400'}`} style={!visualSettings.colorBlindMode ? { background: 'var(--bg-btn)' } : undefined}>
                       <Eye size={16} />
                     </div>
                     <div>
@@ -712,7 +712,7 @@ function ProfileTab({
                 {/* Swipe Navigation Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center ${visualSettings.swipeNavigation ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.swipeNavigation ? { background: 'var(--bg-btn)' } : undefined}>
                       <ChevronDown size={16} className="-rotate-90" />
                     </div>
                     <div>
@@ -739,7 +739,7 @@ function ProfileTab({
                 {/* Animations Toggle — 3-state: off < on < full */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center ${visualSettings.animationsEnabled !== 'off' ? (visualSettings.animationsEnabled === 'full' ? 'bg-fuchsia-500 text-white' : 'bg-purple-500 text-white') : 'text-gray-400'}`} style={visualSettings.animationsEnabled === 'off' ? { background: 'var(--bg-btn)' } : undefined}>
                       <Sparkles size={16} />
                     </div>
                     <div>
@@ -873,7 +873,7 @@ function ProfileTab({
                       className={`flex items-center gap-3 w-full text-left ${bgSectionCollapsed ? '' : 'mb-3'}`}
                       aria-expanded={!bgSectionCollapsed}
                     >
-                      <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
+                      <div className="w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
                         <Sparkles size={16} />
                       </div>
                       <div className="flex-1">
@@ -1132,7 +1132,7 @@ function ProfileTab({
                 <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3 mb-3">
                     <div
-                      className="w-[30px] h-[30px] rounded-lg flex items-center justify-center"
+                      className="w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center"
                       style={{ background: visualSettings.theme !== 'default' ? getElementBg(visualSettings.theme) : 'var(--bg-btn)', color: visualSettings.theme !== 'default' ? getElementColor(visualSettings.theme) : '#9ca3af' }}
                     >
                       <Sparkles size={16} />
@@ -1162,7 +1162,7 @@ function ProfileTab({
                 {/* Master Sound Toggle */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                   <div className="flex items-center gap-3">
-                    <div className={`w-[30px] h-[30px] rounded-lg flex items-center justify-center ${visualSettings.soundEnabled ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.soundEnabled ? { background: 'var(--bg-btn)' } : undefined}>
+                    <div className={`w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center ${visualSettings.soundEnabled ? 'bg-cyan-500 text-white' : 'text-gray-400'}`} style={!visualSettings.soundEnabled ? { background: 'var(--bg-btn)' } : undefined}>
                       {visualSettings.soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
                     </div>
                     <div>
@@ -1208,16 +1208,6 @@ function ProfileTab({
                     <ChevronDown size={16} className={`text-gray-400 transition-transform flex-shrink-0 ${ambientSectionCollapsed ? '-rotate-90' : ''}`} />
                   </button>
 
-                  <div className={`flex flex-wrap gap-2 ${ambientSectionCollapsed ? 'mt-3' : 'mb-2'}`}>
-                    <button
-                      type="button"
-                      onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'off' })}
-                      className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'off' ? 'active-gold' : ''}`}
-                    >
-                      {t('profile.sound.trackOff')}
-                    </button>
-                  </div>
-
                   {!ambientSectionCollapsed && (
                     <div className="flex gap-1.5 mb-2">
                       {AMBIENT_OST_CATEGORIES.map((cat) => (
@@ -1241,7 +1231,14 @@ function ProfileTab({
                     const activeCategory = ambientSectionCollapsed ? 'login' : ambientCategory;
                     const categoryTracks = AMBIENT_OST_TRACKS.filter(t2 => t2.category === activeCategory);
                     return (
-                      <div className="flex flex-wrap gap-2">
+                      <div className={`flex flex-wrap gap-2 ${ambientSectionCollapsed ? 'mt-3' : ''}`}>
+                        <button
+                          type="button"
+                          onClick={() => saveVisualSettings({ ...visualSettings, logScreenTrack: 'off' })}
+                          className={`kuro-btn kuro-btn-sm ${visualSettings.logScreenTrack === 'off' ? 'active-gold' : ''}`}
+                        >
+                          {t('profile.sound.trackOff')}
+                        </button>
                         {activeCategory === 'login' && ['1', '2', '3'].map((track) => (
                           <button
                             key={track}
@@ -1283,7 +1280,7 @@ function ProfileTab({
                 {pwa?.canInstall && (
                   <div className="flex items-center justify-between p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
                     <div className="flex items-center gap-3">
-                      <div className="w-[30px] h-[30px] rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
+                      <div className="w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center bg-[rgba(237,175,24,0.2)] text-yellow-400">
                         <Download size={16} />
                       </div>
                       <div>
