@@ -22,7 +22,8 @@ import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx
 import { storageAvailable } from '../../core/storage.js';
 import { STANDARD_WEAPON_TARGET_KEY } from '../../shared/constants/appConstants.js';
 import { DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
-import { t } from '../../utils/i18n.js';
+import { getLocalizedWeaponData } from '../../data/weapons.js';
+import { t, getLocale } from '../../utils/i18n.js';
 
 // Direct user request 2026-09-11: the Standard banner's old horizontally-scrolling row of
 // weapon/character tags is replaced by a single (^) button that opens this kuro-styled panel —
@@ -34,8 +35,13 @@ const StandardPoolPicker = memo(({ isOpen, onClose, title, items, itemKey, colum
   const { getImageFraming } = useImageFramingContext();
   const gridColsClass = columns === 3 ? 'grid-cols-3' : 'grid-cols-5';
 
+  const localizedWeaponData = getLocalizedWeaponData(getLocale());
+
   const renderTile = (item) => {
     const name = typeof item === 'string' ? item : item[itemKey];
+    // Character names stay untranslated (established policy); weapon names go through
+    // WEAPON_DATA_FR's displayName, same as everywhere else weapon names are shown.
+    const displayName = selectable ? (localizedWeaponData[name]?.displayName || name) : name;
     const selected = selectable && targetWeapon === name;
     const previewImg = DEFAULT_COLLECTION_IMAGES[name];
     const framingKey = `collection-${name}`;
@@ -45,7 +51,7 @@ const StandardPoolPicker = memo(({ isOpen, onClose, title, items, itemKey, colum
         <div
           className={`w-full aspect-square rounded-md overflow-hidden border bg-black/25 cursor-pointer ${selected ? 'border-yellow-400 ring-2 ring-yellow-500/50' : 'border-cyan-400/40'}`}
           onClick={() => setDetailModal?.({ show: true, type: selectable ? 'weapon' : 'character', name, imageUrl: previewImg, framing })}
-          title={t('tracker.conveneSim.viewDetailAria', { name })}
+          title={t('tracker.conveneSim.viewDetailAria', { name: displayName })}
         >
           {previewImg && (
             <img
@@ -62,9 +68,9 @@ const StandardPoolPicker = memo(({ isOpen, onClose, title, items, itemKey, colum
           type="button"
           onClick={selectable ? () => selectTarget(name) : undefined}
           className={`w-full text-2xs px-1 py-0.5 rounded truncate text-center ${selectable ? 'cursor-pointer' : 'cursor-default'} ${selected ? 'bg-yellow-500 text-black font-bold' : 'text-cyan-300 bg-cyan-500/30'}`}
-          title={selectable ? t('tracker.conveneSim.targetWeaponHint') : name}
+          title={selectable ? t('tracker.conveneSim.targetWeaponHint') : displayName}
         >
-          {selected && '★ '}{name}
+          {selected && '★ '}{displayName}
         </button>
       </div>
     );

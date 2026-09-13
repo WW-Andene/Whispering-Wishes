@@ -6,6 +6,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Archive, ArrowRight, Clock, Crown, Search, Sparkles, Star, Sword, Swords, Upload, X } from 'lucide-react';
 import { BANNER_HISTORY, PLACEHOLDER_IMAGE, CHARACTER_THEMES, MOST_PULLED_STATS } from '../../data/banners.js';
+import { STANDARD_BANNER_TITLES_FR } from '../../data/banners.fr.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -236,7 +237,7 @@ function TrackerTab({
                 {/* Standard Resonator Banner */}
                 <StandardBannerSection
                   bannerImage={activeBanners.standardCharBannerImage}
-                  altText="Tidal Chorus" title="Tidal Chorus" subtitle={t('tracker.standardResonatorLabel')}
+                  altText="Tidal Chorus" title={(getLocale() === 'fr' && STANDARD_BANNER_TITLES_FR['Tidal Chorus']) || 'Tidal Chorus'} subtitle={t('tracker.standardResonatorLabel')}
                   items={activeBanners.standardCharacters} itemKey="name"
                   profileData={state.profile.standardChar} visualSettings={visualSettings}
                   kind="standardChar"
@@ -247,7 +248,7 @@ function TrackerTab({
                 {/* Standard Weapon Banner */}
                 <StandardBannerSection
                   bannerImage={activeBanners.standardWeapBannerImage}
-                  altText="Winter Brume" title="Winter Brume" subtitle={t('tracker.standardWeaponLabel')}
+                  altText="Winter Brume" title={(getLocale() === 'fr' && STANDARD_BANNER_TITLES_FR['Winter Brume']) || 'Winter Brume'} subtitle={t('tracker.standardWeaponLabel')}
                   items={activeBanners.standardWeapons} itemKey="name"
                   profileData={state.profile.standardWeap} visualSettings={visualSettings}
                   imagePosition="65% top"

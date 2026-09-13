@@ -82,7 +82,7 @@ export const WEAPON_DATA_FR = {
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Compétence d'Outro → ATQ du personnage entrant +10 % (14 s).",
   },
   'Abyss Surges': {
-    name: 'Ressacs de l\'Abysse',
+    name: "Flux de l'Abîme",
     desc: "5★ Standard. Gantelets chargés d'un pouvoir abyssal. Régén. d'Énergie avec buffs croisés de DGT Basique/Compétence.",
     passive: "Résolution Orageuse : Régén. d'Énergie +12,8 %. Coup de Compétence de Résonance → DGT d'Attaque Basique personnels +10 % (8 s). Coup d'Attaque Basique → DGT de Compétence de Résonance personnels +10 % (8 s).",
   },

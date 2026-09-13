@@ -30,8 +30,14 @@
 // Only the CURRENT (v3.6-p2) banner's characters[].title values belong here.
 export const CURRENT_BANNER_TITLES_FR = {
   'Where Santu Beckons': 'Là où Santu appelle',
-  'Thousand Futures Mirrored in Snow': 'Mille Avenirs Reflétés dans la Neige',
-  'Distant May the Starlights Be': "Que Loin Soient les Lueurs d'Étoiles",
+  'Thousand Futures Mirrored in Snow': 'Mille futurs reflétés dans la neige',
+  'Distant May the Starlights Be': 'Aussi lointaines soit les étoiles',
+};
+
+// Standard (permanent) banner titles — TrackerTab.jsx.
+export const STANDARD_BANNER_TITLES_FR = {
+  'Tidal Chorus': 'Chorale des vagues',
+  'Winter Brume': "Brume d'hiver",
 };
 
 export const EVENTS_FR = {
