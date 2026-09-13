@@ -28,7 +28,7 @@ export const CHARACTER_DESC_FR = {
   'Encore': "Jeu du Comptage des Moutons, une fille des Rives Noires accompagnée d'un Wooly noir et d'un Wooly blanc, qui rêve de créer des histoires heureuses avec des bonbons, des contes de fées et son imagination. DPS Fusion sur le terrain qui accumule du Chaos via ses coups Basique/Compétence/Intro en une Attaque Lourde renforcée et réductrice de dégâts (Frénésie Nuageuse), puis déchaîne la Libération de Résonance Rave Cosmique pour transformer tout son kit en versions Fusion améliorées pendant 10 s.",
   'Jianxin': "Lance Étoilée Guide, moniale taoïste et héritière du Fengyiquan qui a dédié sa vie à maîtriser l'art martial ultime — avec le pouvoir de canaliser et transformer le Chi environnant, elle crée des barrières protectrices qui purifient à la fois le corps et l'esprit. Soutien/sous-DPS à Bouclier qui canalise l'Attaque Lourde Spirale de Chi Primordial (Progrès du Zhoutian) pour un vaste bouclier proportionnel aux PV et des soins périodiques d'équipe, regroupe les ennemis avec le Champ de Force de Purification de la Libération, et confère au personnage entrant +38 % DGT de Libération de Résonance via son Outro.",
   'Lingyang': "Bourrasque Givrée, membre enthousiaste et courageux de la Troupe de la Danse du Lion de Jinzhou et dernier Suan'ni vivant — un visiteur sincère et compatissant de la communauté humaine doté de capacités physiques incroyables, qui incarne l'esprit de la Danse du Lion avec son style unique. DPS Glacio sur le terrain qui accumule l'Esprit du Lion via sa Compétence de Résonance Poings Furieux, puis le déchaîne via l'Attaque Lourde Plongeon Glorieux pour entrer dans l'état aérien du Lion Bondissant, enchaînant des Attaques Normales améliorées, Vagabond des Montagnes et Coups de Pied Tempétueux.",
-  'Verina': "L'Appel de la Nature — dotée d'une vaste connaissance de la botanique, Verina est toujours prévenante, toujours souriante, et souhaite toujours que chaque fleur soit bénie du miracle de la vie. Soigneuse Spectro qui accumule de l'Énergie de Photosynthèse via les Attaques Basiques, la Compétence et l'Intro, puis la dépense en Attaques Lourdes/Aériennes Éclosions de Fleurs Stellaires pour soigner l'équipe ; la Libération Floraison Arboricole soigne et marque les ennemis pour un soin sur Attaque Coordonnée, tandis que l'Outro Éclosion soigne le personnage entrant et confère à l'équipe une Amplification de tous les DGT.",
+  'Verina': "L'Appel de la Nature — dotée d'une vaste connaissance de la botanique, Verina est toujours prévenante, toujours souriante, et souhaite toujours que chaque fleur soit bénie du miracle de la vie. Soigneuse Spectro qui accumule de l'Énergie de Photosynthèse via l'Attaque Normale, la Compétence et l'Intro, puis la dépense en Attaques Lourdes/Aériennes Éclosions de Fleurs Stellaires pour soigner l'équipe ; la Libération Floraison Arboricole soigne et marque les ennemis pour un soin sur Attaque Coordonnée, tandis que l'Outro Éclosion soigne le personnage entrant et confère à l'équipe une Amplification de tous les DGT.",
   'Yinlin': "Marionnette Exécutrice — une Patrouilleuse habile et une puissante Résonatrice Naturelle de Jinzhou ; après avoir été suspendue de ses fonctions au Bureau de la Sécurité Publique, elle doit désormais traquer les maux cachés dans le secret. Sous-DPS Electro qui marque les cibles du Sceau du Pécheur via l'Attaque Basique et la Compétence d'Intro, inflige des DGT Electro hors du terrain via des Attaques Coordonnées (Salve Électromagnétique/Frappe du Jugement) une fois la Marque du Châtiment appliquée, et amplifie les DGT Electro et les DGT de Libération de Résonance du coéquipier entrant via son Outro.",
   'Jinhsi': "Renouveau de l'Aube, Magistrate de Jinzhou, illumine doucement les espoirs de son peuple comme des rayons de soleil hivernal — en tant que Résonatrice Désignée du Sentinel vénéré, elle fait preuve d'humilité et se consacre corps et âme à guider son peuple vers un avenir radieux. DPS Spectro sur le terrain qui accumule de l'Incandescence à partir des DGT d'Attribut ou Coordonnés de n'importe quel membre de l'équipe, entre en Incarnation via sa Compétence de Résonance, puis dépense ses cumuls via Épiphanie Lumineuse pour un nuke Éclat Stella évolutif.",
   'Changli': "Flamme Éternelle, conseillère au service de la Magistrate de Jinzhou et ancienne Secrétaire Générale dans la capitale — enveloppée de flammes, elle est destinée à brûler intensément jusqu'à ses dernières braises, s'élevant au pouvoir avec une détermination ardente et un esprit toujours stratégique. DPS Fusion sur le terrain qui entre en Vraie Vision depuis les finisseurs de son Attaque Normale/Compétence/Intro, accumule des cumuls d'Enflammement à partir des suivis de Vraie Vision, puis déchaîne l'Attaque Lourde renforcée Sacrifice Ardent — un kit rapide et propice au changement rapide qui confère aussi au personnage entrant un buff de DGT Fusion et de Libération via son Outro.",
@@ -1508,10 +1508,10 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Stage 1-3 + Heavy': 'Étape 1-3 + Lourde',
     'Botany Experiment': 'Expérience Botanique',
-    'Heavy/Mid-air ATK: Starflower Blooms': "Attaque Lourde/Aérienne : Combinaison d'Étoiles",
-    'Arboreal Flourish': 'Epanouir',
+    'Heavy/Mid-air Attack: Starflower Blooms': "Attaque Lourde/Aérienne : Éclosions de Fleurs Stellaires",
+    'Arboreal Flourish': 'Floraison Arboricole',
     'Verdant Growth': 'Croissance Verdoyante',
-    'Blossom': 'Fleurer',
+    'Blossom': 'Éclosion',
   },
   'Xiangli Yao': {
     'Probe Stage 1-5': 'Sonder Étape 1-5',
@@ -2119,6 +2119,10 @@ export const MULT_DESC_FR = {
     'Proof of Existence: Enlightenment / Discernment': "45,30 %×5 + soin (259+1,20 % PV) · 19,64 %×3 (basé sur les PV) + soin (289+1,32 % PV)",
     'Binary Butterfly': "+15 % d'Amplification de tous les DGT",
   },
+  'Verina': {
+    'Heavy/Mid-air Attack: Starflower Blooms': "64,95 %+97,42 % (Lourde) · 67,64 %+63,82 %+30,50 %×3 (Aérienne)",
+    'Blossom': "+15 % d'Amplification de tous les DGT (30 s) + soin",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2556,5 +2560,11 @@ export const SKILL_DESC_FR = {
     'Where Trust Leads Me!': "Nuke d'Ultime de type Écho. Amorce aussi sa prochaine Rune.",
     'Solsworn Etymology': "Coup d'ouverture qui démarre l'enchaînement standard.",
     'In This Very Moment': "Coup finisseur qui immobilise les ennemis aux lancers de Compétence d'Écho des alliés.",
+  },
+  'Verina': {
+    'Botany Experiment': "Recharge de 12 s. Confère de l'Énergie de Photosynthèse.",
+    'Heavy/Mid-air Attack: Starflower Blooms': "Consomme 1 Énergie de Photosynthèse (plafond 4) par lancer pour soigner l'équipe (1188 + 29,75 % ATQ au Niv.10) et restaurer 12 Énergie de Concerto.",
+    'Arboreal Flourish': "175 Énergie, recharge 25 s. Soigne l'équipe (950 + 23,80 % ATQ au Niv.10) et applique une Marque de Photosynthèse de 12 s. Les coups sur la cible marquée déclenchent une Attaque Coordonnée de soin (9,95 % DGT ATQ, soin de 428 + 10,71 % ATQ), plafonnée à 1/s.",
+    'Blossom': "Soigne le Résonateur entrant de 19 % ATQ/s pendant 6 s et confère à toute l'équipe proche +15 % d'Amplification de tous les DGT (30 s).",
   },
 };
