@@ -968,6 +968,18 @@ export const SKILL_NAME_FR = {
     'Glacio Bite': 'Morsure glaciale',
     'Frostedge': 'Tranchant de Givre',
     'Snowlight Blessing': 'Bénédiction de la lueur neigeuse',
+    'Mid-air Attack - Present Self': 'Attaque Aérienne - Le Soi Présent',
+    'Dodge Counter - Present Self': "Contre-attaque d'Esquive - Le Soi Présent",
+    'Resonance Skill - Present Self': 'Compétence de Résonance - Le Soi Présent',
+    'Foreclaimed Self Stage 1-3': 'Le Soi Prédestiné Étape 1-3',
+    'Foreclaimed Self Stage 4-5': 'Le Soi Prédestiné Étape 4-5',
+    'Heavy Attack - Foreclaimed Self': 'Attaque Lourde - Le Soi Prédestiné',
+    'Mid-air Attack - Foreclaimed Self Stage 1-2': 'Attaque Aérienne - Le Soi Prédestiné Étape 1-2',
+    'Mid-air Plunging Attack - Foreclaimed Self': 'Attaque Aérienne Plongeante - Le Soi Prédestiné',
+    'Dodge Counter - Foreclaimed Self': "Contre-attaque d'Esquive - Le Soi Prédestiné",
+    'Frostblight: Jade Cleave': 'Fléau de Givre : Fauche de Jade',
+    'Frostblight: Petalfall': 'Fléau de Givre : Chute de Pétales',
+    'Iai': 'Iai',
   },
   'Lucy': {
     'Locked Thread Stage 1-4': 'Thread Verrouillé Étape 1-4',
@@ -1713,15 +1725,42 @@ export const GENERIC_SKILL_NAME_FR = {
   'Standard': 'Standard',
 };
 
-// getGenericSkillNameFr — second-tier fallback after GENERIC_SKILL_NAME_FR: bare 'Stage N' /
-// 'Stage N-M' names (no character-specific title), which recur across many characters' basic
-// combo stages. Returns null (not a translation) when the input doesn't match, so callers can
-// keep falling back to the raw English name.
+// ACTION_PREFIX_FR — the action-type half of 'Action - Form/Stance Name' skill names (e.g.
+// 'Dodge Counter - Present Self', 'Heavy Attack - Stringblade'), which recurs across dozens of
+// characters' mode/stance-swap skills. The suffix (the bespoke form/stance name) still needs a
+// real per-character translation — this only ever produces a PARTIAL translation ("Contre-
+// attaque d'Esquive - Present Self") as an improvement over full English, never silently treated
+// as a finished, fully-translated skill name.
+const ACTION_PREFIX_FR = {
+  'Basic Attack': 'Attaque Normale',
+  'Heavy Attack': 'Attaque Lourde',
+  'Mid-air Attack': 'Attaque Aérienne',
+  'Mid-air Plunging Attack': 'Attaque Aérienne Plongeante',
+  'Dodge Counter': "Contre-attaque d'Esquive",
+  'Resonance Skill': 'Compétence de Résonance',
+  'Attack': 'Attaque',
+  'Standard': 'Standard',
+};
+
+// getGenericSkillNameFr — second-tier fallback after GENERIC_SKILL_NAME_FR:
+// 1. Bare 'Stage N' / 'Stage N-M' names (no character-specific title), recurring across many
+//    characters' basic combo stages.
+// 2. 'Action - Form Name' names: translates the action-type prefix via ACTION_PREFIX_FR and
+//    keeps the bespoke suffix as-is (partial translation) when no full per-character override
+//    exists in SKILL_NAME_FR.
+// Returns null (not a translation) when neither pattern matches, so callers keep falling back
+// to the raw English name.
 /** @param {string} skillName @returns {string|null} */
 export function getGenericSkillNameFr(skillName) {
-  const m = /^Stage (\d+)(-\d+)?$/.exec(skillName);
-  if (!m) return null;
-  return `Étape ${m[1]}${m[2] || ''}`;
+  const stageMatch = /^Stage (\d+)(-\d+)?$/.exec(skillName);
+  if (stageMatch) return `Étape ${stageMatch[1]}${stageMatch[2] || ''}`;
+  const dash = skillName.indexOf(' - ');
+  if (dash > 0) {
+    const prefix = skillName.slice(0, dash);
+    const suffix = skillName.slice(dash + 3);
+    if (ACTION_PREFIX_FR[prefix]) return `${ACTION_PREFIX_FR[prefix]} - ${suffix}`;
+  }
+  return null;
 }
 
 // SKILL_DESC_FR — per-skill description prose (SKILL_MULTIPLIERS' 4th tuple element, the
@@ -1731,6 +1770,22 @@ export function getGenericSkillNameFr(skillName) {
 // whichever characters come up — NOT yet covering the full roster.
 /** @type {Record<string, Record<string, string>>} */
 export const SKILL_DESC_FR = {
+  'Hiyuki': {
+    'Present Self Stage 1-3': "Enchaînement standard ; l'Étape 3 applique Glacio Chafe. Non reclassifiée — DGT d'Attaque Normale classiques.",
+    'Frost Splinter: Present Self': "Volée de 3 flèches une fois la Dévotion au maximum ; immunisée aux interruptions du début à la fin, applique Glacio Chafe au dernier coup ; considérée comme DGT de Libération de Résonance malgré l'entrée en Attaque Lourde.",
+    'Resonance Skill - Present Self': 'Améliore la prochaine Attaque Normale Étape 3 pour restaurer de la Dévotion supplémentaire.',
+    'Foreclaiming: Inward Vision': 'Ultime : entre dans Le Soi Prédestiné, applique 4 cumuls de Glacio Chafe au coup, accorde 3 Iai Givré.',
+    'Foreclaimed Self Stage 1-3': "Remplace l'Attaque Normale en Le Soi Prédestiné ; l'Étape 3 applique Glacio Chafe. Considérée comme DGT de Libération de Résonance.",
+    'Foreclaimed Self Stage 4-5': "Suite du combo d'Attaque Normale en Le Soi Prédestiné. Considérée comme DGT de Libération de Résonance.",
+    'Heavy Attack - Foreclaimed Self': 'Attaque Lourde standard (hors Givre Amer) en Le Soi Prédestiné ; considérée comme DGT de Libération de Résonance.',
+    'Mid-air Attack - Foreclaimed Self Stage 1-2': 'Considérée comme DGT de Libération de Résonance ; les Étapes 2 et 3 appliquent Glacio Chafe.',
+    'Mid-air Plunging Attack - Foreclaimed Self': 'Considérée comme DGT de Libération de Résonance.',
+    'Dodge Counter - Foreclaimed Self': 'Considérée comme DGT de Libération de Résonance.',
+    'Frostblight: Jade Cleave': 'Remplace la Compétence de Résonance au sol en Le Soi Prédestiné ; attire les cibles, restaure Cœur de Givre, retire Entrave de Givre.',
+    'Frostblight: Petalfall': 'Remplace la Compétence de Résonance aérienne en Le Soi Prédestiné ; partage un temps de recharge avec Fauche de Jade.',
+    'Iai': "Lancée en Posture Iai (100+ Cœur de Givre), jusqu'à 3 utilisations par entrée ; chaque lancer consomme 1 Iai Givré pour 3 cumuls de Glacio Chafe et accorde 1 Givre Amer Blanc-Linceul. Considérée comme DGT de Libération de Résonance.",
+    'Bitterfrost: Foreclaimed Self': "Finisseur de Forte une fois Givre Amer Blanc-Linceul plein ; le consomme pour 1 Lame Forgée de Neige. Considérée comme DGT de Libération de Résonance malgré l'entrée en Attaque Lourde.",
+  },
   'Camellya': {
     'Floral Ravage': 'Remplace la Compétence de Résonance en Mode Floraison ; considérée comme DGT d\'Attaque Normale selon son propre texte de kit. Met fin au Mode Floraison au lancer.',
     'Vining Ronde': 'Remplace le Saut en Mode Floraison (Saut : Ronde Grimpante dans la rotation Cheveux Blancs) ; considérée comme DGT d\'Attaque Normale. Met fin au Mode Floraison au lancer.',
