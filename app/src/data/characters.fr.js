@@ -1480,8 +1480,9 @@ export const SKILL_NAME_FR = {
     'Movement of Fate and Finality / Murmurs in a Haunting Dream': "Mouvement de la Vie et de la Mort / Murmures d'un Rêve Obsédant",
     // Confirmed by the user: 'Valse de l'Abîme Délaissé', not the earlier literal guess.
     'Waltz of Forsaken Depths': "Valse de l'Abîme Délaissé",
-    // Confirmed by the user — 'Quietus' is kept untranslated (proper/Latin term), not 'Quiétude'.
-    'Suite of Quietus': 'Suite de Quietus',
+    // The game's real client uses 'Suite de Quietus' (untranslated 'Quietus'), but the user prefers
+    // 'Suite de Quiétude' here.
+    'Suite of Quietus': 'Suite de Quiétude',
     // Confirmed by the user — the Forte's own generic name, distinct from its two specific enhanced
     // finishers above.
     'Rhapsody of a New World': 'Rhapsodie du Nouveau Monde',
