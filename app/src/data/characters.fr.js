@@ -1489,7 +1489,7 @@ export const SKILL_NAME_FR = {
     'Suite of Immortality': "Suite d'Immortalité",
     'Maestro State: Hecate': 'État de Maestro : Hécate',
     'Curtain Call': 'Salut Final',
-    'Unfinished Piece': 'Morceau à finir',
+    'Unfinished Piece': 'Morceau inachevé',
   },
   'Qiuyuan': {
     'Stage 1-3': 'Étape 1-3',
