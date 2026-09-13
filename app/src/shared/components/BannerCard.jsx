@@ -161,8 +161,10 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
         <ConveneVideo videoUrl={conveneVideoUrl} onEnded={() => setConveneVideoPlaying(false)} zIndex={3} visualSettings={visualSettings} />
       )}
 
+      {/* Edge offset matches the text overlay's own p-3 (12px) below, rather than the
+          8px top-2/right-2 default, so every layer sits the same distance from the card's edge. */}
       {endDate && (
-        <div className="absolute top-2 right-2 z-20">
+        <div className="absolute top-3 right-3 z-20">
           <CountdownTimer endDate={endDate} color={timerColor || 'yellow'} />
         </div>
       )}
@@ -255,7 +257,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           are independent features: pills appear for both character and
           weapon banners regardless of whether a convene-video preview
           exists for this item. */}
-      <div className="absolute bottom-2 right-2 z-20 flex items-center gap-1">
+      <div className="absolute bottom-3 right-3 z-20 flex items-center gap-1">
         <ConvenePullPills kind={isChar ? 'character' : 'weapon'} onPull={(c) => { setPullSim(c); setPullSimId(id => id + 1); }} showTide={isChar ? (calc?.radiant > 0) : (calc?.forging > 0)} />
         {conveneVideoUrl ? (
           <button
