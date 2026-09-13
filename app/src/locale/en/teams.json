@@ -20,7 +20,10 @@
   },
   "weaponSelector": {
     "title": "Select Weapon",
-    "bis": "BiS"
+    "bis": "BiS",
+    "any": "Any",
+    "searchPlaceholder": "Search weapons…",
+    "unequip": "Unequip weapon"
   },
   "enemyTarget": {
     "target": "Target",

@@ -8,7 +8,7 @@ import { getStatIcon, getWeaponTypeIcon, getRarityIcon } from '../../shared/util
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { getLocale, t } from '../../utils/i18n.js';
-import { STAT_NAME_FR } from '../../data/characters.fr.js';
+import { STAT_NAME_FR, WEAPON_TYPE_FR } from '../../data/characters.fr.js';
 
 const LOCALIZED_WEAPON_DATA = getLocalizedWeaponData(getLocale());
 // BANNER_HISTORY is declared newest-first (v3.6-p2 first, all the way back to v1.0-p1) — a weapon can
@@ -39,7 +39,11 @@ export default function WeaponSelector({
                             <p className="text-gray-400 text-sm inline-flex items-center gap-1">
                               {weaponSelectorTarget.charName} —
                               {getWeaponTypeIcon(CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon) && <img src={getWeaponTypeIcon(CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                              {CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon || 'Any'}
+                              {(() => {
+                                const wt = CHARACTER_DATA[weaponSelectorTarget.charName]?.weapon;
+                                if (!wt) return t('teams.weaponSelector.any');
+                                return (getLocale() === 'fr' && WEAPON_TYPE_FR[wt]) || wt;
+                              })()}
                             </p>
                           </div>
                           <button onClick={() => setWeaponSelectorOpen(false)} className="p-3 min-w-[calc(48px*var(--ui-scale,1))] min-h-[calc(48px*var(--ui-scale,1))] flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all" aria-label="Close weapon selector"><X size={16} /></button>
@@ -48,7 +52,7 @@ export default function WeaponSelector({
                           <input
                             value={weaponSearch}
                             onChange={e => setWeaponSearch(e.target.value)}
-                            placeholder="Search weapons…"
+                            placeholder={t('teams.weaponSelector.searchPlaceholder')}
                             className="kuro-input w-full text-base"
                           />
                         </div>
@@ -71,7 +75,7 @@ export default function WeaponSelector({
                               className="w-full p-2 rounded-lg border border-dashed border-white/15 text-sm text-gray-400 hover:border-red-500/30 hover:text-red-400 transition-all text-left"
                               style={{ background: 'var(--bg-btn)' }}
                             >
-                              ✕ Unequip weapon
+                              ✕ {t('teams.weaponSelector.unequip')}
                             </button>
                             {/* Filtered weapons */}
                             {(() => {

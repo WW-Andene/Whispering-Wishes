@@ -20,7 +20,10 @@
   },
   "weaponSelector": {
     "title": "Sélectionner une arme",
-    "bis": "BiS"
+    "bis": "BiS",
+    "any": "N'importe laquelle",
+    "searchPlaceholder": "Rechercher une arme…",
+    "unequip": "Déséquiper l'arme"
   },
   "enemyTarget": {
     "target": "Cible",
