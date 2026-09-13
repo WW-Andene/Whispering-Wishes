@@ -172,8 +172,10 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
           {item.isNew && (
             <div className="mb-1.5">
               {/* text-sm resolves to 11px in this project (kuro.css override) - off the PerfectSuite
-                  scale (CLAUDE.md 7); nearest compliant value is 12px, applied explicitly here. */}
-              <span className="text-[12px] bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>{t('tracker.newBadge')}</span>
+                  scale (CLAUDE.md 7); nearest compliant value is 12px, applied explicitly here.
+                  Horizontal padding matches kuro-badge's own 8px (kuro.css) rather than Tailwind's
+                  6px px-1.5, so the two pill badges in this card share the same padding convention. */}
+              <span className="text-[12px] bg-yellow-500 text-black px-2 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>{t('tracker.newBadge')}</span>
             </div>
           )}
           {/* Direct user request 2026-09-11: the main featured 5★'s own name now opens its
