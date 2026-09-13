@@ -1458,7 +1458,8 @@ export const SKILL_NAME_FR = {
     'Standard / Razor Wind': 'Standard / Tourbillon Tranchant',
     'Plunging Attack': 'Attaque Plongeante',
     'Awakening Gale / Skyfall Severance': 'Rafale Réveillante / Coupure Céleste',
-    'Cloudburst Dance / Unbound Flow': 'Danse des Nuées / Courant Indompté',
+    'Cloudburst Dance': 'Danse des Nuées',
+    'Unbound Flow': 'Courant Indompté',
     'Omega Storm': 'Tempête ultime',
     'Relentless Squall': 'Bourrasque incessante',
     "Storm's Echo": 'Grondement orageux',
@@ -2098,6 +2099,9 @@ export const MULT_DESC_FR = {
   'Rover: Havoc': {
     'Soundweaver': '143,3 % ATQ par tic ×3 (6 s)',
   },
+  'Rover: Aero': {
+    "Storm's Echo": "Domaine Éolien — plafond d'Érosion Aero +3 (champ de 30 s, sans DGT direct)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2498,5 +2502,11 @@ export const SKILL_DESC_FR = {
     'Umbra: Dodge Counter': "Contre-attaque d'Esquive en Poussée Sombre.",
     'Deadening Abyss': "Recharge de 16 s, immense nuke en cible unique.",
     'Soundweaver': "Champ Havoc : DoT de zone pour le Résonateur entrant.",
+  },
+  'Rover: Aero': {
+    'Awakening Gale / Skyfall Severance': "Rafale (recharge 3 s, au sol). Coupure Céleste en l'air (recharge 12 s) retire les états négatifs en Érosion Aero.",
+    'Cloudburst Dance': "Enchaînement d'Attaque aérienne, comptée comme DGT de Compétence de Résonance. Soigne l'équipe au coup.",
+    'Unbound Flow': "À Cordes de Vent maximales, la Compétence de Résonance devient ceci à la place. Comptée comme DGT de Compétence de Résonance.",
+    'Omega Storm': "Soigne aussi l'équipe proche d'environ 2090+77 % ATQ. Peut être lancée en l'air près du sol.",
   },
 };
