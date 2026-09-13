@@ -205,8 +205,11 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               so the two tags in this row are the same height as each other. */}
           <div className="flex items-center gap-2 mb-0.5">
             {isChar && getWeaponTypeIcon(item.weaponType) && (
+              // Icon glyph matches the kuro-badge icon's 14px (w-3.5) below - the 16px square's
+              // 1px border leaves exactly 14px of inner content, so it fills the box edge-to-edge
+              // rather than being a mismatched, visibly smaller size than the badge's own icon.
               <span className="w-4 h-4 rounded bg-black/40 border border-white/10 inline-flex items-center justify-center flex-shrink-0">
-                <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-2.5 h-2.5" onError={hideOnError} />
+                <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
               </span>
             )}
             <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
