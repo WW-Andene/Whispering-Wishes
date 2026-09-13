@@ -30,7 +30,11 @@ export function splitIntoParagraphs(text, maxChars = 200) {
     if (sentence.length > maxChars) {
       pushCurrent();
       // Oversized single sentence: break on its own em-dash/semicolon clause boundaries instead.
-      const clauses = sentence.split(/(?<=[;])\s+|\s+—\s+/);
+      // Strip the trailing semicolon from each clause: split()'s lookbehind keeps it attached to
+      // the clause before the boundary, so a clause that ends up pushed as its own paragraph
+      // (rather than joined to the next one with " — ") would otherwise end in a bare orphaned
+      // ";" that reads as a cut-off sentence.
+      const clauses = sentence.split(/(?<=[;])\s+|\s+—\s+/).map((c) => c.replace(/;\s*$/, ''));
       let clausePara = '';
       for (const clause of clauses) {
         if (clausePara && (clausePara.length + clause.length + 3) > maxChars) {
