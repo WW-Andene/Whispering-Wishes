@@ -911,20 +911,17 @@ function PlannerTab({
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-gray-100 font-bold">{top.name}</span>
                       </div>
-                      <ul className="text-gray-400 text-sm space-y-0.5 list-disc list-inside">
-                        {top.fillsRoleGap && (
-                          <li>{t(top.d.role === 'Main DPS' ? 'planner.recommendationFillsMainDps' : 'planner.recommendationFillsSupport')}</li>
-                        )}
-                        {!top.fillsRoleGap && top.fillsElementGap && (
-                          <li>{t('planner.recommendationFillsElementGap', { element: top.d.element })}</li>
-                        )}
-                        {!top.fillsRoleGap && !top.fillsElementGap && top.fillsDamageTypeGap && (
-                          <li>{t('planner.recommendationFillsDamageTypeGap', { types: (top.d.dmgFocus || []).join(', ') })}</li>
-                        )}
-                        {!top.fillsRoleGap && !top.fillsElementGap && !top.fillsDamageTypeGap && top.fillsBuffGap && (
-                          <li>{t('planner.recommendationFillsBuffGap', { buffs: (top.d.buffs || []).join(', ') })}</li>
-                        )}
-                      </ul>
+                      <p className="text-gray-400 text-sm leading-snug">
+                        {top.fillsRoleGap
+                          ? t(top.d.role === 'Main DPS' ? 'planner.recommendationFillsMainDps' : 'planner.recommendationFillsSupport', { name: top.name })
+                          : top.fillsElementGap
+                            ? t('planner.recommendationFillsElementGap', { name: top.name, element: top.d.element })
+                            : top.fillsDamageTypeGap
+                              ? t('planner.recommendationFillsDamageTypeGap', { name: top.name, types: (top.d.dmgFocus || []).join(', ') })
+                              : top.fillsBuffGap
+                                ? t('planner.recommendationFillsBuffGap', { name: top.name, buffs: (top.d.buffs || []).join(', ') })
+                                : null}
+                      </p>
                       {top.bestTeam && (
                         <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-yellow-500/10 border border-yellow-500/20">
                           <Users size={11} className="text-yellow-400 flex-shrink-0" />
