@@ -13,7 +13,7 @@
 // state with the rest of this file.
 
 import React, { useState, useMemo, useCallback } from 'react';
-import { Calendar, Check, ChevronDown, Link2, Minus, Plus, Search, Star, Unlink2, X } from 'lucide-react';
+import { Calendar, Check, ChevronDown, Link2, Minus, Plus, Search, Star, Unlink2, Users, X } from 'lucide-react';
 import { ASTRITE_PER_PULL, LUNITE_DAILY_ASTRITE, AVG_UPDATE_ASTRITE, AVG_UPDATE_DAYS, AVG_UPDATE_P1_DAILY_ASTRITE, AVG_UPDATE_P2_DAILY_ASTRITE, AVG_UPDATE_DAILY_COMMISSION_ASTRITE, HARD_PITY, MAX_ASTRITE, SUBSCRIPTIONS, RESONATOR_ASCENSION_COSTS, RESONATOR_EXP_COSTS, SKILL_UPGRADE_COSTS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, COMMON_MAT_TIERS, FORGERY_MAT_TIERS, MATERIAL_IMAGES } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, CHARACTER_THEMES, getCurrentBannerAuto } from '../../data/banners.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
@@ -926,7 +926,18 @@ function PlannerTab({
                         )}
                       </ul>
                       {top.bestTeam && (
-                        <p className="text-yellow-500/80 text-2xs">{t('planner.recommendationSlotsIntoTeam', { team: top.bestTeam })}</p>
+                        <div className="inline-flex items-center gap-1.5 mt-1 px-2 py-1 rounded-md bg-yellow-500/10 border border-yellow-500/20">
+                          <Users size={11} className="text-yellow-400 flex-shrink-0" />
+                          <span className="text-yellow-200 text-2xs font-medium">
+                            {t('planner.recommendationSlotsIntoTeam')}
+                            {top.bestTeam.split('+').map(m => m.trim()).map((member, i, arr) => (
+                              <React.Fragment key={member}>
+                                <span className={top.ownedSynergyPartners.includes(member) ? 'font-bold text-yellow-400' : ''}>{member}</span>
+                                {i < arr.length - 1 && ' + '}
+                              </React.Fragment>
+                            ))}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
