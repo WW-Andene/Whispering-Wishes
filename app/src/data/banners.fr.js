@@ -27,13 +27,11 @@
 //     Kuro's official French naming that is out of scope here.
 // ═══════════════════════════════════════════════════════════════════════════════
 
-// Only the CURRENT (v3.6-p2) banner's characters[].title values belong here — this table was
-// stale (3 titles from a prior banner rotation that had already rolled off CURRENT_BANNERS,
-// silently never rendering since BannerCard.jsx didn't even import this file until now).
-// 'Where Santu Beckons' confirmed by the user against the game's actual French client.
-// Hiyuki/Mornye's rerun titles are not yet confirmed — left untranslated rather than guessed.
+// Only the CURRENT (v3.6-p2) banner's characters[].title values belong here.
 export const CURRENT_BANNER_TITLES_FR = {
   'Where Santu Beckons': 'Là où Santu appelle',
+  'Thousand Futures Mirrored in Snow': 'Mille Avenirs Reflétés dans la Neige',
+  'Distant May the Starlights Be': "Que Loin Soient les Lueurs d'Étoiles",
 };
 
 export const EVENTS_FR = {

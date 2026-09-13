@@ -130,6 +130,10 @@ This is the rule that exists specifically to stop notes, logs, and one-off summa
 - Leaving a diagnostic-only script or test in the tree after it has served its verification purpose (see §2.4). A temporary `zzz-diag-*.test.js`, a debug-only `throw`, or a hand-rolled reproduction script is deleted before the task is considered done — it does not get committed "just in case," and it is never a substitute for one of the four permanent homes above.
 - Writing the same finding into more than one of the above without reason — pick the one destination that fits, rather than a code comment *and* a new doc *and* a chat explanation of the same fact.
 
+### 4.3.1 No self/internal notes or mentions unless explicitly requested
+
+Refines §4.3's "code comment" home: do not add a self/internal note — a comment flagging something as unverified, best-effort, a guess, "not confirmed," a TODO for future verification, or similar meta-commentary about the work itself — anywhere in code, data files, or the UI, unless the user explicitly asks for that note to be added. This applies even when the underlying uncertainty is real (e.g. an unconfirmed translation) — state the uncertainty in chat to the user, but do not write it into the codebase or surface it to players unless asked. A comment is still fine when it documents a genuine, settled fact about the code (why a value is what it is, what it depends on) — the rule targets meta-commentary about the reasoning process or confidence level, not documentation itself.
+
 ### 4.4 Module boundaries — allowed dependency directions
 
 A directory taxonomy only holds if files placed correctly are also only *importing* from directories they're allowed to depend on. Without this, `core/` can end up importing from `features/`, two features can couple to each other directly, and the whole taxonomy in §4.1 becomes decorative. The allowed dependency graph, layered bottom-up:
