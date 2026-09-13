@@ -1689,7 +1689,7 @@ export const SKILL_NAME_FR = {
     'Echoing Feathers: Feather Release': 'Plume ondulante : Plumes libres',
     'Wind Spirals': 'Spirale',
     'Cerulean Song': 'Eloge bleu',
-    'Whispering Breeze': 'Souffle reposante',
+    'Whispering Breeze': 'Souffle reposant',
   },
   'Youhu': {
     'Scroll Divination': 'Rouleau de la chance',
@@ -2190,6 +2190,9 @@ export const MULT_DESC_FR = {
   'Taoqi': {
     'Unmovable': '449,71 % DÉF',
     'Iron Will': "+38 % d'Amplification DGT de Compétence de Résonance (14 s)",
+  },
+  'Yangyang': {
+    'Whispering Breeze': "Restaure 4 Énergie de Résonance/s (5 s)",
   },
 };
 
@@ -2785,5 +2788,16 @@ export const SKILL_DESC_FR = {
     'Power Shift: Timed Counters Stage 1-3': "Attaque Normale après Attaque Lourde Parer Stratégique/Intro pour consommer le Calibre en Résolution, comptée comme DGT d'Attaque Normale. Chaque coup confère un bouclier.",
     'Defense Formation': "Ouverture à DGT Havoc. L'Attaque Normale qui suit lance directement Compteur Renversé.",
     'Iron Will': "Buffe les DGT de Compétence de Résonance du Résonateur entrant.",
+  },
+  'Yangyang': {
+    'Feather as Blade Stage 1-4': "Jusqu'à 4 frappes Aero consécutives.",
+    'Feather as Blade (hold)': "Bond en avant, consomme de l'Endurance.",
+    'Zephyr Song': "Suivi d'Attaque Normale après Attaque Lourde ou Contre-attaque d'Esquive.",
+    'Zephyr Domain': "Un vortex tourbillonnant regroupe les ennemis proches.",
+    'Echoing Feathers: Stormy Strike': "À 3 Mélodies, suivi d'Attaque Lourde.",
+    'Echoing Feathers: Feather Release': "Attaque Normale aérienne consommant les 3 Mélodies. Le coup d'atterrissage est compté comme DGT d'Attaque Normale.",
+    'Wind Spirals': "Un cyclone regroupe les ennemis proches.",
+    'Cerulean Song': "Projette la cible en l'air.",
+    'Whispering Breeze': "Canalise de l'Énergie vers le Résonateur entrant.",
   },
 };
