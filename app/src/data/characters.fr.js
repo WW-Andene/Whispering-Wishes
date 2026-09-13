@@ -70,7 +70,7 @@ export const CHARACTER_DESC_FR = {
   'Chixia': "Patrouilleuse énergique qui traverse Jinzhou en trombe avec ses doubles pistolets. DPS Fusion sur le terrain qui inflige des DGT Fusion via des tirs rapides de Compétence de Résonance et des combos d'Attaque Normale.",
   'Danjin': "Rôdeuse de Minuit qui échange son propre sang contre du pouvoir, traquant voleurs et bandits à travers Huanglong pour se venger. Hybride Havoc qui consomme des PV pour alimenter des Attaques Normales et Lourdes renforcées, gagnant un Bonus de DGT Havoc à mesure que sa santé diminue — utilisée comme buffeuse d'Outro rapide pour un DPS Havoc ou, avec une rotation plus longue, comme DPS principal à part entière.",
   'Yangyang': "Éclaireuse libre des Rôdeurs de Minuit, hybride Efficacité de Concerto/Traction/Régén. de Libération. Sous-DPS Aero qui regroupe les ennemis via sa Compétence de Résonance et sa Libération, accumule jusqu'à 3 cumuls de Mélodie pour une explosion aérienne de Libération de Plumes, et transfère de l'Énergie de Résonance au personnage suivant via son Outro — l'une des rotations les plus rapides et les plus propices au changement rapide du jeu.",
-  'Sanhua': "Garde personnelle stoïque de Jinhsi, aussi froide que le givre qu'elle commande. Sous-DPS Glacio à changement rapide qui inflige des DGT Glacio explosifs et amplifie les DGT d'Attaque Basique du personnage suivant via l'Outro.",
+  'Sanhua': "Garde personnelle stoïque de Jinhsi, aussi froide que le givre qu'elle commande. Sous-DPS Glacio à changement rapide qui inflige des DGT Glacio explosifs et amplifie les DGT d'Attaque Normale du personnage suivant via l'Outro.",
   'Taoqi': "Directrice inébranlable de la défense frontalière, à la volonté de fer. Soutien Havoc qui fournit des boucliers via sa Compétence de Résonance et amplifie les DGT de Compétence de Résonance de l'équipe via l'Outro.",
   'Yuanwu': "Vétéran propriétaire de salle de boxe qui combat avec des poings tonitruants. Soutien hybride Electro qui déploie Coin de Tonnerre pour des Attaques Coordonnées hors du terrain et confère à l'équipe une Résistance à l'Interruption (Infusion Électrique) via sa Libération de Résonance.",
   'Mortefi': "Chercheur au tempérament vif dont la musique éclate en crescendos violents. Hybride Fusion qui tire des Attaques Coordonnées Fusion hors du terrain (Rhapsodie Ardente) et confère un buff de DGT d'Attaque Lourde au personnage sur le terrain via l'Outro.",
@@ -181,7 +181,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Carlotta': 'DPS principale Glacio en explosion. Révérence Finale : +80 % de Multiplicateur de DGT de Libération à Substance maximale. Déconstruction : -18 % DEF de la cible (4 s).',
   'Jinhsi': "DPS Spectro en explosion sur le terrain. Accumule de l'Incandescence à partir des DGT d'Attribut/Coordonnés de n'importe quel membre de l'équipe, puis la dépense via Épiphanie Lumineuse (Attaque Normale Étape 4 en Incarnation) pour un nuke massif Éclat Stella (+44,54 % DGT par Incandescence). L'Outro Fléchisseur Temporel est un pur utilitaire de gain d'Incandescence, pas un buff d'équipe.",
   'Zani': "Convertit le Frazzle en Braises Héliaques. L'Outro confère aux alliés touchant la cible marquée +20 % d'Amplification de DGT Spectro (20 s).",
-  'Sanhua': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Basique (14 s). Changement rapide.',
+  'Sanhua': "Outro : 38 % d'Amplification de DGT d'Attaque Normale (14 s). Changement rapide.",
   'Mortefi': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Lourde. Attaque Coordonnée hors du terrain sur Attaque Lourde.',
   'Danjin': "Outro : 23 % d'Amplification de DGT Havoc pour le suivant.",
   'Baizhi': "Outro : 15 % d'Amplification (6 s par tic, se rafraîchit au soin). Inhérent : 15 % ATQ pour le seul Résonateur qui récupère Euphonia (20 s), pas toute l'équipe. S6 améliore séparément un effet différent (Bonus de DGT Glacio +12 %) pour tous les personnages proches lors du même ramassage, celui-là bien pour toute l'équipe. Soin.",
@@ -1663,7 +1663,7 @@ export const SKILL_NAME_FR = {
     'Frigid Light Stage 1-5': 'Lumière glaçante Étape 1-5',
     'Frigid Light (hold)': 'Lumière glaçante (maintien)',
     'Eternal Frost': 'La neige éternelle',
-    'Glacial Gaze': 'Regarde glaçant',
+    'Glacial Gaze': 'Regard glaçant',
     'Clarity of Mind: Detonate': "Clarté d'Esprit : Détonation",
     'Clarity of Mind: Ice Burst': "Clarté d'Esprit : Éclat de Glace",
     'Freezing Thorns': 'Épine froide',
@@ -2181,6 +2181,10 @@ export const MULT_DESC_FR = {
   },
   'Mortefi': {
     'Rage Transposition': "+38 % d'Amplification DGT d'Attaque Lourde (14 s ou jusqu'au changement de personnage)",
+  },
+  'Sanhua': {
+    'Clarity of Mind: Ice Burst': '59,65 % Épine / 79,53 % Prisme / 139,17 % Glacier',
+    'Silversnow': "+38 % d'Amplification DGT d'Attaque Normale (14 s)",
   },
 };
 
@@ -2756,5 +2760,15 @@ export const SKILL_DESC_FR = {
     'Fury Fugue': "Remplace la Compétence de Résonance une fois l'Agacement à 100. Consomme tout l'Agacement, comptée comme DGT de Compétence de Résonance.",
     'Dissonance': "Ouverture à DGT Fusion.",
     'Rage Transposition': "Confère au personnage entrant une Amplification de DGT d'Attaque Lourde.",
+  },
+  'Sanhua': {
+    'Frigid Light Stage 1-5': "Jusqu'à 5 frappes Glacio.",
+    'Frigid Light (hold)': "Consomme de l'Endurance.",
+    'Eternal Frost': "Crée 1 Prisme de Glace, détonable par Attaque Lourde : Détonation.",
+    'Glacial Gaze': "Crée 1 Glacier et confère 2 cumuls de Clarté.",
+    'Clarity of Mind: Detonate': "Relâchement chronométré d'Attaque Lourde à l'intérieur de la zone de Morsure Glaciale.",
+    'Clarity of Mind: Ice Burst': "Détonation fait exploser simultanément toutes les Épines/Prismes/Glaciers de Glace actifs.",
+    'Freezing Thorns': "Crée 1 Épine de Glace.",
+    'Silversnow': "Buffe le Résonateur entrant.",
   },
 };
