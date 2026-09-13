@@ -39,14 +39,18 @@ export const STAT_LABELS = {
 
 // French terse labels for STAT_LABELS above — same narrow-chip constraint, so kept just as
 // short rather than spelled out (see STAT_LABELS_FULL below for the readable French version).
-// Element names and the unconfirmed mechanic proper nouns (Frazzle, Fusion Burst, Electro
-// Flare) stay in English per the established app-wide convention (see echoes.fr.js's header);
-// "Erosion" is translated since it's a plain French cognate, same precedent as echoes.fr.js.
+// Element names (Glacio/Fusion/Electro/Aero/Spectro/Havoc) stay untranslated per the official
+// French Play Store listing's own usage (see characters.fr.js's header). The four elemental
+// RES-shred reaction names below are now confirmed against the game's actual French client
+// (user-provided) — note the internal `erosion` key is this engine's own name for the
+// Havoc-flavored reaction (dotReactions.js: "Erosion=Havoc" RES lookup), whose real name is
+// "Havoc Bane" / "Ravage Havoc", not a translation of the literal word "Erosion".
 const STAT_LABELS_FR = {
   atkPct: 'ATQ', allDmg: 'DGT Tous', elemDmg: 'DGT Élém.', amplify: 'Amp.',
   basicDmg: 'Basique', heavyDmg: 'Lourde', libDmg: 'Lib', echoDmg: 'Écho',
   skillDmg: 'Comp.', critRate: 'TC', critDmg: 'DC', resShred: 'RÉS↓', defShred: 'DÉF↓',
-  coordDmg: 'Coord.', erosion: 'Érosion',
+  coordDmg: 'Coord.', frazzle: 'Lumière Spectro', erosion: 'Ravage Havoc',
+  fusionBurst: 'Explosion Fusion', electroFlare: 'Électromagnétisme',
 };
 
 // Which element a DOT reaction's own RES lookup uses (dotReactions.js: Spectro/Havoc/Fusion/Electro

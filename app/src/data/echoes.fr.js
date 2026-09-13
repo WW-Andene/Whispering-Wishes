@@ -13,10 +13,12 @@
 // in terse mechanical strings (matches how the rest of this app's fr locale
 // keeps short mechanical tokens untranslated, e.g. teams.json).
 //
-// NOTE: elemental debuff proc names (Frazzle, Bane, Chafe, Flare, Burst) have
-// no confirmed official French term from either source above — left in
-// English rather than inventing one. "Erosion" is translated to "Érosion"
-// since it's a plain French cognate, not a stylized proper noun.
+// Elemental RES-shred proc names (Spectro Frazzle, Havoc Bane, Fusion Burst, Electro Flare,
+// Glacio Chafe, Aero Erosion) are now confirmed against the game's actual French client
+// (user-provided, not from either source above): Lumière Spectro, Ravage Havoc, Explosion
+// Fusion, Électromagnétisme, Givre Glaçant, Érosion Aéronautique — same terms used in
+// characters.fr.js's own PHRASE_FR/MULT_DESC_FR tables and RotationTimeline.jsx's
+// STAT_LABELS_FR.
 
 // RANK_FR — echo/boss rank badge (ECHO_DATA[name].rank, MonsterCard.jsx's rank prop and
 // EnemyEchoSelectorModal's rank filter). Same terms already established in ECHO_DATA_FR's own
@@ -36,7 +38,7 @@ export const ECHO_SETS_FR = {
   'Moonlit Clouds': { name: 'Nuages Clairs de Lune', p2: "+10 % Régén. d'Énergie", p5: 'Outro → +22,5 % ATQ pour le suivant' },
   'Lingering Tunes': { name: 'Mélodies Persistantes', p2: '+10 % ATQ', p5: 'ATQ +5 %/1,5 s (max x4), Outro +60 %' },
   'Frosty Resolve': { name: 'Résolution Glaciale', p2: '+12 % DGT de Compétence de Résonance', p5: 'Compétence → +22,5 % Glacio ; Libération → +18 % Compétence (x2)' },
-  'Eternal Radiance': { name: 'Éclat Éternel', p2: '+10 % DGT Spectro', p5: 'Frazzle → +20 % Taux Critique ; à 10 cumuls → +15 % Spectro' },
+  'Eternal Radiance': { name: 'Éclat Éternel', p2: '+10 % DGT Spectro', p5: 'Lumière Spectro → +20 % Taux Critique ; à 10 cumuls → +15 % Spectro' },
   'Midnight Veil': { name: 'Voile de Minuit', p2: '+10 % DGT Havoc', p5: 'Outro → 480 % Havoc + 15 % Havoc pour le suivant' },
   'Empyrean Anthem': { name: 'Hymne Empyréen', p2: "+10 % Régén. d'Énergie", p5: 'ATQ Coordonnée +80 % ; sur critique → +20 % ATQ' },
   'Tidebreaking Courage': { name: 'Courage Brise-Marée', p2: "+10 % Régén. d'Énergie", p5: '+15 % ATQ ; ≥250 % Régén. Énergie → +30 % tous DGT' },
@@ -46,18 +48,18 @@ export const ECHO_SETS_FR = {
   'Crown of Valor': { name: 'Couronne de Vaillance', p3: 'Bouclier → ATQ +6 %, Dégâts Critiques +4 % pendant 4 s (recharge 0,5 s, max x5)' },
   'Law of Harmony': { name: "Loi de l'Harmonie", p3: "Compétence d'Écho → +30 % DGT d'Attaque Lourde pendant 4 s ; DGT de Compétence d'Écho de l'équipe +4 % pendant 30 s (max x4)" },
   "Flamewing's Shadow": { name: "Ombre d'Aile de Flamme", p3: "Compétence d'Écho → +20 % Taux Critique d'Attaque Lourde ; Attaque Lourde → +20 % Taux Critique de Compétence d'Écho ; les deux → +16 % DGT Fusion" },
-  'Thread of Severed Fate': { name: 'Fil du Destin Rompu', p3: 'Havoc Bane → +20 % ATQ, +30 % DGT de Libération pendant 5 s' },
+  'Thread of Severed Fate': { name: 'Fil du Destin Rompu', p3: 'Ravage Havoc → +20 % ATQ, +30 % DGT de Libération pendant 5 s' },
   'Dream of the Lost': { name: 'Rêve des Perdus', p3: "0 Énergie de Résonance → +20 % Taux Critique, +35 % DGT de Compétence d'Écho" },
   'Pact of Neonlight Leap': { name: 'Pacte du Bond Néolumineux', p2: '+10 % DGT Spectro', p5: 'Outro → +15 % ATQ pour le suivant ; par point de Tune Break Boost +0,3 % ATQ (max +15 %)' },
   'Rite of Gilded Revelation': { name: 'Rite de la Révélation Dorée', p2: '+10 % DGT Spectro', p5: 'Attaque Basique → +10 % DGT Spectro (max x3) ; à 3 cumuls + Libération → +40 % DGT d\'Attaque Basique' },
   'Halo of Starry Radiance': { name: 'Halo de Splendeur Étoilée', p2: '+10 % Soins', p5: "Soigner → par 1 % de Off-Tune Rate, +0,2 % ATQ pour l'équipe (max +25 %)" },
-  'Trailblazing Star': { name: 'Étoile Pionnière', p2: '+10 % DGT Fusion', p5: 'Fusion Burst/Tune Rupture → +20 % Taux Critique, +20 % DGT Fusion pendant 8 s' },
-  'Chromatic Foam': { name: 'Écume Chromatique', p2: '+10 % DGT Fusion', p5: 'Fusion Burst → +10 % DGT Fusion pendant 15 s ; Outro → +25 % DGT Fusion pour le suivant pendant 15 s' },
+  'Trailblazing Star': { name: 'Étoile Pionnière', p2: '+10 % DGT Fusion', p5: 'Explosion Fusion/Tune Rupture → +20 % Taux Critique, +20 % DGT Fusion pendant 8 s' },
+  'Chromatic Foam': { name: 'Écume Chromatique', p2: '+10 % DGT Fusion', p5: 'Explosion Fusion → +10 % DGT Fusion pendant 15 s ; Outro → +25 % DGT Fusion pour le suivant pendant 15 s' },
   'Sound of True Name': { name: 'Son du Vrai Nom', p2: '+10 % DGT Aero', p5: "DGT de Compétence d'Écho → +20 % Taux Critique d'Écho, +15 % DGT Aero pendant 5 s" },
   'Song of Feathered Trace': {
     name: 'Chant de la Trace Emplumée',
     p2: "+10 % Régén. d'Énergie",
-    p5: "Havoc Bane → soi-même +20 % Taux Critique, +35 % DGT d'Attaque Lourde pendant 15 s (Plume de Xuanling) ; Glacio Chafe → ATQ de l'équipe +0,1 % par 1 % de Régén. d'Énergie, jusqu'à +25 %, pendant 10 s (Plume de Chongming)",
+    p5: "Ravage Havoc → soi-même +20 % Taux Critique, +35 % DGT d'Attaque Lourde pendant 15 s (Plume de Xuanling) ; Givre Glaçant → ATQ de l'équipe +0,1 % par 1 % de Régén. d'Énergie, jusqu'à +25 %, pendant 10 s (Plume de Chongming)",
   },
   "Heart of Evil's Purge": { name: 'Cœur de la Purge du Mal', p2: '+10 % DGT Aero', p5: 'Tune Strain - Shifting → +20 % Dégâts Critiques, +30 % DGT Aero pendant 15 s' },
   'Lamp of Nether Road': { name: 'Lanterne de la Voie des Enfers', p2: '+10 % PV', p5: 'Obtenir un Bouclier → +5 % Taux Critique pendant 5 s (max x4, recharge 0,5 s) ; au maximum de cumuls → +15 % DGT Fusion' },
@@ -65,7 +67,7 @@ export const ECHO_SETS_FR = {
   'Wishes of Quiet Snowfall': {
     name: 'Vœux de la Neige Silencieuse',
     p2: '+10 % DGT Glacio',
-    p5: 'Glacio Chafe → soi-même +10 % DGT Glacio (15 s) ; Snowfall (recharge 25 s) : DGT de Libération → +25 % Taux Critique (6 s, prolongeable) ou Outro → +25 % DGT Glacio pour l\'entrant (15 s)',
+    p5: 'Givre Glaçant → soi-même +10 % DGT Glacio (15 s) ; Snowfall (recharge 25 s) : DGT de Libération → +25 % Taux Critique (6 s, prolongeable) ou Outro → +25 % DGT Glacio pour l\'entrant (15 s)',
   },
   'Shadow of Shattered Dreams': { name: 'Ombre des Rêves Brisés', p2: '1 pièce : Hack - Shifting → soi-même +35 % DGT d\'Attaque Basique, +35 % DGT d\'Attaque Lourde pendant 15 s' },
 };
@@ -96,7 +98,7 @@ export const ECHO_DATA_FR = {
   'Dragon of Dirge': { name: 'Dragon du Chant Funèbre', desc: "Un dragon endeuillé venu des profondeurs de Rinascita. Sa Compétence le transforme et invoque une Faille du Chagrin durant 5 s, infligeant périodiquement 36 % DGT Fusion aux ennemis dans la zone. L'emplacement principal confère +12 % DGT Fusion et +12 % DGT d'Attaque Basique." },
   'Nightmare: Hecate': { name: 'Cauchemar : Hécate', desc: "Une variante cauchemar de la sorcière tricéphale des profondeurs. Sa Compétence le transforme en Nightmare Hecate, bondissant et s'écrasant au sol pour 3 phases de DGT Havoc (152 % chacune). L'emplacement principal confère passivement +12 % DGT Havoc et +20 % DGT de Compétence d'Écho." },
   'Nightmare: Crownless': { name: 'Cauchemar : Sans-Couronne', desc: "Une variante cauchemar du Seigneur Havoc sans visage. Sa Compétence le transforme et attaque les ennemis devant lui pour 405 % DGT Havoc. 3 charges (1 toutes les 12 s). Au contact, +20 % DGT pendant 2 s. L'emplacement principal confère +12 % DGT Havoc et +12 % DGT d'Attaque Basique." },
-  'Nightmare: Mourning Aix': { name: 'Cauchemar : Aix Endeuillé', desc: "Une variante cauchemar de l'oiseau spectral. Sa Compétence invoque Nightmare: Mourning Aix infligeant 273 % DGT Spectro. Les DGT infligés aux ennemis affligés de Spectro Frazzle sont augmentés de 100 %. L'emplacement principal confère +12 % DGT Spectro." },
+  'Nightmare: Mourning Aix': { name: 'Cauchemar : Aix Endeuillé', desc: "Une variante cauchemar de l'oiseau spectral. Sa Compétence invoque Nightmare: Mourning Aix infligeant 273 % DGT Spectro. Les DGT infligés aux ennemis affligés de Lumière Spectro sont augmentés de 100 %. L'emplacement principal confère +12 % DGT Spectro." },
   'Nightmare: Feilian Beringal': { name: 'Cauchemar : Beringal de Feilian', desc: "Une variante cauchemar du singe du vent. Sa Compétence invoque Nightmare: Feilian Beringal infligeant 164 % DGT Aero, laissant un Rayon Tourbillon qui attaque 5 fois de plus pour 21 % DGT Aero chacune. L'emplacement principal confère +12 % DGT Aero et +12 % DGT d'Attaque Lourde." },
   'Nightmare: Inferno Rider': { name: 'Cauchemar : Cavalier de l\'Enfer', desc: "Une variante cauchemar du chevalier embrasé. Sa Compétence le transforme et bondit pour attaquer pour 405 % DGT Fusion. Maintenir pour entrer en Mode Monture (sortie inflige 283 % DGT Fusion). L'emplacement principal confère +12 % DGT Fusion et +12 % DGT de Compétence de Résonance." },
   'Nightmare: Tempest Mephis': { name: 'Cauchemar : Mephis de la Tempête', desc: "Une variante cauchemar du loup de foudre. Sa Compétence le transforme et attaque les ennemis environnants pour 405 % DGT Electro. L'emplacement principal confère +12 % DGT Electro et +12 % DGT de Compétence de Résonance." },
@@ -117,7 +119,7 @@ export const ECHO_DATA_FR = {
   'Nightmare: Kelpie': { name: 'Cauchemar : Kelpie', desc: "Une variante cauchemar d'un Seigneur cheval-marin enveloppé de brume gelée. Sa Compétence le transforme en Nightmare: Kelpie pour attaquer les cibles proches pour 405 % DGT Glacio. Se retirer via la Compétence d'Outro l'invoque à nouveau pour infliger 405 % DGT Aero. Confère +12 % DGT Glacio et +12 % DGT Aero." },
   'Hecate': { name: 'Hécate', desc: "La Calamité sorcière tricéphale des profondeurs. Sa Compétence invoque 3 Serviteurs en Croissant tourbillonnants qui attaquent les ennemis avec des lames tournoyantes pour 45,6 % DGT Havoc ; déclencher une Contre-attaque réinitialise leur durée. Confère +40 % DGT d'Attaque Coordonnée." },
   'Reminiscence: Fenrico': { name: 'Réminiscence : Fenrico', desc: "Une réminiscence du loup gardien Fenrico, hurlant avec un vent primordial. Sa Compétence invoque les Serres du Décret pour attaquer les ennemis proches pour 273,6 % DGT Aero. Confère +12 % DGT Aero et +12 % DGT d'Attaque Lourde." },
-  'Thousand-Puppet Pavilion': { name: 'Pavillon aux Mille Pantins', desc: "Un construct maître-marionnettiste de rang Calamité venu de la Terre de Xuanfang. Sa Compétence attaque les ennemis proches pour 109,44 % DGT Havoc et invoque 4 Lames des Mille Mémoires (15 s) ; infliger Havoc Bane consomme une Lame pour infliger 41,04 % DGT Havoc (une fois par 1 s). L'emplacement principal confère +12 % DGT Havoc et +12 % DGT d'Attaque Lourde." },
+  'Thousand-Puppet Pavilion': { name: 'Pavillon aux Mille Pantins', desc: "Un construct maître-marionnettiste de rang Calamité venu de la Terre de Xuanfang. Sa Compétence attaque les ennemis proches pour 109,44 % DGT Havoc et invoque 4 Lames des Mille Mémoires (15 s) ; infliger Ravage Havoc consomme une Lame pour infliger 41,04 % DGT Havoc (une fois par 1 s). L'emplacement principal confère +12 % DGT Havoc et +12 % DGT d'Attaque Lourde." },
   'Myriad Snare: Rustfire Chassis': { name: 'Piège Multiple : Châssis Rouillé', desc: "Un danger mécanique de rang Seigneur venu de la Terre de Xuanfang. Sa Compétence invoque un châssis écrasant infligeant 10,20 % des PV Max en DGT Fusion à l'impact, puis jusqu'à 19 coups supplémentaires de 0,37 % des PV Max en DGT Fusion chacun. L'emplacement principal confère +12 % DGT Fusion et +12 % DGT d'Attaque Lourde." },
   'Reminiscence: Denia': { name: 'Réminiscence : Denia', desc: "L'Écho signature de rang Calamité de Denia. Sa Compétence invoque « Trickster » pour 273,60 % DGT Fusion ; dans les 15 s, lancer la Compétence d'Outro confère au personnage entrant +12 % de Bonus DGT Fusion pendant 15 s." },
   'Reminiscence: Threnodian - Voidborne Construct': { name: 'Réminiscence : Thrénodien - Construct Né du Néant', desc: "Un Écho de rang Calamité venu de la Terre de Xuanfang. Sa Compétence invoque la Création d'Aleph-1 pour 5 coups de 21,88 % DGT Glacio plus un coup de 164,16 % DGT Glacio. L'emplacement principal confère +12 % DGT Glacio et +12 % DGT de Libération de Résonance." },
@@ -163,7 +165,7 @@ export const ECHO_DATA_FR = {
   'Nightmare: Cyan-Feathered Heron': { name: 'Cauchemar : Héron aux Plumes Cyan', desc: "Une variante cauchemar du héron aux ailes cyan. Sa Compétence le transforme pour charger les ennemis, infligeant 236,8 % DGT Aero ; cette Compétence d'Écho interrompt les Compétences Spéciales ennemies au contact." },
   'Nightmare: Roseshroom': { name: 'Cauchemar : Rose-Champignon', desc: "Une variante cauchemar de la créature fongique sombre. Sa Compétence l'invoque pour tirer un laser, infligeant 57,07 % DGT Havoc jusqu'à 3 fois." },
   'Nightmare: Tambourinist': { name: 'Cauchemar : Tambourinaire', desc: "Une variante cauchemar de l'être rythmique qui utilise le son comme arme. Sa Compétence l'invoque jouant des Mélodies d'Annihilation ; tout membre de l'équipe qui obtient une Mélodie inflige 14,4 % DGT Havoc supplémentaires à sa cible au contact, jusqu'à 10 fois sur 10 s." },
-  'Diurnus Knight': { name: 'Chevalier Diurne', desc: "Un chevalier diurne de l'Ordre. Sa Compétence le transforme en Diurnus Knight pour charger en avant et attaquer à l'épée pour 268,2 % DGT Spectro. Les DGT infligés aux ennemis affligés de Spectro Frazzle sont augmentés de 100 %." },
+  'Diurnus Knight': { name: 'Chevalier Diurne', desc: "Un chevalier diurne de l'Ordre. Sa Compétence le transforme en Diurnus Knight pour charger en avant et attaquer à l'épée pour 268,2 % DGT Spectro. Les DGT infligés aux ennemis affligés de Lumière Spectro sont augmentés de 100 %." },
   'Nocturnus Knight': { name: 'Chevalier Nocturne', desc: "Un chevalier nocturne de l'Ordre. Sa Compétence le transforme en Nocturnus Knight pour frapper les ennemis devant lui depuis les airs, infligeant 268,2 % DGT Havoc." },
   'Questless Knight': { name: 'Chevalier Sans Quête', desc: "Un chevalier errant sans quête. Sa Compétence le transforme en Questless Knight pour écraser les ennemis environnants pour 313,2 % DGT Electro." },
   'Abyssal Gladius': { name: 'Gladius Abyssal', desc: "Un guerrier armé d'une lame venu de l'abysse. Sa Compétence le transforme en Abyssal Gladius pour attaquer les ennemis à l'épée pour 268,2 % DGT Glacio. Maintenir pour rester sous forme d'Écho, tailladant et lançant une attaque à distance en avant pour respectivement 268,2 % et 670,5 % DGT Glacio." },
