@@ -1356,7 +1356,8 @@ const CHARACTER_DATA = {
     // her only real build requirement") and line 177 ("Substat priority: Energy Regen (until 260%)
     // >>> ..."). Used by the Plan tab's weapon recommendation to explain why a signature isn't
     // required once this cap is otherwise met.
-    keyStatTarget: { stat: 'Energy Regen', value: 260, purpose: 'to cap her Liberation self-buffs and team buffs' },
+    // pronoun sourced from this character's own desc above ("through her Skill and Liberation").
+    keyStatTarget: { stat: 'Energy Regen', value: 260, purpose: 'to cap her Liberation self-buffs and team buffs', pronoun: 'her' },
     // weaponAlts added 2026-08-17: the source's live build calcs only rank 3 weapons total for Mornye
     // (Signature, then Discord/Broadblade#41 as 4★ Energy Regen picks — she has no ranked 5★ alt since
     // no other 3.x Broadblade offers her key ER stat). Verdant Summit added as the 5★ alt slot as a

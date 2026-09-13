@@ -944,7 +944,7 @@ function PlannerTab({
                         : topWeapon.mustHave
                           ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
                           : top.d.keyStatTarget
-                            ? t('planner.recommendationWeaponNotEssentialReasonWithTarget', { name: top.name, sig: topWeapon.name, statScaling: top.d.statScaling || 'ATK', targetValue: top.d.keyStatTarget.value, targetStat: top.d.keyStatTarget.stat, targetPurpose: top.d.keyStatTarget.purpose, sigPassive: sigPassiveSummary })
+                            ? t('planner.recommendationWeaponNotEssentialReasonWithTarget', { name: top.name, sig: topWeapon.name, pronoun: top.d.keyStatTarget.pronoun || 'their', statScaling: top.d.statScaling || 'ATK', targetValue: top.d.keyStatTarget.value, targetStat: top.d.keyStatTarget.stat, targetPurpose: top.d.keyStatTarget.purpose, sigPassive: sigPassiveSummary })
                             : t('planner.recommendationWeaponNotEssentialReason', { name: top.name, sig: topWeapon.name, statScaling: top.d.statScaling || 'ATK', sigStat: sigWeaponInfo?.stat, sigPassive: sigPassiveSummary })}
                     </p>
                     {!topWeapon.mustHave && altWeaponName && (
