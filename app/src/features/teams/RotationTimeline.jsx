@@ -36,6 +36,18 @@ export const STAT_LABELS = {
   frazzle: 'Frazzle', erosion: 'Erosion', fusionBurst: 'Fusion Burst', electroFlare: 'Electro Flare',
 };
 
+// French terse labels for STAT_LABELS above — same narrow-chip constraint, so kept just as
+// short rather than spelled out (see STAT_LABELS_FULL below for the readable French version).
+// Element names and the unconfirmed mechanic proper nouns (Frazzle, Fusion Burst, Electro
+// Flare) stay in English per the established app-wide convention (see echoes.fr.js's header);
+// "Erosion" is translated since it's a plain French cognate, same precedent as echoes.fr.js.
+const STAT_LABELS_FR = {
+  atkPct: 'ATQ', allDmg: 'DGT Tous', elemDmg: 'DGT Élém.', amplify: 'Amp.',
+  basicDmg: 'Basique', heavyDmg: 'Lourde', libDmg: 'Lib', echoDmg: 'Écho',
+  skillDmg: 'Comp.', critRate: 'TC', critDmg: 'DC', resShred: 'RÉS↓', defShred: 'DÉF↓',
+  coordDmg: 'Coord.', erosion: 'Érosion',
+};
+
 // Which element a DOT reaction's own RES lookup uses (dotReactions.js: Spectro/Havoc/Fusion/Electro
 // respectively) — reused here only to pick a themed bar color via ELEMENT_COLORS below, not a claim
 // the reaction itself deals that element's DMG type for any other calculation.
@@ -108,6 +120,13 @@ const SHORT_STEP_LABEL = {
   'Heavy ATK': 'Heavy', 'Basic ATK': 'Basic', Forte: 'Forte',
   'Mid-air': 'Air', 'Mid-air ATK': 'Air', Echo: 'Echo', Outro: 'Outro', Step: '•',
 };
+// French version — Intro/Outro/Forte kept short per the same established precedent
+// (echoes.fr.js's header note on terse mechanical tokens); everything else translated.
+const SHORT_STEP_LABEL_FR = {
+  Intro: 'Intro', Skill: 'Comp.', Liberation: 'Lib', Ultimate: 'Lib',
+  'Heavy ATK': 'Lourde', 'Basic ATK': 'Basique', Forte: 'Forte',
+  'Mid-air': 'Air', 'Mid-air ATK': 'Air', Echo: 'Écho', Outro: 'Outro', Step: '•',
+};
 
 export default function RotationTimeline({ rotationTimeline }) {
   // Collapsed state persists per-tab-session, same convention as the Team Overview card's own
@@ -118,6 +137,8 @@ export default function RotationTimeline({ rotationTimeline }) {
   // larger/smaller. Persisted the same way collapsed is, since a player comparing several teams in
   // one session likely wants to keep whatever zoom they picked.
   const [zoom, setZoom] = useSessionState('ww-rotation-timeline-zoom', 1);
+  const locale = getLocale();
+  const statLabel = (key) => (locale === 'fr' && STAT_LABELS_FR[key]) || STAT_LABELS[key] || key;
   const ZOOM_MIN = 0.5, ZOOM_MAX = 3, ZOOM_STEP = 0.25;
   const zoomIn = () => setZoom(z => Math.min(ZOOM_MAX, Math.round((z + ZOOM_STEP) * 100) / 100));
   const zoomOut = () => setZoom(z => Math.max(ZOOM_MIN, Math.round((z - ZOOM_STEP) * 100) / 100));
@@ -142,7 +163,7 @@ export default function RotationTimeline({ rotationTimeline }) {
     if (buff.type === 'dot') {
       const mechanic = buff.stat;
       const color = ELEMENT_COLORS[DOT_MECHANIC_ELEMENT[mechanic]] || '#6b7280';
-      if (buff.duration > 0) rows.push({ label: STAT_LABELS[mechanic] || mechanic, start: buff.start, duration: buff.duration, color, type: 'dot', detail: `${STAT_LABELS[mechanic] || mechanic} DOT` });
+      if (buff.duration > 0) rows.push({ label: statLabel(mechanic), start: buff.start, duration: buff.duration, color, type: 'dot', detail: `${statLabel(mechanic)} DOT` });
       return;
     }
     // owner field links echo/weapon buffs back to their character
@@ -174,7 +195,7 @@ export default function RotationTimeline({ rotationTimeline }) {
         if (idx >= 0) start = ownerSeg.start + (ownerSeg.duration / ownerActions.length) * idx;
       }
     }
-    if (buff.duration > 0) rows.push({ label: buff.source, owner: ownerName, start, duration: buff.duration, color, type: 'buff', buffKind: isEcho ? 'echo' : 'char', detail: `${prefix}${STAT_LABELS[buff.stat] || buff.stat} +${buff.value}%` });
+    if (buff.duration > 0) rows.push({ label: buff.source, owner: ownerName, start, duration: buff.duration, color, type: 'buff', buffKind: isEcho ? 'echo' : 'char', detail: `${prefix}${statLabel(buff.stat)} +${buff.value}%` });
   });
 
   // timeScale = the rotation length itself, not the furthest end of any bar — a buff bar that
@@ -299,7 +320,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                   {hasActions && (
                     <div className="absolute" style={{ left: 0, right: 0, top: 32, height: 16 }}>
                       {actions.map((a, ai) => {
-                        const sty = stepStyle(a.type, getLocale());
+                        const sty = stepStyle(a.type, locale);
                         const actionWidthPct = widthPct / actions.length;
                         const actionLeftPct = leftPct + ai * actionWidthPct;
                         return (
@@ -307,7 +328,7 @@ export default function RotationTimeline({ rotationTimeline }) {
                             title={`${sty.label}: ${a.skill}${a.note ? ' — ' + a.note : ''}`}
                             className={`absolute rounded-sm border flex items-center justify-center overflow-hidden ${sty.cls}`}
                             style={{ left: `${actionLeftPct}%`, width: `${Math.max(actionWidthPct, 1)}%`, top: 0, bottom: 0 }}>
-                            <span className="truncate px-0.5 text-2xs font-bold">{SHORT_STEP_LABEL[a.type] || a.type}</span>
+                            <span className="truncate px-0.5 text-2xs font-bold">{((locale === 'fr' && SHORT_STEP_LABEL_FR[a.type]) || SHORT_STEP_LABEL[a.type]) || a.type}</span>
                           </div>
                         );
                       })}
