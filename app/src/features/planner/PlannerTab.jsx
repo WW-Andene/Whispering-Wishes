@@ -920,10 +920,6 @@ function PlannerTab({
                     </div>
                   </div>
                 </div>
-                {/* Direct user feedback: "their signature weapon is on the banner" said nothing
-                    useful on its own — replaced with a real Must-Have/Not-Essential verdict and
-                    why, naming an owned alternative directly when one exists rather than a vague
-                    "alternatives exist" line. */}
                 {topWeapon && !topWeapon.owned && (
                   <div className="p-3 bg-white/5 rounded-lg space-y-2">
                     <div className="flex items-center gap-3">
@@ -944,7 +940,7 @@ function PlannerTab({
                         ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
                         : topWeapon.mustHave
                           ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
-                          : t('planner.recommendationWeaponNotEssentialReason', { name: top.name, alt: altWeaponName })}
+                          : t('planner.recommendationWeaponNotEssentialReason', { name: top.name })}
                     </p>
                     {!topWeapon.mustHave && altWeaponName && (
                       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
@@ -956,14 +952,9 @@ function PlannerTab({
                         <div className="min-w-0 space-y-0.5">
                           <p className="text-gray-300 text-xs font-medium">
                             {topWeapon.ownedAlt
-                              ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: altWeaponName })
-                              : t('planner.recommendationWeaponAltExists', { alts: altWeaponName })}
+                              ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: altWeaponName, stat: altWeaponInfo?.stat, passive: altPassiveSummary })
+                              : t('planner.recommendationWeaponAltExists', { alts: altWeaponName, stat: altWeaponInfo?.stat, passive: altPassiveSummary })}
                           </p>
-                          {altPassiveSummary && (
-                            <p className="text-gray-500 text-2xs">
-                              {altWeaponInfo.rarity}★ {altWeaponInfo.stat} • {altPassiveSummary}
-                            </p>
-                          )}
                         </div>
                       </div>
                     )}
