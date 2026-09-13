@@ -27,7 +27,7 @@ export const CHARACTER_DESC_FR = {
   'Calcharo': "Chasseur Fantôme, chef du groupe mercenaire international des « Chiens Fantômes » — impitoyable, vengeur, implacable ; un client potentiel doit être conscient du prix à payer avant de lui faire une offre. DPS Electro sur le terrain qui accumule de la Cruauté via sa Compétence de Résonance Ordre d'Extermination en une Attaque Lourde renforcée « Pitié », puis déclenche la Libération de Résonance Gravure Fantôme pour entrer en Équipement de Lame de Mort, remplaçant son Attaque Normale par le finisseur en rafale « Messager de la Mort » alimenté par l'Intention Meurtrière.",
   'Encore': "Jeu du Comptage des Moutons, une fille des Rives Noires accompagnée d'un Wooly noir et d'un Wooly blanc, qui rêve de créer des histoires heureuses avec des bonbons, des contes de fées et son imagination. DPS Fusion sur le terrain qui accumule du Chaos via ses coups Basique/Compétence/Intro en une Attaque Lourde renforcée et réductrice de dégâts (Frénésie Nuageuse), puis déchaîne la Libération de Résonance Rave Cosmique pour transformer tout son kit en versions Fusion améliorées pendant 10 s.",
   'Jianxin': "Lance Étoilée Guide, moniale taoïste et héritière du Fengyiquan qui a dédié sa vie à maîtriser l'art martial ultime — avec le pouvoir de canaliser et transformer le Chi environnant, elle crée des barrières protectrices qui purifient à la fois le corps et l'esprit. Soutien/sous-DPS à Bouclier qui canalise l'Attaque Lourde Spirale de Chi Primordial (Progrès du Zhoutian) pour un vaste bouclier proportionnel aux PV et des soins périodiques d'équipe, regroupe les ennemis avec le Champ de Force de Purification de la Libération, et confère au personnage entrant +38 % DGT de Libération de Résonance via son Outro.",
-  'Lingyang': "Bourrasque Givrée, membre enthousiaste et courageux de la Troupe de la Danse du Lion de Jinzhou et dernier Suan'ni vivant — un visiteur sincère et compatissant de la communauté humaine doté de capacités physiques incroyables, qui incarne l'esprit de la Danse du Lion avec son style unique. DPS Glacio sur le terrain qui accumule l'Esprit du Lion via sa Compétence de Résonance Poings Furieux, puis le déchaîne via l'Attaque Lourde Plongeon Glorieux pour entrer dans l'état aérien du Lion Bondissant, enchaînant des Attaques Basiques améliorées, Vagabond des Montagnes et Coups de Pied Orageux.",
+  'Lingyang': "Bourrasque Givrée, membre enthousiaste et courageux de la Troupe de la Danse du Lion de Jinzhou et dernier Suan'ni vivant — un visiteur sincère et compatissant de la communauté humaine doté de capacités physiques incroyables, qui incarne l'esprit de la Danse du Lion avec son style unique. DPS Glacio sur le terrain qui accumule l'Esprit du Lion via sa Compétence de Résonance Poings Furieux, puis le déchaîne via l'Attaque Lourde Plongeon Glorieux pour entrer dans l'état aérien du Lion Bondissant, enchaînant des Attaques Normales améliorées, Vagabond des Montagnes et Coups de Pied Tempétueux.",
   'Verina': "L'Appel de la Nature — dotée d'une vaste connaissance de la botanique, Verina est toujours prévenante, toujours souriante, et souhaite toujours que chaque fleur soit bénie du miracle de la vie. Soigneuse Spectro qui accumule de l'Énergie de Photosynthèse via les Attaques Basiques, la Compétence et l'Intro, puis la dépense en Attaques Lourdes/Aériennes Éclosions de Fleurs Stellaires pour soigner l'équipe ; la Libération Floraison Arboricole soigne et marque les ennemis pour un soin sur Attaque Coordonnée, tandis que l'Outro Éclosion soigne le personnage entrant et confère à l'équipe une Amplification de tous les DGT.",
   'Yinlin': "Marionnette Exécutrice — une Patrouilleuse habile et une puissante Résonatrice Naturelle de Jinzhou ; après avoir été suspendue de ses fonctions au Bureau de la Sécurité Publique, elle doit désormais traquer les maux cachés dans le secret. Sous-DPS Electro qui marque les cibles du Sceau du Pécheur via l'Attaque Basique et la Compétence d'Intro, inflige des DGT Electro hors du terrain via des Attaques Coordonnées (Salve Électromagnétique/Frappe du Jugement) une fois la Marque du Châtiment appliquée, et amplifie les DGT Electro et les DGT de Libération de Résonance du coéquipier entrant via son Outro.",
   'Jinhsi': "Renouveau de l'Aube, Magistrate de Jinzhou, illumine doucement les espoirs de son peuple comme des rayons de soleil hivernal — en tant que Résonatrice Désignée du Sentinel vénéré, elle fait preuve d'humilité et se consacre corps et âme à guider son peuple vers un avenir radieux. DPS Spectro sur le terrain qui accumule de l'Incandescence à partir des DGT d'Attribut ou Coordonnés de n'importe quel membre de l'équipe, entre en Incarnation via sa Compétence de Résonance, puis dépense ses cumuls via Épiphanie Lumineuse pour un nuke Éclat Stella évolutif.",
@@ -150,7 +150,7 @@ export const CHARACTER_TITLE_FR = {
 // (no entry to translate).
 /** @type {Record<string, string>} */
 export const CHAR_BUFF_NOTE_FR = {
-  'Lingyang': "DPS principal Glacio sur le terrain. L'état Lion Bondissant du Circuit Forte (activé via l'Attaque Lourde Plongeon Glorieux à Esprit du Lion plein) débloque des attaques aériennes améliorées. L'Outro Marques Givrées est un pur proc de DGT de zone, pas un buff d'équipe, bien que la Chaîne de Résonance S4 confère à l'équipe +20 % DGT Glacio/30 s à son déclenchement.",
+  'Lingyang': "DPS principal Glacio sur le terrain. L'état Lion Bondissant du Circuit Forte (activé via l'Attaque Lourde Plongeon Glorieux à Esprit du Lion plein) débloque des attaques aériennes améliorées. L'Outro Marque Glacée est un pur proc de DGT de zone, pas un buff d'équipe, bien que la Chaîne de Résonance S4 confère à l'équipe +20 % DGT Glacio/30 s à son déclenchement.",
   'Rover: Aero': "Soigneuse/soutien. La Compétence aérienne Rupture Céleste retire les cumuls de Spectro Frazzle, Havoc Fléau, Explosion Fusion, Glacio Frisson et Electro Éclair de la cible touchée et convertit chacun en un cumul d'Érosion Aero. Le Forte Danse de l'Averse et la Libération Tempête Oméga soignent tous deux l'équipe.",
   'Verina': 'Outro Éclosion : soigne le personnage entrant + Amplification de tous les DGT +15 % (30 s) pour l\'équipe à proximité. Don Inhérent de la Nature : ATQ d\'équipe +20 %/20 s au déclenchement du Forte/de la Libération/de l\'Outro.',
   'Shorekeeper': 'Outro : Amplification de tous les DGT 15 %, équipe entière, 30 s (persiste à travers les changements). Libération Stellarealm : +12,5 % Taux Critique +25 % Dégâts Critiques (30 s), équipe entière. Récupération sur mise à terre.',
@@ -1306,10 +1306,14 @@ export const SKILL_NAME_FR = {
   },
   'Lingyang': {
     'Majestic Fists Stage 1-5': 'Poings Majestueux Étape 1-5',
+    'Stormy Kicks': 'Coups de Pied Tempétueux',
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
+    'Tail Strike': 'Coup de Queue',
     'Ancient Arts → Furious Punches': 'Arts traditionnels → Rage talonnant',
     'Unification of Spirits (Striding Lion)': "Unisson (Marche du lion)",
+    'Majestic Fists P1 (Feral Gyrate)': 'Poings Majestueux P1 (Giration Féroce)',
+    'Majestic Fists P2 (Feral Gyrate)': 'Poings Majestueux P2 (Giration Féroce)',
     'Strive: Lion\'s Vigor': 'La Danse joyeuse du Lion',
     'Lion Awakens': 'Le réveil du Lion',
     'Frosty Marks': 'Marque glacée',
@@ -2037,6 +2041,10 @@ export const MULT_DESC_FR = {
     'Purification Force Field': '29,83 % (continu) + 636,20 % (explosion)',
     'Transcendence': "+38 % d'Amplification DGT de Libération de Résonance (14 s)",
   },
+  'Lingyang': {
+    'Unification of Spirits (Striding Lion)': "172,37 % (Plongeon Glorieux) · 87,08 %×2+116,11 %→31,77 %×6 (Giration Féroce) · 82,88 %×2 (Vagabond des Montagnes) · 36,03 %×8+192,15 % (Coups de Pied Tempétueux) · 174,96 %×2 (Coup de Queue)",
+    'Frosty Marks': '587,94 % ATQ en zone',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2333,5 +2341,16 @@ export const SKILL_DESC_FR = {
     'Primordial Chi Spiral (Zhoutian Progress)': "À Chi maximal, maintenez l'Attaque Lourde pour un état canalisé de bouclier et DGT avec 50 % de réduction des DGT reçus et une résistance accrue à l'interruption.",
     'Purification Force Field': "Attire les cibles dans le champ, puis explose à expiration. Recharge de 20 s.",
     'Transcendence': "Confère ce buff au Résonateur entrant, sans DGT direct.",
+  },
+  'Lingyang': {
+    'Majestic Fists Stage 1-5': "L'Étape 5 peut être remplacée par Rugissements Féroces (79,53 %×2) après avoir lancé Coups de Poing Furieux.",
+    'Stormy Kicks': "Remplace l'Attaque Normale en Marche du Lion une fois l'Esprit du Lion sous 10. Débloque l'Attaque Aérienne Coup de Queue.",
+    'Tail Strike': 'Débloquée par Coups de Pied Tempétueux.',
+    'Ancient Arts → Furious Punches': "L'Attaque Normale 3-5 ou Rugissements Féroces change la Compétence en Coups de Poing Furieux. Sans temps de recharge, ne réinitialise pas le cycle d'Attaque Normale.",
+    'Unification of Spirits (Striding Lion)': "À Esprit du Lion plein, l'Attaque Lourde lance Plongeon Glorieux et entre en Marche du Lion, un état aérien à attaques renforcées.",
+    'Majestic Fists P1 (Feral Gyrate)': "Remplace l'Attaque Normale en Marche du Lion (1re des 2 parties alternées).",
+    'Majestic Fists P2 (Feral Gyrate)': "Remplace l'Attaque Normale en Marche du Lion (2e des 2 parties alternées, revient à la Partie 1 au prochain appui).",
+    "Strive: Lion's Vigor": "Confère aussi personnellement +50 % de Bonus de DGT Glacio pendant 14 s. Recharge de 20 s.",
+    'Frosty Marks': "Finisseur de changement de personnage à dégâts purs. Sans buff d'équipe de base (la Chaîne S4 confère +20 % DGT Glacio à l'équipe pendant 30 s).",
   },
 };
