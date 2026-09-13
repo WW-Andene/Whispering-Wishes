@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { Swords, Star, TrendingUp, X, Play, User, Users, LayoutGrid } from 'lucide-react';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { WEAPON_TYPE_FR, STAT_NAME_FR } from '../../data/characters.fr.js';
+import { WEAPON_TYPE_FR, STAT_NAME_FR, PV_LABEL_FR } from '../../data/characters.fr.js';
 import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_ASCENSION_COSTS_4, WEAPON_EXP_COSTS_5, WEAPON_EXP_COSTS_4, WEAPON_REFINE_SCALE } from '../../data/constants.js';
 import { getConveneAnimation, getWeaponBannerArt, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
@@ -171,7 +171,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
                     {Object.entries(data.pv).map(([stat, val]) => (
                       <div key={stat} className="text-sm text-gray-300">
                         <span className="text-white font-medium">{Math.round(val * scale * 10) / 10}%</span>
-                        <div className="text-gray-500 text-2xs">{stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
+                        <div className="text-gray-500 text-2xs">{(getLocale() === 'fr' && PV_LABEL_FR[stat]) || stat.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()).trim()}</div>
                       </div>
                     ))}
                   </div>

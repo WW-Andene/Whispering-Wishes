@@ -1858,6 +1858,29 @@ export const STAT_NAME_FR = {
   'HP': 'PV',
 };
 
+// PV_LABEL_FR — WEAPON_DATA[name].pv's camelCase keys (refinement-scaling labels in
+// WeaponDetailModal.jsx's "R1..R5" grid). Display-only, same as STAT_NAME_FR above: pv's
+// keys/values themselves stay in calcEngine.js's own consumption untouched — this only
+// covers the English-derived label (`elemDmg` -> "Elem Dmg") the modal was showing raw.
+/** @type {Record<string, string>} */
+export const PV_LABEL_FR = {
+  allDmg: 'DGT Tous Éléments',
+  atkPct: 'ATQ',
+  basicDmg: "DGT d'Attaque Basique",
+  critDmg: 'Dégâts Critiques',
+  critRate: 'Taux Critique',
+  defIgnore: 'Ignore DÉF',
+  defPct: 'DÉF',
+  echoDmg: "DGT de Compétence d'Écho",
+  elemDmg: 'Bonus DGT',
+  healingBonus: 'Bonus de Soins',
+  heavyDmg: "DGT d'Attaque Lourde",
+  hpPct: 'PV',
+  libDmg: 'DGT de Libération',
+  resShred: 'Réduction RÉS',
+  skillDmg: 'DGT de Compétence',
+};
+
 // ROLE_FR — CHARACTER_DATA[name].role (Main DPS/Sub DPS/Healer/Support), rendered as a
 // header badge in CharacterDetailModal.jsx. Reuses the same terms already established
 // in locale/fr/collection.json's role filter labels for consistency.
