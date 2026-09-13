@@ -27,10 +27,13 @@
 //     Kuro's official French naming that is out of scope here.
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// Only the CURRENT (v3.6-p2) banner's characters[].title values belong here — this table was
+// stale (3 titles from a prior banner rotation that had already rolled off CURRENT_BANNERS,
+// silently never rendering since BannerCard.jsx didn't even import this file until now).
+// 'Where Santu Beckons' confirmed by the user against the game's actual French client.
+// Hiyuki/Mornye's rerun titles are not yet confirmed — left untranslated rather than guessed.
 export const CURRENT_BANNER_TITLES_FR = {
-  'Host of Harmony': 'Hôte de l’Harmonie',
-  'Digital ghost of Startorch Academy': 'Fantôme numérique de l’Académie Startorch',
-  'Absolute Pulsation': 'Pulsation Absolue',
+  'Where Santu Beckons': 'Là où Santu appelle',
 };
 
 export const EVENTS_FR = {
