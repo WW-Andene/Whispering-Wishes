@@ -1059,6 +1059,9 @@ export const SKILL_NAME_FR = {
     'Fervor Efflorescent': 'Cendre de pétales',
     'Everblooming': 'Fleur éternelle',
     'Twining': 'Enlacement',
+    'Floral Ravage': 'Ravage Floral',
+    'Vining Ronde': 'Ronde Grimpante',
+    'Atonement': 'Expiation',
   },
   'Cantarella': {
     'Stage 1-3': 'Étape 1-3',
@@ -1728,6 +1731,11 @@ export function getGenericSkillNameFr(skillName) {
 // whichever characters come up — NOT yet covering the full roster.
 /** @type {Record<string, Record<string, string>>} */
 export const SKILL_DESC_FR = {
+  'Camellya': {
+    'Floral Ravage': 'Remplace la Compétence de Résonance en Mode Floraison ; considérée comme DGT d\'Attaque Normale selon son propre texte de kit. Met fin au Mode Floraison au lancer.',
+    'Vining Ronde': 'Remplace le Saut en Mode Floraison (Saut : Ronde Grimpante dans la rotation Cheveux Blancs) ; considérée comme DGT d\'Attaque Normale. Met fin au Mode Floraison au lancer.',
+    'Atonement': "Remplace la Contre-attaque d'Esquive en Mode Floraison (Contre-attaque d'Esquive Expiation) ; considérée comme DGT d'Attaque Normale.",
+  },
   'Qingxiao': {
     'Heavy Attack - Stringblade': "Une fois Cœur du Qin et Cadence de l'Épée pleins ; consomme les deux et entre en Transcendance Éphémère.",
     "Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence": "Une fois l'Intention du Cœur d'Épée pleine ; la consomme et met fin à la Transcendance Éphémère.",
