@@ -171,7 +171,11 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             {item.isNew && <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>{t('tracker.newBadge')}</span>}
-            {isChar && getWeaponTypeIcon(item.weaponType) && <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+            {isChar && getWeaponTypeIcon(item.weaponType) && (
+              <span className="w-6 h-6 rounded bg-black/40 border border-white/10 inline-flex items-center justify-center flex-shrink-0">
+                <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+              </span>
+            )}
             <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
               {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
