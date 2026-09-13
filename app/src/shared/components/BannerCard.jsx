@@ -170,7 +170,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           {item.isNew && (
-            <div className="mb-1.5">
+            <div className="mb-2">
               {/* text-sm resolves to 11px in this project (kuro.css override) - off the PerfectSuite
                   scale (CLAUDE.md 7); nearest compliant value is 12px, applied explicitly here.
                   Horizontal padding matches kuro-badge's own 8px (kuro.css) rather than Tailwind's
