@@ -469,8 +469,8 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                   const skillIcon = getSkillIcon(name, skillName, type);
                   return (
                     <div key={i} className={`px-2 py-1.5 rounded ${typeBg[type] || 'bg-white/5'}`}>
-                      <div className="flex items-baseline gap-1.5">
-                        {skillIcon && <img src={skillIcon} alt="" className="w-4 h-4 rounded shrink-0 self-center" onError={hideOnError} />}
+                      <div className="flex items-start gap-1.5 flex-wrap">
+                        {skillIcon && <img src={skillIcon} alt="" className="w-4 h-4 rounded shrink-0 mt-0.5" onError={hideOnError} />}
                         <span className={`text-sm font-medium shrink-0 ${typeColors[type] || 'text-gray-400'}`}>{(getLocale() === 'fr' && SKILL_TYPE_FR[type]) || type}</span>
                         <span className="text-sm text-gray-200 font-medium break-words">{(getLocale() === 'fr' && SKILL_NAME_FR[name]?.[skillName]) || skillName}</span>
                       </div>
