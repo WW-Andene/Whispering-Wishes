@@ -1829,7 +1829,32 @@ export function applyGenericDescPhrases(desc) {
   return out;
 }
 
+// MULT_DESC_FR — full per-character translations for the rare SKILL_MULTIPLIERS rows whose 3rd
+// tuple element (the multiplier/value column) is prose text instead of a bare percentage (e.g.
+// Suisui's Liberation: "Field effect — no direct DMG, team Negative Status stack cap +3"). Same
+// { char: { skillName: frenchText } } shape as SKILL_DESC_FR, rendered in the modal's multiplier
+// line with applyGenericDescPhrases as a substring-level fallback when no entry exists here.
+/** @type {Record<string, Record<string, string>>} */
+export const MULT_DESC_FR = {
+  'Suisui': {
+    'Song of Thoroughfare': "Effet de zone — pas de DGT direct, plafond de cumuls d'États Négatifs de l'équipe +3",
+    'Rippling Waters': "25 % d'Amplification de tous les DGT (30 s) + buffs d'équipe liés à la consommation de posture",
+  },
+};
+
 export const SKILL_DESC_FR = {
+  'Suisui': {
+    'Zephyr Stance Stage 1-4': 'Enchaînement en Posture du Zéphyr (posture de soin) ; accumule le Souffle Nuageux.',
+    'Zephyr Stance': 'Plongée aérienne en Posture du Zéphyr.',
+    'Drizzle Stance Stage 1-4': "Enchaînement en Posture de la Bruine (posture de DGT) ; accumule l'Épître Florale.",
+    'Zephyr Stance thrust': 'Restaure le Souffle Nuageux vers Éveil du Printemps.',
+    'Awakening Spring': 'Au Souffle Nuageux maximal : bascule vers la Posture de la Bruine.',
+    'Drizzle Stance thrust': "Restaure l'Épître Florale vers le bonus de son Outro.",
+    'Drizzle Stance': "Attaque Lourde en Posture de la Bruine, accumule l'Épître Florale.",
+    'Song of Thoroughfare': "Ultime : augmente les plafonds de cumuls d'États Négatifs de l'équipe.",
+    'Tinkling Jade': 'Ouverture qui entre en Posture de la Bruine.',
+    'Rippling Waters': "Buffe tous les DGT de l'équipe ; plus d'Épître Florale = bonus plus important.",
+  },
   'Hiyuki': {
     'Present Self Stage 1-3': "Enchaînement standard ; l'Étape 3 applique Givre Glaçant. Non reclassifiée — DGT d'Attaque Normale classiques.",
     'Frost Splinter: Present Self': "Volée de 3 flèches une fois la Dévotion au maximum ; immunisée aux interruptions du début à la fin, applique Givre Glaçant au dernier coup ; considérée comme DGT de Libération de Résonance malgré l'entrée en Attaque Lourde.",
