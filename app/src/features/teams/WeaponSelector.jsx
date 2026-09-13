@@ -4,7 +4,7 @@ import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { BANNER_HISTORY } from '../../data/banners.js';
 import { haptic } from '../../utils/haptics.js';
-import { getStatIcon, getWeaponTypeIcon } from '../../shared/utils/elementVisuals.js';
+import { getStatIcon, getWeaponTypeIcon, getRarityIcon } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { getLocale, t } from '../../utils/i18n.js';
@@ -116,7 +116,7 @@ export default function WeaponSelector({
                                         <div className="flex-1 min-w-0">
                                           <div className="flex items-center gap-1.5">
                                             <span className="text-white text-base font-semibold truncate">{LOCALIZED_WEAPON_DATA[name]?.displayName || name}</span>
-                                            <span className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                                            <img src={getRarityIcon(rarity5 ? 5 : 4)} alt={rarity5 ? '5★' : '4★'} className="h-2.5" onError={hideOnError} />
                                             {isBest && <span className="kuro-badge kuro-badge-emerald">{t('teams.weaponSelector.bis')}</span>}
                                           </div>
                                           <div className="flex items-center gap-2 mt-0.5">

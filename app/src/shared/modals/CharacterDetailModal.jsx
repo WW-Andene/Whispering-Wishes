@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
-import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
+import { Sparkles, Swords, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames, findSkillMultiplierRow } from '../../data/characters.js';
 import { SKILL_TYPE_FR, SKILL_NAME_FR, SKILL_DESC_FR, GENERIC_SKILL_DESC_FR, applyGenericDescPhrases, MULT_DESC_FR, CHARACTER_TAG_FR, WEAPON_TYPE_FR, ROLE_FR, GENERIC_SKILL_NAME_FR, getGenericSkillNameFr } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
@@ -14,7 +14,7 @@ import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONAT
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
 import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon } from '../utils/elementVisuals.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon, getRarityIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { splitIntoParagraphs } from '../utils/textFormat.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
@@ -238,7 +238,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
             {data.title && <div className="text-sm text-gray-400 italic -mt-0.5">{getLocalizedCharacterData(getLocale())[name]?.title || data.title}</div>}
             <div className="flex items-center gap-0.5 mt-0.5">
-              {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
+              {getRarityIcon(data.rarity) && <img src={getRarityIcon(data.rarity)} alt={`${data.rarity}★`} className="h-3" onError={hideOnError} />}
             </div>
           </div>
         </div>

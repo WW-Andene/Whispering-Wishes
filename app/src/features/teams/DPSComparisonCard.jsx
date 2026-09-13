@@ -5,7 +5,7 @@
 import React from 'react';
 import { BarChart3, Sword, X } from 'lucide-react';
 import { getEnemyStatsAtLevel } from '../../data/echoes.js';
-import { getElementColor, getElementIcon } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementIcon, getRarityIcon } from '../../shared/utils/elementVisuals.js';
 import { haptic } from '../../utils/haptics.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -119,7 +119,7 @@ export default function DPSComparisonCard({
                           {getElementIcon(m.d.element) && <img src={getElementIcon(m.d.element)} alt="" className="w-3 h-3 shrink-0" onError={hideOnError} />}
                           <span className="truncate">{m.name}</span>
                         </div>
-                        <div className={`text-2xs ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                        <div className="flex justify-center"><img src={getRarityIcon(rarity5 ? 5 : 4)} alt={rarity5 ? '5★' : '4★'} className="h-2.5" onError={hideOnError} /></div>
                         <span className={`text-2xs px-1 py-0.5 rounded ${rc2.bg} ${rc2.text} inline-block mt-0.5`}>{(getLocale() === 'fr' && ROLE_FR[m.d.role]) || m.d.role}</span>
                       </div>
                     );

@@ -21,8 +21,9 @@ import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { CollectionGridSection } from './CollectionGrid.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getSetIcon, getRegionIcon, getCombatRoleIcon, COMBAT_ROLE_ICONS, getRarityIcon } from '../../shared/utils/elementVisuals.js';
 import { t, getLocale } from '../../utils/i18n.js';
+import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 // ECHO_SETS is declared oldest-first (each block of sets is commented with its game version, e.g.
 // "v3.5 — Land of Xuanfang") — reversed so the newest sonata sets sort first, matching the same
@@ -801,7 +802,7 @@ function CollectionTab({
           {/* 5★ Resonators */}
           <Card>
             <CardHeader>
-              <span className="text-yellow-400">★★★★★</span> {t('collection.sections.resonators')}
+              <img src={getRarityIcon(5)} alt="5★" className="h-4" onError={hideOnError} /> {t('collection.sections.resonators')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -825,7 +826,7 @@ function CollectionTab({
           {/* 4★ Resonators */}
           <Card>
             <CardHeader>
-              <span className="text-purple-400">★★★★</span> {t('collection.sections.resonators')}
+              <img src={getRarityIcon(4)} alt="4★" className="h-4" onError={hideOnError} /> {t('collection.sections.resonators')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -851,7 +852,7 @@ function CollectionTab({
           {/* 5★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-yellow-400">★★★★★</span> {t('collection.sections.weapons')}
+              <img src={getRarityIcon(5)} alt="5★" className="h-4" onError={hideOnError} /> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -873,7 +874,7 @@ function CollectionTab({
           {/* 4★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-purple-400">★★★★</span> {t('collection.sections.weapons')}
+              <img src={getRarityIcon(4)} alt="4★" className="h-4" onError={hideOnError} /> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -895,7 +896,7 @@ function CollectionTab({
           {/* 3★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-blue-400">★★★</span> {t('collection.sections.weapons')}
+              <img src={getRarityIcon(3)} alt="3★" className="h-4" onError={hideOnError} /> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -917,7 +918,7 @@ function CollectionTab({
           {/* 2★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-green-400">★★</span> {t('collection.sections.weapons')}
+              <img src={getRarityIcon(2)} alt="2★" className="h-4" onError={hideOnError} /> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection
@@ -939,7 +940,7 @@ function CollectionTab({
           {/* 1★ Weapons */}
           <Card>
             <CardHeader>
-              <span className="text-gray-400">★</span> {t('collection.sections.weapons')}
+              <img src={getRarityIcon(1)} alt="1★" className="h-4" onError={hideOnError} /> {t('collection.sections.weapons')}
             </CardHeader>
             <CardBody>
               <CollectionGridSection

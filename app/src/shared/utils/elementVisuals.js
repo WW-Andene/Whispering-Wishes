@@ -69,6 +69,18 @@ const WEAPON_TYPE_ICONS = {
   Rectifier:  './ui-icons/i.ibb.co-5gds1gDg-Weapon-Type-Rectifier.webp',
 };
 const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
+// Rarity badges (1-5 stars, pre-rendered as one image per tier rather than a repeatable single
+// glyph) — user-provided 2026-09-13, replacing the app's prior plain-text '★' repeats/lucide
+// <Star> loops used for the same purpose across detail modals, collection section headers, and
+// team-member rarity rows.
+const RARITY_ICONS = {
+  1: './ui-icons/rarity-1-star.webp',
+  2: './ui-icons/rarity-2-star.webp',
+  3: './ui-icons/rarity-3-star.webp',
+  4: './ui-icons/rarity-4-star.webp',
+  5: './ui-icons/rarity-5-star.webp',
+};
+const getRarityIcon = (rarity) => RARITY_ICONS[rarity] || null;
 // Official in-game stat icons (T_Iconproperty* UI assets for ATK/HP/DEF/Energy Regen; Crit Rate/Crit
 // DMG from the wiki, since the source's Crit Rate filename couldn't be found).
 // Re-hosted on ibb.co. Keys are the base stat name — '%' suffixes (e.g. weapon substat 'ATK%') are
@@ -321,6 +333,8 @@ export {
   getBuffElementColor,
   WEAPON_TYPE_ICONS,
   getWeaponTypeIcon,
+  RARITY_ICONS,
+  getRarityIcon,
   STAT_ICONS,
   getStatIcon,
   SET_ICONS,

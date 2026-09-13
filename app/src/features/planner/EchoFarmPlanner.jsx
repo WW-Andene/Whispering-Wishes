@@ -25,7 +25,7 @@ import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { ECHO_DATA, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../../data/echoes.js';
-import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon, getCurrencyIcon } from '../../shared/utils/elementVisuals.js';
+import { getSetIcon, getElementIcon, getStatIcon, getCombatRoleIcon, getCurrencyIcon, getRarityIcon } from '../../shared/utils/elementVisuals.js';
 import { MATERIAL_IMAGES } from '../../data/materialData.js';
 import {
   ECHO_MAIN_STAT_CHANCE, SECONDARY_STAT_BY_COST, ALL_ECHO_SUBSTATS, ECHO_SUBSTAT_POOL_SIZE_AT_SLOT,
@@ -214,8 +214,8 @@ export default function EchoFarmPlanner() {
           <div className="flex gap-1.5">
             {RARITIES.map(r => (
               <button key={r} onClick={() => setRarity(r)}
-                className={`kuro-btn flex-1 text-sm ${cfg.rarity === r ? 'active-gold' : ''}`} style={{ padding: '8px' }}>
-                {'★'.repeat(r)}
+                className={`kuro-btn flex-1 text-sm flex items-center justify-center ${cfg.rarity === r ? 'active-gold' : ''}`} style={{ padding: '8px' }}>
+                <img src={getRarityIcon(r)} alt={`${r}★`} className="h-3" onError={hideOnError} />
               </button>
             ))}
           </div>

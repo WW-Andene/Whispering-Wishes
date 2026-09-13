@@ -5,7 +5,7 @@ import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { isHealerRole, DMG_FOCUS_ROLE_TAG } from './calcEngine.js';
 import { haptic } from '../../utils/haptics.js';
-import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon, getRarityIcon } from '../../shared/utils/elementVisuals.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -259,7 +259,7 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <span className="text-white text-xl font-semibold truncate text-left">{m.name}</span>
-                        <span className={`text-sm flex-shrink-0 ${rarity5 ? 'text-yellow-400' : 'text-purple-400'}`}>{rarity5 ? '★★★★★' : '★★★★'}</span>
+                        <img src={getRarityIcon(rarity5 ? 5 : 4)} alt={rarity5 ? '5★' : '4★'} className="h-3 flex-shrink-0" onError={hideOnError} />
                       </div>
                       <div className="flex items-center flex-wrap gap-1 mt-1">
                         <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{(getLocale() === 'fr' && ROLE_FR[m.d.role]) || m.d.role}</span>

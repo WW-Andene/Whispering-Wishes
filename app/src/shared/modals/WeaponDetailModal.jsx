@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
-import { Swords, Star, TrendingUp, X, Play, User, Users, LayoutGrid } from 'lucide-react';
+import { Swords, TrendingUp, X, Play, User, Users, LayoutGrid } from 'lucide-react';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { WEAPON_TYPE_FR, STAT_NAME_FR, PV_LABEL_FR } from '../../data/characters.fr.js';
@@ -12,7 +12,7 @@ import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, WEAPON_ASCENSION_COSTS_5, WEAPON_A
 import { getConveneAnimation, getWeaponBannerArt, DEFAULT_COLLECTION_IMAGES } from '../../data/banners.js';
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { ConveneVideo } from '../components/ConveneVideoLayer.jsx';
-import { getWeaponTypeIcon, getStatIcon } from '../utils/elementVisuals.js';
+import { getWeaponTypeIcon, getStatIcon, getRarityIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
@@ -107,7 +107,7 @@ const WeaponDetailModal = ({ name, onClose, imageUrl, infoFraming, collectionDat
             </div>
             <h2 className="text-2xl font-semibold text-white">{displayName}</h2>
             <div className="flex items-center gap-0.5 mt-0.5">
-              {[...Array(data.rarity)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
+              {getRarityIcon(data.rarity) && <img src={getRarityIcon(data.rarity)} alt={`${data.rarity}★`} className="h-3" onError={hideOnError} />}
             </div>
           </div>
         </div>

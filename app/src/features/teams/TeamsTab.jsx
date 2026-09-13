@@ -4,7 +4,7 @@ import { CHARACTER_DATA, RELEASE_ORDER, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATO
 import { scoreTeamComposition, isHealerRole, isSupportRole } from './calcEngine.js';
 import { getEnemyResMap } from './calcTeamStats.js';
 import { haptic } from '../../utils/haptics.js';
-import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getRarityIcon } from '../../shared/utils/elementVisuals.js';
 import { TabBackground } from '../../shared/backgrounds/TabBackground.jsx';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { TabErrorBoundary } from '../../shared/errors/ErrorBoundaries.jsx';
@@ -940,7 +940,7 @@ function TeamsTab({
                                 </button>
                               )}
                               <div className="absolute bottom-0 left-0 right-0 z-10 p-1.5 bg-gradient-to-t from-black/90 via-black/60 to-transparent pointer-events-none kuro-tshadow-deep">
-                                <div className={`${rarity5 ? 'text-yellow-400' : 'text-purple-400'} text-2xs`}>{rarity5 ? '★★★★★' : '★★★★'}</div>
+                                <img src={getRarityIcon(rarity5 ? 5 : 4)} alt={rarity5 ? '5★' : '4★'} className="h-2.5" onError={hideOnError} />
                                 <div className="text-sm truncate text-gray-200">{charName}</div>
                               </div>
                             </div>
