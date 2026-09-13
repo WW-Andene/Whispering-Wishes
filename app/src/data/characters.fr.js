@@ -151,7 +151,7 @@ export const CHARACTER_TITLE_FR = {
 /** @type {Record<string, string>} */
 export const CHAR_BUFF_NOTE_FR = {
   'Lingyang': "DPS principal Glacio sur le terrain. L'état Lion Bondissant du Circuit Forte (activé via l'Attaque Lourde Plongeon Glorieux à Esprit du Lion plein) débloque des attaques aériennes améliorées. L'Outro Marques Givrées est un pur proc de DGT de zone, pas un buff d'équipe, bien que la Chaîne de Résonance S4 confère à l'équipe +20 % DGT Glacio/30 s à son déclenchement.",
-  'Rover: Aero': "Soigneuse/soutien. La Compétence aérienne Rupture Céleste retire les cumuls de Spectro Frazzle, Havoc Fléau, Fusion Éclatement, Glacio Frisson et Electro Éclair de la cible touchée et convertit chacun en un cumul d'Érosion Aero. Le Forte Danse de l'Averse et la Libération Tempête Oméga soignent tous deux l'équipe.",
+  'Rover: Aero': "Soigneuse/soutien. La Compétence aérienne Rupture Céleste retire les cumuls de Spectro Frazzle, Havoc Fléau, Explosion Fusion, Glacio Frisson et Electro Éclair de la cible touchée et convertit chacun en un cumul d'Érosion Aero. Le Forte Danse de l'Averse et la Libération Tempête Oméga soignent tous deux l'équipe.",
   'Verina': 'Outro Éclosion : soigne le personnage entrant + Amplification de tous les DGT +15 % (30 s) pour l\'équipe à proximité. Don Inhérent de la Nature : ATQ d\'équipe +20 %/20 s au déclenchement du Forte/de la Libération/de l\'Outro.',
   'Shorekeeper': 'Outro : Amplification de tous les DGT 15 %, équipe entière, 30 s (persiste à travers les changements). Libération Stellarealm : +12,5 % Taux Critique +25 % Dégâts Critiques (30 s), équipe entière. Récupération sur mise à terre.',
   'Jianxin': 'Soutien à bouclier/sous-DPS en Posture de Parade. Le Forte (Spirale de Chi Primordial) confère un vaste bouclier proportionnel aux PV et des soins périodiques tant qu\'il est canalisé. Le Champ de Force de Purification de la Libération regroupe les ennemis avant d\'exploser. Outro Transcendance : Amplification des DGT de Libération de Résonance +38 % (14 s) pour le personnage entrant.',
@@ -163,7 +163,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Hiyuki': 'DPS Glacio sur le terrain. L\'Outro confère +20 % DGT Glacio au reste de l\'équipe contre les cibles affectées par Glacio Frisson (20 s). Neige Fine Inhérente : personnel +40 % Dégâts Critiques à 1 cumul de Givre Rouillé, +30 %/+30 % Amplification de DGT Morsure Glacio à 1/3 cumuls — nécessite des coéquipiers appliquant Glacio Frisson ou Havoc Fléau pour atteindre les cumuls max.',
   'Lucy': 'Outro : 25 % Amplification de DGT d\'Attaque Normale pour le Résonateur suivant (14 s) + Programme de Contre-mesure d\'équipe (Piratage - Interféré déclenche +20 % Amplification de tous les DGT). Rupture Tacet : Piratage confirmé de la même famille générique de Rupture Tacet ; la Réponse de Piratage - Crash de Données est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé.',
   'Rebecca': 'Outro : déploie une tourelle pendant 14 s et confère au Résonateur suivant 15 % d\'Amplification de tous les DGT (14 s), montant jusqu\'à 35 % d\'Amplification de DGT d\'Attaque Lourde via l\'accumulation d\'Overlimit. Les deux buffs ne ciblent que le personnage entrant, pas toute l\'équipe. Le mode Chasseresse confère personnellement 30 % Dégâts Critiques ; le mode Cran confère personnellement 15 % d\'Ignorance de DEF (personnel, pas un debuff de Réduction de DEF pour toute l\'équipe — corrigé le 2026-08-16, était mal classé sous debuffs comme defShred). Rupture Tacet : la Réponse de Piratage - Effondrement est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé ; Chat, t\'es Fait ! confère +30 Regain de Rupture Tacet (30 s) confirmé à quel que coéquipier inflige Piratage - Déplacement.',
-  'Denia': 'Mode Double Résonance : le mode Éclatement Fusion de l\'Outro amplifie les DGT d\'Éclatement Fusion de l\'équipe de 60 % (30 s) ; le mode Tension Tacet de l\'Outro confère au Résonateur suivant 15-40 % d\'Amplification de tous les DGT (16 s). Kit de Rupture Tacet (mode Tension Tacet uniquement) : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, +10 Regain de Rupture Tacet équipe (Couleurs Gravées).',
+  'Denia': 'Mode Double Résonance : le mode Explosion Fusion de l\'Outro amplifie les DGT d\'Explosion Fusion de l\'équipe de 60 % (30 s) ; le mode Tension Tacet de l\'Outro confère au Résonateur suivant 15-40 % d\'Amplification de tous les DGT (16 s). Kit de Rupture Tacet (mode Tension Tacet uniquement) : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, +10 Regain de Rupture Tacet équipe (Couleurs Gravées).',
   'Lucilla': "Mode Double Résonance : le mode Givre Glaçant de l'Outro amplifie les DGT de Givre Glaçant de l'équipe de 60 % (30 s) ; le mode Écho de l'Outro confère au Résonateur suivant +50 % d'Amplification de DGT de Compétence d'Écho (14 s). Compétence Innée Ralenti (au lancer de Projection de Lumière) : en mode Givre Glaçant, -8 % RES Glacio près du Résonateur actif (30 s) ; en mode Écho, +25 % de Bonus de DGT de Compétence d'Écho pour l'équipe (30 s) — se termine prématurément dans les deux cas au changement de mode. Le Circuit de Forte Pellicule (mode Givre Glaçant : consomme 1 cumul chaque fois qu'un autre coéquipier actif inflige Givre Glaçant, pour infliger Givre Glaçant deux fois plus souvent elle-même) est modélisé comme un bloc réel réactif aux actions alliées dans lucilla.blocks.js (2026-09-08) — son gain est une application de Chafe supplémentaire, pas une valeur en %, donc il vit là plutôt que comme une ligne numérique dans cette table.",
   'Mornye': 'Outro : 25 % d\'Amplification de tous les DGT pour l\'équipe (30 s, confirmé exact le 2026-08-16 — était auparavant mal classé comme Renforcement). Champ de Syntonie : +50 % de Taux d\'Accumulation Hors-Tonalité (25 s), soins, DEF +20 % via l\'Ultime. Marqueur Interféré : jusqu\'à 40 % d\'Amplification de DGT sur la cible. Réponse de Rupture.',
   'Roccia': 'Outro : +20 % d\'Amplification de DGT Havoc + 25 % d\'Amplification de DGT d\'Attaque Basique (14 s). Inhérent 1 : personnel ATQ +20 % (12 s) sur Compétence/Attaque Lourde. Libération : ATQ d\'équipe fixe +1 par 0,1 % de Taux Critique au-delà de 50 %, jusqu\'à +200 (30 s) — pas un buff en %, donc non suivi dans libBuffs.',
@@ -193,7 +193,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Chixia': 'DPS Fusion. Explosion de Compétence de Résonance. Tir soutenu de l\'Esprit Combatif Vrombissant.',
   'Lumi': 'Outro (Escorte) : 38 % d\'Amplification de DGT de Compétence de Résonance pour le suivant pendant 10 s ou jusqu\'à son changement. Buffeuse hybride Electro.',
   'Youhu': 'Soigneuse Glacio (Divination par Parchemin + Essence Poétique, les deux soignent au lancer). Outro Classiques Intemporels : +100 % d\'Amplification de DGT d\'Attaque Coordonnée (28 s) pour le personnage entrant — son buff de niche signature.',
-  'Aemeath': 'DPS la plus puissante du jeu. Double mode : Rupture Tacet (cible unique) / Éclatement Fusion (zone). Duo Séraphique Amélioré évolue selon la Traînée de Rupture/Fusion (jusqu\'à 30 cumuls = multiplicateur 300 %, 4 %/10 % par cumul retiré). La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur. Auto-buff : jusqu\'à 60 % Dégâts Critiques via Entre les Étoiles. Rupture Tacet : Réponse de Rupture Tacet authentique confirmée (Éclat d\'Étoile, kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé ; le sous-objet tuneBreak ne porte que la statistique générique de Regain de base en attendant ce chiffre.',
+  'Aemeath': 'DPS la plus puissante du jeu. Double mode : Rupture Tacet (cible unique) / Explosion Fusion (zone). Duo Séraphique Amélioré évolue selon la Traînée de Rupture/Fusion (jusqu\'à 30 cumuls = multiplicateur 300 %, 4 %/10 % par cumul retiré). La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur. Auto-buff : jusqu\'à 60 % Dégâts Critiques via Entre les Étoiles. Rupture Tacet : Réponse de Rupture Tacet authentique confirmée (Éclat d\'Étoile, kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé ; le sous-objet tuneBreak ne porte que la statistique générique de Regain de base en attendant ce chiffre.',
   'Jiyan': 'DPS d\'Attaque Lourde en forme Qingloong. La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur.',
   'Calcharo': 'Combo Libération → Messager de la Mort.',
   'Encore': 'DPS principale Fusion sur le terrain. Accumule du Chaos via les coups Basique/Compétence/Intro ; à Chaos plein, l\'Attaque Lourde entre dans un état de réduction de DGT de 70 % et lance un gros finisseur à DGT de Libération (Frénésie Nuageuse / Rupture Cosmique) à la sortie. La Libération Rave Cosmique remplace tout son kit par des versions Fusion améliorées pendant 10 s. L\'Outro Champ Thermique est un pur proc de DoT, sans buff d\'équipe — libre pour le changement rapide.',
@@ -411,13 +411,13 @@ export const CHARACTER_ROTATION_NOTE_FR = {
     'Appuyez UNE FOIS sur Attaque Basique — annulez sa récupération en appuyant immédiatement sur Compétence.',
     'Appuyez sur Compétence — attire les cibles proches et confère 25 Particules du Vide de plus. Annulez sa fin instantanément en appuyant sur Libération.',
     'Appuyez sur Libération — inflige un coup et confère Bascule Entropique : Forme Effondrement (+30 % ATQ) pendant 12 s, puis la fait passer en Forme Effondrement.',
-    'Appuyez 4 fois sur Attaque Basique (au sol ou en l\'air, les deux fonctionnent) — accumule la Charge Conforme vers 100, chaque coup infligeant Fusion Éclatement ou Tension Tacet - Déplacement selon son Mode de Résonance.',
+    'Appuyez 4 fois sur Attaque Basique (au sol ou en l\'air, les deux fonctionnent) — accumule la Charge Conforme vers 100, chaque coup infligeant Explosion Fusion ou Tension Tacet - Déplacement selon son Mode de Résonance.',
     'Appuyez sur Compétence (remplace Appel tant qu\'un Noyau Sombre est détenu) — attire les cibles. Appuyez à nouveau sur Attaque Basique ou Compétence peu après pour l\'Étape 2.',
     'Consomme tous les Noyaux Sombres détenus pour un coup qui gagne +150 % de Multiplicateur de DGT par Noyau Sombre dépensé (compté comme DGT de Libération). Annulez sa fin instantanément en appuyant sur Libération.',
     'Une fois la Charge Conforme à 100/100, appuyez sur Libération — consomme toute la Charge Conforme et la Particule du Vide pour le 2e Ultime, confère Bascule Entropique : Forme Mise en Scène pendant 30 s, et la fait repasser en Forme Mise en Scène.',
-    'Se déploie automatiquement via le 2e Ultime — une zone hors du terrain de 30 s qui attire et frappe les cibles proches toutes les 4 s (comptée comme DGT de Libération), appliquant Fusion Éclatement/Tension Tacet même après que Denia a changé de personnage.',
-    'En mode Fusion Éclatement, utilisez votre Écho à tout moment pratique de la rotation. En mode Tension Tacet, annulez-le par changement juste avant de changer de personnage pour l\'Outro à la place.',
-    'Se déclenche automatiquement au changement de personnage. En mode Fusion Éclatement, amplifie les DGT de Fusion Éclatement près du Résonateur actif de +60 % pendant 30 s. En mode Tension Tacet, confère plutôt au Résonateur entrant +15 % d\'Amplification de tous les DGT pendant 16 s (montant à +40 % une fois qu\'il applique lui-même Tension Tacet).',
+    'Se déploie automatiquement via le 2e Ultime — une zone hors du terrain de 30 s qui attire et frappe les cibles proches toutes les 4 s (comptée comme DGT de Libération), appliquant Explosion Fusion/Tension Tacet même après que Denia a changé de personnage.',
+    'En mode Explosion Fusion, utilisez votre Écho à tout moment pratique de la rotation. En mode Tension Tacet, annulez-le par changement juste avant de changer de personnage pour l\'Outro à la place.',
+    'Se déclenche automatiquement au changement de personnage. En mode Explosion Fusion, amplifie les DGT de Explosion Fusion près du Résonateur actif de +60 % pendant 30 s. En mode Tension Tacet, confère plutôt au Résonateur entrant +15 % d\'Amplification de tous les DGT pendant 16 s (montant à +40 % une fois qu\'il applique lui-même Tension Tacet).',
   ],
   'Hiyuki': [
     'Changez pour elle — se déclenche automatiquement, restaure 200 des 300 points de Dévotion et applique 1 cumul de Glacio Frisson.',
@@ -484,7 +484,7 @@ export const CHARACTER_ROTATION_NOTE_FR = {
   ],
   'Aemeath': [
     'Avant même que le combat ne commence (ou dès l\'entrée en jeu), appuyez une fois sur Compétence pour passer en Forme Méca avant l\'Intro — les Attaques Basiques de la Forme Méca enchaînent vers l\'étape suivante légèrement plus vite que sa forme de base.',
-    'Changez pour elle en Forme Méca — se déclenche automatiquement, restaure 40 Taux de Synchronisation et applique Rupture Tacet/Fusion Éclatement selon son Mode de Résonance.',
+    'Changez pour elle en Forme Méca — se déclenche automatiquement, restaure 40 Taux de Synchronisation et applique Rupture Tacet/Explosion Fusion selon son Mode de Résonance.',
     'Appuyez deux fois sur Attaque Basique — accumule plus de Taux de Synchronisation. Annulez la récupération du premier coup de l\'Étape 4 en appuyant immédiatement sur Libération.',
     'Appuyez sur Libération — inflige un coup, reste/repasse en Forme Méca, entre en Résonance de Poussière d\'Étoiles pendant 30 s (renforce ses 2 prochains lancers de Duo Séraphique) et Édit de la Chute Céleste : Libre pendant 60 s (débloque le 2e Ultime une fois les deux jauges de Forte pleines).',
     'Appuyez 3 fois sur Attaque Basique — plus de Taux de Synchronisation. Annulez la récupération de l\'Étape 4 en appuyant immédiatement sur Compétence.',
@@ -495,7 +495,7 @@ export const CHARACTER_ROTATION_NOTE_FR = {
     'Appuyez sur Libération (ou Compétence) juste après l\'Attaque Lourde — consomme tout le Taux de Synchronisation et le Taux de Résonance pour son énorme 2e nuke Ultime, mettant fin à Édit de la Chute Céleste : Libre et repassant en Forme Aemeath.',
     'Appuyez une fois de plus sur Compétence pour repasser en Forme Méca avant de changer de personnage (garde les futures rotations cohérentes).',
     'Utilisez votre Écho équipé (Sigillum) à tout moment pratique de la rotation.',
-    'Changez de personnage pour déclencher ceci automatiquement. Confère à chaque autre coéquipier +10 % d\'Amplification de tous les DGT pendant 20 s, montant à +20 % pour celui qui applique personnellement Rupture Tacet ou Fusion Éclatement (selon le Mode de Résonance actuel d\'Aemeath).',
+    'Changez de personnage pour déclencher ceci automatiquement. Confère à chaque autre coéquipier +10 % d\'Amplification de tous les DGT pendant 20 s, montant à +20 % pour celui qui applique personnellement Rupture Tacet ou Explosion Fusion (selon le Mode de Résonance actuel d\'Aemeath).',
   ],
   'Lynae': [
     'Changez pour elle — se déclenche automatiquement, restaure 100 Débordement et inflige Flux Photochromique (Rupture Tacet ou Tension Tacet, selon son Mode de Résonance choisi). Annulez sa récupération en appuyant immédiatement sur Libération.',
@@ -1069,6 +1069,10 @@ export const SKILL_NAME_FR = {
   'Aemeath': {
     'Aemeath Form Stage 1-4': 'Forme Aemeath Étape 1-4',
     'Mech Form Stage 1-4': 'Forme Mécha Étape 1-4',
+    'Attack (Aemeath)': 'Attaque (Forme Aemeath)',
+    'Attack (Mech)': 'Attaque (Forme Mécha)',
+    'Standard (Aemeath)': 'Standard (Forme Aemeath)',
+    'Standard (Mech)': 'Standard (Forme Mécha)',
     'Aemeath Charged I / II': 'Aemeath Chargée I / II',
     'Mech Charged I / II': 'Mécha Chargée I / II',
     'Sync Strikes': 'Frappe Synchro',
@@ -1916,6 +1920,12 @@ export const MULT_DESC_FR = {
     'Undying Sunlight': 'Frappe 139,17 %×2 / Bond 222,67 %+27,84 %×2 / Plongeon 86,59 %+779,24 %',
     'Battlesong of the Unyielding': "+15 % d'Amplification de tous les DGT (14 s)",
   },
+  'Aemeath': {
+    'Sync Strikes': "Fusion d'Armement 26,92 %+40,38 %+67,29 % / Appel de l'Aube 16,33 %×3+114,28 %",
+    'Seraphic Duet': 'Ouverture 17,90 %+14,92 %×6+23,86 %×3+59,65 %×3 / Rappel 17,90 %×4+35,79 %×3+178,93 %',
+    'Heavenfall Edict': 'Surtension 186,72 %+248,96 %×3 / Finale 1663,83 %',
+    'Silent Protection': "10-20 % d'Amplification de tous les DGT pour l'équipe (20 s), selon le mode",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2052,5 +2062,21 @@ export const SKILL_DESC_FR = {
     'Undying Sunlight': "Enchaînement renforcé par le Forte ; Plongeon consomme toute l'Ascendance pour un gros finisseur.",
     'Dodge Counter - Undying Sunlight: Strike': "Variante de Contre-attaque d'Esquive au sol/aérienne à Ascendance maximale, considérée comme DGT de Compétence de Résonance ; confirmée inutilisée dans sa vraie rotation.",
     'Battlesong of the Unyielding': "Confère au Résonateur suivant +15 % d'Amplification de tous les DGT pendant 14 s, qui se termine immédiatement s'il est remplacé. Gain conditionnel : Augusta gagne +1 cumul de Majesté ET +1 cumul de Couronne de Volontés SEULEMENT si ce MÊME Résonateur relance sa propre Compétence d'Outro vers Augusta pendant que ce buff est encore actif — changer vers un troisième personnage d'abord fait perdre le buff (et la chance de cumul).",
+  },
+  'Aemeath': {
+    'Aemeath Form Stage 1-4': "Enchaînement standard en forme humaine, plus faible mais plus rapide que la Forme Mécha.",
+    'Mech Form Stage 1-4': 'Enchaînement plus lourd en Forme Mécha avec des coups plus puissants, accessible via son Forte.',
+    'Attack (Aemeath)': "Attaque plongeante ; consommée par l'enchaînement en forme humaine, s'enchaîne vers l'Étape 2 de base.",
+    'Attack (Mech)': 'Variante d\'attaque plongeante en Forme Mécha.',
+    'Standard (Aemeath)': "Attaque Normale après Esquive ; s'enchaîne vers l'Étape 4 de base.",
+    'Standard (Mech)': "Variante de Contre-attaque d'Esquive en Forme Mécha.",
+    'Aemeath Charged I / II': 'Frappe chargée en forme humaine, la seconde étape frappe bien plus fort.',
+    'Mech Charged I / II': 'Frappe chargée en Forme Mécha, coups uniques très puissants.',
+    'Sync Strikes': 'La Compétence déclenche différents enchaînements selon la forme dans laquelle elle se trouve.',
+    'Seraphic Duet': 'Enchaînement de Compétence plus long, la variante Rappel frappe quand elle est enchaînée après Ouverture.',
+    'Heavenfall Edict': "Ultime ; Finale est une explosion massive qui monte en puissance avec les buffs d'équipe.",
+    'Songs Across the Universe': "Compétence d'Intro utilisée en changeant depuis la forme humaine.",
+    'Debut of Meteoric Radiance': "Compétence d'Intro utilisée en changeant depuis la Forme Mécha.",
+    'Silent Protection': "Buff au changement de personnage pour toute l'équipe ; la force dépend de la forme dans laquelle elle était au moment du changement.",
   },
 };
