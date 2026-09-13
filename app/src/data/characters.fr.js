@@ -67,7 +67,7 @@ export const CHARACTER_DESC_FR = {
   'Jingran': "Une solitaire s'aventurant dans des profondeurs insaisissables, originaire de Mengzhou. Manieuse de Sabre Fusion à scaling PV qui canalise les postures Vaisseau Yin et Fontaine Yang. DPS Fusion sur le terrain dont l'Attaque Lourde et l'ATQ/DGT sont proportionnels aux PV Max, entrant en état Yinghuo via sa Libération de Résonance pour des frappes de suivi renforcées.",
   'Aalto': "Courtier en informations suave qui se faufile à travers la brume. Sous-DPS Aero qui inflige des DGT Aero hors du terrain via des Attaques Coordonnées déclenchées par son invocation de clone de brume.",
   'Baizhi': "Chercheuse dévouée de l'Académie Huaxu accompagnée de sa compagne You'tan. Soigneuse Glacio qui restaure les PV via sa Compétence de Résonance et sa Libération, offrant un soutien d'équipe constant avec un faible temps de présence sur le terrain.",
-  'Chixia': "Patrouilleuse énergique qui traverse Jinzhou en trombe avec ses doubles pistolets. DPS Fusion sur le terrain qui inflige des DGT Fusion via des tirs rapides de Compétence de Résonance et des combos d'Attaque Basique.",
+  'Chixia': "Patrouilleuse énergique qui traverse Jinzhou en trombe avec ses doubles pistolets. DPS Fusion sur le terrain qui inflige des DGT Fusion via des tirs rapides de Compétence de Résonance et des combos d'Attaque Normale.",
   'Danjin': "Rôdeuse de Minuit qui échange son propre sang contre du pouvoir, traquant voleurs et bandits à travers Huanglong pour se venger. Hybride Havoc qui consomme des PV pour alimenter des Attaques Basiques et Lourdes renforcées, gagnant un Bonus de DGT Havoc à mesure que sa santé diminue — utilisée comme buffeuse d'Outro rapide pour un DPS Havoc ou, avec une rotation plus longue, comme DPS principal à part entière.",
   'Yangyang': "Éclaireuse libre des Rôdeurs de Minuit, hybride Efficacité de Concerto/Traction/Régén. de Libération. Sous-DPS Aero qui regroupe les ennemis via sa Compétence de Résonance et sa Libération, accumule jusqu'à 3 cumuls de Mélodie pour une explosion aérienne de Libération de Plumes, et transfère de l'Énergie de Résonance au personnage suivant via son Outro — l'une des rotations les plus rapides et les plus propices au changement rapide du jeu.",
   'Sanhua': "Garde personnelle stoïque de Jinhsi, aussi froide que le givre qu'elle commande. Sous-DPS Glacio à changement rapide qui inflige des DGT Glacio explosifs et amplifie les DGT d'Attaque Basique du personnage suivant via l'Outro.",
@@ -1606,7 +1606,7 @@ export const SKILL_NAME_FR = {
   'Chixia': {
     'POW POW Stage 1-4': 'POW POW Étape 1-4',
     'POW POW (aimed shot)': 'POW POW (tir visé)',
-    'Whizzing Fight Spirit': 'Esprit combattant',
+    'Whizzing Fight Spirit': 'Esprit Combatif Vrombissant',
     'Heroic Bullets: DAKA DAKA!': 'Balles Héroïques : DAKA DAKA !',
     'Heroic Bullets: Boom Boom': 'Balles Héroïques : Boum Boum',
     'Blazing Flames': 'Feu ardent',
@@ -2165,6 +2165,10 @@ export const MULT_DESC_FR = {
     'Five Thunders Spell Array': '19,89 % par tic',
     'Exorcism Spell': "Pas de DGT (Soin + 15 % d'Amplification DGT d'équipe, 30 s)",
   },
+  'Chixia': {
+    'POW POW (aimed shot)': '35,79 % → 80,52 % entièrement chargé',
+    'Heroic Bullets: DAKA DAKA!': '19,89 % par Balle Thermobarique',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2686,5 +2690,14 @@ export const SKILL_DESC_FR = {
     'Five Thunders Spell Array': "2 cumuls d'Électromagnétique infligés à toutes les cibles à portée toutes les 2 s pendant 24 s. Monte en puissance le Bonus de DGT de Compétence de Résonance d'équipe aux lancers d'Intro alliés.",
     'Summon and Smite': "Soigne tous les Résonateurs proches au lancer. La Compétence Inhérente confère 4 cumuls d'Électromagnétique aux cibles touchées (une fois toutes les 10 s).",
     'Exorcism Spell': "Soigne le Résonateur actif de 18 % de l'ATQ de Buling/s pendant 16 s. Tous les Résonateurs proches ont leurs DGT amplifiés de 15 % pendant 30 s.",
+  },
+  'Chixia': {
+    'POW POW Stage 1-4': "Jusqu'à 4 tirs.",
+    'Whizzing Fight Spirit': "2 charges initiales. Maintenez pour entrer en DAKA DAKA !",
+    'Heroic Bullets: DAKA DAKA!': "État de tir continu. Appuyer sur l'Attaque Normale en sort vers l'Attaque Normale 4.",
+    'Heroic Bullets: Boom Boom': "Déclenchée automatiquement quand 30 Balles Thermobariques sont dépensées en un seul DAKA DAKA !",
+    'Blazing Flames': "Rafale rapide touchant tous les ennemis proches.",
+    'Grand Entrance': "Entrée rapide au double pistolet.",
+    'Leaping Flames': "Onde de choc de zone autour de la cible.",
   },
 };
