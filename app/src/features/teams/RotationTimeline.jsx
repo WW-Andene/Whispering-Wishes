@@ -63,6 +63,18 @@ export const STAT_LABELS_FULL = {
   coordDmg: 'Coordinated ATK DMG', glacioDmg: 'Glacio DMG', fusionDmg: 'Fusion DMG', electroDmg: 'Electro DMG',
   aeroDmg: 'Aero DMG', spectroDmg: 'Spectro DMG', havocDmg: 'Havoc DMG',
 };
+// French version — consumed by calcTeamStats.js's fmtBuff() (Rotation Guide's Inherits/Own
+// Kit/Hands Off badge text), not by any JSX here. Terms reused from established precedent:
+// "Intensification des Dégâts" for DMG Amplify matches CHARACTER_TAG_FR's own entry for the
+// same English string; "Attaque Normale"/"DGT <Élément>" match the conventions already used
+// throughout characters.fr.js/echoes.fr.js.
+export const STAT_LABELS_FULL_FR = {
+  atkPct: 'ATQ', allDmg: 'DGT Tous Éléments', elemDmg: 'DGT Élémentaire', amplify: 'Intensification des Dégâts',
+  basicDmg: "DGT d'Attaque Normale", heavyDmg: "DGT d'Attaque Lourde", libDmg: 'DGT de Libération', echoDmg: "DGT de Compétence d'Écho",
+  skillDmg: 'DGT de Compétence de Résonance', critRate: 'Taux Critique', critDmg: 'Dégâts Critiques', resShred: 'Réduction RÉS', defShred: 'Réduction DÉF',
+  coordDmg: "DGT d'Attaque Coordonnée", glacioDmg: 'DGT Glacio', fusionDmg: 'DGT Fusion', electroDmg: 'DGT Electro',
+  aeroDmg: 'DGT Aero', spectroDmg: 'DGT Spectro', havocDmg: 'DGT Havoc',
+};
 
 // Color + full label per CHARACTER_ROTATIONS step type — shared by the Rotation Guide's skill-sequence
 // chips, just the category name and color (Intro/Skill/Liberation/Heavy/Basic/Forte/Echo/Outro spelled
