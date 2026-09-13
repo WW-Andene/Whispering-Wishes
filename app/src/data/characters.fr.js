@@ -30,7 +30,7 @@ export const CHARACTER_DESC_FR = {
   'Lingyang': "Bourrasque Givrée, membre enthousiaste et courageux de la Troupe de la Danse du Lion de Jinzhou et dernier Suan'ni vivant — un visiteur sincère et compatissant de la communauté humaine doté de capacités physiques incroyables, qui incarne l'esprit de la Danse du Lion avec son style unique. DPS Glacio sur le terrain qui accumule l'Esprit du Lion via sa Compétence de Résonance Poings Furieux, puis le déchaîne via l'Attaque Lourde Plongeon Glorieux pour entrer dans l'état aérien du Lion Bondissant, enchaînant des Attaques Basiques améliorées, Vagabond des Montagnes et Coups de Pied Orageux.",
   'Verina': "L'Appel de la Nature — dotée d'une vaste connaissance de la botanique, Verina est toujours prévenante, toujours souriante, et souhaite toujours que chaque fleur soit bénie du miracle de la vie. Soigneuse Spectro qui accumule de l'Énergie de Photosynthèse via les Attaques Basiques, la Compétence et l'Intro, puis la dépense en Attaques Lourdes/Aériennes Éclosions de Fleurs Stellaires pour soigner l'équipe ; la Libération Floraison Arboricole soigne et marque les ennemis pour un soin sur Attaque Coordonnée, tandis que l'Outro Éclosion soigne le personnage entrant et confère à l'équipe une Amplification de tous les DGT.",
   'Yinlin': "Marionnette Exécutrice — une Patrouilleuse habile et une puissante Résonatrice Naturelle de Jinzhou ; après avoir été suspendue de ses fonctions au Bureau de la Sécurité Publique, elle doit désormais traquer les maux cachés dans le secret. Sous-DPS Electro qui marque les cibles du Sceau du Pécheur via l'Attaque Basique et la Compétence d'Intro, inflige des DGT Electro hors du terrain via des Attaques Coordonnées (Salve Électromagnétique/Frappe du Jugement) une fois la Marque du Châtiment appliquée, et amplifie les DGT Electro et les DGT de Libération de Résonance du coéquipier entrant via son Outro.",
-  'Jinhsi': "Renouveau de l'Aube, Magistrate de Jinzhou, illumine doucement les espoirs de son peuple comme des rayons de soleil hivernal — en tant que Résonatrice Désignée du Sentinel vénéré, elle fait preuve d'humilité et se consacre corps et âme à guider son peuple vers un avenir radieux. DPS Spectro sur le terrain qui accumule de l'Incandescence à partir des DGT d'Attribut ou Coordonnés de n'importe quel membre de l'équipe, entre en Incarnation via sa Compétence de Résonance, puis dépense ses cumuls via Épiphanie Illuminée pour un nuke Éclat Stella évolutif.",
+  'Jinhsi': "Renouveau de l'Aube, Magistrate de Jinzhou, illumine doucement les espoirs de son peuple comme des rayons de soleil hivernal — en tant que Résonatrice Désignée du Sentinel vénéré, elle fait preuve d'humilité et se consacre corps et âme à guider son peuple vers un avenir radieux. DPS Spectro sur le terrain qui accumule de l'Incandescence à partir des DGT d'Attribut ou Coordonnés de n'importe quel membre de l'équipe, entre en Incarnation via sa Compétence de Résonance, puis dépense ses cumuls via Épiphanie Lumineuse pour un nuke Éclat Stella évolutif.",
   'Changli': "Flamme Éternelle, conseillère au service de la Magistrate de Jinzhou et ancienne Secrétaire Générale dans la capitale — enveloppée de flammes, elle est destinée à brûler intensément jusqu'à ses dernières braises, s'élevant au pouvoir avec une détermination ardente et un esprit toujours stratégique. DPS Fusion sur le terrain qui entre en Vraie Vision depuis les finisseurs de son Attaque Normale/Compétence/Intro, accumule des cumuls d'Enflammement à partir des suivis de Vraie Vision, puis déchaîne l'Attaque Lourde renforcée Sacrifice Ardent — un kit rapide et propice au changement rapide qui confère aussi au personnage entrant un buff de DGT Fusion et de Libération via son Outro.",
   'Zhezhi': "Pinceau Enchanté — peintre timide et discrète de la scène artistique de Jinzhou dont les créations à l'encre prennent vie et combattent à son commandement ; sa timidité masque une dévotion farouche envers son art et ceux qu'elle appelle amis. Sous-DPS/soutien Glacio qui peint des Empreintes Fantasmagoriques durant son Attaque Basique et son combo Forte, les consomme pour déchaîner des nukes Glacio hors du terrain en Attaque Coordonnée via sa Libération de Résonance (Toile Vivante), et confère au personnage entrant un buff de DGT Glacio et DGT de Compétence via son Outro Graver et Peindre.",
   'Xiangli Yao': "Tisseur de Matière, Enquêteur Principal à l'Académie Huaxu de Jinzhou et son plus jeune scientifique multidisciplinaire — une âme douce à l'esprit vif dont la passion inlassable pour la Mécanique des Automates se traduit toujours en découvertes constructives. DPS principal Electro sur le terrain qui accumule de la Capacité via ses combos Attaque Basique/Compétence, entre en Intuition via sa Libération de Résonance (Modèle de Cogitation) pour gagner 3 Hypercubes et des attaques renforcées, puis consume chaque Hypercube via la Compétence renforcée Loi des Règnes pour ses dégâts explosifs principaux — son Outro Règle de Chaîne déclenche ensuite des tirs laser bonus sur les Attaques Basiques du personnage entrant.",
@@ -179,7 +179,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Chisa': "Soutien/Soigneuse pour équipes de Statut Négatif. L'Ignorance de DEF de 18 % via Fil du Fléau et la Réduction de DEF jusqu'à 12 % via Havoc Fléau nécessitent tous deux que l'ennemi soit marqué par Piège Invisible. Fil du Fléau ne bénéficie spécifiquement qu'aux Résonateurs qui infligent eux-mêmes des dégâts de Statut Négatif : son kit est proche de l'inutilité en dehors de ces équipes. Soigne l'équipe via Coupure Mortelle et Instant de Néant. Confère des Boucliers via Sawring - Éradication. Outro : les coéquipiers peuvent cumuler 3 Statut Négatif/Rage Electro supplémentaires pendant 20 s.",
   'Camellya': 'DPS principale auto-buffeuse. Lit de Semis : +15 % DGT Havoc. Épiphyte : +15 % DGT d\'Attaque Basique.',
   'Carlotta': 'DPS principale Glacio en explosion. Révérence Finale : +80 % de Multiplicateur de DGT de Libération à Substance maximale. Déconstruction : -18 % DEF de la cible (4 s).',
-  'Jinhsi': 'DPS Spectro en explosion sur le terrain. Accumule de l\'Incandescence à partir des DGT d\'Attribut/Coordonnés de n\'importe quel membre de l\'équipe, puis la dépense via Épiphanie Illuminée (Attaque Basique Stage 4 en Incarnation) pour un nuke massif Éclat Stella (+44,54 % DGT par Incandescence). L\'Outro Fléchisseur Temporel est un pur utilitaire de gain d\'Incandescence, pas un buff d\'équipe.',
+  'Jinhsi': "DPS Spectro en explosion sur le terrain. Accumule de l'Incandescence à partir des DGT d'Attribut/Coordonnés de n'importe quel membre de l'équipe, puis la dépense via Épiphanie Lumineuse (Attaque Normale Étape 4 en Incarnation) pour un nuke massif Éclat Stella (+44,54 % DGT par Incandescence). L'Outro Fléchisseur Temporel est un pur utilitaire de gain d'Incandescence, pas un buff d'équipe.",
   'Zani': "Convertit le Frazzle en Braises Héliaques. L'Outro confère aux alliés touchant la cible marquée +20 % d'Amplification de DGT Spectro (20 s).",
   'Sanhua': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Basique (14 s). Changement rapide.',
   'Mortefi': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Lourde. Attaque Coordonnée hors du terrain sur Attaque Lourde.',
@@ -1285,10 +1285,10 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
     'Trailing Lights of Eons → Overflowing Radiance': 'Lumières des Éons → Rayonnement Débordant',
-    'Incarnation - Basic Attack Stage 1-4': 'Incarnation - Attaque Basique Étape 1-4',
+    'Incarnation - Basic Attack Stage 1-4': 'Incarnation - Attaque Normale Étape 1-4',
     'Incarnation - Heavy Attack': 'Incarnation - Attaque Lourde',
     'Crescent Divinity': 'Divinité du Croissant',
-    'Incarnation - Dodge Counter': 'Incarnation - Contre-Esquive',
+    'Incarnation - Dodge Counter': "Incarnation - Contre-attaque d'Esquive",
     'Illuminous Epiphany': 'Épiphanie Lumineuse',
     'Purge of Light': 'Épuration illuminante',
     "Loong's Halo": 'Halo du Dragon',
@@ -2029,6 +2029,9 @@ export const MULT_DESC_FR = {
     'Emerald Storm: Prelude': 'Pas de DGT direct',
     'Discipline': '313,40 % ATQ par proc, jusqu\'à 2',
   },
+  'Jinhsi': {
+    'Temporal Bender': "Taux de gain d'Incandescence +1/s pendant 20 s",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2309,5 +2312,15 @@ export const SKILL_DESC_FR = {
     'Emerald Storm: Finale': "À 30+ Résolution, la Libération consomme 30 Résolution pour lancer Finale au lieu de Prélude (comptée comme DGT d'Attaque Lourde, lançable en l'air à basse altitude).",
     'Emerald Storm: Prelude': "N'inflige aucun DGT direct sous 30 Résolution. Déclenche seulement le Mode Qingloong (10 s, recharge 16 s, coût 125 Énergie).",
     'Discipline': "Attaque Coordonnée déclenchée quand le Résonateur entrant réussit une Attaque Lourde (fenêtre de 8 s, une fois par seconde).",
+  },
+  'Jinhsi': {
+    'Trailing Lights of Eons → Overflowing Radiance': "Après l'Attaque Normale 4 ou l'Intro, la Compétence devient Rayonnement Débordant, entrant en Incarnation (10 s).",
+    'Incarnation - Basic Attack Stage 1-4': "Remplace l'Attaque Normale en Incarnation. Comptée comme DGT de Compétence de Résonance. Atteindre l'Étape 4 met fin à l'Incarnation et ouvre la fenêtre de 5 s de Lueur d'Ordination.",
+    'Incarnation - Heavy Attack': "Remplace l'Attaque Lourde en Incarnation. Remplace aussi l'Attaque Normale pendant Lueur d'Ordination.",
+    'Crescent Divinity': "Remplace la Compétence de Résonance en Incarnation (le coup de Compétence alternatif à lancer direct de Jinhsi une fois incarnée). Lançable en l'air.",
+    'Incarnation - Dodge Counter': "Remplace la Contre-attaque d'Esquive en Incarnation. Lançable en l'air.",
+    'Illuminous Epiphany': "Remplace la Compétence de Résonance pendant Lueur d'Ordination. Éruption Solaire détone en Éclat Stellaire après un court délai. Éclat Stellaire gagne +44,54 % de Multiplicateur DGT par Incandescence consommée (jusqu'à 50).",
+    'Purge of Light': "Recharge de 24 s. Immense nuke de zone.",
+    'Temporal Bender': "Utilitaire uniquement, sans DGT direct ni buff d'équipe.",
   },
 };
