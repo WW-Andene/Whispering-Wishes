@@ -169,14 +169,11 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
       
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            {item.isNew && <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>{t('tracker.newBadge')}</span>}
-            <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
-              {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-              {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-              {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
-            </span>
-          </div>
+          {item.isNew && (
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>{t('tracker.newBadge')}</span>
+            </div>
+          )}
           {/* Direct user request 2026-09-11: the main featured 5★'s own name now opens its
               detail modal too, same click-through as the featured-4★ previews below (there
               is no separate small preview picture for the main item, so the name text is the
@@ -191,15 +188,22 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               "twitching". Now uses the same collection-portrait lookup as the featured-4★
               previews just below (previewImg), matching what every other click-through in this
               file already passes. */}
-          <h4
-            className="font-bold text-xl text-white leading-tight cursor-pointer"
-            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
-          >{item.name}</h4>
+          <div className="flex items-center gap-2">
+            <h4
+              className="font-bold text-xl text-white leading-tight cursor-pointer"
+              onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
+            >{item.name}</h4>
+            <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
+              {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+              {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+              {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
+            </span>
+          </div>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         
         <div>
-          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">Featured 4★</div>
+          <div className="text-gray-300 text-sm mb-0.5 uppercase tracking-wider">{t('tracker.featured')} 4★</div>
           <div className="flex gap-2 flex-wrap">
             {(item.featured4Stars || []).map(n => {
               const previewImg = (collectionImages || DEFAULT_COLLECTION_IMAGES)[n];
