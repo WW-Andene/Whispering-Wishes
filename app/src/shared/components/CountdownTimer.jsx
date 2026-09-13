@@ -11,9 +11,11 @@ const TIMER_COLOR_MAP = { yellow: 'text-yellow-400', pink: 'text-pink-400', cyan
 
 // P11-FIX: Hoisted constant style objects outside components to prevent recreation on every render (Step 7 audit — NIT-3c)
 const TIMER_BOX_STYLE = Object.freeze({ backgroundColor: 'rgba(15,20,28,0.3)', borderRadius: 'var(--radius-lg)' });
-// Boxes scaled to 2/3 of their original 48px min-width (now 32px); kuro-scoreboard's global 18px is
-// overridden locally (not in the shared class) so other consumers of kuro-scoreboard are unaffected.
-const TIMER_NUMBER_STYLE = Object.freeze({ fontSize: '12px' });
+// Boxes dropped one PerfectSuite primary tier (32px -> 16px); kuro-scoreboard's global 18px and the
+// unit label's shared text-2xs (12px) are both overridden locally (not in their shared classes) so
+// other consumers of those classes are unaffected, scaled by the same 1/2 ratio as the box itself.
+const TIMER_NUMBER_STYLE = Object.freeze({ fontSize: '6px' });
+const TIMER_LABEL_STYLE = Object.freeze({ fontSize: '6px' });
 
 const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alwaysShow = false, onExpire, recalcFn }) => {
   const [currentEnd, setCurrentEnd] = useState(endDate);
@@ -115,26 +117,26 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
     <div className="flex items-center gap-1.5" role="timer" aria-label={`${time.days > 0 ? `${time.days} ${time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')} ` : ''}${time.hours} ${t('planner.timerHr')} ${time.minutes} ${t('planner.timerMin')} ${time.seconds} ${t('planner.timerSec')} ${t('planner.timerRemaining')}`}>
       {time.days > 0 && (
         <>
-          <div className="px-2 py-1 text-center w-[32px]" style={TIMER_BOX_STYLE}>
+          <div className="px-1 py-0.5 text-center w-[16px]" style={TIMER_BOX_STYLE}>
             <div className="text-white kuro-scoreboard" style={TIMER_NUMBER_STYLE}>{time.days}</div>
-            <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')}</div>
+            <div className="text-white/70 uppercase tracking-wider mt-px" style={TIMER_LABEL_STYLE}>{time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')}</div>
           </div>
           <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
         </>
       )}
-      <div className="px-2 py-1 text-center w-[32px]" style={TIMER_BOX_STYLE}>
+      <div className="px-1 py-0.5 text-center w-[16px]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard" style={TIMER_NUMBER_STYLE}>{String(time.hours).padStart(2, '0')}</div>
-        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerHr')}</div>
+        <div className="text-white/70 uppercase tracking-wider mt-px" style={TIMER_LABEL_STYLE}>{t('planner.timerHr')}</div>
       </div>
       <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
-      <div className="px-2 py-1 text-center w-[32px]" style={TIMER_BOX_STYLE}>
+      <div className="px-1 py-0.5 text-center w-[16px]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard" style={TIMER_NUMBER_STYLE}>{String(time.minutes).padStart(2, '0')}</div>
-        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerMin')}</div>
+        <div className="text-white/70 uppercase tracking-wider mt-px" style={TIMER_LABEL_STYLE}>{t('planner.timerMin')}</div>
       </div>
       <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
-      <div className="px-2 py-1 text-center countdown-tick w-[32px]" style={TIMER_BOX_STYLE}>
+      <div className="px-1 py-0.5 text-center countdown-tick w-[16px]" style={TIMER_BOX_STYLE}>
         <div className={`kuro-scoreboard ${textColor}`} style={TIMER_NUMBER_STYLE}>{String(time.seconds).padStart(2, '0')}</div>
-        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerSec')}</div>
+        <div className="text-white/70 uppercase tracking-wider mt-px" style={TIMER_LABEL_STYLE}>{t('planner.timerSec')}</div>
       </div>
     </div>
   );
