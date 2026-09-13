@@ -934,6 +934,7 @@ export const SKILL_NAME_FR = {
     // keys here no longer matched anything and silently fell back to raw English. 'Attack',
     // 'Nether Dive' and 'Light Watch' were missing entirely.
     "Drink Soul / Devil's Bane Stage 1-4": "Buveur d'Âmes / Fléau du Démon Étape 1-4",
+    'Drink Soul': "Buveur d'Âmes",
     'Attack': 'Attaque',
     'Nether Dive': 'Plongée des Enfers',
     'Light Watch': 'Veille de Lumière',
@@ -952,7 +953,9 @@ export const SKILL_NAME_FR = {
     'Azure/Feather Stance Stage 1-4': "Posture de l'Épée d'Azur/de Plume Étape 1-4",
     'Sword Stance Switch': 'Changement de Posture',
     'Azure Sword Stance': "Posture de l'Épée d'Azur",
+    'Heavy Attack: Azure Sword Stance': "Attaque Lourde : Posture de l'Épée d'Azur",
     'Feather Sword Stance': "Posture de l'Épée de Plume",
+    'Heavy Attack: Feather Sword Stance': "Attaque Lourde : Posture de l'Épée de Plume",
     'Hush of a Thousand Voices': 'Silence des Mille Voix',
     'Shadow of Xuanling': 'Ombre de Xuanling',
     'Skybound Feather': 'Plume Céleste',
@@ -1010,7 +1013,9 @@ export const SKILL_NAME_FR = {
     'Standard - Huntress': 'Standard - Chasseresse',
     'Standard - Guts': 'Standard - Cran',
     "Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts": 'Rat-ta-ta ! : Chasseresse / Bang-bang-bang ! : Cran',
+    "Rat-tat-tat!: Huntress": 'Rat-ta-ta ! : Chasseresse',
     "It's Big Boomin' Time! / Come 'n' Get Me!": "Celle-là, elle va faire mal ! / Viens m'chercher !",
+    "It's Big Boomin' Time!": "Celle-là, elle va faire mal !",
     "Party 'til Dawn!": 'Il est temps de se lâcher !',
     'BOOM! Fireworks!': "BOUM ! Feu d'Artifice !",
     'Hack Response - Meltdown': 'Réponse de Piratage - Défaillance',
@@ -1040,6 +1045,7 @@ export const SKILL_NAME_FR = {
   'Lucilla': {
     'Snapshot Stage 1-3': 'Instantané Étape 1-3',
     'Phantom Frame / Compensate / Spotlight': "Image Fantôme / Compensation d'Exposition / Projection de Lumière",
+    'Spotlight': 'Projection de Lumière',
     'Clear As Day': 'Comme au Premier Jour',
     'Oblivion': 'Oubli',
     'Tracing Forms Stage 1-3': 'Formes Retracées Étape 1-3',
@@ -1057,12 +1063,27 @@ export const SKILL_NAME_FR = {
     'Dodge Counter - Steelclash': "Contre-attaque d'Esquive - Choc d'Acier",
     'Thunderoar': 'Rugissement',
     'Dodge Counter - Thunderoar: Backstep': "Contre-attaque d'Esquive - Rugissement : Pas Arrière",
+    'Thunderoar: Backstep': 'Rugissement : Pas Arrière',
+    // 'Spinslash' has no standalone SKILL_NAME_FR precedent — reused from
+    // MULT_DESC_FR['Augusta']['Thunderoar']'s own breakdown ("Coup Tournoyant 141,72%×3").
+    'Thunderoar: Spinslash': 'Rugissement : Coup Tournoyant',
+    'Thunderoar: Backstep → Spinslash': 'Rugissement : Pas Arrière → Coup Tournoyant',
     "Warrior's Blade": 'Lame de la Guerrière',
     'Sword of Eternal Oath': "Épée du Serment Éternel",
     'Sunborne': 'Née du Soleil',
     'Everbright Protector': "Protectrice de l'Éclat Perpétuel",
     'Undying Sunlight': 'Sublime est le Soleil',
     'Dodge Counter - Undying Sunlight: Strike': "Contre-attaque d'Esquive - Sublime est le Soleil : Frappe",
+    // 'Strike'/'Leap'/'Plunge' reused from MULT_DESC_FR['Augusta']['Undying Sunlight']'s own
+    // breakdown ("Frappe .../Bond .../Plongeon ...").
+    'Undying Sunlight: Strike': 'Sublime est le Soleil : Frappe',
+    'Undying Sunlight: Leap': 'Sublime est le Soleil : Bond',
+    'Undying Sunlight: Plunge': 'Sublime est le Soleil : Plongeon',
+    // CHARACTER_ROTATIONS also uses the bare literal English name 'Sublime is the Sun' as a distinct
+    // step (rather than 'Undying Sunlight') — translated the same way since it's the same phrase.
+    'Sublime is the Sun': 'Sublime est le Soleil',
+    'Sublime is the Sun: Sunborne ×9': 'Sublime est le Soleil : Née du Soleil ×9',
+    'Sublime is the Sun: Everbright Protector': "Sublime est le Soleil : Protectrice de l'Éclat Perpétuel",
     'Stride of Goldenflare': "Foulée de l'éclat doré",
     'Battlesong of the Unyielding': "Chant de bataille de l'Inébranlable",
   },
@@ -1077,7 +1098,17 @@ export const SKILL_NAME_FR = {
     'Mech Charged I / II': 'Mécha Chargée I / II',
     'Sync Strikes': 'Frappe Synchro',
     'Seraphic Duet': 'Duo de Plumes Séraphiques',
+    // "Overture"/"Encore" suffixes have no existing precedent elsewhere in this file — constructed
+    // from 'Seraphic Duet'/'Heavenfall Edict' above plus standard concert-vocabulary French; not
+    // verified against the game's official French client.
+    'Seraphic Duet: Overture': 'Duo de Plumes Séraphiques : Ouverture',
+    'Seraphic Duet: Encore': 'Duo de Plumes Séraphiques : Rappel',
     'Heavenfall Edict': 'Édit Céleste',
+    'Heavenfall Edict: Overdrive': 'Édit Céleste : Surcharge',
+    'Heavenfall Edict: Finale': 'Édit Céleste : Finale',
+    // No existing precedent for the mode-toggle name itself; best-effort, mirrors Yangyang: Xuanling's
+    // own 'Sword Stance Switch' → 'Changement de Posture'.
+    'Form Switch': 'Changement de Forme',
     'Songs Across the Universe': "Chants de l'Univers",
     'Debut of Meteoric Radiance': 'Éclat Météore Inaugural',
     'Silent Protection': 'Protection Silencieuse',
@@ -1101,6 +1132,8 @@ export const SKILL_NAME_FR = {
     'Heavy ATK: "Mercy"': 'Attaque Lourde : « Pitié »',
     'Heavy ATK: "Death Messenger"': 'Attaque Lourde : « Messager de la Mort »',
     'Phantom Etching → Hounds Roar': 'Gravure Fantôme → Hurlement des Chiens',
+    'Phantom Etching': 'Gravure Fantôme',
+    'Hounds Roar': 'Hurlement des Chiens',
     'Wanted Outlaw': 'Criminel recherché',
     '"Necessary Means"': '« Moyens Nécessaires »',
     'Shadowy Raid': "Le Raid orageux",
@@ -1111,7 +1144,11 @@ export const SKILL_NAME_FR = {
     'Crimson Blossom': 'Fleur Écarlate',
     'Vining Waltz 1-4': 'Valse Grimpante 1-4',
     'Blazing Waltz': 'Valse Ardente',
+    // Combined rotation-step variant of the two entries above.
+    'Vining Waltz 1-4 / Blazing Waltz': 'Valse Grimpante 1-4 / Valse Ardente',
+    'Vining Waltz 1': 'Valse Grimpante 1',
     'Ephemeral (Budding)': 'Éphémère (Bourgeonnant)',
+    'Ephemeral': 'Éphémère',
     'Fervor Efflorescent': 'Cendre de pétales',
     'Everblooming': 'Fleur éternelle',
     'Twining': 'Enlacement',
@@ -1134,6 +1171,11 @@ export const SKILL_NAME_FR = {
     'Ripple': 'Ondulation',
     'Tidal Surge': 'Vague Montante',
     'Gentle Tentacles': 'Tentacules doux',
+    // Best-effort — no existing precedent elsewhere in this file for these three; not verified
+    // against the game's official French client.
+    'Cruise': 'Croisière',
+    'Dance with Shadows': 'Danse avec les Ombres',
+    'Beneath the Sea': 'Sous la Mer',
   },
   'Carlotta': {
     'Stage 1-2': 'Étape 1-2',
@@ -1147,6 +1189,9 @@ export const SKILL_NAME_FR = {
     'Chromatic Splendor': 'Splendeur Chromatique',
     'Era of New Wave': 'Ère de la Nouvelle Vague',
     'Death Knell': 'Glas de Mort',
+    // Combined rotation-step variants of moves already translated individually above.
+    'Death Knell ×4': 'Glas de Mort ×4',
+    'Art of Violence → Chromatic Splendor': 'Art de la Violence → Splendeur Chromatique',
     'Fatal Finale': 'Finale Fatale',
     'Wintertime Aria': "Aria hivernale",
     'Closing Remark': 'Remarque finale',
@@ -1161,7 +1206,12 @@ export const SKILL_NAME_FR = {
     'Fleurdelys Enhanced': 'Fleurdelys Renforcée',
     'Base Form': 'Forme de Base',
     'Fleurdelys 1-2': 'Fleurdelys 1-2',
+    // 'Fleurdelys' stays untranslated (proper noun) in every other entry in this block — same
+    // convention for the bare numbered steps CHARACTER_ROTATIONS uses.
+    'Fleurdelys 1': 'Fleurdelys 1',
+    'Fleurdelys 2': 'Fleurdelys 2',
     'Cartethyia Plunging Attack (3 Shadows Recalled)': 'Attaque Plongeante de Cartethyia (3 Ombres Rappelées)',
+    'Cartethyia Plunging Attack': 'Attaque Plongeante de Cartethyia',
     'Fleurdelys Stage 3': 'Fleurdelys Étape 3',
     "A Knight's Heartfelt Prayers": 'Prières sincères de chevaleresse',
     'Blade of Howling Squall': 'Rage des Marées',
@@ -1175,6 +1225,7 @@ export const SKILL_NAME_FR = {
     'Standard / Mid-air Heavy': 'Standard / Attaque Lourde Aérienne',
     'Standard': 'Standard',
     'True Sight: Capture / Conquest / Charge': "Vraie Vision : Capture / Conquête / Charge",
+    'True Sight: Capture': 'Vraie Vision : Capture',
     'Heavy ATK: Flaming Sacrifice': 'Attaque Lourde : Âme Brûlée',
     'Radiance of Fealty': "Radiance de Fidélité",
     'Obedience of Rules': 'Obéissance aux Règles',
@@ -1184,9 +1235,11 @@ export const SKILL_NAME_FR = {
     'Stage 1-2': 'Étape 1-2',
     'Rending Lunge': 'Fente Déchirante',
     'Death Snip': 'Cisaille mortelle',
+    'Stage 2, Rending Lunge, Death Snip': 'Étape 2, Fente Déchirante, Cisaille Mortelle',
     'Eye of Unraveling': 'Œil du Démêlement',
     'Serrated Loop': 'Boucle Crantée',
     'Sawring - Blitz 1-3': 'Scie Circulaire - Rafale 1-3',
+    'Sawring - Blitz 2-3': 'Scie Circulaire - Rafale 2-3',
     'Sawring - Eradication': 'Scie Circulaire - Éradication',
     'Moment of Nihility': 'Instant de Néant',
     'Reverberance - Return': 'Réverbération - Retour',
@@ -1271,6 +1324,7 @@ export const SKILL_NAME_FR = {
     'Lone Lance Stage 1-5': 'Lance Solitaire Étape 1-5',
     'Standard / Windborne Strike / Abyssal Slash': 'Standard / Coup Aérien / Coup Abyssal',
     'Lance of Qingloong 1-3': 'Lance du Dragon Azur 1-3',
+    'Lance of Qingloong': 'Lance du Dragon Azur',
     'Plunging Attack + Follow-up': 'Attaque Plongeante + Suivi',
     'Banner of Triumph': 'Bannière du Triomphe',
     'Standard': 'Standard',
@@ -1285,6 +1339,7 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
     'Trailing Lights of Eons → Overflowing Radiance': 'Lumières des Éons → Rayonnement Débordant',
+    'Overflowing Radiance': 'Rayonnement Débordant',
     'Incarnation - Basic Attack Stage 1-4': 'Incarnation - Attaque Normale Étape 1-4',
     'Incarnation - Heavy Attack': 'Incarnation - Attaque Lourde',
     'Crescent Divinity': 'Divinité du Croissant',
@@ -1299,7 +1354,9 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Plunging Kick': 'Coup de Pied Plongeant',
     'Calming Air: Chi Counter / Chi Parry': "L'Air Calmant : Répliquer avec Chi / Parer avec Chi",
+    'Calming Air': 'Air Calmant',
     'Primordial Chi Spiral (Zhoutian Progress)': 'Tourbillon de Chi (Cycle du Zhoutian)',
+    'Primordial Chi Spiral': 'Tourbillon de Chi',
     'Purification Force Field': 'Champ de purification',
     'Essence of Tao': 'Essence de Tao',
     'Transcendence': 'Illumination',
@@ -1311,9 +1368,13 @@ export const SKILL_NAME_FR = {
     'Plunging Attack': 'Attaque Plongeante',
     'Tail Strike': 'Coup de Queue',
     'Ancient Arts → Furious Punches': 'Arts traditionnels → Rage talonnant',
+    'Ancient Arts': 'Arts traditionnels',
     'Unification of Spirits (Striding Lion)': "Unisson (Marche du lion)",
+    'Unification of Spirits': 'Unisson',
     'Majestic Fists P1 (Feral Gyrate)': 'Poings Majestueux P1 (Giration Féroce)',
+    'Majestic Fists P1': 'Poings Majestueux P1',
     'Majestic Fists P2 (Feral Gyrate)': 'Poings Majestueux P2 (Giration Féroce)',
+    'Majestic Fists P2': 'Poings Majestueux P2',
     'Strive: Lion\'s Vigor': 'La Danse joyeuse du Lion',
     'Lion Awakens': 'Le réveil du Lion',
     'Frosty Marks': 'Marque glacée',
@@ -1345,8 +1406,16 @@ export const SKILL_NAME_FR = {
     'Scythe: Resection Stage 2-3': 'Faux : Résection Étape 2-3',
     'Golden Reflux': 'Reflux Doré',
     'Aureole of Execution': "Auréole d'Exécution",
+    // Sub-variants, per MULT_DESC_FR['Luuk Herssen']['Aureole of Execution']'s own breakdown:
+    // "Anneau .../Brèche .../Éclat ...".
+    'Aureole of Execution: Ring': "Auréole d'Exécution : Anneau",
+    'Aureole of Execution: Breach': "Auréole d'Exécution : Brèche",
+    'Aureole of Execution: Glare': "Auréole d'Exécution : Éclat",
     'Basic Attack - Golden Impale': 'Attaque Normale - Empalement Doré',
+    'Golden Impale': 'Empalement Doré',
+    'Basic 1 → Jump: Resection 2-3': 'Attaque Normale 1 → Saut : Résection 2-3',
     'Gavel of Earthshaker': 'Marteau du Trembleur de Terre',
+    'Mid-air Attack: Gavel of Earthshaker': 'Attaque Aérienne : Marteau du Trembleur de Terre',
     "Rewritten in Winter's Margins": "Réécrit en marge de l'hiver",
     'Before Injection of Dawn': "Avant l'Injection de l'Aube",
     'Bow to the Last Light': 'Hommage à l\'ultime lueur',
@@ -1354,9 +1423,11 @@ export const SKILL_NAME_FR = {
   'Lynae': {
     'Stage 1-3': 'Étape 1-3',
     'Spark Collision Lv.3': "Choc d'Étincelles Niv.3",
+    'Spark Collision (full charge)': "Choc d'Étincelles (pleine charge)",
     'Kaleidoscopic 1-5': 'Kaléidoscopique 1-5',
     'Polychrome Leap ×3': 'Saut Polychrome ×3',
     'Visual Impact': 'Impact Visuel',
+    'Mid-air Attack: Visual Impact': 'Attaque Aérienne : Impact Visuel',
     'Iridescent Splash': 'Éclaboussure Iridescente',
     'Lynae-Style Palettes': 'Nuancier de Lynae',
     'Additive Color': 'Synthèse Additive',
@@ -1373,6 +1444,7 @@ export const SKILL_NAME_FR = {
     'Distributed Array': 'Matrice Distribuée',
     'Geopotential Shift': 'Décalage Géopotentiel',
     'Inversion': 'Inversion',
+    'Heavy Attack: Inversion': 'Attaque Lourde : Inversion',
     'Critical Protocol': 'Protocole Critique',
     'Convergence': 'Convergence',
     'Recursion': 'Récursivité',
@@ -1393,8 +1465,16 @@ export const SKILL_NAME_FR = {
     'Stage 1-3': 'Étape 1-3',
     'Scarlet Coda': 'Finale Écarlate',
     'Whispers in Fleeting Dream': "Murmure d'un Rêve Fuyant",
+    // CHARACTER_ROTATIONS phrases this the same skill with an added "a" ("Whispers in A Fleeting
+    // Dream") — same translation.
+    'Whispers in a Fleeting Dream': "Murmure d'un Rêve Fuyant",
     'Movement of Fate and Finality': 'Mouvement du Destin et de la Finalité',
     'Murmurs in a Haunting Dream': "Murmures d'un Rêve Obsédant",
+    // Combined rotation-step variant of the two entries above.
+    'Movement of Fate and Finality / Murmurs in a Haunting Dream': "Mouvement du Destin et de la Finalité / Murmures d'un Rêve Obsédant",
+    // No existing precedent for this one; best-effort, not verified against the game's official
+    // French client.
+    'Waltz of Forsaken Depths': 'Valse des Profondeurs Oubliées',
     'Suite of Quietus': 'Suite de Quiétude',
     'Suite of Immortality': "Suite d'Immortalité",
     'Maestro State: Hecate': 'État de Maestro : Hécate',
@@ -1421,6 +1501,7 @@ export const SKILL_NAME_FR = {
     'Real Fantasy 1-3': 'Rêve Réel 1-3',
     'Commedia Improvviso!': 'Commedia Improvviso !',
     'Pero, Help!': 'Pero, Aide-Moi !',
+    'Pero, Help': 'Pero, Aide-Moi',
     'Applause, Please!': "Applaudissements, s'il vous plaît !",
   },
   'Rover: Spectro': {
@@ -1448,6 +1529,9 @@ export const SKILL_NAME_FR = {
     'Umbra: Thwackblade': 'Umbra : Lame Cinglante',
     'Umbra: Plunging Attack': 'Umbra : Attaque Plongeante',
     'Umbra: Dodge Counter': "Umbra : Contre-attaque d'Esquive",
+    // No existing precedent for this one; best-effort, not verified against the game's official
+    // French client.
+    'Dreamless': 'Sans Rêve',
     'Deadening Abyss': "Abysse qui S'éteint",
     'Instant of Annihilation': "Instant transformé",
     'Soundweaver': 'Cri',
@@ -1458,6 +1542,8 @@ export const SKILL_NAME_FR = {
     'Standard / Razor Wind': 'Standard / Tourbillon Tranchant',
     'Plunging Attack': 'Attaque Plongeante',
     'Awakening Gale / Skyfall Severance': 'Rafale Réveillante / Coupure Céleste',
+    'Awakening Gale': 'Rafale Réveillante',
+    'Skyfall Severance': 'Coupure Céleste',
     'Cloudburst Dance': 'Danse des Nuées',
     'Unbound Flow': 'Courant Indompté',
     'Omega Storm': 'Tempête ultime',
@@ -1467,7 +1553,11 @@ export const SKILL_NAME_FR = {
   'Rover: Electro': {
     'Standard': 'Standard',
     'Deterrence Stage 1-4': 'Dissuasion Étape 1-4',
+    'Deterrence 1-4': 'Dissuasion 1-4',
     'Riposte Strike / Crumble (Parry Stance)': 'Frappe de Riposte / Écroulement (Posture de Parade)',
+    // From CHARACTER_ROTATION_NOTE_FR's own prose reference to this same Echo skill ("l'annulation
+    // par changement du Héron de l'Impermanence").
+    'Impermanence Heron': "Héron de l'Impermanence",
     'Plunging Attack': 'Attaque Plongeante',
     'Thunderclap': 'Coup de Tonnerre',
     'Repel': 'Répulsion',
@@ -1484,8 +1574,10 @@ export const SKILL_NAME_FR = {
     'Plunging Attack': 'Attaque Plongeante',
     'Chaos Theory': 'Théorie du Chaos',
     'Flare Star Butterfly / Illation / Transmutation': "Papillon d'Étoile Éclatante / Illation / Transmutation",
+    'Illation': 'Illation',
     'End Loop': 'Fin de la boucle',
     'Proof of Existence: Enlightenment / Discernment': "Preuve d'Existence : Éveil / Discernement",
+    'Discernment': 'Discernement',
     'Binary Butterfly': 'Papillon Binaire',
   },
   'Sigrika': {
@@ -1498,6 +1590,11 @@ export const SKILL_NAME_FR = {
     'Runic Outburst': 'Éruption Runique',
     'Runic Chain Whip': 'Fouet Runique en Chaîne',
     'Runic Soliskin': 'Soliskin Runique',
+    // "Schemata of Runes" itself has no existing precedent elsewhere in this file — constructed from
+    // 'Runic Chain Whip'/'Runic Outburst' above plus a best-effort "Schéma Runique"; not verified
+    // against the game's official French client.
+    'Heavy ATK: Schemata of Runes (Chain Whip)': 'Attaque Lourde : Schéma Runique (Fouet Runique en Chaîne)',
+    'Heavy ATK: Schemata of Runes (Runic Outburst)': 'Attaque Lourde : Schéma Runique (Éruption Runique)',
     'Learn My True Name': 'Apprends Mon Vrai Nom',
     'Where Trust Leads Me!': 'Là où la Confiance me Mène !',
     'Solsworn Etymology': 'Étymologie de l\'illumination',
@@ -1509,6 +1606,7 @@ export const SKILL_NAME_FR = {
     'Stage 1-3 + Heavy': 'Étape 1-3 + Lourde',
     'Botany Experiment': 'Expérience Botanique',
     'Heavy/Mid-air Attack: Starflower Blooms': "Attaque Lourde/Aérienne : Éclosions de Fleurs Stellaires",
+    'Mid-air Attack: Starflower Blooms': 'Attaque Aérienne : Éclosions de Fleurs Stellaires',
     'Arboreal Flourish': 'Floraison Arboricole',
     'Verdant Growth': 'Croissance Verdoyante',
     'Blossom': 'Éclosion',
@@ -1518,6 +1616,7 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
     'Deduction → Decipher': 'Déduction → Décryptage',
+    'Deduction': 'Déduction',
     'Law of Reigns': 'Loi des Règnes',
     'Revamp': 'Refonte',
     'Cogitation Model': 'Modèle de Cogitation',
@@ -1532,6 +1631,8 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
     'Magnetic Roar → Lightning Execution': 'Rugissement Magnétique → Exécution Éclairée',
+    'Magnetic Roar': 'Rugissement Magnétique',
+    'Lightning Execution': 'Exécution Éclairée',
     'Electromagnetic Blast': 'Salve Électromagnétique',
     'Chameleon Cipher': 'Chiffre Caméléon',
     'Judgment Strike': 'Frappe du Jugement',
@@ -1563,6 +1664,8 @@ export const SKILL_NAME_FR = {
     'Manifestation': 'Manifestation',
     'Heavy ATK: Conjuration': 'Attaque Lourde : Évocation',
     "Stroke of Genius / Creation's Zenith": 'Coup de Génie / Coup de Maestro',
+    'Stroke of Genius': 'Coup de Génie',
+    "Creation's Zenith": 'Coup de Maestro',
     'Living Canvas': 'Toile Vivante',
     'Radiant Ruin': 'Ruines radieuses',
     'Carve and Draw': 'Sculpture et Dessin',
@@ -1677,6 +1780,7 @@ export const SKILL_NAME_FR = {
     'Fortified Defense': 'Impénétrable',
     'Unmovable': 'Inébranlable',
     'Power Shift: Timed Counters Stage 1-3': "Changement de formation : Compteur renversé Étape 1-3",
+    'Power Shift: Timed Counters': 'Changement de formation : Compteur renversé',
     'Defense Formation': 'Formation de défense',
     'Iron Will': 'Volonté de Fer',
   },
@@ -1693,10 +1797,13 @@ export const SKILL_NAME_FR = {
   },
   'Youhu': {
     'Frosty Punches Stage 1-4': 'Coups Glacés Étape 1-4',
+    'Frosty Punches': 'Coups Glacés',
     'Frostfall': 'Chute de Givre',
     'Scroll Divination': 'Divination par Parchemin',
     'Chime (Antique Appraisal)': "Carillon (Évaluation des Antiquités)",
     'Ruyi (Antique Appraisal)': "Ruyi (Évaluation des Antiquités)",
+    // 'Ruyi' itself stays untranslated (proper noun), same convention as 'Chime'/'Ding'/'Mask' above.
+    'Ruyi': 'Ruyi',
     'Ding (Antique Appraisal)': "Ding (Évaluation des Antiquités)",
     'Mask (Antique Appraisal)': "Masque (Évaluation des Antiquités)",
     "Fortune's Favor": 'Faveur de la Fortune',
@@ -1905,6 +2012,10 @@ export const GENERIC_SKILL_NAME_FR = {
   'Dodge Counter': "Contre-attaque d'Esquive",
   'Mid-air Attack': 'Attaque Aérienne',
   'Standard': 'Standard',
+  // 'Use Echo' recurs verbatim as a CHARACTER_ROTATIONS step across ~15 characters (the player's
+  // equipped Echo, not a character-specific skill) — same generic-fallback treatment as the entries
+  // above.
+  'Use Echo': "Utiliser l'Écho",
 };
 
 // ACTION_PREFIX_FR — the action-type half of 'Action - Form/Stance Name' skill names (e.g.
