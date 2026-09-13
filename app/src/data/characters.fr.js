@@ -52,7 +52,7 @@ export const CHARACTER_DESC_FR = {
   'Qiuyuan': "Ancien agent de renseignement de Mingting, droit comme le bambou, sans quête de vanité. Sous-DPS/buffeur Aero qui confère au prochain personnage un buff de DGT de Compétence d'Écho via l'Outro et augmente les Dégâts Critiques du personnage actif via la Libération de Résonance.",
   'Chisa': "« Juste une étudiante ordinaire », se présente-t-elle calmement, un léger éclat irisé scintillant dans ses yeux. Soutien/soigneuse Havoc qui inflige de lourds DGT de Libération de Résonance, soigne et protège l'équipe d'un bouclier, et réduit la DÉF ennemie via Piège Invisible + Havoc Bane.",
   'Lynae': "Une élève de l'Académie Startorch au style électrique qui attire les regards, cachant une concentration intérieure aussi explosive qu'un ressort comprimé. Sous-DPS Spectro qui amplifie tous les DGT d'équipe et les DGT de Libération de Résonance via l'Outro, et augmente le Tune Break Boost pour les compositions d'équipe Tune Strain.",
-  'Mornye': "Une ingénieure de l'Institut de Recherche du Collectif Trek-spatial et professeure du Département d'Ingénierie Exostrider à l'Académie Startorch. Soigneuse Fusion à scaling DÉF qui restaure les PV via sa Compétence de Résonance et sa Libération tout en augmentant le Taux d'Accumulation Off-Tune de l'équipe.",
+  'Mornye': "Une ingénieure de l'Institut de Recherche du Collectif Trek-spatial et professeure du Département d'Ingénierie Exostrider à l'Académie Startorch. Soigneuse Fusion à scaling DÉF qui restaure les PV via sa Compétence de Résonance et sa Libération tout en augmentant le Taux d'Accumulation Hors-Tonalité de l'équipe.",
   'Luuk Herssen': "Le médecin traitant de l'Unité de Soins des Résonateurs de l'Académie Startorch, réputé pour son intellect vif et son sang-froid inébranlable. DPS d'Attaque Basique Spectro sur le terrain qui alterne les trois formes améliorées de l'Auréole d'Exécution et inflige des DGT Totaux bonus en réagissant à Tune Strain - Interfered.",
   'Aemeath': "Autrefois Synchroniste Exostrider du Collège Rabelle, elle est désormais un fantôme numérique qui chante doucement parmi les étoiles. DPS Fusion sur le terrain qui bascule entre les Modes de Résonance Tune Rupture et Fusion Burst, infligeant des DGT de Libération de Résonance massifs via Duo Séraphique et Édit de la Chute Céleste.",
   'Sigrika': "Solsworn de la Tribu Roya et membre du Fan Club d'Observation des Oiseaux de l'Académie Startorch. DPS Aero sur le terrain qui consomme des cumuls de Rune pour renforcer la Compétence d'Écho et l'Attaque Lourde pour des DGT Aero explosifs avec contrôle de foule.",
@@ -868,12 +868,12 @@ export const CHAIN_NODE_NAMES_FR = {
 // strings used for typeColors/typeBg key lookups) is untouched.
 /** @type {Record<string, string>} */
 export const SKILL_TYPE_FR = {
-  'Basic ATK': 'Attaque Basique',
-  'Mid-air': 'Aérien',
+  'Basic ATK': 'Attaque Normale',
+  'Mid-air': 'Attaque Aérienne',
   'Heavy ATK': 'Attaque Lourde',
   'Charged ATK': 'Attaque Chargée',
-  'Skill': 'Compétence',
-  'Liberation': 'Libération',
+  'Skill': 'Compétence de Résonance',
+  'Liberation': 'Libération de Résonance',
   'Forte': 'Forte',
   'Intro': 'Intro',
   'Outro': 'Outro',
@@ -1543,6 +1543,13 @@ export const SKILL_NAME_FR = {
 // used throughout weapons.fr.js ("DGT Glacio", "Amplification DGT Havoc", etc.).
 /** @type {Record<string, string>} */
 export const CHARACTER_TAG_FR = {
+  // NOTE (exception to this project's general birthplace/region/organization-stays-untranslated
+  // policy, documented at the top of this file): the user explicitly requested these two be
+  // translated. Not an exhaustive proper-noun table — only what's been confirmed so far.
+  'New Federation': 'Nouvelle Fédération',
+  // Matches the established rendering already used in this same character's own desc prose
+  // above ("Institut de Recherche du Collectif Trek-spatial").
+  'Spacetrek Collective': 'Collectif Trek-spatial',
   // combatRoles (CHARACTER_DATA[name].combatRoles)
   'Main Damage Dealer': 'DPS Principal',
   'Support and Healer': 'Soin et Support',

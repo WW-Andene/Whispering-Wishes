@@ -268,7 +268,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     <span className="text-gray-500">{t('modals.characterDetail.birthplace')}</span>
                     <span className="text-gray-300 inline-flex items-center gap-1">
                       {getRegionIcon(data.birthplace) && <img src={getRegionIcon(data.birthplace)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                      {data.birthplace}
+                      {(getLocale() === 'fr' && CHARACTER_TAG_FR[data.birthplace]) || data.birthplace}
                     </span>
                   </>
                 )}
@@ -277,7 +277,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     <span className="text-gray-500">{t('modals.characterDetail.region')}</span>
                     <span className="text-gray-300 inline-flex items-center gap-1">
                       {getRegionIcon(data.region) && <img src={getRegionIcon(data.region)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                      {data.region}
+                      {(getLocale() === 'fr' && CHARACTER_TAG_FR[data.region]) || data.region}
                     </span>
                   </>
                 )}
@@ -286,7 +286,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                     <span className="text-gray-500">{t('modals.characterDetail.organization')}</span>
                     <span className="text-gray-300 inline-flex items-center gap-1">
                       {getFactionIcon(data.organization) && <img src={getFactionIcon(data.organization)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                      {data.organization}
+                      {(getLocale() === 'fr' && CHARACTER_TAG_FR[data.organization]) || data.organization}
                     </span>
                   </>
                 )}
