@@ -469,13 +469,16 @@ function PlannerTab({
     if (topWeaponRaw) {
       const alt5 = top.d.weaponAlts?.alt5 || [];
       const alt4 = top.d.weaponAlts?.alt4 || [];
-      const ownedAlt = [...alt5, ...alt4].find(w => ownedWeapNames.has(w));
-      // Direct user correction: "no alt5 listed" alone missed characters whose own dump
-      // explicitly calls them signature-reliant DESPITE having listed alternatives (Jingran:
-      // "one of the most Signature-weapon-reliant characters in the game," 3 alt5s listed) — a
-      // real per-character audit added `signatureReliant` to CHARACTER_DATA for exactly these
-      // cases, sourced from each one's own dump text. reliantDespiteAlts distinguishes that case
-      // from "no alternative exists at all" for the reason text below.
+      const rankedAlts = [...alt5, ...alt4];
+      const ownedAlt = rankedAlts.find(w => ownedWeapNames.has(w));
+      // A listed alt5 isn't always a real stat match for the signature's key stat — some
+      // characters (e.g. Mornye, whose signature is Energy Regen) have no 5★ alternative that
+      // shares it at all, so their alt5 entry is only a generic ATK/Crit DMG filler while the
+      // real stat-matching alternatives are 4★ (see that character's own weaponAlts comment).
+      // Prefer whichever listed alternative actually shares the signature's stat before falling
+      // back to the first alt5 entry, so the suggested weapon is a genuine substitute.
+      const sigStat = WEAPON_DATA[topWeaponRaw.name]?.stat;
+      const suggestedAlt = rankedAlts.find(w => WEAPON_DATA[w]?.stat === sigStat) || alt5[0] || alt4[0];
       const noAlt5AtAll = alt5.length === 0;
       topWeapon = {
         ...topWeaponRaw,
@@ -483,7 +486,7 @@ function PlannerTab({
         mustHave: noAlt5AtAll || !!top.d.signatureReliant,
         reliantDespiteAlts: !noAlt5AtAll && !!top.d.signatureReliant,
         ownedAlt,
-        altOptions: alt5,
+        suggestedAlt,
       };
     }
     const allOwned = scored.every(s => s.owned);
@@ -881,10 +884,8 @@ function PlannerTab({
             const { top, topWeapon } = bannerRecommendation;
             const imgUrl = DEFAULT_COLLECTION_IMAGES[top.name];
             const topFraming = getImageFraming(`collection-${top.name}`);
-            const altWeaponInfo = (topWeapon?.ownedAlt || topWeapon?.altOptions?.[0])
-              ? WEAPON_DATA[topWeapon.ownedAlt || topWeapon.altOptions[0]]
-              : null;
-            const altWeaponName = topWeapon?.ownedAlt || topWeapon?.altOptions?.[0];
+            const altWeaponName = topWeapon?.ownedAlt || topWeapon?.suggestedAlt;
+            const altWeaponInfo = altWeaponName ? WEAPON_DATA[altWeaponName] : null;
             const altPassiveSummary = altWeaponInfo?.passive ? altWeaponInfo.passive.split('. ')[0].replace(/\.$/, '') : null;
             return (
               <>
