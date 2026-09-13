@@ -1469,7 +1469,9 @@ export const SKILL_NAME_FR = {
     'Deterrence Stage 1-4': 'Dissuasion Étape 1-4',
     'Riposte Strike / Crumble (Parry Stance)': 'Frappe de Riposte / Écroulement (Posture de Parade)',
     'Plunging Attack': 'Attaque Plongeante',
-    'Thunderclap → Overshock': 'Coup de Tonnerre → Surtension',
+    'Thunderclap': 'Coup de Tonnerre',
+    'Repel': 'Répulsion',
+    'Overshock': 'Surtension',
     'Apex Resonance: Thrum of All Sounds': 'Résonance Suprême : Vibration des Mille Sons',
     'Ultimate Tactics': 'Tactique ultime',
     'Thunderous Fury': 'Fureur tonitruante',
@@ -2102,6 +2104,10 @@ export const MULT_DESC_FR = {
   'Rover: Aero': {
     "Storm's Echo": "Domaine Éolien — plafond d'Érosion Aero +3 (champ de 30 s, sans DGT direct)",
   },
+  'Rover: Electro': {
+    'Apex Resonance: Thrum of All Sounds': 'Valeurs par étape non disponibles',
+    'Rumbling Thunders': "Confère Noyau Electro → prochain coup d'État Négatif : Amplification de tous les DGT +25 % (14 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2508,5 +2514,13 @@ export const SKILL_DESC_FR = {
     'Cloudburst Dance': "Enchaînement d'Attaque aérienne, comptée comme DGT de Compétence de Résonance. Soigne l'équipe au coup.",
     'Unbound Flow': "À Cordes de Vent maximales, la Compétence de Résonance devient ceci à la place. Comptée comme DGT de Compétence de Résonance.",
     'Omega Storm': "Soigne aussi l'équipe proche d'environ 2090+77 % ATQ. Peut être lancée en l'air près du sol.",
+  },
+  'Rover: Electro': {
+    'Riposte Strike / Crumble (Parry Stance)': "Maintenez l'Attaque Normale pour entrer en Posture de Parade (immunisée aux interruptions, -60 % DGT reçus). Relâchez pour Frappe de Riposte, ou Écroulement si elle neutralise un coup.",
+    'Thunderclap': "Recharge de 10 s. Vous agrippe vers la cible et accumule de la Surtension Électrique.",
+    'Repel': "S'enchaîne automatiquement depuis un simple appui d'Attaque Normale juste après que Coup de Tonnerre atterrit, remplaçant le redémarrage normal du combo d'Attaque Normale.",
+    'Overshock': "Une fois la Surtension Électrique au maximum, la Compétence devient ceci à la place. Comptée comme DGT de remplacement de Compétence de Résonance via le Circuit de Forte. TAP pour déchaîner (MAINTENIR entre en Résonance Suprême à la place).",
+    'Apex Resonance: Thrum of All Sounds': "Enchaînement au sol jusqu'à 7 étapes + aérien jusqu'à 6 étapes (coups Spectro/Havoc/Aero + pulsations Electro Ravage Foudre). Consomme de la Rage de Tonnerre chaque seconde tant qu'actif.",
+    'Ultimate Tactics': "Recharge de 25 s.",
   },
 };
