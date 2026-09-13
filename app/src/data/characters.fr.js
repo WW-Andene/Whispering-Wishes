@@ -1708,14 +1708,17 @@ export const SKILL_NAME_FR = {
     'Leihuangquan Stage 1-5': 'Leihuangquan Étape 1-5',
     'Leihuangquan (hold)': 'Leihuangquan (maintien)',
     'Leihuangquan': 'Leihuangquan',
-    'Thunder Wedge': 'Coin de foudre',
+    'Thunder Wedge': 'Coin de Tonnerre',
     'Thunder Field Coordinated ATK': 'Attaque Coordonnée du Champ de Tonnerre',
-    'Thunder Wedge Detonation': 'Détonation du Coin de Foudre',
+    'Thunder Wedge Detonation': 'Détonation du Coin de Tonnerre',
     'Rumbling Spark': 'Étincelle Grondante',
-    'Blazing Might': 'Silence éclatant',
+    'Blazing Might': 'Puissance Ardente',
     'Thunder Uprising': 'Soulèvement du Tonnerre',
     'Thunderweaver': 'Tisseur de Tonnerre',
     'Thunder Bombardment': 'Bombardement de Tonnerre',
+    'Lightning Infused Stage 1-5': 'Infusé de Foudre Étape 1-5',
+    'Lightning Infused (hold)': 'Infusé de Foudre (maintien)',
+    'Lightning Infused': 'Infusé de Foudre',
     'Lightning Manipulation': 'Manipulation Électrique',
   },
 };
@@ -1945,6 +1948,7 @@ export const GENERIC_SKILL_DESC_FR = {
     "En Équipement de Lame de Mort, la Contre-attaque d'Esquive inflige cette valeur renforcée au lieu de la ligne à l'état normal ci-dessus, et est comptée comme DGT de Libération de Résonance, pas DGT de Contre-attaque d'Esquive.",
   'Consumes STA for consecutive mid-air shots.': "Consomme de l'Endurance pour des tirs aériens consécutifs.",
   'Plunging attack, consumes STA.': "Attaque plongeante, consomme de l'Endurance.",
+  'Consumes STA; Mid-air Plunging Attack.': "Consomme de l'Endurance. Attaque Plongeante aérienne.",
 };
 
 // PHRASE_FR — bare English DMG-category terms that recur mid-sentence inside otherwise-bespoke,
@@ -2198,6 +2202,9 @@ export const MULT_DESC_FR = {
   },
   'Youhu': {
     'Timeless Classics': "Pas de DGT (Amplification DGT d'Attaque Coordonnée +100 %, 28 s)",
+  },
+  'Yuanwu': {
+    'Lightning Manipulation': 'Pas de DGT (déplétion du Taux de Vibration)',
   },
 };
 
@@ -2817,5 +2824,21 @@ export const SKILL_DESC_FR = {
     'Poetic Essence': "Maintenez l'Attaque Normale à 4 Auspices. DGT Glacio comptés comme DGT de Compétence de Résonance, soigne tous les membres proches de l'équipe, plus des effets bonus selon la combinaison d'Auspices (Antithèse +70 % DGT, Triplet +175 % DGT, etc.).",
     'Scroll of Wonders': "Lance le parchemin et effectue un Tirage Chanceux.",
     'Timeless Classics': "Le Résonateur entrant voit ses DGT d'Attaque Coordonnée amplifiés de 100 % pendant 28 s.",
+  },
+  'Yuanwu': {
+    'Leihuangquan Stage 1-5': "Jusqu'à 5 frappes Electro consécutives.",
+    'Leihuangquan (hold)': "Consomme de l'Endurance pour attaquer la cible.",
+    'Thunder Wedge': "Invoque un Coin de Tonnerre (dure 12 s) et forme un Champ de Tonnerre autour de lui.",
+    'Thunder Field Coordinated ATK': "Les coups du personnage sur le terrain à l'intérieur du Champ de Tonnerre déclenchent une Attaque Coordonnée, 1x/1,2 s.",
+    'Thunder Wedge Detonation': "Le Circuit de Forte Étincelle Grondante ou la Libération Puissance Ardente fait détoner le Coin de Tonnerre actif, comptée comme DGT de Compétence de Résonance.",
+    'Rumbling Spark': "Maintenez la Compétence quand la Jauge de Forte est pleine pour consommer toute la Préparation et entrer en Infusé de Foudre.",
+    'Blazing Might': "Confère au Circuit de Forte Infusé de Foudre (Résistance à l'Interruption) à l'équipe proche pendant 10 s, puis un coup puissant.",
+    'Thunder Uprising': "Remplace la Compétence de Résonance Coin de Tonnerre quand la Préparation est pleine.",
+    'Thunderweaver': "Attaque Normale dans les 3 s après une Attaque Lourde/Contre-attaque réussie en Infusé de Foudre, comptée comme DGT d'Attaque Normale.",
+    'Thunder Bombardment': "Ouverture à DGT Electro.",
+    'Lightning Infused Stage 1-5': "Enchaînement d'Attaque Normale renforcé en Infusé de Foudre.",
+    'Lightning Infused (hold)': "Attaque Lourde renforcée en Infusé de Foudre.",
+    'Lightning Infused': "Contre-attaque d'Esquive renforcée en Infusé de Foudre.",
+    'Lightning Manipulation': "Éclairs centrés sur la cible de la Compétence. Sans DGT, déplète fortement le Taux de Vibration ennemi.",
   },
 };
