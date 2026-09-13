@@ -3040,3 +3040,25 @@ export const SKILL_DESC_FR = {
     'Lightning Manipulation': "Éclairs centrés sur la cible de la Compétence. Sans DGT, déplète fortement le Taux de Vibration ennemi.",
   },
 };
+
+// WEAPON_VERDICT_REASON_FR — CHARACTER_DATA[name].weaponVerdictReason.need/.signatureNote,
+// rendered in PlannerTab.jsx's weapon-recommendation card.
+export const WEAPON_VERDICT_REASON_FR = {
+  'Mornye': {
+    need: 'Le kit de Mornye scale principalement sur la DÉF, et son vrai besoin est 260 % de Régén. d\'Énergie pour maximiser ses auto-buffs de Libération et les buffs d\'équipe — facilement atteignable même avec des armes 4★ F2P.',
+    signatureNote: 'Le Calibrateur Stellaire n\'ajoute qu\'un buff permanent de +20 % Dégâts Critiques d\'équipe et de l\'Énergie de Concerto supplémentaire — selon ses propres notes de build, le gain de dégâts personnel est négligeable et le retour sur investissement du buff est faible, ce qui explique pourquoi elle peut s\'en passer.',
+  },
+  'Jingran': {
+    need: 'Le kit de Jingran scale sur les PV Max, avec un auto-buff qui plafonne à 50 000 PV sur son build idéal.',
+    signatureNote: 'Délivrance Millénaire est la seule arme qui lui donne ~72 % PV%, la sous-stat qui lui permet réellement d\'atteindre ce plafond tout en continuant à accumuler Dégâts Critiques et Ignore DÉF — toute autre option laisse un écart important et permanent, pas juste mineur.',
+  },
+};
+
+// WEAPON_ALT_REASON_FR — CHARACTER_DATA[name].weaponAltReason.headline/.detail, rendered
+// alongside WEAPON_VERDICT_REASON_FR in the same PlannerTab.jsx card.
+export const WEAPON_ALT_REASON_FR = {
+  'Mornye': {
+    headline: 'Discord restaure 16 Énergie de Concerto par lancer de Compétence',
+    detail: 'le double de l\'effet de son Arme Signature, tout en respectant confortablement son besoin de Régén. d\'Énergie — un remplacement F2P propre pour cet emplacement.',
+  },
+};
