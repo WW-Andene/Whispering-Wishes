@@ -1215,6 +1215,10 @@ export const SKILL_NAME_FR = {
     'Heavy ATK: Cloudy Frenzy': 'Attaque Lourde : Nebula : Feu de Désordre',
     'Heavy ATK: Cosmos Rupture': 'Attaque Lourde : Cosmos Énervé',
     'Cosmos Rave': 'Cosmos : Carnage',
+    'Cosmos: Frolicking 1-4': 'Cosmos : Gambades 1-4',
+    'Cosmos: Heavy Attack': 'Cosmos : Attaque Lourde',
+    'Cosmos: Rampage': 'Cosmos : Ravage',
+    'Cosmos: Dodge Counter': "Cosmos : Contre-attaque d'Esquive",
     'Woolies Helpers': 'Les mains des moumous',
     'Thermal Field': 'Zone thermale',
   },
@@ -1985,6 +1989,10 @@ export const MULT_DESC_FR = {
     'Symphonic Poem: Tonic': '6,12 %×20 (sur la durée du champ)',
     'Windcalling Tune': "+100 % d'Amplification DGT d'Érosion Aero (30 s)",
   },
+  'Encore': {
+    'Cosmos Rave': 'Pas de DGT direct',
+    'Thermal Field': '176,76 % ATQ par tic ×4 (6 s, intervalle 1,5 s)',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2205,5 +2213,17 @@ export const SKILL_DESC_FR = {
     'Symphonic Poem: Tonic': "Pulsation périodique pendant Récital, déclenchée par des prompts d'interaction vert/jaune réussis (se déclenche aussi hors du terrain).",
     'Roaming with the Wind': "Ouverture au changement de personnage qui inflige Érosion Aero et lui permet d'enchaîner directement vers l'Étape 3 d'Attaque Normale.",
     'Windcalling Tune': "Buff au changement de personnage qui amplifie les DGT d'Érosion Aero près du Résonateur actif.",
+  },
+  'Encore': {
+    'Wooly Attack Stage 1-4 → Wooly Strike': "L'Étape 4 s'enchaîne vers un finisseur Coup des Moutons à appui chronométré.",
+    'Flaming Woolies → Energetic Welcome': "Recharge de 10 s. Relancer la Compétence juste après la fin de Moutons en Feu lance Accueil Chaleureux, sinon la fenêtre d'enchaînement est perdue.",
+    'Heavy ATK: Cloudy Frenzy': "À Chaos plein (100/100), l'Attaque Lourde entre dans un état de réduction de DGT de 70 % (survit au changement de personnage), puis lance Feu de Désordre (compté comme DGT de Libération de Résonance) à la sortie.",
+    'Heavy ATK: Cosmos Rupture': "Version Cosmos : Carnage de Feu de Désordre. Même déclencheur Chaos plein/Attaque Lourde et même canal de réduction de DGT de 70 %, mais pendant Cosmos : Carnage. Aussi compté comme DGT de Libération de Résonance.",
+    'Cosmos Rave': "Appui de Libération (125 Énergie, recharge 16 s), aucun coup direct au lancer. Remplace Attaque Normale/Attaque Lourde/Compétence/Contre-attaque d'Esquive par les lignes Cosmos renforcées pendant 10 s fixes. Tout coup porté pendant cette fenêtre restaure quand même du Chaos.",
+    'Cosmos: Frolicking 1-4': "Enchaînement d'Attaque Normale renforcé pendant Cosmos : Carnage (remplace Marche des Moutons). Compté comme DGT d'Attaque Normale.",
+    'Cosmos: Heavy Attack': "Attaque Lourde renforcée pendant Cosmos : Carnage (remplace Standard). Comptée comme DGT d'Attaque Lourde.",
+    'Cosmos: Rampage': "Compétence renforcée pendant Cosmos : Carnage (remplace Moutons en Feu). Comptée comme DGT de Compétence de Résonance. Recharge interne de 4 s, restaure aussi du Chaos.",
+    'Cosmos: Dodge Counter': "Contre-attaque d'Esquive renforcée pendant Cosmos : Carnage (remplace Standard). Comptée comme DGT d'Attaque Normale.",
+    'Thermal Field': "Champ de brûlure de zone autour de la cible de Compétence. Sans buff d'équipe, donc libre pour le changement rapide.",
   },
 };
