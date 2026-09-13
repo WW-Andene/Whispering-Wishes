@@ -1441,8 +1441,14 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
     'Wingblade': 'Lame marchante',
-    'Devastation → Dark Surge': 'Silence → Vague Sombre',
-    'Deadening Abyss': "Le silence d'abîme",
+    'Devastation': 'Dévastation',
+    "Umbra: Lifetaker": 'Umbra : Ravisseur de Vie',
+    'Umbra: Basic Attack Stage 1-5': 'Umbra : Attaque Normale Étape 1-5',
+    'Umbra: Heavy Attack': 'Umbra : Attaque Lourde',
+    'Umbra: Thwackblade': 'Umbra : Lame Cinglante',
+    'Umbra: Plunging Attack': 'Umbra : Attaque Plongeante',
+    'Umbra: Dodge Counter': "Umbra : Contre-attaque d'Esquive",
+    'Deadening Abyss': "Abysse qui S'éteint",
     'Instant of Annihilation': "Instant transformé",
     'Soundweaver': 'Cri',
   },
@@ -2089,6 +2095,9 @@ export const MULT_DESC_FR = {
   'Rover: Spectro': {
     'Instant': 'Champ de stase (contrôle de foule uniquement, sans DGT)',
   },
+  'Rover: Havoc': {
+    'Soundweaver': '143,3 % ATQ par tic ×3 (6 s)',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2476,5 +2485,18 @@ export const SKILL_DESC_FR = {
     'Resonating Echoes': "Enchaînement d'Attaque Normale séparé, lancé une fois Voix Spirale entièrement terminée.",
     'Echoing Orchestra': "Explosion différée. Applique 6 cumuls de Frazzle Spectro.",
     'Instant': "Génère une zone de stase centrée sur le Résonateur entrant, durant 3 s.",
+  },
+  'Rover: Havoc': {
+    'Tuneslayer Stage 1-5': "Enchaînement d'Attaque Normale à 5 étapes, vers une Étape 4 renforcée après une Attaque Lourde.",
+    'Wingblade': "Recharge de 12 s.",
+    'Devastation': "Maintenez l'Attaque Normale à Umbra plein pour lancer Dévastation, entrant en Poussée Sombre. Comptée comme DGT d'Attaque Lourde.",
+    'Umbra: Lifetaker': "Remplace Lame marchante en Poussée Sombre. Réinitialise le temps de recharge de la Compétence à l'entrée.",
+    'Umbra: Basic Attack Stage 1-5': "Enchaînement d'Attaque Normale renforcé en Poussée Sombre.",
+    'Umbra: Heavy Attack': "Attaque Lourde renforcée en Poussée Sombre.",
+    'Umbra: Thwackblade': "Suivi d'Attaque Normale après Umbra : Attaque Lourde. Comptée comme DGT d'Attaque Lourde.",
+    'Umbra: Plunging Attack': "Attaque Plongeante en Poussée Sombre.",
+    'Umbra: Dodge Counter': "Contre-attaque d'Esquive en Poussée Sombre.",
+    'Deadening Abyss': "Recharge de 16 s, immense nuke en cible unique.",
+    'Soundweaver': "Champ Havoc : DoT de zone pour le Résonateur entrant.",
   },
 };
