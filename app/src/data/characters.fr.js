@@ -33,7 +33,7 @@ export const CHARACTER_DESC_FR = {
   'Jinhsi': "Renouveau de l'Aube, Magistrate de Jinzhou, illumine doucement les espoirs de son peuple comme des rayons de soleil hivernal — en tant que Résonatrice Désignée du Sentinel vénéré, elle fait preuve d'humilité et se consacre corps et âme à guider son peuple vers un avenir radieux. DPS Spectro sur le terrain qui accumule de l'Incandescence à partir des DGT d'Attribut ou Coordonnés de n'importe quel membre de l'équipe, entre en Incarnation via sa Compétence de Résonance, puis dépense ses cumuls via Épiphanie Lumineuse pour un nuke Éclat Stella évolutif.",
   'Changli': "Flamme Éternelle, conseillère au service de la Magistrate de Jinzhou et ancienne Secrétaire Générale dans la capitale — enveloppée de flammes, elle est destinée à brûler intensément jusqu'à ses dernières braises, s'élevant au pouvoir avec une détermination ardente et un esprit toujours stratégique. DPS Fusion sur le terrain qui entre en Vraie Vision depuis les finisseurs de son Attaque Normale/Compétence/Intro, accumule des cumuls d'Enflammement à partir des suivis de Vraie Vision, puis déchaîne l'Attaque Lourde renforcée Sacrifice Ardent — un kit rapide et propice au changement rapide qui confère aussi au personnage entrant un buff de DGT Fusion et de Libération via son Outro.",
   'Zhezhi': "Pinceau Enchanté — peintre timide et discrète de la scène artistique de Jinzhou dont les créations à l'encre prennent vie et combattent à son commandement ; sa timidité masque une dévotion farouche envers son art et ceux qu'elle appelle amis. Sous-DPS/soutien Glacio qui peint des Empreintes Fantasmagoriques durant son Attaque Basique et son combo Forte, les consomme pour déchaîner des nukes Glacio hors du terrain en Attaque Coordonnée via sa Libération de Résonance (Toile Vivante), et confère au personnage entrant un buff de DGT Glacio et DGT de Compétence via son Outro Graver et Peindre.",
-  'Xiangli Yao': "Tisseur de Matière, Enquêteur Principal à l'Académie Huaxu de Jinzhou et son plus jeune scientifique multidisciplinaire — une âme douce à l'esprit vif dont la passion inlassable pour la Mécanique des Automates se traduit toujours en découvertes constructives. DPS principal Electro sur le terrain qui accumule de la Capacité via ses combos Attaque Basique/Compétence, entre en Intuition via sa Libération de Résonance (Modèle de Cogitation) pour gagner 3 Hypercubes et des attaques renforcées, puis consume chaque Hypercube via la Compétence renforcée Loi des Règnes pour ses dégâts explosifs principaux — son Outro Règle de Chaîne déclenche ensuite des tirs laser bonus sur les Attaques Basiques du personnage entrant.",
+  'Xiangli Yao': "Tisseur de Matière, Enquêteur Principal à l'Académie Huaxu de Jinzhou et son plus jeune scientifique multidisciplinaire — une âme douce à l'esprit vif dont la passion inlassable pour la Mécanique des Automates se traduit toujours en découvertes constructives. DPS principal Electro sur le terrain qui accumule de la Capacité via ses combos Attaque Normale/Compétence, entre en Intuition via sa Libération de Résonance (Modèle de Cogitation) pour gagner 3 Hypercubes et des attaques renforcées, puis consume chaque Hypercube via la Compétence renforcée Loi des Règnes pour ses dégâts explosifs principaux — son Outro Règle de Chaîne déclenche ensuite des tirs laser bonus sur les Attaques Normales du personnage entrant.",
   'Shorekeeper': "Chrysalide Euphonique, gardienne des Rives Noires — ce titre seul la définissait autrefois, mais désirs, liens et émotions, elle n'a commencé à les comprendre qu'après vous avoir rencontré. Soutien/soigneuse Spectro qui restaure les PV en continu via sa Compétence de Résonance (Théorie du Chaos) et sa Libération, ouvre le champ Stellarealm via sa Libération de Résonance (Boucle de Fin) qui évolue pour conférer Taux Critique puis Dégâts Critiques à toute l'équipe (proportionnel à sa propre Régén. d'Énergie) lorsque les alliés lancent leurs Compétences d'Intro à l'intérieur, et confère à toute l'équipe un buff de tous les DGT via son Outro Papillon Binaire.",
   'Camellya': "Fleur Sanguine, Porteuse de Floraison des Rives Noires — libre d'esprit et dangereusement charmante, elle parcourt Solaris à la recherche de talents, s'immergeant dans le présent et savourant ses plaisirs, sans être encombrée de pensées sur le passé ou le futur. DPS principal Havoc sur le terrain qui alterne entre Cheveux Blancs (mobile) et Cheveux Rouges/Mode Floraison (rotation stationnaire en zone) via sa Compétence, accumule des Pistils Cramoisis en Bourgeons Cramoisis, déchaîne l'explosion du Forte Éphémère en Mode Bourgeonnant pour une équipe d'Attaques Basiques amplifiées, et conclut avec le nuke Entrelacement de son Outro.",
   'Carlotta': "Remodeler les Dimensions, seconde fille de la famille Montelli et investisseuse d'art non conventionnelle — elle évolue sans effort à travers les cercles sociaux et les transactions commerciales tout en gérant discrètement les « ennuis » inavouables de la famille. DPS principal Glacio sur le terrain qui accumule Cristaux Modelables et Substance via ses combos Attaque Normale/Lourde et Compétence, déchaîne l'Attaque Lourde du Forte Oblivion Imminente à Substance maximale pour Révérence Finale, puis déverse sa Libération de Résonance entièrement rechargée Ère de la Nouvelle Vague dans un barrage à six coups Tango du Crépuscule (Glas de Mort ×4 en Finale Fatale) pour une explosion massive de DGT marqués Compétence de Résonance.",
@@ -204,7 +204,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Luuk Herssen': "DPS Gantelets Spectro. Axé sur la Tension Tacet. Kit de Rupture Tacet : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, aucun buff de Regain de Rupture Tacet d'équipe.",
   'Sigrika': "Hypercarry en Compétence d'Écho consommant des Runes. Noms Vrais Alignés Inhérent : Bénédiction des Runes confère au Résonateur actif +3 %/+3 % DGT Aero+Compétence d'Écho par cumul (6 max) via les lancers de Compétence d'Écho des coéquipiers, +30 %/+30 % de plus aux cumuls max (48 %/48 % au total). Se réinitialise au changement d'équipe. Noms Alignés Inhérent 2 : jusqu'à 50 % DGT Écho via la RE au-dessus de 125 %. Arme signature : 32 % d'Amplification de Compétence d'Écho + 10 % d'Ignorance de DEF. Contrôle de foule via les modes Runiques.",
   'Phrolova': "Outro (Pièce Inachevée) : +20 % DGT Havoc + 25 % d'Amplification de DGT d'Attaque Lourde (14 s). Personnel : jusqu'à 60-100 % Dégâts Critiques via l'accumulation de Résonance Post-mortem. L'Intro est « Suite de Quiétude » (base) / « Suite d'Immortalité » (améliorée par Maestro).",
-  'Xiangli Yao': 'DPS principal en Libération, état Intuition. L\'Outro Règle de Chaîne inflige des DGT Electro bonus (237,63 % ATQ, jusqu\'à 3 procs sur 8 s) sur les Attaques Basiques du personnage entrant plutôt que d\'accorder un buff d\'Amplification de DGT.',
+  'Xiangli Yao': "DPS principal en Libération, état Intuition. L'Outro Règle de Chaîne inflige des DGT Electro bonus (237,63 % ATQ, jusqu'à 3 procs sur 8 s) sur les Attaques Normales du personnage entrant plutôt que d'accorder un buff d'Amplification de DGT.",
   'Rover: Spectro': "Applicatrice de Frazzle Spectro/soutien à changement rapide. Forte : la Compétence de Résonance à 50+ Son Diminutif lance Voix Spirale (2 cumuls de Frazzle + Chatoiement, qui stoppe la dégradation), suivie de l'Attaque Normale Voix Tourbillonnante. La Libération Orchestre en Écho applique 6 cumuls de Frazzle supplémentaires. S6 (5 exemplaires) : les coups de Compétence infligent -10 % RES Spectro/20 s.",
   'Rover: Havoc': "DPS principal Havoc sur le terrain. Maintenez l'Attaque Lourde à Umbra plein pour lancer Dévastation et entrer en Poussée Sombre. Un état amélioré d'Attaque Normale/Lourde/Compétence se terminant par la Libération Abysse qui S'éteint, un nuke en cible unique à 1520 % ATQ.",
   'Rover: Electro': 'Hybride en Posture de Parade. Maintenez l\'Attaque Basique pour l\'immunité aux interruptions + 60 % de réduction des DGT. À Poussée Électrique maximale, appuyez sur Surchoc pour un buff d\'ATQ d\'équipe ou maintenez pour entrer en Résonance Apex, débloquant le combo de Forte multi-élémentaire Thrum of All Sounds (coups Spectro/Havoc/Aero + pulsations Electro de Fléau du Tonnerre). Actuellement l\'attunement le plus faible — manque d\'une partenaire DPS solide.',
@@ -1518,9 +1518,12 @@ export const SKILL_NAME_FR = {
     'Standard': 'Standard',
     'Plunging Attack': 'Attaque Plongeante',
     'Deduction → Decipher': 'Déduction → Décryptage',
-    'Intuition: Law of Reigns / Revamp': 'Intuition : Règle Suprême / Décryptage',
+    'Law of Reigns': 'Loi des Règnes',
+    'Revamp': 'Refonte',
     'Cogitation Model': 'Modèle de Cogitation',
-    'Intuition: Pivot-Impale / Divergence / Unfathomed': 'Intuition : Pivot-Empalement / Divergence / Insondable',
+    'Intuition: Pivot-Impale': 'Intuition : Pivot-Empalement',
+    'Intuition: Divergence': 'Intuition : Divergence',
+    'Intuition: Unfathomed': 'Intuition : Insondable',
     'Principle': 'Principe',
     'Chain Rule': 'Règle de Chaîne',
   },
@@ -2123,6 +2126,9 @@ export const MULT_DESC_FR = {
     'Heavy/Mid-air Attack: Starflower Blooms': "64,95 %+97,42 % (Lourde) · 67,64 %+63,82 %+30,50 %×3 (Aérienne)",
     'Blossom': "+15 % d'Amplification de tous les DGT (30 s) + soin",
   },
+  'Xiangli Yao': {
+    'Chain Rule': '237,63 % ATQ ×3 procs (8 s, TR de 2 s)',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2566,5 +2572,15 @@ export const SKILL_DESC_FR = {
     'Heavy/Mid-air Attack: Starflower Blooms': "Consomme 1 Énergie de Photosynthèse (plafond 4) par lancer pour soigner l'équipe (1188 + 29,75 % ATQ au Niv.10) et restaurer 12 Énergie de Concerto.",
     'Arboreal Flourish': "175 Énergie, recharge 25 s. Soigne l'équipe (950 + 23,80 % ATQ au Niv.10) et applique une Marque de Photosynthèse de 12 s. Les coups sur la cible marquée déclenchent une Attaque Coordonnée de soin (9,95 % DGT ATQ, soin de 428 + 10,71 % ATQ), plafonnée à 1/s.",
     'Blossom': "Soigne le Résonateur entrant de 19 % ATQ/s pendant 6 s et confère à toute l'équipe proche +15 % d'Amplification de tous les DGT (30 s).",
+  },
+  'Xiangli Yao': {
+    'Deduction → Decipher': "Recharge de 5 s. À 100 Capacité, la Compétence devient Décryptage à la place (DGT de Libération).",
+    'Law of Reigns': "Compétence remplacée automatiquement une fois la Capacité de Performance à 5/5 en Intuition. Consomme 1 des 3 Hypercubes par lancer, comptée comme DGT de Libération de Résonance.",
+    'Revamp': "Attaque Aérienne lancée juste après Divergence/Décryptage. Confère 3 Capacité de Performance par coup, comptée comme DGT de Libération de Résonance.",
+    'Cogitation Model': "Recharge de 25 s. Entre en Intuition (24 s), qui renforce l'Attaque Normale, la Compétence et la Contre-attaque d'Esquive.",
+    'Intuition: Pivot-Impale': "Remplace l'Attaque Normale/Lourde en Intuition (combo à 3 étapes). L'Étape 1 confère 1 Capacité de Performance, les Étapes 2/3 en confèrent 2 chacune (5 au total). Comptée comme DGT d'Attaque Normale, pas DGT de Libération.",
+    'Intuition: Divergence': "Remplace la Compétence de Résonance en Intuition. Confère 2 Capacité de Performance par lancer. Comptée comme DGT de Compétence, pas DGT de Libération.",
+    'Intuition: Unfathomed': "Remplace la Contre-attaque d'Esquive en Intuition. Confère 2 Capacité de Performance par lancer. Comptée comme DGT de Libération de Résonance.",
+    'Chain Rule': "Frappes laser au premier coup d'Attaque Normale du Résonateur entrant. DGT purs, sans buff d'équipe.",
   },
 };
