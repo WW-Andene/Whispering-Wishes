@@ -291,7 +291,11 @@ const WEAPON_DATA = {
   // 4★ Weapons
   'Discord': { rarity: 4, type: 'Broadblade', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
     desc: 'Descending adagio, the curtain never falls. Restores Concerto Energy on Skill use.',
-    passive: 'Resonance Skill → restore 8 Concerto Energy (20s CD)', bestFor: ['Taoqi', 'Any Broadblade'],
+    // Concerto restore corrected 2026-09-13 to 16 (was 8) against Data dump/Mornye/Mornye.md line
+    // 165 ("Skill cast restores 16 Concerto Energy (once per 20s)") — the prior 8 matched the
+    // generic 4★ Concerto-restore template shared by other weapons in this file, not Discord's
+    // own sourced kit text.
+    passive: 'Resonance Skill → restore 16 Concerto Energy (20s CD)', bestFor: ['Taoqi', 'Any Broadblade'],
     ascensionMaterials: { forgery: 'Waveworn Residue', common: 'Whisperin Core' } },
   'Variation': { rarity: 4, type: 'Rectifier', stat: 'Energy Regen', baseAtk: 337, subStatValue: '+51.8%',
     desc: 'Descending adagio, changing the battle\'s tune. Restores Concerto Energy on Skill use.',

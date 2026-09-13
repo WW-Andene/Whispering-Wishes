@@ -245,7 +245,7 @@ export const WEAPON_DATA_FR = {
   },
   'Discord': {
     name: "Discorde",    desc: "Adagio descendant, le rideau ne tombe jamais. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
-    passive: "Compétence de Résonance → restaure 8 Énergie de Concerto (recharge 20 s).",
+    passive: "Compétence de Résonance → restaure 16 Énergie de Concerto (recharge 20 s).",
   },
   'Variation': {
     name: "Variation fantastique",    desc: "Adagio descendant, changeant l'air de la bataille. Restaure l'Énergie de Concerto à l'usage de la Compétence.",
