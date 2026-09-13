@@ -3457,7 +3457,14 @@ const CHARACTER_DATA = {
   // affiliation-choice convention as Jiyan/Yangyang: Xuanling above. VAs cross-checked against
   // the source's Kit tab Voice Actors panel (Rebecca Yeo/Yui Ishikawa/Chong Chong/Lee Yu-ri) — exact match.
   ['Yangyang', 'Breath of Winds', 'Huanglong', 'Midnight Rangers', { en: 'Rebecca Yeo', cn: 'Chongchong', jp: 'Ishikawa Yui', kr: 'Lee Yu-ri' }],
-  ['Yangyang: Xuanling', 'Voices of Azure Plume', 'Huanglong', 'Xuan Triad', { en: 'Rebecca Yeo', cn: 'Chongchong', jp: 'Ishikawa Yui', kr: 'Lee Yu-ri' }],
+  // organization corrected (2026-09-13, user-provided against the real French client's Affiliation
+  // field) from 'Xuan Triad' to 'Ministry of War' — a screenshot confirmed the real client's
+  // Affiliation reads "Ministère des Armées" for this same ministry on Qingxiao (below); this is a
+  // DIFFERENT ministry than Taoqi's 'Ministry of Development' ("Ministère du Développement", a
+  // screenshot separately confirmed for her) — the two English keys are NOT the same real faction,
+  // despite both containing "Ministry of". 'Ministry of War' itself was already this entry's own
+  // wiki-sourced primary-affiliation alternative (see the comment above), so no new key is invented.
+  ['Yangyang: Xuanling', 'Voices of Azure Plume', 'Huanglong', 'Ministry of War', { en: 'Rebecca Yeo', cn: 'Chongchong', jp: 'Ishikawa Yui', kr: 'Lee Yu-ri' }],
   // Cross-checked the wiki's own infobox via the MediaWiki API (action=parse&
   // page=Suisui&prop=wikitext&section=0). birthplace/nation both Huanglong (REGION_DATA above).
   // organization uses her primary affiliation (Zhaoming Commerce Guild, where she's director, matching
@@ -3468,11 +3475,15 @@ const CHARACTER_DATA = {
   // Sourced 2026-08-18 via the MediaWiki API (action=parse&page=Qingxiao&prop=wikitext&section=0) from
   // the wiki's own "Upcoming" stub infobox, 2 days ahead of her 2026-08-20 release — title/birthplace/
   // nation/affiliations/VAs are already confirmed there even though the Combat subpage doesn't exist
-  // yet. birthplace/nation both Huanglong (REGION_DATA above). organization uses her primary
-  // affiliation 'Mengzhou' (the city she's the "Paragon" of, per her own quote/intro text and its own
-  // dedicated FACTION_ICONS emblem) over affiliation2 'Xuanfang Wardens'. Birthday: blank on the
+  // yet. birthplace/nation both Huanglong (REGION_DATA above). organization corrected (2026-09-13,
+  // user-provided against the real French client's Affiliation field, a screenshot) from 'Mengzhou'
+  // (the wiki's own primary-affiliation pick, "the city she's the Paragon of") to 'Ministry of War'
+  // — the real client shows her Affiliation as "Ministère des Armées". A separate screenshot of
+  // Taoqi confirmed her own 'Ministry of Development' is a DIFFERENT ministry ("Ministère du
+  // Développement"), so this uses 'Ministry of War' instead — same ministry as Yangyang: Xuanling's
+  // own corrected entry above — rather than reusing Taoqi's unrelated key. Birthday: blank on the
   // infobox, omitted from BIRTHDAY_DATA per the established convention.
-  ['Qingxiao', 'Heart Sword', 'Huanglong', 'Mengzhou', { en: 'Kirsty Rider', cn: 'Jiang He', jp: 'Nabatame Hitomi', kr: 'Park Ri-na' }],
+  ['Qingxiao', 'Heart Sword', 'Huanglong', 'Ministry of War', { en: 'Kirsty Rider', cn: 'Jiang He', jp: 'Nabatame Hitomi', kr: 'Park Ri-na' }],
   // Sourced 2026-08-18 via the MediaWiki API (action=parse&page=Jingran&prop=wikitext&section=0) from
   // the wiki's own "Upcoming" stub infobox — note its `name` field is a stray copy-paste leftover from
   // Qingxiao's own infobox (a wiki bug, not this table's error); every other field (title, gender,
@@ -3513,12 +3524,13 @@ const CHARACTER_DATA = {
   ['Sanhua', 'Snow Waltz', 'Huanglong', 'Jinzhou City Hall', { en: 'Jennifer Armour', cn: 'Song Yuanyuan', jp: 'Matsuda Risae', kr: 'Yu Yeong' }],
   // Taoqi: added 2026-08-18, sourced via the MediaWiki API (action=parse&page=Taoqi&prop=wikitext).
   // Title 'Blossom of Slashes' from the infobox `title` field. birthplace/nation both Huanglong
-  // (REGION_DATA above). organization uses affiliation2 'Ministry of Development' (her specific
-  // in-game department — she's its border defense director, per her own `desc`/Official Introduction)
-  // over the generic primary affiliation 'Jinzhou', matching the Jiyan/Danjin sub-group convention.
+  // (REGION_DATA above). organization corrected (2026-09-13, user-provided screenshot of the real
+  // French client) from 'Ministry of Development' to 'Jinzhou' — the real client's Affiliation field
+  // shows "Jinzhou", not a ministry; her own bio text separately mentions she defends the "Ministère
+  // du Développement" (Ministry of Development) but that's prose, not her structured Affiliation tag.
   // VAs confirmed exact from the infobox: EN Clare Louise Connolly, CN KIYO, JP Yōmiya Hina
   // (羊宮妃那), KR Yi Sae-ah (이새아).
-  ['Taoqi', 'Blossom of Slashes', 'Huanglong', 'Ministry of Development', { en: 'Clare Louise Connolly', cn: 'KIYO', jp: 'Yōmiya Hina', kr: 'Yi Sae-ah' }],
+  ['Taoqi', 'Blossom of Slashes', 'Huanglong', 'Jinzhou', { en: 'Clare Louise Connolly', cn: 'KIYO', jp: 'Yōmiya Hina', kr: 'Yi Sae-ah' }],
   // Yuanwu: added 2026-08-18, sourced via the MediaWiki API (action=parse&page=Yuanwu&prop=wikitext).
   // Title 'Fist of Thunder' from the infobox `title` field. birthplace/nation both Huanglong
   // (REGION_DATA above). organization uses affiliation2 'Yuanwu Boxing Gym' (his own gym, per his

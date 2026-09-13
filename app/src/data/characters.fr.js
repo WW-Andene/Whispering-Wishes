@@ -1869,7 +1869,13 @@ export const CHARACTER_TAG_FR = {
   'Order of the Deep': 'Ordre des Profondeurs',
   'Ghost Hounds': 'Les Chasseurs de Fantômes',
   'Lollo Logistics': 'Loulou Logistique',
-  'Ministry of Development': 'Ministère des Armées',
+  // Confirmed by the user via a screenshot of Taoqi's real profile — her own bio prose literally
+  // reads "Ministère du Développement". This is a DIFFERENT ministry than 'Ministry of War' below
+  // (Qingxiao/Yangyang: Xuanling's affiliation, "Ministère des Armées") despite the similar English
+  // name — do not merge these two keys.
+  'Ministry of Development': 'Ministère du Développement',
+  // Confirmed by the user via a screenshot of Qingxiao's real profile Affiliation field.
+  'Ministry of War': 'Ministère des Armées',
   'Zhaoming Commerce Guild': 'Maison de Commerce de Zhaoming',
   'Startorch Academy': 'Académie Brandétoile',
   'Miko of Flaming Sakura': 'Miko des Sakuras en Flammes',
