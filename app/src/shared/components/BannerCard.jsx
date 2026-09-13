@@ -200,15 +200,14 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               weapon-type icon and element/type badge sit in their own row ABOVE the name again,
               matching StandardBannerSection.jsx's identical "Standard Weapon"/"Available 5-star"
               kuro-badge tag - both a bare kuro-badge with no font-size override, same dimensions.
-              The weapon-type icon square is sized to kuro-badge's own rendered height (~16px:
-              8px font * 1.4 line-height + 2px*2 padding, kuro.css) rather than the previous 24px,
-              so the two tags in this row are the same height as each other. */}
+              The weapon-type icon square is sized to kuro-badge's ACTUAL rendered height when it
+              holds a 14px icon: 14px icon + 2px*2 padding + 1px*2 border (kuro.css) = 20px - not
+              its 8px/1.4-line-height text height, which the icon (14px) already exceeds. Measured
+              via computed getBoundingClientRect, not assumed, after the first estimate (16px) was
+              still visibly off. */}
           <div className="flex items-center gap-2 mb-0.5">
             {isChar && getWeaponTypeIcon(item.weaponType) && (
-              // Icon glyph matches the kuro-badge icon's 14px (w-3.5) below - the 16px square's
-              // 1px border leaves exactly 14px of inner content, so it fills the box edge-to-edge
-              // rather than being a mismatched, visibly smaller size than the badge's own icon.
-              <span className="w-4 h-4 rounded bg-black/40 border border-white/10 inline-flex items-center justify-center flex-shrink-0">
+              <span className="w-5 h-5 rounded bg-black/40 border border-white/10 inline-flex items-center justify-center flex-shrink-0">
                 <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
               </span>
             )}
