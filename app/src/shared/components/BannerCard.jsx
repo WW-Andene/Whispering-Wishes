@@ -196,20 +196,17 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               "twitching". Now uses the same collection-portrait lookup as the featured-4★
               previews just below (previewImg), matching what every other click-through in this
               file already passes. */}
-          {/* Direct user request: weapon-type icon and element/type badge moved off their own
-              row and onto the name's row instead.
-              BUG FIX: the timer sits absolute top-right and doesn't participate in flex layout,
-              so this row had no reason to wrap before running under it - on long names/weapon
-              types (e.g. "Starfield Calibrator" + "Broadblade") it overlapped the timer. Capping
-              this row's width reserves room for the timer so it wraps onto a new line instead. */}
-          <div className="flex items-center gap-2 flex-wrap max-w-[65%]">
-            <h4
-              className="font-bold text-xl text-white leading-tight cursor-pointer"
-              onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
-            >{item.name}</h4>
+          {/* Direct user request (superseding the earlier "beside the name" placement): the
+              weapon-type icon and element/type badge sit in their own row ABOVE the name again,
+              matching StandardBannerSection.jsx's identical "Standard Weapon"/"Available 5-star"
+              kuro-badge tag - both a bare kuro-badge with no font-size override, same dimensions.
+              The weapon-type icon square is sized to kuro-badge's own rendered height (~16px:
+              8px font * 1.4 line-height + 2px*2 padding, kuro.css) rather than the previous 24px,
+              so the two tags in this row are the same height as each other. */}
+          <div className="flex items-center gap-2 mb-0.5">
             {isChar && getWeaponTypeIcon(item.weaponType) && (
-              <span className="w-6 h-6 rounded bg-black/40 border border-white/10 inline-flex items-center justify-center flex-shrink-0">
-                <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+              <span className="w-4 h-4 rounded bg-black/40 border border-white/10 inline-flex items-center justify-center flex-shrink-0">
+                <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-2.5 h-2.5" onError={hideOnError} />
               </span>
             )}
             <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
@@ -218,6 +215,10 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
             </span>
           </div>
+          <h4
+            className="font-bold text-xl text-white leading-tight cursor-pointer"
+            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
+          >{item.name}</h4>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         
