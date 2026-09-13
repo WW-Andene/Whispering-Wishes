@@ -1863,6 +1863,14 @@ export const CHARACTER_TAG_FR = {
   'Coordinated Attack': 'Attaque Coordonnée',
   'Coordinated Attack DMG Amplification': "Amplification DGT d'Attaque Coordonnée",
   'Traction': 'Traction',
+  // Short-form dmgFocus/buffs tag values — CHARACTER_DATA[name].dmgFocus/.buffs sometimes use
+  // these bare mechanical words directly instead of the full 'Basic Attack Damage'-style phrase
+  // already translated above; same terms, just the short form.
+  'Basic ATK': 'Attaque Normale',
+  'Heavy ATK': 'Attaque Lourde',
+  'Liberation': 'Libération',
+  'Outro': 'Outro',
+  'Skill': 'Compétence',
   'DMG Amplification': 'Intensification des Dégâts',
   'Basic Attack Damage': "DGT d'Attaque Normale",
   'Basic Attack DMG Amplification': "Amplification DGT d'Attaque Normale",
