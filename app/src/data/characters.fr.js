@@ -1139,6 +1139,8 @@ export const SKILL_NAME_FR = {
     'Stage 1-2': 'Étape 1-2',
     'Necessary Measures 1-3': 'Mesures Nécessaires 1-3',
     'Standard': 'Standard',
+    'Customary Greetings': "Salutations d'Usage",
+    'Riposte': 'Riposte',
     'Containment Tactics': 'Tactiques de Confinement',
     'Imminent Oblivion': 'Oblivion Imminente',
     'Art of Violence': 'Art de la Violence',
@@ -1948,6 +1950,9 @@ export const MULT_DESC_FR = {
   },
   'Cantarella': {
     'Gentle Tentacles': "+20 % DGT Havoc + 25 % d'Amplification DGT de Compétence de Résonance (14 s, se termine plus tôt en cas de changement)",
+  },
+  'Carlotta': {
+    'Death Knell': '(183,64 % + 14,50 %×4) par tir',
   },
 };
 
