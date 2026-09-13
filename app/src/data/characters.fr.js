@@ -386,11 +386,11 @@ export const CHARACTER_ROTATION_NOTE_FR = {
   ],
   'Rebecca': [
     'Changez pour elle (démarre en mode Chasseresse) — se déclenche automatiquement, fonce et arrose de plomb, puis passe automatiquement en mode Cran.',
-    'Appuyez 3 fois sur Attaque Basique en mode Cran — accumule de la Ferveur vers le maximum de 120, chaque coup ignorant 15 % de la DEF de la cible.',
+    'Appuyez 3 fois sur Attaque Normale en mode Cran — accumule de la Ferveur vers le maximum de 120, chaque coup ignorant 15 % de la DEF de la cible.',
     'Appuyez sur Compétence — arrose de plomb et repasse en mode Chasseresse (gagne +30 % Dégâts Critiques dans ce mode).',
-    'Une fois la Ferveur à 120/120, MAINTENEZ Attaque Basique (l\'Attaque Lourde est remplacée automatiquement) puis relâchez juste quand l\'invite apparaît — annulez sa fin de récupération en appuyant immédiatement sur Libération ci-dessous.',
-    'Appuyez sur Libération juste après l\'Attaque Lourde de Forte pour annuler sa récupération — déploie le HMG Mk. 31 pendant 9,5 s : elle tire automatiquement en infligeant des DGT d\'Attaque Basique, et appuyer/maintenir Attaque Basique ou Libération pendant le canal renforce la puissance de feu (jusqu\'à 2 fois), accumulant plus vite Surcharge (max 90).',
-    'Se déclenche automatiquement à la fin du canal de 9,5 s ou quand Surcharge atteint 90 — changez de personnage juste quand ça atterrit pour annuler l\'animation de fin (cela met en réserve 10 Énergie de Concerto pour la prochaine boucle, donc les futures rotations passent directement de la Compétence à l\'Attaque Lourde de Forte sans Attaques Basiques supplémentaires).',
+    'Une fois la Ferveur à 120/120, MAINTENEZ Attaque Normale (l\'Attaque Lourde est remplacée automatiquement) puis relâchez juste quand l\'invite apparaît — annulez sa fin de récupération en appuyant immédiatement sur Libération ci-dessous.',
+    'Appuyez sur Libération juste après l\'Attaque Lourde de Forte pour annuler sa récupération — déploie le HMG Mk. 31 pendant 9,5 s : elle tire automatiquement en infligeant des DGT d\'Attaque Normale, et appuyer/maintenir Attaque Normale ou Libération pendant le canal renforce la puissance de feu (jusqu\'à 2 fois), accumulant plus vite Surcharge (max 90).',
+    'Se déclenche automatiquement à la fin du canal de 9,5 s ou quand Surcharge atteint 90 — changez de personnage juste quand ça atterrit pour annuler l\'animation de fin (cela met en réserve 10 Énergie de Concerto pour la prochaine boucle, donc les futures rotations passent directement de la Compétence à l\'Attaque Lourde de Forte sans Attaques Normales supplémentaires).',
     'Se déclenche automatiquement au changement de personnage. Invoque une tourelle infligeant 2,5 % DGT Electro par coup pendant 14 s, et confère au Résonateur entrant +15 % d\'Amplification de tous les DGT pendant 14 s plus une Amplification de DGT d\'Attaque Lourde cumulative (0,5 %/0,2 s, jusqu\'à +35 %) tant qu\'il reste sur le terrain.',
   ],
   'Lucy': [
@@ -1005,11 +1005,17 @@ export const SKILL_NAME_FR = {
   },
   'Rebecca': {
     "Mix-'n'-Match": 'Mélange de styles explosif',
-    "Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts": 'Rat-ta-ta ! : Chasseresse / Bang-bang-bang ! : Guts',
+    'Huntress Stage 1-3': 'Chasseresse Étape 1-3',
+    'Guts Stage 1-3': 'Cran Étape 1-3',
+    'Standard - Huntress': 'Standard - Chasseresse',
+    'Standard - Guts': 'Standard - Cran',
+    "Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts": 'Rat-ta-ta ! : Chasseresse / Bang-bang-bang ! : Cran',
     "It's Big Boomin' Time! / Come 'n' Get Me!": "Celle-là, elle va faire mal ! / Viens m'chercher !",
-    "Party 'til Dawn! / BOOM! Fireworks!": "Il est temps de se lâcher ! / BOUM ! Feu d'Artifice !",
+    "Party 'til Dawn!": 'Il est temps de se lâcher !',
+    'BOOM! Fireworks!': "BOUM ! Feu d'Artifice !",
     'Hack Response - Meltdown': 'Réponse de Piratage - Défaillance',
     "Yo, It's Big Boomin' Time!": "Hé, celle-là, elle va faire mal !",
+    "Hey, Leadhead, Come 'n' Get Me!": "Hé, Tête de Plomb, Viens m'chercher !",
     'Preem Choom': 'Choom Premios',
   },
   'Denia': {
@@ -1864,6 +1870,12 @@ export const MULT_DESC_FR = {
     'Song of Thoroughfare': "Effet de zone — pas de DGT direct, plafond de cumuls d'États Négatifs de l'équipe +3",
     'Rippling Waters': "25 % d'Amplification de tous les DGT (30 s) + buffs d'équipe liés à la consommation de posture",
   },
+  'Rebecca': {
+    "Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts": "10,00 %×3+160,00 %+10,00 % / 140,00 %",
+    "Party 'til Dawn!": "24,30 % / 48,60 % (1er renforcement) / 72,90 % (2e renforcement), tire automatiquement en rafale pendant 9,5 s",
+    'Hack Response - Meltdown': '1186,50 % (DGT de Piratage)',
+    'Preem Choom': "Tourelle (2,5 % DGT Electro/coup, 14 s) + Liens d'Edgerunner (15 % Amplification de tous les DGT, 14 s) + Surcharge (0,5 %/0,2 s Amplification DGT d'Attaque Lourde, jusqu'à 35 %)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -1949,5 +1961,15 @@ export const SKILL_DESC_FR = {
     'Light Watch': "Contre-attaque d'Esquive en Fontaine Yang ; considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
     'Netherworld Traverse': "Considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
     "Afterlife's Guide": "Considérée comme DGT d'Attaque Lourde selon son propre texte de kit.",
+  },
+  'Rebecca': {
+    "Rat-tat-tat!: Huntress / Bang-bang-bang!: Guts": "Finisseur de Forte une fois la Ferveur au maximum. Considérée comme DGT d'Attaque Normale selon son propre texte de kit, malgré le remplacement de l'Attaque Lourde.",
+    "It's Big Boomin' Time! / Come 'n' Get Me!": 'Franchit la distance et change de posture.',
+    "Party 'til Dawn!": "Canal de la mitrailleuse Mk31 ; appuyer/maintenir Attaque Normale ou Libération pendant ce canal renforce la puissance de feu au palier suivant, accumulant plus vite Surcharge.",
+    'BOOM! Fireworks!': 'Se déclenche automatiquement à la fin du canal ou quand Surcharge atteint son maximum.',
+    'Hack Response - Meltdown': 'DGT bonus quand les alliés infligent Piratage-Interféré.',
+    "Yo, It's Big Boomin' Time!": 'Ouverture en mode Chasseresse qui la fait aussi basculer en mode Cran.',
+    "Hey, Leadhead, Come 'n' Get Me!": 'Ouverture en mode Cran qui la fait aussi basculer en mode Chasseresse.',
+    'Preem Choom': "Laisse une tourelle ; buffe le DGT total et le DGT d'Attaque Lourde du prochain allié.",
   },
 };
