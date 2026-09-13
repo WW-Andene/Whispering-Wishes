@@ -164,7 +164,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Lucy': 'Outro : 25 % Amplification de DGT d\'Attaque Normale pour le Résonateur suivant (14 s) + Programme de Contre-mesure d\'équipe (Piratage - Interféré déclenche +20 % Amplification de tous les DGT). Rupture Tacet : Piratage confirmé de la même famille générique de Rupture Tacet ; la Réponse de Piratage - Crash de Données est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé.',
   'Rebecca': 'Outro : déploie une tourelle pendant 14 s et confère au Résonateur suivant 15 % d\'Amplification de tous les DGT (14 s), montant jusqu\'à 35 % d\'Amplification de DGT d\'Attaque Lourde via l\'accumulation d\'Overlimit. Les deux buffs ne ciblent que le personnage entrant, pas toute l\'équipe. Le mode Chasseresse confère personnellement 30 % Dégâts Critiques ; le mode Cran confère personnellement 15 % d\'Ignorance de DEF (personnel, pas un debuff de Réduction de DEF pour toute l\'équipe — corrigé le 2026-08-16, était mal classé sous debuffs comme defShred). Rupture Tacet : la Réponse de Piratage - Effondrement est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé ; Chat, t\'es Fait ! confère +30 Regain de Rupture Tacet (30 s) confirmé à quel que coéquipier inflige Piratage - Déplacement.',
   'Denia': 'Mode Double Résonance : le mode Éclatement Fusion de l\'Outro amplifie les DGT d\'Éclatement Fusion de l\'équipe de 60 % (30 s) ; le mode Tension Tacet de l\'Outro confère au Résonateur suivant 15-40 % d\'Amplification de tous les DGT (16 s). Kit de Rupture Tacet (mode Tension Tacet uniquement) : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, +10 Regain de Rupture Tacet équipe (Couleurs Gravées).',
-  'Lucilla': 'Mode Double Résonance : le mode Glacio Frisson de l\'Outro amplifie les DGT de Glacio Frisson de l\'équipe de 60 % (30 s) ; le mode Écho de l\'Outro confère au Résonateur suivant +50 % d\'Amplification de DGT de Compétence d\'Écho (14 s).',
+  'Lucilla': "Mode Double Résonance : le mode Givre Glaçant de l'Outro amplifie les DGT de Givre Glaçant de l'équipe de 60 % (30 s) ; le mode Écho de l'Outro confère au Résonateur suivant +50 % d'Amplification de DGT de Compétence d'Écho (14 s). Compétence Innée Ralenti (au lancer de Projection de Lumière) : en mode Givre Glaçant, -8 % RES Glacio près du Résonateur actif (30 s) ; en mode Écho, +25 % de Bonus de DGT de Compétence d'Écho pour l'équipe (30 s) — se termine prématurément dans les deux cas au changement de mode. Le Circuit de Forte Pellicule (mode Givre Glaçant : consomme 1 cumul chaque fois qu'un autre coéquipier actif inflige Givre Glaçant, pour infliger Givre Glaçant deux fois plus souvent elle-même) est modélisé comme un bloc réel réactif aux actions alliées dans lucilla.blocks.js (2026-09-08) — son gain est une application de Chafe supplémentaire, pas une valeur en %, donc il vit là plutôt que comme une ligne numérique dans cette table.",
   'Mornye': 'Outro : 25 % d\'Amplification de tous les DGT pour l\'équipe (30 s, confirmé exact le 2026-08-16 — était auparavant mal classé comme Renforcement). Champ de Syntonie : +50 % de Taux d\'Accumulation Hors-Tonalité (25 s), soins, DEF +20 % via l\'Ultime. Marqueur Interféré : jusqu\'à 40 % d\'Amplification de DGT sur la cible. Réponse de Rupture.',
   'Roccia': 'Outro : +20 % d\'Amplification de DGT Havoc + 25 % d\'Amplification de DGT d\'Attaque Basique (14 s). Inhérent 1 : personnel ATQ +20 % (12 s) sur Compétence/Attaque Lourde. Libération : ATQ d\'équipe fixe +1 par 0,1 % de Taux Critique au-delà de 50 %, jusqu\'à +200 (30 s) — pas un buff en %, donc non suivi dans libBuffs.',
   'Changli': 'Outro : 20 % d\'Amplification de DGT Fusion + 25 % d\'Amplification de DGT de Libération (10 s). Montée en ATQ personnelle via Plume Ardente.',
@@ -1042,7 +1042,12 @@ export const SKILL_NAME_FR = {
     'Phantom Frame / Compensate / Spotlight': "Image Fantôme / Compensation d'Exposition / Projection de Lumière",
     'Clear As Day': 'Comme au Premier Jour',
     'Oblivion': 'Oubli',
+    'Tracing Forms Stage 1-3': 'Formes Retracées Étape 1-3',
+    'Letting It Go': 'Laisser Filer',
+    'Mid-air Attack - Reminiscence': 'Attaque Aérienne - Réminiscence',
+    'Dodge Counter - Reminiscence': "Contre-attaque d'Esquive - Réminiscence",
     'Clip It': 'Séquence',
+    'Clip It: Hard Cut': 'Séquence : Coupe Franche',
     'Montage': 'Montage',
   },
   'Augusta': {
@@ -1818,6 +1823,10 @@ export const GENERIC_SKILL_DESC_FR = {
   'Buffs the incoming Resonator.': 'Buffe le Résonateur entrant.',
   'Basic ATK after a successful Dodge.': 'Attaque Normale après une Esquive réussie.',
   'Charged aimed shot.': 'Tir visé chargé.',
+  'Glacio Chafe mode; considered Basic Attack DMG. Auto-fires during Tracing Forms Stage 3, consuming Photos.':
+    'Mode Givre Glaçant ; considérée comme DGT d\'Attaque Normale. Se déclenche automatiquement pendant Formes Retracées Étape 3, consommant des Photos.',
+  'Echo mode; considered Echo Skill DMG, each cast counted as a different Echo Skill. Auto-fires during Tracing Forms Stage 3, consuming Photos.':
+    "Mode Écho ; considérée comme DGT de Compétence d'Écho, chaque lancer comptant comme une Compétence d'Écho différente. Se déclenche automatiquement pendant Formes Retracées Étape 3, consommant des Photos.",
 };
 
 // PHRASE_FR — bare English DMG-category terms that recur mid-sentence inside otherwise-bespoke,
@@ -1889,6 +1898,11 @@ export const MULT_DESC_FR = {
   'Denia': {
     'Erosion Field': '136,33 % par tic (toutes les 4 s pendant 30 s)',
     'Unfinished Lies': "60 % d'Amplification DGT d'Explosion Fusion pendant 30 s (mode Explosion Fusion) / 15 % d'Amplification de tous les DGT pendant 16 s, montant à 40 % une fois Tension d'Accord - Basculement infligée (mode Tension d'Accord)",
+  },
+  'Lucilla': {
+    'Snapshot Stage 1-3': '59,29 % → 26,89 %+40,34 % → 235,27 % (Remarquable) / 159,55 % (Banale)',
+    'Clear As Day': '142,74 %, entre en Réminiscence',
+    'Montage': "60 % d'Amplification DGT de Givre Glaçant (mode Givre Glaçant) / 50 % d'Amplification DGT de Compétence d'Écho pour le suivant (mode Écho)",
   },
 };
 
@@ -1999,5 +2013,15 @@ export const SKILL_DESC_FR = {
     "It's Been A While!": 'Ouverture en Forme Scénique ; confère 25 Particule du Vide et 1 Noyau Sombre.',
     'Knock Knock': 'Ouverture en Forme Déconstruite ; confère Basculement Entropique : Forme Déconstruite (12 s) et 1 Noyau Sombre.',
     'Unfinished Lies': 'Buffe les DGT d\'Explosion Fusion près du Résonateur actif, ou confère au Résonateur entrant une Amplification de tous les DGT.',
+  },
+  'Lucilla': {
+    'Snapshot Stage 1-3': 'Enchaînement standard ; maintenez le 3e coup pour un finisseur plus puissant.',
+    'Phantom Frame / Compensate / Spotlight': 'Attire les ennemis ; maintenez pour un enchaînement plus puissant.',
+    'Clear As Day': 'Ultime : entre dans sa posture renforcée.',
+    'Tracing Forms Stage 1-3': "Remplace l'Attaque Normale en Réminiscence ; considérée comme DGT d'Attaque Normale quel que soit le mode.",
+    'Letting It Go': "Finisseur immunisé aux interruptions au relâchement/à la fin de Formes Retracées Étape 3, met fin à Réminiscence ; considérée comme DGT d'Attaque Normale en mode Givre Glaçant / DGT de Compétence d'Écho en mode Écho (même valeur dans les deux cas).",
+    'Clip It': 'Coup d\'ouverture qui applique Givre Glaçant.',
+    'Clip It: Hard Cut': 'Remplace Séquence en Réminiscence.',
+    'Montage': "Buffe les DGT de Givre Glaçant ou les DGT de Compétence d'Écho du prochain allié.",
   },
 };
