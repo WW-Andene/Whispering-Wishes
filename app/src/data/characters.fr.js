@@ -66,7 +66,7 @@ export const CHARACTER_DESC_FR = {
   'Qingxiao': "Parangon de Mengzhou. DPS Aero sur le terrain qui accumule Cœur du Qin et Cadence de l'Épée via les attaques en Posture Rengainée/Dégainée, puis déchaîne Transcendance Éphémère pour des combos renforcés, proportionnels aux cumuls de Tune Strain - Interfered et à ses propres cumuls d'Esprit Verrouillé.",
   'Jingran': "Une solitaire s'aventurant dans des profondeurs insaisissables, originaire de Mengzhou. Manieuse de Sabre Fusion à scaling PV qui canalise les postures Vaisseau Yin et Fontaine Yang. DPS Fusion sur le terrain dont l'Attaque Lourde et l'ATQ/DGT sont proportionnels aux PV Max, entrant en état Yinghuo via sa Libération de Résonance pour des frappes de suivi renforcées.",
   'Aalto': "Courtier en informations suave qui se faufile à travers la brume. Sous-DPS Aero qui inflige des DGT Aero hors du terrain via des Attaques Coordonnées déclenchées par son invocation de clone de brume.",
-  'Baizhi': "Chercheuse dévouée de l'Académie Huaxu accompagnée de sa compagne You'an. Soigneuse Glacio qui restaure les PV via sa Compétence de Résonance et sa Libération, offrant un soutien d'équipe constant avec un faible temps de présence sur le terrain.",
+  'Baizhi': "Chercheuse dévouée de l'Académie Huaxu accompagnée de sa compagne You'tan. Soigneuse Glacio qui restaure les PV via sa Compétence de Résonance et sa Libération, offrant un soutien d'équipe constant avec un faible temps de présence sur le terrain.",
   'Chixia': "Patrouilleuse énergique qui traverse Jinzhou en trombe avec ses doubles pistolets. DPS Fusion sur le terrain qui inflige des DGT Fusion via des tirs rapides de Compétence de Résonance et des combos d'Attaque Basique.",
   'Danjin': "Rôdeuse de Minuit qui échange son propre sang contre du pouvoir, traquant voleurs et bandits à travers Huanglong pour se venger. Hybride Havoc qui consomme des PV pour alimenter des Attaques Basiques et Lourdes renforcées, gagnant un Bonus de DGT Havoc à mesure que sa santé diminue — utilisée comme buffeuse d'Outro rapide pour un DPS Havoc ou, avec une rotation plus longue, comme DPS principal à part entière.",
   'Yangyang': "Éclaireuse libre des Rôdeurs de Minuit, hybride Efficacité de Concerto/Traction/Régén. de Libération. Sous-DPS Aero qui regroupe les ennemis via sa Compétence de Résonance et sa Libération, accumule jusqu'à 3 cumuls de Mélodie pour une explosion aérienne de Libération de Plumes, et transfère de l'Énergie de Résonance au personnage suivant via son Outro — l'une des rotations les plus rapides et les plus propices au changement rapide du jeu.",
@@ -184,7 +184,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Sanhua': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Basique (14 s). Changement rapide.',
   'Mortefi': 'Outro : 38 % d\'Amplification de DGT d\'Attaque Lourde. Attaque Coordonnée hors du terrain sur Attaque Lourde.',
   'Danjin': 'Outro : 23 % de Renforcement de DGT Havoc pour le suivant.',
-  'Baizhi': 'Outro : 15 % de Renforcement (6 s par tic, se rafraîchit au soin). Inhérent : 15 % ATQ pour toute l\'équipe (20 s à la collecte d\'Euphonia). Soin.',
+  'Baizhi': "Outro : 15 % d'Amplification (6 s par tic, se rafraîchit au soin). Inhérent : 15 % ATQ pour le seul Résonateur qui récupère Euphonia (20 s), pas toute l'équipe. S6 améliore séparément un effet différent (Bonus de DGT Glacio +12 %) pour tous les personnages proches lors du même ramassage, celui-là bien pour toute l'équipe. Soin.",
   'Taoqi': 'Outro Volonté de Fer : 38 % d\'Amplification de DGT de Compétence de Résonance pour le suivant (14 s). La Compétence Défense Fortifiée confère 3 cumuls de Bouclier Inébranlable (15 % de réduction des DGT tant qu\'actif) + auto-soin.',
   'Yuanwu': 'Compétence Coin de Tonnerre : Attaque Coordonnée hors du terrain (1x/1,2 s tant qu\'un allié est sur le terrain dans le champ). La Libération Puissance Ardente confère à toute l\'équipe une Résistance à l\'Interruption (Infusion Foudre, 10 s) — aucune statistique de DGT. Outro Manipulation Électrique : pure déplétion de Force Vibratoire, sans buff de DGT. Le Bouclier ne se débloque qu\'à la Chaîne de Résonance S4.',
   'Yangyang': 'Outro (Brise Murmurante) achemine 4 Énergie/s pendant 5 s vers le personnage entrant — aucun buff de DGT direct à S0. Contribution personnelle aux DGT minimale ; sa valeur vient de la génération d\'Énergie et de sa facilité de changement rapide (des buffs se débloquent à des Séquences plus élevées).',
@@ -2152,6 +2152,13 @@ export const MULT_DESC_FR = {
     'Misty Cover': '59,65 % par Balle de Brume',
     'Dissolving Mist': "+23 % d'Amplification DGT Aero (14 s)",
   },
+  'Baizhi': {
+    'Emergency Plan': '15,94 % + soin',
+    'Momentary Union': "Soin d'équipe + 4x Entités Résiduelles (4,07 % chacune)",
+    'Cycle of Life': "Soigne via jusqu'à 4 cumuls de Concentration",
+    'Overflowing Frost': '79,53 % + soin',
+    'Rejuvinating Flow': "Soin de 1,54 % PV Max/3 s (30 s) + 15 % d'Amplification DGT (6 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2646,5 +2653,14 @@ export const SKILL_DESC_FR = {
     'Misty Cover': "La Ruée du Manteau de Brume consomme des Gouttes de Brume pour tirer des Balles de Brume.",
     'Feint Shot': "Tirs continus rapides à l'entrée.",
     'Dissolving Mist': "Buffe le Résonateur entrant.",
+  },
+  'Baizhi': {
+    'Destined Promise Stage 1-4': "Jusqu'à 4 frappes commandées par You'tan.",
+    'Destined Promise (channel)': "Attaques continues de You'tan. Baizhi peut repositionner You'tan pendant la canalisation.",
+    'Emergency Plan': "Soin d'équipe immédiat plus un coup Glacio de You'tan.",
+    'Momentary Union': "Les Entités Résiduelles attaquent et soignent automatiquement toutes les 2,5 s.",
+    'Cycle of Life': "L'Attaque Lourde/Compétence consomme de la Concentration pour un soin d'équipe continu.",
+    'Overflowing Frost': "Attaque plongeante de You'tan qui soigne aussi l'équipe.",
+    'Rejuvinating Flow': "Buffe et soutient le Résonateur entrant.",
   },
 };
