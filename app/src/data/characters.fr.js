@@ -1690,7 +1690,7 @@ export const SKILL_DESC_FR = {
     'Distributed Array': 'Compétence de suivi à coups multiples.',
     'Geopotential Shift': 'Frappe de Forte qui alimente aussi son kit de soin/soutien.',
     'Inversion': 'Finisseur de Forte plus puissant.',
-    'Critical Protocol': 'Ultime ; un nuke basé sur la DÉF qui renforce aussi ses buffs.',
+    'Critical Protocol': 'Ultime ; une frappe basée sur la DÉF qui renforce aussi ses buffs.',
     'Convergence': 'Frappe d\'ouverture au changement de personnage.',
     'Recursion': "Buff au changement de personnage donnant à l'équipe +25 % d'Amplification de tous les DGT pendant une longue durée.",
   },
