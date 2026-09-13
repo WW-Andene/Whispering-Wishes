@@ -102,36 +102,36 @@ const CountdownTimer = memo(({ endDate, color = 'yellow', compact = false, alway
   // Unified compact style matching Tracker tab
   if (compact) {
     return (
-      <span className={`${textColor} kuro-number text-base font-medium`} role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
+      <span className={`${textColor} kuro-number text-base font-medium`} role="timer" aria-label={`${time.days > 0 ? `${time.days} ${time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')} ` : ''}${time.hours} ${t('planner.timerHr')} ${time.minutes} ${t('planner.timerMin')} ${time.seconds} ${t('planner.timerSec')} ${t('planner.timerRemaining')}`}>
         {time.days > 0 && `${time.days}d `}{String(time.hours).padStart(2, '0')}h {String(time.minutes).padStart(2, '0')}m {String(time.seconds).padStart(2, '0')}s
       </span>
     );
   }
   
   return (
-    <div className="flex items-center gap-1.5" role="timer" aria-label={`${time.days > 0 ? `${time.days} days ` : ''}${time.hours} hours ${time.minutes} minutes ${time.seconds} seconds remaining`}>
+    <div className="flex items-center gap-1.5" role="timer" aria-label={`${time.days > 0 ? `${time.days} ${time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')} ` : ''}${time.hours} ${t('planner.timerHr')} ${time.minutes} ${t('planner.timerMin')} ${time.seconds} ${t('planner.timerSec')} ${t('planner.timerRemaining')}`}>
       {time.days > 0 && (
         <>
           <div className="px-3 py-1.5 text-center min-w-[48px]" style={TIMER_BOX_STYLE}>
             <div className="text-white kuro-scoreboard">{time.days}</div>
-            <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{time.days === 1 ? 'Day' : 'Days'}</div>
+            <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{time.days === 1 ? t('planner.timerDay') : t('planner.timerDays')}</div>
           </div>
           <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
         </>
       )}
       <div className="px-3 py-1.5 text-center min-w-[48px]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.hours).padStart(2, '0')}</div>
-        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">Hr</div>
+        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerHr')}</div>
       </div>
       <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
       <div className="px-3 py-1.5 text-center min-w-[48px]" style={TIMER_BOX_STYLE}>
         <div className="text-white kuro-scoreboard">{String(time.minutes).padStart(2, '0')}</div>
-        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">Min</div>
+        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerMin')}</div>
       </div>
       <span className={`${textColor} font-bold text-md opacity-60`}>:</span>
       <div className="px-3 py-1.5 text-center countdown-tick min-w-[48px]" style={TIMER_BOX_STYLE}>
         <div className={`kuro-scoreboard ${textColor}`}>{String(time.seconds).padStart(2, '0')}</div>
-        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">Sec</div>
+        <div className="text-white/70 text-2xs uppercase tracking-wider mt-0.5">{t('planner.timerSec')}</div>
       </div>
     </div>
   );

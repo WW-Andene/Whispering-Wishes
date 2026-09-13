@@ -20,6 +20,7 @@ import { ConvenePullPills } from './ConvenePullPills.jsx';
 import { ConvenePullSimModal } from './ConvenePullSimModal.jsx';
 import { t, getLocale } from '../../utils/i18n.js';
 import { WEAPON_TYPE_FR } from '../../data/characters.fr.js';
+import { CURRENT_BANNER_TITLES_FR } from '../../data/banners.fr.js';
 
 const BANNER_GRADIENT_MAP = {
   Fusion: { borderColor: 'rgba(249,115,22,0.4)', bgColor: 'rgba(249,115,22,0.2)', text: 'text-orange-400', glow: '249,115,22' },
@@ -169,7 +170,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            {item.isNew && <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>NEW</span>}
+            {item.isNew && <span className="text-sm bg-yellow-500 text-black px-1.5 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>{t('tracker.newBadge')}</span>}
             <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
               {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
@@ -194,7 +195,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
             className="font-bold text-xl text-white leading-tight cursor-pointer"
             onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
           >{item.name}</h4>
-          {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{item.title}</p>}
+          {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         
         <div>
