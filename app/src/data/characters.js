@@ -1357,8 +1357,14 @@ const CHARACTER_DATA = {
     // negligible and the buff's ROI is low"), and line 165 ("Discord: ... Skill cast restores 16
     // Concerto Energy... plus solid Energy Regen; a no-brainer pick") — written directly from
     // those specifics rather than the generic not-essential template.
-    weaponVerdictReason: "Mornye's kit scales mostly on DEF, and her real requirement is 260% Energy Regen to cap her Liberation self-buffs and team-wide buffs — easily reached even on F2P 4★ weapons. Starfield Calibrator adds a permanent 20% team Crit DMG buff and extra Concerto Energy, but by her own build notes the personal damage gain is negligible and the buff's ROI is low, which is exactly why it's skippable.",
-    weaponAltReason: "Discord restores 16 Concerto Energy per Skill cast — twice the Signature's own Concerto effect — and still comfortably meets her Energy Regen requirement, making it a clean F2P swap for the slot.",
+    weaponVerdictReason: {
+      need: "Mornye's kit scales mostly on DEF, and her real requirement is 260% Energy Regen to cap her Liberation self-buffs and team-wide buffs — easily reached even on F2P 4★ weapons.",
+      signatureNote: "Starfield Calibrator only adds a permanent 20% team Crit DMG buff and extra Concerto Energy — by her own build notes, the personal damage gain is negligible and the buff's ROI is low, which is exactly why it's skippable.",
+    },
+    weaponAltReason: {
+      headline: 'Discord restores 16 Concerto Energy per Skill cast',
+      detail: "twice the Signature's own effect, and still comfortably meets her Energy Regen requirement — a clean F2P swap for the slot.",
+    },
     // weaponAlts added 2026-08-17: the source's live build calcs only rank 3 weapons total for Mornye
     // (Signature, then Discord/Broadblade#41 as 4★ Energy Regen picks — she has no ranked 5★ alt since
     // no other 3.x Broadblade offers her key ER stat). Verdant Summit added as the 5★ alt slot as a
@@ -1811,7 +1817,10 @@ const CHARACTER_DATA = {
     // 4-4-1-1-1 build while still stacking Crit/DEF Ignore — a very large gap over every
     // alternative"), written directly from that mechanic rather than the generic
     // reliantDespiteAlts template.
-    weaponVerdictReason: "Jingran's kit scales off Max HP, with a self-buff that caps at 50,000 HP on his ideal build. Thousandfold Deliverance is the only weapon that gives him ~72% HP%, the substat that actually gets him to that cap while he keeps stacking Crit DMG and DEF Ignore — every other option leaves a large, permanent gap, not just a minor one.",
+    weaponVerdictReason: {
+      need: 'Jingran\'s kit scales off Max HP, with a self-buff that caps at 50,000 HP on his ideal build.',
+      signatureNote: 'Thousandfold Deliverance is the only weapon that gives him ~72% HP%, the substat that actually gets him to that cap while he keeps stacking Crit DMG and DEF Ignore — every other option leaves a large, permanent gap, not just a minor one.',
+    },
     // teams sourced directly from the dump's own "Example Teams" section (his own dump is
     // authoritative for his own teams field — no third-party corroboration required): Best Team
     // (Iuno + Shorekeeper/Verina), Mono Fusion (Mortefi + Mornye/Lupa), F2P (Rebecca/Mortefi +

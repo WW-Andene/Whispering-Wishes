@@ -938,15 +938,20 @@ function PlannerTab({
                         </span>
                       </div>
                     </div>
-                    <p className="text-gray-500 text-xs">
-                      {top.d.weaponVerdictReason
-                        ? top.d.weaponVerdictReason
-                        : topWeapon.reliantDespiteAlts
+                    {top.d.weaponVerdictReason ? (
+                      <div className="space-y-1">
+                        <p className="text-gray-300 text-xs font-medium leading-snug">{top.d.weaponVerdictReason.need}</p>
+                        <p className="text-gray-500 text-xs leading-snug">{top.d.weaponVerdictReason.signatureNote}</p>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-xs leading-snug">
+                        {topWeapon.reliantDespiteAlts
                           ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
                           : topWeapon.mustHave
                             ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
                             : t('planner.recommendationWeaponNotEssentialReason', { name: top.name, sig: topWeapon.name, statScaling: top.d.statScaling || 'ATK', sigStat: sigWeaponInfo?.stat, sigPassive: sigPassiveSummary })}
-                    </p>
+                      </p>
+                    )}
                     {!topWeapon.mustHave && altWeaponName && (
                       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
                         {DEFAULT_COLLECTION_IMAGES[altWeaponName] && (
@@ -955,13 +960,18 @@ function PlannerTab({
                           </div>
                         )}
                         <div className="min-w-0 space-y-0.5">
-                          <p className="text-gray-300 text-xs font-medium">
-                            {top.d.weaponAltReason
-                              ? top.d.weaponAltReason
-                              : topWeapon.ownedAlt
+                          {top.d.weaponAltReason ? (
+                            <>
+                              <p className="text-gray-300 text-xs font-medium leading-snug">{top.d.weaponAltReason.headline}</p>
+                              <p className="text-gray-500 text-2xs leading-snug">{top.d.weaponAltReason.detail}</p>
+                            </>
+                          ) : (
+                            <p className="text-gray-300 text-xs font-medium">
+                              {topWeapon.ownedAlt
                                 ? t('planner.recommendationWeaponAlreadyHaveAlt', { alt: altWeaponName, stat: altWeaponInfo?.stat, subStatValue: altWeaponInfo?.subStatValue, passive: altPassiveSummary })
                                 : t('planner.recommendationWeaponAltExists', { alts: altWeaponName, stat: altWeaponInfo?.stat, subStatValue: altWeaponInfo?.subStatValue, passive: altPassiveSummary })}
-                          </p>
+                            </p>
+                          )}
                         </div>
                       </div>
                     )}
