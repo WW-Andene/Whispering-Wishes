@@ -1941,6 +1941,7 @@ export const GENERIC_SKILL_DESC_FR = {
     "Ne pas confondre avec la ligne Équipement de Lame de Mort ci-dessous.",
   'Confirmed 2026-08-31 against the wiki Lv.10 "Dodge Counter DMG" row under Phantom Etching. While in Deathblade Gear, Dodge Counter deals this boosted value instead of the normal-state row above, and is counted as Resonance Liberation DMG, not Dodge Counter DMG.':
     "En Équipement de Lame de Mort, la Contre-attaque d'Esquive inflige cette valeur renforcée au lieu de la ligne à l'état normal ci-dessus, et est comptée comme DGT de Libération de Résonance, pas DGT de Contre-attaque d'Esquive.",
+  'Consumes STA for consecutive mid-air shots.': "Consomme de l'Endurance pour des tirs aériens consécutifs.",
 };
 
 // PHRASE_FR — bare English DMG-category terms that recur mid-sentence inside otherwise-bespoke,
@@ -2177,6 +2178,9 @@ export const MULT_DESC_FR = {
   },
   'Lumi': {
     'Escorting': "Pas de DGT (Amplification DGT de Compétence de Résonance +38 %, 10 s)",
+  },
+  'Mortefi': {
+    'Rage Transposition': "+38 % d'Amplification DGT d'Attaque Lourde (14 s ou jusqu'au changement de personnage)",
   },
 };
 
@@ -2742,5 +2746,15 @@ export const SKILL_DESC_FR = {
     'Laser': "La Compétence d'Outro consomme toutes les Étincelles. DGT Electro comptés comme DGT d'Attaque Normale, jusqu'à 4 faisceaux (1 faisceau bonus par 25 Étincelles consommées).",
     'Special Delivery': "Entre en Mode Feu Jaune et attaque la cible, infligeant des DGT Electro.",
     'Escorting': "Le Résonateur entrant voit ses DGT de Compétence de Résonance amplifiés de 38 % pendant 10 s ou jusqu'à son remplacement.",
+  },
+  'Mortefi': {
+    'Impromptu Show Stage 1-4': "Jusqu'à 4 tirs de pistolet/flamme consécutifs.",
+    'Impromptu Show (aimed shot)': "Visez puis tirez un coup chargé plus puissant.",
+    'Passionate Variation': "Lance un éclair de flamme-foudre vers l'avant, infligeant des DGT Fusion. Recharge de 14 s.",
+    'Violent Finale': "DGT Fusion plus application de Rhapsodie Ardente à toute l'équipe (10 s, recharge 20 s).",
+    'Marcato (Coordinated ATK)': "Pendant Rhapsodie Ardente : un coup d'Attaque Normale sur le terrain confère 1 Marcato, un coup d'Attaque Lourde en confère 2. Maximum 1 Attaque Coordonnée/0,35 s.",
+    'Fury Fugue': "Remplace la Compétence de Résonance une fois l'Agacement à 100. Consomme tout l'Agacement, comptée comme DGT de Compétence de Résonance.",
+    'Dissonance': "Ouverture à DGT Fusion.",
+    'Rage Transposition': "Confère au personnage entrant une Amplification de DGT d'Attaque Lourde.",
   },
 };
