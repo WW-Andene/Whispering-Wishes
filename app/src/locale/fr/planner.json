@@ -99,6 +99,7 @@
   "recommendationWeaponAlreadyHaveAlt": "Vous possédez déjà {{alt}} — un sous-stat {{stat}} de {{subStatValue}} et son propre passif : {{passive}}.",
   "recommendationWeaponAltExists": "{{alts}} — un sous-stat {{stat}} de {{subStatValue}} et son propre passif : {{passive}}.",
   "recommendationWeaponNotEssentialReason": "{{name}} ne dépend pas forcément de {{sig}} pour être efficace — le kit scale surtout sur {{statScaling}} et a besoin de {{sigStat}} avant tout, alors que {{sig}} n'ajoute que : {{sigPassive}}.",
+  "recommendationWeaponNotEssentialReasonWithTarget": "{{name}} ne dépend pas forcément de {{sig}} pour être efficace — le kit scale surtout sur {{statScaling}} et a besoin de {{targetValue}}% {{targetStat}} {{targetPurpose}}, alors que {{sig}} n'ajoute que : {{sigPassive}}.",
   "recommendationGoodForHeader": "{{name}} fonctionne bien avec ces personnages de votre roster",
   "recommendationGoodForEmpty": "Aucune synergie confirmée avec votre roster actuel pour le moment",
   "recommendationAllOwnedTitle": "Vous possédez déjà tous les personnages en vedette de cette mise à jour",

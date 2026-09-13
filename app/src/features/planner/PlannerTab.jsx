@@ -943,7 +943,9 @@ function PlannerTab({
                         ? t('planner.recommendationWeaponReliantDespiteAlts', { name: top.name })
                         : topWeapon.mustHave
                           ? t('planner.recommendationWeaponMustHaveReason', { name: top.name })
-                          : t('planner.recommendationWeaponNotEssentialReason', { name: top.name, sig: topWeapon.name, statScaling: top.d.statScaling || 'ATK', sigStat: sigWeaponInfo?.stat, sigPassive: sigPassiveSummary })}
+                          : top.d.keyStatTarget
+                            ? t('planner.recommendationWeaponNotEssentialReasonWithTarget', { name: top.name, sig: topWeapon.name, statScaling: top.d.statScaling || 'ATK', targetValue: top.d.keyStatTarget.value, targetStat: top.d.keyStatTarget.stat, targetPurpose: top.d.keyStatTarget.purpose, sigPassive: sigPassiveSummary })
+                            : t('planner.recommendationWeaponNotEssentialReason', { name: top.name, sig: topWeapon.name, statScaling: top.d.statScaling || 'ATK', sigStat: sigWeaponInfo?.stat, sigPassive: sigPassiveSummary })}
                     </p>
                     {!topWeapon.mustHave && altWeaponName && (
                       <div className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">

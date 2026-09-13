@@ -99,6 +99,7 @@
   "recommendationWeaponAlreadyHaveAlt": "You already own {{alt}} — {{stat}} substat of {{subStatValue}} and its own passive: {{passive}}.",
   "recommendationWeaponAltExists": "{{alts}} — {{stat}} substat of {{subStatValue}} and its own passive: {{passive}}.",
   "recommendationWeaponNotEssentialReason": "{{name}} doesn't necessarily depend on {{sig}} to perform well — the kit scales mostly on {{statScaling}} and needs {{sigStat}} more than anything, while {{sig}} only adds: {{sigPassive}}.",
+  "recommendationWeaponNotEssentialReasonWithTarget": "{{name}} doesn't necessarily depend on {{sig}} to perform well — the kit mostly scales on {{statScaling}} and needs {{targetValue}}% {{targetStat}} {{targetPurpose}}, while {{sig}} only adds: {{sigPassive}}.",
   "recommendationGoodForHeader": "{{name}} pairs well with these characters in your roster",
   "recommendationGoodForEmpty": "No confirmed synergy with your current roster yet",
   "recommendationAllOwnedTitle": "You already own every featured character this patch",

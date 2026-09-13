@@ -1351,6 +1351,12 @@ const CHARACTER_DATA = {
     ascension: { boss: 'Burning Judgment', common: 'Mech Core', specialty: 'Gemini Spore' },
     skillMaterials: { weeklyDrop: "The Netherworld's Stare", forgery: 'Carved Crystal' },
     bestEchoes: ['Reactor Husk', 'Halo of Starry Radiance 5pc'], bestWeapon: 'Starfield Calibrator',
+    // keyStatTarget added 2026-09-13, sourced from Data dump/Mornye/Mornye.md lines 148-149 ("Several
+    // team buffs (and her own Liberation self-buffs) cap out at 260% total Energy Regen... Effectively
+    // her only real build requirement") and line 177 ("Substat priority: Energy Regen (until 260%)
+    // >>> ..."). Used by the Plan tab's weapon recommendation to explain why a signature isn't
+    // required once this cap is otherwise met.
+    keyStatTarget: { stat: 'Energy Regen', value: 260, purpose: 'to cap her Liberation self-buffs and team buffs' },
     // weaponAlts added 2026-08-17: the source's live build calcs only rank 3 weapons total for Mornye
     // (Signature, then Discord/Broadblade#41 as 4★ Energy Regen picks — she has no ranked 5★ alt since
     // no other 3.x Broadblade offers her key ER stat). Verdant Summit added as the 5★ alt slot as a
