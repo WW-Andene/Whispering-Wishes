@@ -75,7 +75,7 @@ export const CHARACTER_DESC_FR = {
   'Yuanwu': "Vétéran propriétaire de salle de boxe qui combat avec des poings tonitruants. Soutien hybride Electro qui déploie Coin de Tonnerre pour des Attaques Coordonnées hors du terrain et confère à l'équipe une Résistance à l'Interruption (Infusion Électrique) via sa Libération de Résonance.",
   'Mortefi': "Chercheur au tempérament vif dont la musique éclate en crescendos violents. Hybride Fusion qui tire des Attaques Coordonnées Fusion hors du terrain (Rhapsodie Ardente) et confère un buff de DGT d'Attaque Lourde au personnage sur le terrain via l'Outro.",
   'Youhu': "Fantasque évaluatrice d'antiquités qui fait confiance à sa chance en toutes choses. Soutien Glacio qui soigne l'équipe via sa Compétence de Résonance/Forte et confère à l'attaquant en Attaque Coordonnée entrant une massive Amplification de DGT d'Attaque Coordonnée de +100 % via son Outro (Classiques Intemporels) — l'une des plus grandes sources d'amplification de dégâts pour tout type d'attaque dans le jeu.",
-  'Lumi': "Navigatrice de Lollo Logistics qui trace des routes à travers des cieux tonitruants. Buffeuse hybride Electro qui alterne les postures de combat à distance Lumière Jaune et au corps-à-corps Lumière Rouge, infligeant des DGT Electro considérés comme des DGT d'Attaque Basique sur presque tout son kit, et amplifie les DGT de Compétence de Résonance du personnage suivant de 38 % pendant 10 s via son Outro (Escorte) — l'une des seules sources d'Amplification de DGT de Compétence de Résonance du jeu.",
+  'Lumi': "Navigatrice de Lollo Logistics qui trace des routes à travers des cieux tonitruants. Buffeuse hybride Electro qui alterne les postures de combat à distance Feu Jaune et au corps-à-corps Feu Rouge, infligeant des DGT Electro considérés comme des DGT d'Attaque Normale sur presque tout son kit, et amplifie les DGT de Compétence de Résonance du personnage suivant de 38 % pendant 10 s via son Outro (Escorte) — l'une des seules sources d'Amplification de DGT de Compétence de Résonance du jeu.",
   'Buling': "Consultante des Rives Noires et diseuse de bonne aventure taoïste « Taoïste Chasse-Esprits » qui erre en enquêtant sur l'étrange et le mystérieux, vendant talismans et divination pour financer ses voyages. Soigneuse Electro qui génère des Trigrammes via son Attaque Normale/Compétence/Attaque Aérienne pour débloquer une Libération renforcée qui déploie Electro Flare et augmente le Bonus de DGT de Compétence de Résonance d'équipe sur les lancers d'Intro alliés, tandis que son Outro soigne le personnage actif et Amplifie les DGT d'équipe à proximité de 15 % pendant 30 s.",
 };
 
@@ -1639,8 +1639,8 @@ export const SKILL_NAME_FR = {
     'Rebound': 'Rebondir',
     'Squeakie Express': 'Squeakie Express',
     'Glare': 'Regard Perçant',
-    'Red Spotlight: Basic Attack': 'Feu Rouge : Attaque Normale',
-    'Red Spotlight: Heavy Attack': 'Feu Rouge : Attaque Lourde',
+    'Red Spotlight: Basic Attack': 'Projecteur Rouge : Attaque Normale',
+    'Red Spotlight: Heavy Attack': 'Projecteur Rouge : Attaque Lourde',
     'Energized Pounce': 'Bond Énergisé',
     'Energized Rebound': 'Rebond Énergisé',
     'Laser': 'Laser',
@@ -2174,6 +2174,9 @@ export const MULT_DESC_FR = {
   'Danjin': {
     'Crimson Bloom': "49,09 %×8 + 392,65 % Éclat Écarlate",
     'Duality': "+23 % d'Amplification DGT Havoc (14 s)",
+  },
+  'Lumi': {
+    'Escorting': "Pas de DGT (Amplification DGT de Compétence de Résonance +38 %, 10 s)",
   },
 };
 
@@ -2719,5 +2722,25 @@ export const SKILL_DESC_FR = {
     'Crimson Bloom': "Enchaînement Havoc rapide plus un finisseur Éclat Écarlate. Consomme des PV par coup.",
     'Vindication': "Frappe inébranlable. Peut s'enchaîner vers Érosion Cramoisie.",
     'Duality': "Buffe le Résonateur entrant.",
+  },
+  'Lumi': {
+    'Yellow Light: Basic Attack': "Invoque Squeakie pour tirer trois coups d'affilée. Attaque Normale à distance en Mode Feu Jaune.",
+    'Glitter': "Feu Jaune : tir automatique en zoom sur une cible verrouillée après une Esquive. Comptée comme DGT d'Attaque Normale.",
+    'Yellow Light: Plunging Attack': "Consomme de l'Endurance. Attaque plongeante en Mode Feu Jaune.",
+    'Red Light: Basic Attack': "Jusqu'à 3 frappes de mêlée consécutives en Mode Feu Rouge.",
+    'Red Light: Heavy Attack': "Consomme de l'Endurance. Frappe le sol avec Squeakie, comptée comme DGT d'Attaque Normale.",
+    'Red Light: Plunging Attack': "Consomme de l'Endurance. Attaque plongeante en Mode Feu Rouge.",
+    'Red Light: Dodge Counter': "Attaque Normale juste après une Esquive réussie en Mode Feu Rouge.",
+    'Pounce': "Mode Feu Jaune : bondit sur la cible, basculant en Mode Feu Rouge. Gratuit en Endurance si utilisé au changement de personnage.",
+    'Rebound': "Mode Feu Rouge : bond en arrière et attaque, basculant en Mode Feu Jaune.",
+    'Squeakie Express': "Lance le Squeakie géant sur la cible, infligeant des DGT Electro. Recharge de 20 s, coût 125 Résonance.",
+    'Glare': "Mode Projecteur Jaune : remplace Scintillances par un Multiplicateur DGT plus élevé après Rebond Énergisé. Se termine après 6 Regards Perçants.",
+    'Red Spotlight: Basic Attack': "Enchaînement d'Attaque Normale renforcé à 3 coups pendant le Mode Projecteur Rouge (après Bond Énergisé).",
+    'Red Spotlight: Heavy Attack': "Attaque Lourde renforcée pendant le Mode Projecteur Rouge.",
+    'Energized Pounce': "Remplace la Compétence de Résonance quand l'Étincelle du Feu Jaune est pleine. DGT Electro comptés comme DGT d'Attaque Normale, entre en Mode Projecteur Rouge.",
+    'Energized Rebound': "Remplace la Compétence de Résonance quand l'Étincelle du Feu Rouge est pleine. DGT Electro comptés comme DGT d'Attaque Normale, entre en Mode Projecteur Jaune.",
+    'Laser': "La Compétence d'Outro consomme toutes les Étincelles. DGT Electro comptés comme DGT d'Attaque Normale, jusqu'à 4 faisceaux (1 faisceau bonus par 25 Étincelles consommées).",
+    'Special Delivery': "Entre en Mode Feu Jaune et attaque la cible, infligeant des DGT Electro.",
+    'Escorting': "Le Résonateur entrant voit ses DGT de Compétence de Résonance amplifiés de 38 % pendant 10 s ou jusqu'à son remplacement.",
   },
 };
