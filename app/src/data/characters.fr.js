@@ -160,7 +160,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Qingxiao': "DPS pur en cible unique, sans buff d'équipe. Les dégâts évoluent avec la Tension Tacet - Interférence infligée par l'équipe, via son mécanisme de cumuls Verrou Mental. Kit de base : jusqu'à 15 cumuls, ~49 % d'Amplification/Réduction de DGT combinée au maximum (les 7 premiers cumuls valent 7 % chacun, les cumuls restants 2 % chacun). S1/S2 relèvent le plafond de cumuls à 25.",
   'Jingran': 'DPS pur proportionnel aux PV, sans buff d\'équipe. La Chaîne de Résonance 4 confère à l\'équipe +20 % de Bonus de DGT Tous Attributs (30 s) lorsqu\'un Résonateur quelconque obtient un Bouclier — conditionnel, non modélisé comme buff de kit de base.',
   'Yangyang: Xuanling': 'Principalement une DPS auto-buffeuse (énorme scaling de Dégâts Critiques personnels via Serment Emplumé, plus Souffle Retenu/Tempête Ruisselante +160 % Dégâts Critiques sur son Attaque Lourde conditionnée par le Forte, et l\'Amplification de DGT Ravage Havoc de Vœu Inébranlable). L\'Outro confère +20 % DGT Havoc aux autres applicatrices de Ravage Havoc de l\'équipe (Chisa).',
-  'Hiyuki': 'DPS Glacio sur le terrain. L\'Outro confère +20 % DGT Glacio au reste de l\'équipe contre les cibles affectées par Glacio Frisson (20 s). Neige Fine Inhérente : personnel +40 % Dégâts Critiques à 1 cumul de Givre Rouillé, +30 %/+30 % Amplification de DGT Morsure Glacio à 1/3 cumuls — nécessite des coéquipiers appliquant Glacio Frisson ou Havoc Fléau pour atteindre les cumuls max.',
+  'Hiyuki': "DPS Glacio sur le terrain. L'Outro confère +20 % DGT Glacio au reste de l'équipe contre les cibles affectées par Glacio Frisson (20 s). Neige Fine Inhérente : personnel +40 % Dégâts Critiques à 1 cumul de Givre Rouillé, +30 %/+30 % Amplification de DGT Morsure Glacio à 1/3 cumuls. Nécessite des coéquipiers appliquant Glacio Frisson ou Havoc Fléau pour atteindre les cumuls max.",
   'Lucy': "Outro : 25 % Amplification de DGT d'Attaque Normale pour le Résonateur suivant (14 s) + Programme de Contre-mesure d'équipe (Piratage - Interféré déclenche +20 % Amplification de tous les DGT). Rupture Tacet : Piratage de la même famille générique de Rupture Tacet. La Réponse de Piratage - Crash de Données est authentique (kit de base, une fois/8 s).",
   'Rebecca': "Outro : déploie une tourelle pendant 14 s et confère au Résonateur suivant 15 % d'Amplification de tous les DGT (14 s), montant jusqu'à 35 % d'Amplification de DGT d'Attaque Lourde via l'accumulation d'Overlimit. Les deux buffs ne ciblent que le personnage entrant, pas toute l'équipe. Le mode Chasseresse confère personnellement 30 % Dégâts Critiques. Le mode Cran confère personnellement 15 % d'Ignorance de DEF (un effet personnel, pas un debuff de Réduction de DEF pour toute l'équipe). Rupture Tacet : la Réponse de Piratage - Effondrement est authentique (kit de base, une fois/8 s). Chat, t'es Fait ! confère +30 Regain de Rupture Tacet (30 s) au coéquipier qui inflige Piratage - Déplacement.",
   'Denia': "Mode Double Résonance : le mode Explosion Fusion de l'Outro amplifie les DGT d'Explosion Fusion de l'équipe de 60 % (30 s). Le mode Tension Tacet de l'Outro confère au Résonateur suivant 15-40 % d'Amplification de tous les DGT (16 s). Kit de Rupture Tacet (mode Tension Tacet uniquement) : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, +10 Regain de Rupture Tacet équipe (Couleurs Gravées).",
@@ -176,7 +176,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Lupa': "Outro : +20 % DGT Fusion + 25 % d'Amplification de DGT d'Attaque Normale (14 s). Libération : jusqu'à 18 % ATQ équipe (35 s), active Chasse Sauvage. Ignorance de RES Fusion jusqu'à 15 % (35 s), nécessite une équipe mono-Fusion pour une valeur maximale (S3 supprime cette exigence).",
   'Iuno': "Outro : 50 % d'Amplification de DGT d'Attaque Lourde (14 s). Soins d'équipe réels via les attaques de Nouvelle Lune Arc Lunaire/Contre-attaque Esquivée/Arc Au-delà du Bord (soin au contact) et Plénitude Absolue + Domaine de la Pleine Lune (régén. PV/END d'équipe). Auto-bouclier via Ascension Croissante (32 % ATQ par lancer de compétence, personnel uniquement). La Libération active la phase d'explosion Cycle Lunaire, sans buff de DGT d'équipe.",
   'Qiuyuan': "Outro : 50 % d'Amplification de DGT de Compétence d'Écho (14 s). Libération : buff conditionnel de Dégâts Critiques (jusqu'à +30 % à 65 %+ de Taux Critique), pas un buff fixe de DGT d'Écho. Arme signature : 20 % DGT Écho équipe au lancer de l'Intro.",
-  'Chisa': 'Soutien/Soigneuse pour équipes de Statut Négatif. L\'Ignorance de DEF de 18 % via Fil du Fléau et la Réduction de DEF jusqu\'à 12 % via Havoc Fléau nécessitent tous deux que l\'ennemi soit marqué par Piège Invisible, et Fil du Fléau ne bénéficie spécifiquement qu\'aux Résonateurs qui infligent eux-mêmes des dégâts de Statut Négatif — son kit est proche de l\'inutilité en dehors des équipes de Statut Négatif. Soigne l\'équipe via Coupure Mortelle et Instant de Néant ; confère des Boucliers via Sawring - Éradication. Outro : les coéquipiers peuvent cumuler 3 Statut Négatif/Rage Electro supplémentaires pendant 20 s.',
+  'Chisa': "Soutien/Soigneuse pour équipes de Statut Négatif. L'Ignorance de DEF de 18 % via Fil du Fléau et la Réduction de DEF jusqu'à 12 % via Havoc Fléau nécessitent tous deux que l'ennemi soit marqué par Piège Invisible. Fil du Fléau ne bénéficie spécifiquement qu'aux Résonateurs qui infligent eux-mêmes des dégâts de Statut Négatif : son kit est proche de l'inutilité en dehors de ces équipes. Soigne l'équipe via Coupure Mortelle et Instant de Néant. Confère des Boucliers via Sawring - Éradication. Outro : les coéquipiers peuvent cumuler 3 Statut Négatif/Rage Electro supplémentaires pendant 20 s.",
   'Camellya': 'DPS principale auto-buffeuse. Lit de Semis : +15 % DGT Havoc. Épiphyte : +15 % DGT d\'Attaque Basique.',
   'Carlotta': 'DPS principale Glacio en explosion. Révérence Finale : +80 % de Multiplicateur de DGT de Libération à Substance maximale. Déconstruction : -18 % DEF de la cible (4 s).',
   'Jinhsi': 'DPS Spectro en explosion sur le terrain. Accumule de l\'Incandescence à partir des DGT d\'Attribut/Coordonnés de n\'importe quel membre de l\'équipe, puis la dépense via Épiphanie Illuminée (Attaque Basique Stage 4 en Incarnation) pour un nuke massif Éclat Stella (+44,54 % DGT par Incandescence). L\'Outro Fléchisseur Temporel est un pur utilitaire de gain d\'Incandescence, pas un buff d\'équipe.',
@@ -200,13 +200,13 @@ export const CHAR_BUFF_NOTE_FR = {
   'Cartethyia': 'DPS Aero de premier plan. Proportionnelle aux PV. Outro : +17,5 % DGT Aero contre Statut Négatif (20 s). L\'Empreinte Indélébile du Vent inflige un debuff aux cibles cumulant de l\'Érosion, jusqu\'à +60 % DGT subis. L\'Ignorance de DEF de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur.',
   'Brant': 'Outro : +20 % DGT Fusion + 25 % d\'Amplification de DGT de Compétence (14 s). Auto-soin + bouclier d\'équipe via le Forte. Inhérent : +15 % de Bonus de DGT Fusion.',
   'Augusta': "DPS de zone en Attaque Lourde avec auto-boucliers intégrés (Faveur de la Gloire) et un auto-buff Couronne des Volontés. Outro : +15 % d'Amplification de tous les DGT pour le Résonateur suivant (14 s, se termine immédiatement au changement de personnage). Le Royaume du Souverain de la Libération confère aux coéquipiers un bouclier au lancer d'Intro. Le gain de cumul Majesté/Couronne des Volontés à l'Outro est CONDITIONNEL, pas automatique : Augusta ne gagne le cumul que si le Résonateur buffé relance sa propre Compétence d'Outro vers elle avant qu'un troisième personnage n'entre en jeu.",
-  'Galbrena': 'DPS Fusion en Compétence d\'Écho + Attaque Lourde. L\'Outro (Poursuite Cendrée) est purement offensif, sans buff d\'équipe — libre pour le changement rapide. Auto-buffs via la Libération et Élan Brûlant, sans kit de soutien d\'équipe. Flamme Résiduelle est un debuff de DGT subis sur l\'ennemi (pas un auto-buff), renouvelé par les lancers de Compétence d\'Écho de n\'importe quel coéquipier — réalistement 36 % sans Phrolova, 48 % avec elle (rarement maximisé à 60 %).',
+  'Galbrena': "DPS Fusion en Compétence d'Écho + Attaque Lourde. L'Outro (Poursuite Cendrée) est purement offensif, sans buff d'équipe, libre pour le changement rapide. Auto-buffs via la Libération et Élan Brûlant, sans kit de soutien d'équipe. Flamme Résiduelle est un debuff de DGT subis sur l'ennemi (pas un auto-buff), renouvelé par les lancers de Compétence d'Écho de n'importe quel coéquipier. Réalistement 36 % sans Phrolova, 48 % avec elle (rarement maximisé à 60 %).",
   'Luuk Herssen': 'DPS Gantelets Spectro. Axé sur la Tension Tacet. La contribution de l\'arme provient désormais entièrement de la valeur propre de l\'arme équipée, et non d\'une hypothèse codée en dur. Kit de Rupture Tacet : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, aucun buff de Regain de Rupture Tacet d\'équipe.',
-  'Sigrika': 'Hypercarry en Compétence d\'Écho consommant des Runes. Noms Vrais Alignés Inhérent : Bénédiction des Runes confère au Résonateur actif +3 %/+3 % DGT Aero+Compétence d\'Écho par cumul (6 max) via les lancers de Compétence d\'Écho des coéquipiers, +30 %/+30 % de plus aux cumuls max (48 %/48 % au total) — se réinitialise au changement d\'équipe. Noms Alignés Inhérent 2 : jusqu\'à 50 % DGT Écho via la RE au-dessus de 125 %. Arme signature : 32 % d\'Amplification de Compétence d\'Écho + 10 % d\'Ignorance de DEF. Contrôle de foule via les modes Runiques.',
+  'Sigrika': "Hypercarry en Compétence d'Écho consommant des Runes. Noms Vrais Alignés Inhérent : Bénédiction des Runes confère au Résonateur actif +3 %/+3 % DGT Aero+Compétence d'Écho par cumul (6 max) via les lancers de Compétence d'Écho des coéquipiers, +30 %/+30 % de plus aux cumuls max (48 %/48 % au total). Se réinitialise au changement d'équipe. Noms Alignés Inhérent 2 : jusqu'à 50 % DGT Écho via la RE au-dessus de 125 %. Arme signature : 32 % d'Amplification de Compétence d'Écho + 10 % d'Ignorance de DEF. Contrôle de foule via les modes Runiques.",
   'Phrolova': "Outro (Pièce Inachevée) : +20 % DGT Havoc + 25 % d'Amplification de DGT d'Attaque Lourde (14 s). Personnel : jusqu'à 60-100 % Dégâts Critiques via l'accumulation de Résonance Post-mortem. L'Intro est « Suite de Quiétude » (base) / « Suite d'Immortalité » (améliorée par Maestro).",
   'Xiangli Yao': 'DPS principal en Libération, état Intuition. L\'Outro Règle de Chaîne inflige des DGT Electro bonus (237,63 % ATQ, jusqu\'à 3 procs sur 8 s) sur les Attaques Basiques du personnage entrant plutôt que d\'accorder un buff d\'Amplification de DGT.',
   'Rover: Spectro': 'Applicatrice de Frazzle Spectro/soutien à changement rapide. Forte : la Compétence de Résonance à 50+ Son Diminutif lance Rotation Résonnante (2 cumuls de Frazzle + Chatoiement, qui stoppe la dégradation), suivie de l\'Attaque Basique Échos Résonnants. La Libération Orchestre en Écho applique 6 cumuls de Frazzle supplémentaires. S6 (5 exemplaires) : les coups de Compétence infligent -10 % RES Spectro/20 s.',
-  'Rover: Havoc': 'DPS principal Havoc sur le terrain. Maintenez l\'Attaque Lourde à Umbra plein pour lancer Dévastation et entrer en Poussée Sombre — un état amélioré d\'Attaque Basique/Lourde/Compétence se terminant par la Libération Abysse qui S\'éteint, un nuke en cible unique à 1520 % ATQ.',
+  'Rover: Havoc': "DPS principal Havoc sur le terrain. Maintenez l'Attaque Lourde à Umbra plein pour lancer Dévastation et entrer en Poussée Sombre. Un état amélioré d'Attaque Normale/Lourde/Compétence se terminant par la Libération Abysse qui S'éteint, un nuke en cible unique à 1520 % ATQ.",
   'Rover: Electro': 'Hybride en Posture de Parade. Maintenez l\'Attaque Basique pour l\'immunité aux interruptions + 60 % de réduction des DGT. À Poussée Électrique maximale, appuyez sur Surchoc pour un buff d\'ATQ d\'équipe ou maintenez pour entrer en Résonance Apex, débloquant le combo de Forte multi-élémentaire Thrum of All Sounds (coups Spectro/Havoc/Aero + pulsations Electro de Fléau du Tonnerre). Actuellement l\'attunement le plus faible — manque d\'une partenaire DPS solide.',
 };
 
@@ -1182,6 +1182,7 @@ export const SKILL_NAME_FR = {
   },
   'Chisa': {
     'Stage 1-2': 'Étape 1-2',
+    'Rending Lunge': 'Fente Déchirante',
     'Death Snip': 'Cisaille mortelle',
     'Eye of Unraveling': 'Œil du Démêlement',
     'Serrated Loop': 'Boucle Crantée',
@@ -1967,6 +1968,12 @@ export const MULT_DESC_FR = {
   'Changli': {
     'Strategy of Duality': "+20 % d'Amplification DGT Fusion + 25 % d'Amplification DGT de Libération (10 s)",
   },
+  'Chisa': {
+    'Serrated Loop': "17,45 %×8 (maintenu : 7,46 %×16)",
+    'Sawring - Eradication': '51,54 % + 206,13 % (+2,59 % par cumul de Cercle de Tronçonneuse, jusqu\'à 100)',
+    'Moment of Nihility': '954,29 % (+ soin 117,60 % ATQ)',
+    'Unraveling - Law Zero': "+3 cumuls max d'État Négatif (15 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -1978,7 +1985,7 @@ export const SKILL_DESC_FR = {
     'Single Threading': "Remplace l'Attaque Lourde en Compactage Algorithmique avant que l'Accès Racine soit maximal. Non utilisée dans sa vraie rotation (elle atteint l'Accès Racine maximal avant d'avoir besoin d'une Attaque Lourde classique).",
     'Dual Threading': "Une fois l'Accès Racine maximal, remplace Threading Simple — consomme tout l'Accès Racine, s'enchaîne automatiquement vers Multithreading.",
     'Multi-threading': 'Finisseur renforcé, plus puissant avec des cumuls de SQL.',
-    'Payload': "DGT de charge (20,05 %+10,03 %) plus son Attaque de Suivi automatique (40,09 %+10,03 %+20,05 %) — les deux se déclenchent en un seul appui de Compétence, combinés dans l'étape unique « Payload » des rotations.",
+    'Payload': "DGT de charge (20,05 %+10,03 %) plus son Attaque de Suivi automatique (40,09 %+10,03 %+20,05 %). Les deux se déclenchent en un seul appui de Compétence, combinés dans l'étape unique « Payload » des rotations.",
     'Pulse Interference': 'Se déclenche automatiquement après le suivi de Payload.',
     'Deadlock': "Compétence améliorée à TCP maximal ; considérée comme DGT d'Attaque Lourde malgré l'entrée en Compétence.",
     'Netrunner: Override': "Ultime de base ; considérée comme DGT d'Attaque Lourde malgré l'entrée en Libération.",
@@ -2102,7 +2109,7 @@ export const SKILL_DESC_FR = {
     'Everbright Protector': "Finisseur suivant Née du Soleil, déploie le Domaine de la Souveraine.",
     'Undying Sunlight': "Enchaînement renforcé par le Forte. Plongeon consomme toute l'Ascendance pour un gros finisseur.",
     'Dodge Counter - Undying Sunlight: Strike': "Variante de Contre-attaque d'Esquive au sol/aérienne à Ascendance maximale, comptée comme DGT de Compétence de Résonance. Non utilisée dans sa vraie rotation.",
-    'Battlesong of the Unyielding': "Confère au Résonateur suivant +15 % d'Amplification de tous les DGT pendant 14 s, qui se termine immédiatement s'il est remplacé. Gain conditionnel : Augusta gagne +1 cumul de Majesté ET +1 cumul de Couronne de Volontés SEULEMENT si ce MÊME Résonateur relance sa propre Compétence d'Outro vers Augusta pendant que ce buff est encore actif — changer vers un troisième personnage d'abord fait perdre le buff (et la chance de cumul).",
+    'Battlesong of the Unyielding': "Confère au Résonateur suivant +15 % d'Amplification de tous les DGT pendant 14 s, qui se termine immédiatement s'il est remplacé. Gain conditionnel : Augusta gagne +1 cumul de Majesté ET +1 cumul de Couronne de Volontés SEULEMENT si ce MÊME Résonateur relance sa propre Compétence d'Outro vers Augusta pendant que ce buff est encore actif. Changer vers un troisième personnage d'abord fait perdre le buff (et la chance de cumul).",
   },
   'Aemeath': {
     'Aemeath Form Stage 1-4': "Enchaînement standard en forme humaine, plus faible mais plus rapide que la Forme Mécha.",
@@ -2163,5 +2170,17 @@ export const SKILL_DESC_FR = {
     'Radiance of Fealty': "Recharge de 20 s, 125 Énergie de Résonance. Confère 4 Enflammement et Plume Ardente (prochaine Âme Brûlée dans les 10 s : +25 % ATQ personnel).",
     'Obedience of Rules': "Entre aussi en Vraie Vision.",
     'Strategy of Duality': "Confère ces buffs au Résonateur entrant, sans DGT direct. Le buff se termine plus tôt si ce Résonateur est remplacé avant 10 s.",
+  },
+  'Chisa': {
+    'Stage 1-2': "Enchaînement standard se terminant par un finisseur de tronçonneuse plus lourd.",
+    'Rending Lunge': "Coup d'enchaînement après l'Étape 2 d'Attaque Normale, s'enchaîne vers Cisaille Mortelle.",
+    'Death Snip': "Finisseur alternatif disponible à un certain point du combo. Comptée comme DGT de Libération de Résonance.",
+    'Eye of Unraveling': "Ruée rapide qui marque la cible d'État Négatif.",
+    'Serrated Loop': "Attaque tournoyante à coups multiples. Maintenir l'entrée ajoute encore plus de coups.",
+    'Sawring - Blitz 1-3': "Combo de Forte à 3 étapes qui accumule des cumuls de Cercle de Tronçonneuse.",
+    'Sawring - Eradication': "Finisseur de Forte dont les DGT montent avec les cumuls de Cercle de Tronçonneuse.",
+    'Moment of Nihility': "Ultime nuke qui la soigne aussi d'une partie des DGT infligés.",
+    'Reverberance - Return': "Frappe d'ouverture au changement de personnage.",
+    'Unraveling - Law Zero': "Buff au changement de personnage laissant le Résonateur suivant accumuler plus d'État Négatif sur les ennemis.",
   },
 };

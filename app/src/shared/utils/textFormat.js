@@ -35,16 +35,22 @@ export function splitIntoParagraphs(text, maxChars = 200) {
       // (rather than joined to the next one with " — ") would otherwise end in a bare orphaned
       // ";" that reads as a cut-off sentence.
       const clauses = sentence.split(/(?<=[;])\s+|\s+—\s+/).map((c) => c.replace(/;\s*$/, ''));
+      // A clause chunk that ends up pushed on its own (rather than rejoined to the next one with
+      // " — ") loses whichever boundary character used to follow it — split()'s lookbehind drops
+      // the em-dash entirely and the semicolon was already stripped above — so without this it
+      // reads as a sentence cut off mid-thought. Ensure every standalone chunk ends in real
+      // terminal punctuation.
+      const terminate = (p) => (/[.!?]$/.test(p.trim()) ? p.trim() : `${p.trim()}.`);
       let clausePara = '';
       for (const clause of clauses) {
         if (clausePara && (clausePara.length + clause.length + 3) > maxChars) {
-          paragraphs.push(clausePara.trim());
+          paragraphs.push(terminate(clausePara));
           clausePara = clause;
         } else {
           clausePara = clausePara ? `${clausePara} — ${clause}` : clause;
         }
       }
-      if (clausePara.trim()) paragraphs.push(clausePara.trim());
+      if (clausePara.trim()) paragraphs.push(terminate(clausePara));
       continue;
     }
     if (current && (current.length + sentence.length + 1) > maxChars) pushCurrent();
