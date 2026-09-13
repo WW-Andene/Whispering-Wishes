@@ -161,7 +161,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Jingran': 'DPS pur proportionnel aux PV, sans buff d\'équipe. La Chaîne de Résonance 4 confère à l\'équipe +20 % de Bonus de DGT Tous Attributs (30 s) lorsqu\'un Résonateur quelconque obtient un Bouclier — conditionnel, non modélisé comme buff de kit de base.',
   'Yangyang: Xuanling': 'Principalement une DPS auto-buffeuse (énorme scaling de Dégâts Critiques personnels via Serment Emplumé, plus Souffle Retenu/Tempête Ruisselante +160 % Dégâts Critiques sur son Attaque Lourde conditionnée par le Forte, et l\'Amplification de DGT Ravage Havoc de Vœu Inébranlable). L\'Outro confère +20 % DGT Havoc aux autres applicatrices de Ravage Havoc de l\'équipe (Chisa).',
   'Hiyuki': 'DPS Glacio sur le terrain. L\'Outro confère +20 % DGT Glacio au reste de l\'équipe contre les cibles affectées par Glacio Frisson (20 s). Neige Fine Inhérente : personnel +40 % Dégâts Critiques à 1 cumul de Givre Rouillé, +30 %/+30 % Amplification de DGT Morsure Glacio à 1/3 cumuls — nécessite des coéquipiers appliquant Glacio Frisson ou Havoc Fléau pour atteindre les cumuls max.',
-  'Lucy': 'Outro : 25 % Amplification de DGT d\'Attaque Basique pour le Résonateur suivant (14 s) + Programme de Contre-mesure d\'équipe (Piratage - Interféré déclenche +20 % Amplification de tous les DGT). Rupture Tacet : Piratage confirmé de la même famille générique de Rupture Tacet ; la Réponse de Piratage - Crash de Données est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé.',
+  'Lucy': 'Outro : 25 % Amplification de DGT d\'Attaque Normale pour le Résonateur suivant (14 s) + Programme de Contre-mesure d\'équipe (Piratage - Interféré déclenche +20 % Amplification de tous les DGT). Rupture Tacet : Piratage confirmé de la même famille générique de Rupture Tacet ; la Réponse de Piratage - Crash de Données est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé.',
   'Rebecca': 'Outro : déploie une tourelle pendant 14 s et confère au Résonateur suivant 15 % d\'Amplification de tous les DGT (14 s), montant jusqu\'à 35 % d\'Amplification de DGT d\'Attaque Lourde via l\'accumulation d\'Overlimit. Les deux buffs ne ciblent que le personnage entrant, pas toute l\'équipe. Le mode Chasseresse confère personnellement 30 % Dégâts Critiques ; le mode Cran confère personnellement 15 % d\'Ignorance de DEF (personnel, pas un debuff de Réduction de DEF pour toute l\'équipe — corrigé le 2026-08-16, était mal classé sous debuffs comme defShred). Rupture Tacet : la Réponse de Piratage - Effondrement est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé ; Chat, t\'es Fait ! confère +30 Regain de Rupture Tacet (30 s) confirmé à quel que coéquipier inflige Piratage - Déplacement.',
   'Denia': 'Mode Double Résonance : le mode Éclatement Fusion de l\'Outro amplifie les DGT d\'Éclatement Fusion de l\'équipe de 60 % (30 s) ; le mode Tension Tacet de l\'Outro confère au Résonateur suivant 15-40 % d\'Amplification de tous les DGT (16 s). Kit de Rupture Tacet (mode Tension Tacet uniquement) : réponse de Tension Tacet 0,12 % DGT/cumul/Regain, +1 cumul de Tension max, +10 Regain de Rupture Tacet équipe (Couleurs Gravées).',
   'Lucilla': 'Mode Double Résonance : le mode Glacio Frisson de l\'Outro amplifie les DGT de Glacio Frisson de l\'équipe de 60 % (30 s) ; le mode Écho de l\'Outro confère au Résonateur suivant +50 % d\'Amplification de DGT de Compétence d\'Écho (14 s).',
@@ -984,10 +984,21 @@ export const SKILL_NAME_FR = {
     'Iai': 'Iai',
   },
   'Lucy': {
-    'Locked Thread Stage 1-4': 'Thread Verrouillé Étape 1-4',
+    // Keys fixed 2026-09-13: 'Locked Thread Stage 1-4' and 'Payload / Pulse Interference /
+    // Deadlock' were combined-name leftovers that no longer match SKILL_MULTIPLIERS' 4
+    // separately-named rows, and 'Netrunner: Override' was actually carrying the translation for
+    // the DIFFERENT skill 'Old Net Deep Dive' (Override's own real desc is "Base Ultimate", not
+    // "Upgraded Ultimate ... Deep Dive") — split/reassigned to match the real current names.
+    'Locked Thread Stage 1': 'Thread Verrouillé Étape 1',
+    'Locked Thread Stage 2-4': 'Thread Verrouillé Étape 2-4',
     'Multi-threading': 'Multithreading',
-    'Payload / Pulse Interference / Deadlock': "Charge Utile / Interférence d'Impulsion / Interblocage",
-    'Netrunner: Override': "Netrunner : Deepdive dans l'Ancien Net",
+    'Single Threading': 'Threading Simple',
+    'Dual Threading': 'Threading Double',
+    'Payload': 'Payload',
+    'Pulse Interference': 'Interférence des Impulsions',
+    'Deadlock': 'Interblocage',
+    'Netrunner: Override': 'Netrunner : Override',
+    'Old Net Deep Dive': "Plongée Profonde dans l'Ancien Net",
     'Hack Response - Data Crash': 'Réponse de Piratage - Plantage de Données',
     'Outdated Hallucination': 'Hallucination Obsolète',
     'Countermeasure Program': 'Programme de contre-mesures',
@@ -1838,6 +1849,11 @@ export function applyGenericDescPhrases(desc) {
 // line with applyGenericDescPhrases as a substring-level fallback when no entry exists here.
 /** @type {Record<string, Record<string, string>>} */
 export const MULT_DESC_FR = {
+  'Lucy': {
+    'Multi-threading': '59,65 %+59,65 %×3 (+270 % bonus SQL)',
+    'Hack Response - Data Crash': '1094,19 %+68,39 %×4 (DGT de Piratage)',
+    'Countermeasure Program': "25 % d'Amplification DGT d'Attaque Normale pour le suivant + réponse d'équipe à Hack-Shifting",
+  },
   'Yangyang: Xuanling': {
     'Azure/Feather Stance Stage 1-4': '47,72 % → 20,14 %×2+60,41 % → 30,21 %+70,48 % → 18,57 %×2+148,49 % (Azur) / 39,77 %×2 → 33,56 %×3 → 14,86 %+7,43 %×3+37,14 % → 71,58 %×2+95,43 % (Plume)',
     'Sword Stance Switch': '69,95 %+15,55 %×3 (Azur) / 33,56 %×3 (Plume)',
@@ -1851,6 +1867,23 @@ export const MULT_DESC_FR = {
 };
 
 export const SKILL_DESC_FR = {
+  'Lucy': {
+    'Locked Thread Stage 2-4': 'Accumule le dernier TCP vers 100.',
+    'Heavy Attack Stage 1': 'Attaque Lourde de base (hors Forte) ; confirmée inutilisée dans sa vraie rotation.',
+    'Heavy Attack Stage 2': 'Attaque Lourde de base (hors Forte) ; confirmée inutilisée dans sa vraie rotation.',
+    'Thread Shredding Stage 1-4': "Remplace l'Attaque Normale en Compactage Algorithmique ; accumule l'Accès Racine vers 100.",
+    'Single Threading': "Remplace l'Attaque Lourde en Compactage Algorithmique avant que l'Accès Racine soit maximal ; confirmée inutilisée dans sa vraie rotation (elle atteint l'Accès Racine maximal avant d'avoir besoin d'une Attaque Lourde classique).",
+    'Dual Threading': "Une fois l'Accès Racine maximal, remplace Threading Simple — consomme tout l'Accès Racine, s'enchaîne automatiquement vers Multithreading.",
+    'Multi-threading': 'Finisseur renforcé, plus puissant avec des cumuls de SQL.',
+    'Payload': "DGT de charge (20,05 %+10,03 %) plus son Attaque de Suivi automatique (40,09 %+10,03 %+20,05 %) — les deux se déclenchent en un seul appui de Compétence, combinés dans l'étape unique « Payload » des rotations.",
+    'Pulse Interference': 'Se déclenche automatiquement après le suivi de Payload.',
+    'Deadlock': "Compétence améliorée à TCP maximal ; considérée comme DGT d'Attaque Lourde malgré l'entrée en Compétence.",
+    'Netrunner: Override': "Ultime de base ; considérée comme DGT d'Attaque Lourde malgré l'entrée en Libération.",
+    'Old Net Deep Dive': "Ultime amélioré (après avoir lancé Multithreading en Compactage Algorithmique) ; considérée comme DGT d'Attaque Lourde.",
+    'Hack Response - Data Crash': 'DGT bonus sur les cibles Piratage-Interférées.',
+    'Outdated Hallucination': 'Ouverture qui révèle les ennemis à travers les murs.',
+    'Countermeasure Program': "Buffe les DGT d'Attaque Normale de l'allié suivant.",
+  },
   'Yangyang: Xuanling': {
     'Azure/Feather Stance Stage 1-4': "Enchaînement dans l'une ou l'autre posture ; l'Étape 4 applique Ravage Havoc.",
     'Sword Stance Switch': "Bascule entre la Posture de l'Épée d'Azur et de Plume.",
