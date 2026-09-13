@@ -1696,6 +1696,31 @@ export const ROLE_FR = {
   'Support/Healer': 'Soutien/Soigneur',
 };
 
+// GENERIC_SKILL_NAME_FR — bare, character-agnostic skill-name words that recur verbatim across
+// dozens of characters' SKILL_MULTIPLIERS rows (found via a roster-wide coverage scan: 226 skill
+// names had no SKILL_NAME_FR entry, and these few bare words alone accounted for ~50 of them).
+// Used as a fallback in CharacterDetailModal.jsx AFTER the per-character SKILL_NAME_FR lookup
+// misses — a character-specific entry always wins if one exists.
+/** @type {Record<string, string>} */
+export const GENERIC_SKILL_NAME_FR = {
+  'Attack': 'Attaque',
+  'Plunging Attack': 'Attaque Plongeante',
+  'Dodge Counter': "Contre-attaque d'Esquive",
+  'Mid-air Attack': 'Attaque Aérienne',
+  'Standard': 'Standard',
+};
+
+// getGenericSkillNameFr — second-tier fallback after GENERIC_SKILL_NAME_FR: bare 'Stage N' /
+// 'Stage N-M' names (no character-specific title), which recur across many characters' basic
+// combo stages. Returns null (not a translation) when the input doesn't match, so callers can
+// keep falling back to the raw English name.
+/** @param {string} skillName @returns {string|null} */
+export function getGenericSkillNameFr(skillName) {
+  const m = /^Stage (\d+)(-\d+)?$/.exec(skillName);
+  if (!m) return null;
+  return `Étape ${m[1]}${m[2] || ''}`;
+}
+
 // SKILL_DESC_FR — per-skill description prose (SKILL_MULTIPLIERS' 4th tuple element, the
 // italic line shown under each skill in CharacterDetailModal.jsx). Keyed by character name ->
 // { englishSkillName: frenchDesc }, same shape/pattern as SKILL_NAME_FR above. This is a large,

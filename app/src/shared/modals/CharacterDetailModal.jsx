@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { Sparkles, Swords, Star, User, Users, TrendingUp, Target, Zap, X, LayoutGrid, RotateCw, Play } from 'lucide-react';
 import { CHARACTER_DATA, CHAR_BUFF_TABLE, SKILL_MULTIPLIERS, CHARACTER_ROTATIONS, RESONANCE_CHAIN_DATA, getSkillIcon, CHAIN_NODE_ICONS, getLocalizedCharacterData, getLocalizedCharBuffTable, getLocalizedCharacterRotations, getLocalizedChainNodeNames, findSkillMultiplierRow } from '../../data/characters.js';
-import { SKILL_TYPE_FR, SKILL_NAME_FR, SKILL_DESC_FR, CHARACTER_TAG_FR, WEAPON_TYPE_FR, ROLE_FR } from '../../data/characters.fr.js';
+import { SKILL_TYPE_FR, SKILL_NAME_FR, SKILL_DESC_FR, CHARACTER_TAG_FR, WEAPON_TYPE_FR, ROLE_FR, GENERIC_SKILL_NAME_FR, getGenericSkillNameFr } from '../../data/characters.fr.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { getSonataLoadouts } from '../../data/echoes.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation, getCharacterBannerArt } from '../../data/banners.js';
@@ -473,7 +473,7 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                         {skillIcon && <img src={skillIcon} alt="" className="w-4 h-4 rounded shrink-0" onError={hideOnError} />}
                         <span className={`text-sm font-medium break-words ${typeColors[type] || 'text-gray-400'}`}>{(getLocale() === 'fr' && SKILL_TYPE_FR[type]) || type}</span>
                       </div>
-                      <div className="text-sm text-gray-200 font-medium break-words">{(getLocale() === 'fr' && SKILL_NAME_FR[name]?.[skillName]) || skillName}</div>
+                      <div className="text-sm text-gray-200 font-medium break-words">{(getLocale() === 'fr' && (SKILL_NAME_FR[name]?.[skillName] || GENERIC_SKILL_NAME_FR[skillName] || getGenericSkillNameFr(skillName))) || skillName}</div>
                       <div className="text-sm text-gray-400 break-words">{mult}</div>
                       {desc && (
                         <div className="space-y-1 pt-0.5">
