@@ -908,14 +908,24 @@ export const SKILL_NAME_FR = {
     'Rippling Waters': 'Eaux ondulantes',
   },
   'Qingxiao': {
-    'Stringblade Stage 1-4': 'Lame à Cordes Étape 1-4',
-    'Stringblade': 'Lame à Cordes',
+    // Keys fixed 2026-09-13 to match SKILL_MULTIPLIERS' real current names (each now prefixed
+    // with its action type, e.g. 'Basic Attack - Stringblade Stage 1-4' not bare 'Stringblade
+    // Stage 1-4') — the old bare keys silently matched nothing. 'Plunging Attack', 'Basic Attack
+    // - Ephemeral Transcendence Stage 1-4' and 'Dodge Counter - Ephemeral Transcendence' were
+    // missing entirely.
+    'Basic Attack - Stringblade Stage 1-4': 'Attaque Normale - Lame à Cordes Étape 1-4',
+    'Mid-air Attack - Stringblade Stage 1-3': 'Attaque Aérienne - Lame à Cordes Étape 1-3',
+    'Plunging Attack': 'Attaque Plongeante',
+    'Dodge Counter - Stringblade': "Contre-attaque d'Esquive - Lame à Cordes",
+    'Heavy Attack - Stringblade': 'Attaque Lourde - Lame à Cordes',
     'Severing Note: Judgement': 'Note Tranchante : Jugement',
     'Severing Note: Ascendant': 'Note Tranchante : Ascendant',
-    "Heaven's Reckoning: Ephemeral Transcendence": 'Jugement Céleste : Transcendance Éphémère',
-    'Billows Beneath Heaven': 'Vagues sous le ciel',
-    'Tonality Shift': 'Changement tonique',
-    'Lingering Song': 'Cordes incessantes',
+    'Basic Attack - Ephemeral Transcendence Stage 1-4': 'Attaque Normale - Transcendance Éphémère Étape 1-4',
+    'Dodge Counter - Ephemeral Transcendence': "Contre-attaque d'Esquive - Transcendance Éphémère",
+    "Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence": 'Attaque Lourde - Jugement Céleste : Transcendance Éphémère',
+    'Billows Beneath Heaven': 'Vagues sous le Ciel',
+    'Tonality Shift': 'Changement Tonique',
+    'Lingering Song': 'Cordes Incessantes',
   },
   'Jingran': {
     // 'Encroaching Yin / Scorching Yang' and "Netherworld Traverse / Afterlife's Guide" split into
@@ -1693,6 +1703,10 @@ export const ROLE_FR = {
 // whichever characters come up — NOT yet covering the full roster.
 /** @type {Record<string, Record<string, string>>} */
 export const SKILL_DESC_FR = {
+  'Qingxiao': {
+    'Heavy Attack - Stringblade': "Une fois Cœur du Qin et Cadence de l'Épée pleins ; consomme les deux et entre en Transcendance Éphémère.",
+    "Heavy Attack - Heaven's Reckoning: Ephemeral Transcendence": "Une fois l'Intention du Cœur d'Épée pleine ; la consomme et met fin à la Transcendance Éphémère.",
+  },
   'Mornye': {
     'Stage 1-4': "Enchaînement standard, dégâts basés sur la DÉF comme tous ses dégâts. Non utilisé dans sa vraie rotation — voir Mode d'Observation à Grand Champ ci-dessous.",
     'Wide Field Observation Mode Stage 1-3': "Son vrai combo d'Attaque Normale — remplace l'Attaque Normale classique en Mode d'Observation à Grand Champ, augmente l'Élan Relatif.",
