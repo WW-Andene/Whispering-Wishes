@@ -870,8 +870,17 @@ export const CHAIN_NODE_NAMES_FR = {
 export const SKILL_TYPE_FR = {
   'Basic ATK': 'Attaque Normale',
   'Mid-air': 'Attaque Aérienne',
+  // 'Mid-air ATK'/'Mid-air Attack' and 'Heavy Attack' are alternate spellings some characters'
+  // SKILL_MULTIPLIERS rows use for the same type as 'Mid-air'/'Heavy ATK' above — without these,
+  // the lookup silently misses and the raw English type leaks through (confirmed: Mornye's own
+  // rows use 'Heavy Attack'/'Mid-air Attack', not 'Heavy ATK'/'Mid-air').
+  'Mid-air ATK': 'Attaque Aérienne',
+  'Mid-air Attack': 'Attaque Aérienne',
   'Heavy ATK': 'Attaque Lourde',
+  'Heavy Attack': 'Attaque Lourde',
   'Charged ATK': 'Attaque Chargée',
+  'Dodge Counter': "Contre-attaque d'Esquive",
+  'Echo': "Compétence d'Écho",
   'Skill': 'Compétence de Résonance',
   'Liberation': 'Libération de Résonance',
   'Forte': 'Circuit de Forte',
@@ -1213,6 +1222,9 @@ export const SKILL_NAME_FR = {
   },
   'Mornye': {
     'Stage 1-4': 'Étape 1-4',
+    'Wide Field Observation Mode Stage 1-3': "Mode d'Observation à Grand Champ Étape 1-3",
+    'Plunging Attack': 'Attaque Plongeante',
+    'Wide Field Observation Mode': "Mode d'Observation à Grand Champ",
     'Optimal Solution': 'Solution Optimale',
     'Distributed Array': 'Matrice Distribuée',
     'Geopotential Shift': 'Décalage Géopotentiel',
