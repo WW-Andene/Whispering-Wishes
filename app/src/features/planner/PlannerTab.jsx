@@ -428,7 +428,12 @@ function PlannerTab({
       });
       const ownedSynergyPartners = [...partnerFirstIndex.keys()].sort((a, b) => partnerFirstIndex.get(a) - partnerFirstIndex.get(b));
       const synergyWeight = ownedSynergyPartners.reduce((sum, p) => sum + 1 / (partnerFirstIndex.get(p) + 1), 0);
-      return { name, d, owned, tierScore, fillsRoleGap, ownedSynergyPartners, synergyWeight };
+      // Precise "which team this actually slots into" component: the single best (earliest-cited)
+      // team entry that names an owned partner, quoted verbatim from this character's own curated
+      // `teams` field — never a synthesized/generic "pairs well with your roster" claim.
+      const bestTeamIdx = ownedSynergyPartners.length > 0 ? Math.min(...ownedSynergyPartners.map(p => partnerFirstIndex.get(p))) : -1;
+      const bestTeam = bestTeamIdx >= 0 ? teamsList[bestTeamIdx] : null;
+      return { name, d, owned, tierScore, fillsRoleGap, ownedSynergyPartners, synergyWeight, bestTeam };
     });
     // Direct user request: "element is a small bonus, especially if I don't already have a
     // strong DPS/support for [that] element or damage type or buff" — three coverage checks, not
@@ -920,6 +925,9 @@ function PlannerTab({
                           <li>{t('planner.recommendationFillsBuffGap', { buffs: (top.d.buffs || []).join(', ') })}</li>
                         )}
                       </ul>
+                      {top.bestTeam && (
+                        <p className="text-yellow-500/80 text-2xs">{t('planner.recommendationSlotsIntoTeam', { team: top.bestTeam })}</p>
+                      )}
                     </div>
                   </div>
                 </div>

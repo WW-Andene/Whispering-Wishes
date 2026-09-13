@@ -92,6 +92,7 @@
   "recommendationFillsElementGap": "Vous n'avez pas encore de dégâts {{element}} — un petit bonus",
   "recommendationFillsDamageTypeGap": "Vous n'avez pas encore de dégâts {{types}} — un petit bonus",
   "recommendationFillsBuffGap": "Vous n'avez pas encore de soutien {{buffs}} — un petit bonus",
+  "recommendationSlotsIntoTeam": "S'intègre directement dans votre équipe {{team}}",
   "recommendationWeaponMustHave": "Indispensable",
   "recommendationWeaponNotEssential": "Pas essentielle",
   "recommendationWeaponMustHaveReason": "Aucune vraie alternative 5★ pour {{name}}.",
