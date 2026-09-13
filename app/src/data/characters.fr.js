@@ -1019,12 +1019,22 @@ export const SKILL_NAME_FR = {
     'Preem Choom': 'Choom Premios',
   },
   'Denia': {
-    'Stagecraft/Breakdown Form Stage 1-4': 'Forme Scénique/Déconstruite Étape 1-4',
-    'Phantom Bubble / Beckon / Banish': 'Bulle Spectrale / Appel / Bannir',
+    'Stagecraft Form Stage 1-4': 'Forme Scénique Étape 1-4',
+    'Breakdown Form Stage 1-4': 'Forme Déconstruite Étape 1-4',
+    'Stagecraft Form': 'Forme Scénique',
+    'Breakdown Form': 'Forme Déconstruite',
+    'Attack - Stagecraft Form': 'Attaque - Forme Scénique',
+    'Attack - Breakdown Form Stage 1-4': 'Attaque - Forme Déconstruite Étape 1-4',
+    'Heavy Attack - Breakdown Form': 'Attaque Lourde - Forme Déconstruite',
+    'Phantom Bubble - Stagecraft Form': 'Bulle Spectrale - Forme Scénique',
+    'Beckon - Breakdown Form': 'Appel - Forme Déconstruite',
+    'Banish - Breakdown Form Stage 1': 'Bannir - Forme Déconstruite Étape 1',
+    'Banish - Breakdown Form Stage 2': 'Bannir - Forme Déconstruite Étape 2',
     'Final Act: Stagecraft Form': 'Acte Final : Forme Scénique',
     'Final Act: Breakdown Form': 'Acte Final : Forme Déconstruite',
     'Erosion Field': "Champ d'Érosion",
-    "It's Been A While! / Knock Knock": 'Ça Fait un Bail ! / Toc Toc',
+    "It's Been A While!": 'Ça Fait un Bail !',
+    'Knock Knock': 'Toc Toc',
     'Unfinished Lies': 'Mensonges Inachevés',
   },
   'Lucilla': {
@@ -1876,6 +1886,10 @@ export const MULT_DESC_FR = {
     'Hack Response - Meltdown': '1186,50 % (DGT de Piratage)',
     'Preem Choom': "Tourelle (2,5 % DGT Electro/coup, 14 s) + Liens d'Edgerunner (15 % Amplification de tous les DGT, 14 s) + Surcharge (0,5 %/0,2 s Amplification DGT d'Attaque Lourde, jusqu'à 35 %)",
   },
+  'Denia': {
+    'Erosion Field': '136,33 % par tic (toutes les 4 s pendant 30 s)',
+    'Unfinished Lies': "60 % d'Amplification DGT d'Explosion Fusion pendant 30 s (mode Explosion Fusion) / 15 % d'Amplification de tous les DGT pendant 16 s, montant à 40 % une fois Tension d'Accord - Basculement infligée (mode Tension d'Accord)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -1971,5 +1985,19 @@ export const SKILL_DESC_FR = {
     "Yo, It's Big Boomin' Time!": 'Ouverture en mode Chasseresse qui la fait aussi basculer en mode Cran.',
     "Hey, Leadhead, Come 'n' Get Me!": 'Ouverture en mode Cran qui la fait aussi basculer en mode Chasseresse.',
     'Preem Choom': "Laisse une tourelle ; buffe le DGT total et le DGT d'Attaque Lourde du prochain allié.",
+  },
+  'Denia': {
+    'Stagecraft Form Stage 1-4': 'Les Étapes 3/4 appliquent Explosion Fusion ou Tension d\'Accord - Basculement selon le Mode de Résonance.',
+    'Breakdown Form Stage 1-4': 'Les Étapes 3/4 appliquent Explosion Fusion ou Tension d\'Accord - Basculement selon le Mode de Résonance.',
+    'Phantom Bubble - Stagecraft Form': 'Attire les cibles proches.',
+    'Beckon - Breakdown Form': 'Attire les cibles proches ; partage un temps de recharge avec Bannir.',
+    'Banish - Breakdown Form Stage 1': 'Remplace Appel en tenant un Noyau Sombre.',
+    'Banish - Breakdown Form Stage 2': "+150 % de Multiplicateur DGT par Noyau Sombre consommé (tous les Noyaux Sombres détenus sont dépensés au lancer) ; considérée comme DGT de Libération de Résonance malgré l'entrée en Compétence.",
+    'Erosion Field': "Zone hors-terrain laissée par Acte Final - Forme Déconstruite ; attire et frappe les cibles proches, appliquant Explosion Fusion/Tension d'Accord même après que Denia change de personnage. Considérée comme DGT de Libération de Résonance.",
+    'Final Act: Stagecraft Form': "Confère Basculement Entropique : Forme Déconstruite (+30 % ATQ, 12 s), puis bascule en Forme Déconstruite.",
+    'Final Act: Breakdown Form': "Consomme toute la Charge Conforme + la Particule du Vide ; confère Basculement Entropique : Forme Scénique (30 s), laisse un Champ d'Érosion, puis rebascule en Forme Scénique.",
+    "It's Been A While!": 'Ouverture en Forme Scénique ; confère 25 Particule du Vide et 1 Noyau Sombre.',
+    'Knock Knock': 'Ouverture en Forme Déconstruite ; confère Basculement Entropique : Forme Déconstruite (12 s) et 1 Noyau Sombre.',
+    'Unfinished Lies': 'Buffe les DGT d\'Explosion Fusion près du Résonateur actif, ou confère au Résonateur entrant une Amplification de tous les DGT.',
   },
 };
