@@ -30,7 +30,10 @@ const useFocusTrap = (isOpen) => {
       else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
     };
     el.addEventListener('keydown', handleKeyDown);
-    return () => { cancelAnimationFrame(raf); el.removeEventListener('keydown', handleKeyDown); if (previousFocusRef.current?.focus) previousFocusRef.current.focus(); };
+    // preventScroll: true — .focus() scrolls its target into view by default, which on close was
+    // overriding the scroll position the user was actually at (snapping to wherever the browser
+    // decided the restored element should be visible) instead of leaving the page where it was.
+    return () => { cancelAnimationFrame(raf); el.removeEventListener('keydown', handleKeyDown); if (previousFocusRef.current?.focus) previousFocusRef.current.focus({ preventScroll: true }); };
   }, [isOpen]);
   return ref;
 };
