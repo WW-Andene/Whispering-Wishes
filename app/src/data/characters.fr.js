@@ -1644,3 +1644,15 @@ export const WEAPON_TYPE_FR = {
   'Gauntlets': 'Gantelet',
   'Rectifier': 'Amplificateur',
 };
+
+// ROLE_FR — CHARACTER_DATA[name].role (Main DPS/Sub DPS/Healer/Support), rendered as a
+// header badge in CharacterDetailModal.jsx. Reuses the same terms already established
+// in locale/fr/collection.json's role filter labels for consistency.
+/** @type {Record<string, string>} */
+export const ROLE_FR = {
+  'Main DPS': 'DPS principal',
+  'Sub DPS': 'DPS secondaire',
+  'Support': 'Soutien',
+  'Healer': 'Soigneur',
+  'Support/Healer': 'Soutien/Soigneur',
+};
