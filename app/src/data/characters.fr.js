@@ -51,7 +51,7 @@ export const CHARACTER_DESC_FR = {
   'Galbrena': "Consultante des Rives Noires connue sous le nom de Tueuse de Discorde, arrachant le pouvoir à l'obscurité. DPS Fusion sur le terrain qui inflige des dégâts principaux via des combos de Compétence d'Écho et d'Attaque Lourde en rotations explosives rapides.",
   'Qiuyuan': "Ancien agent de renseignement de Mingting, droit comme le bambou, sans quête de vanité. Sous-DPS/buffeur Aero qui confère au prochain personnage un buff de DGT de Compétence d'Écho via l'Outro et augmente les Dégâts Critiques du personnage actif via la Libération de Résonance.",
   'Chisa': "« Juste une étudiante ordinaire », se présente-t-elle calmement, un léger éclat irisé scintillant dans ses yeux. Soutien/soigneuse Havoc qui inflige de lourds DGT de Libération de Résonance, soigne et protège l'équipe d'un bouclier, et réduit la DÉF ennemie via Piège Invisible + Havoc Bane.",
-  'Lynae': "Une élève de l'Académie Startorch au style électrique qui attire les regards, cachant une concentration intérieure aussi explosive qu'un ressort comprimé. Sous-DPS Spectro qui amplifie tous les DGT d'équipe et les DGT de Libération de Résonance via l'Outro, et augmente le Tune Break Boost pour les compositions d'équipe Tune Strain.",
+  'Lynae': "Une élève de l'Académie Startorch au style électrique qui attire les regards, cachant une concentration intérieure aussi explosive qu'un ressort comprimé. Sous-DPS Spectro qui amplifie tous les DGT d'équipe et les DGT de Libération de Résonance via l'Outro, et augmente le Regain de Rupture Tacet pour les compositions d'équipe Tension Tacet.",
   'Mornye': "Une ingénieure de l'Institut de Recherche du Collectif Trek-spatial et professeure du Département d'Ingénierie Exostrider à l'Académie Startorch. Soigneuse Fusion à scaling DÉF qui restaure les PV via sa Compétence de Résonance et sa Libération tout en augmentant le Taux d'Accumulation Hors-Tonalité de l'équipe.",
   'Luuk Herssen': "Le médecin traitant de l'Unité de Soins des Résonateurs de l'Académie Startorch, réputé pour son intellect vif et son sang-froid inébranlable. DPS d'Attaque Basique Spectro sur le terrain qui alterne les trois formes améliorées de l'Auréole d'Exécution et inflige des DGT Totaux bonus en réagissant à Tune Strain - Interfered.",
   'Aemeath': "Autrefois Synchroniste Exostrider du Collège Rabelle, elle est désormais un fantôme numérique qui chante doucement parmi les étoiles. DPS Fusion sur le terrain qui bascule entre les Modes de Résonance Tune Rupture et Fusion Burst, infligeant des DGT de Libération de Résonance massifs via Duo Séraphique et Édit de la Chute Céleste.",
@@ -156,7 +156,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Shorekeeper': 'Outro : Amplification de tous les DGT 15 %, équipe entière, 30 s (persiste à travers les changements). Libération Stellarealm : +12,5 % Taux Critique +25 % Dégâts Critiques (30 s), équipe entière. Récupération sur mise à terre.',
   'Jianxin': 'Soutien à bouclier/sous-DPS en Posture de Parade. Le Forte (Spirale de Chi Primordial) confère un vaste bouclier proportionnel aux PV et des soins périodiques tant qu\'il est canalisé. Le Champ de Force de Purification de la Libération regroupe les ennemis avant d\'exploser. Outro Transcendance : Amplification des DGT de Libération de Résonance +38 % (14 s) pour le personnage entrant.',
   'Suisui': 'Outro (Eaux Ondoyantes) : Amplification de tous les DGT inconditionnelle de 25 % pendant 30 s. À 400+ Épîtres Florales consommées (jauge de Forte en Posture de Bruine) pendant que Paysage Incessant est actif, confère en plus jusqu\'à 12 % d\'Amplification de tous les DGT (0,2 % par 1 % de Régén. d\'Énergie au-dessus de 200 %, plafonné à 260 % RE) pendant 6 s via Transcendance Itinérante. La Posture de Zéphyr soigne, la Posture de Bruine inflige des DGT Glacio + Frisson. La Libération (Chant de la Voie Publique) prolonge le plafond de cumuls de statuts négatifs pour l\'équipe plutôt que d\'accorder un buff de DGT fixe. La Compétence Inhérente Ciel au-dessus de l\'Eau confère un pic de Taux Critique/DGT Glacio personnel sur ses propres coups d\'Éveil du Printemps/Jade Tintant, limité à une fois toutes les 25 s.',
-  'Lynae': 'Libération : 24 % de tous les DGT (30 s, confirmé exact le 2026-08-16). Outro : 15 % de tous les DGT + 25 % d\'Amplification de Libération pour le suivant (14 s) — auparavant mal classé comme Renforcement, sans fondement. Regain de Rupture Tacet +40 équipe. Réponse de Rupture toutes les 8 s. Tension : 0,12 % DGT par cumul par Regain.',
+  'Lynae': "Libération : 24 % de tous les DGT (30 s). Outro : 15 % de tous les DGT + 25 % d'Amplification de Libération pour le suivant (14 s). Regain de Rupture Tacet +40 équipe. Réponse de Rupture toutes les 8 s. Tension : 0,12 % DGT par cumul par Regain.",
   'Qingxiao': "DPS pur en cible unique, sans buff d'équipe. Les dégâts évoluent avec la Tension Tacet - Interférence infligée par l'équipe, via son mécanisme de cumuls Verrou Mental. Kit de base : jusqu'à 15 cumuls, ~49 % d'Amplification/Réduction de DGT combinée au maximum (les 7 premiers cumuls valent 7 % chacun, les cumuls restants 2 % chacun). S1/S2 relèvent le plafond de cumuls à 25.",
   'Jingran': 'DPS pur proportionnel aux PV, sans buff d\'équipe. La Chaîne de Résonance 4 confère à l\'équipe +20 % de Bonus de DGT Tous Attributs (30 s) lorsqu\'un Résonateur quelconque obtient un Bouclier — conditionnel, non modélisé comme buff de kit de base.',
   'Yangyang: Xuanling': 'Principalement une DPS auto-buffeuse (énorme scaling de Dégâts Critiques personnels via Serment Emplumé, plus Souffle Retenu/Tempête Ruisselante +160 % Dégâts Critiques sur son Attaque Lourde conditionnée par le Forte, et l\'Amplification de DGT Ravage Havoc de Vœu Inébranlable). L\'Outro confère +20 % DGT Havoc aux autres applicatrices de Ravage Havoc de l\'équipe (Chisa).',
@@ -1355,6 +1355,7 @@ export const SKILL_NAME_FR = {
     'Stage 1-3': 'Étape 1-3',
     'Spark Collision Lv.3': "Choc d'Étincelles Niv.3",
     'Kaleidoscopic 1-5': 'Kaléidoscopique 1-5',
+    'Polychrome Leap ×3': 'Saut Polychrome ×3',
     'Visual Impact': 'Impact Visuel',
     'Iridescent Splash': 'Éclaboussure Iridescente',
     'Lynae-Style Palettes': 'Nuancier de Lynae',
@@ -2059,6 +2060,9 @@ export const MULT_DESC_FR = {
   'Luuk Herssen': {
     'Aureole of Execution': "Anneau 26,56 %×5+88,53 % / Brèche 95,91 %×3 / Éclat 354,11 %",
   },
+  'Lynae': {
+    "Let's Hit the Road!": "100 % ATQ + 15 % d'Amplification de tous les DGT / 25 % d'Amplification DGT de Libération",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2395,5 +2399,18 @@ export const SKILL_DESC_FR = {
     "Rewritten in Winter's Margins": "Ultime nuke, plus puissant avec plus de cumuls d'Auréole.",
     'Before Injection of Dawn': "Ouverture qui inflige aussi Tension Tacet.",
     'Bow to the Last Light': "Nuke finisseur simple au changement de personnage.",
+  },
+  'Lynae': {
+    'Stage 1-3': "Enchaînement standard avant d'entrer en mode Kaléidoscopique.",
+    'Spark Collision Lv.3': "Coup lourd entièrement chargé, une grosse rafale unique de dégâts.",
+    'Kaleidoscopic 1-5': "Enchaînement renforcé étendu utilisé une fois son mode Kaléidoscopique actif.",
+    'Polychrome Leap ×3': "Enchaînement d'attaque aérienne au Saut (3 étapes en Parade Kaléidoscopique). Chaque étape consomme 1/3 de Flux Lumineux et confère 1 point de Vraie Couleur.",
+    'Visual Impact': "Immense finisseur de Forte, sa principale source de dégâts en rafale. Comptée comme vraie DGT d'Attaque Normale, pas une catégorie Forte séparée.",
+    'Iridescent Splash': "Coup de suivi secondaire de Forte. Comptée comme vraie DGT d'Attaque Normale.",
+    'Lynae-Style Palettes': "Compétence qui accumule sa ressource de peinture/mode tout en infligeant des dégâts.",
+    'Additive Color': "Frappe de suivi rapide de Compétence.",
+    'Prismatic Overblast': "Barrage d'Ultime à coups multiples.",
+    'Time to Show Some Colors!': "Ouverture au changement de personnage avec plusieurs coups rapides.",
+    "Let's Hit the Road!": "Buff au changement de personnage conférant au Résonateur suivant une Amplification de tous les DGT ou de DGT de Libération.",
   },
 };
