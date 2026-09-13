@@ -7,13 +7,20 @@
 // style, not reader-facing) — often just a handful of very long compound sentences packed with
 // parentheticals, colons, and em-dashes. Grouping by a fixed sentence COUNT still produces a wall of
 // text whenever those sentences are individually long, so this splits by an actual length budget
-// instead: walk sentence-by-sentence (". "/"; " before a capital letter or digit — avoids breaking on
-// "e.g." "vs." decimals, etc.) and start a new paragraph once the running paragraph would exceed
-// maxChars. A single sentence that alone exceeds the budget is further broken on its own secondary
-// clause boundaries (" — "/"; ") so no one paragraph is still an unreadable block.
+// instead: walk sentence-by-sentence (period/!/? followed by whitespace and a capital/opening-quote
+// letter — avoids breaking on "e.g.", decimals like "39.11", or dotted abbreviations/filenames like
+// "Calcharo.md") and start a new paragraph once the running paragraph would exceed maxChars. A single
+// sentence that alone exceeds the budget is further broken on its own secondary clause boundaries
+// (" — "/"; ") so no one paragraph is still an unreadable block.
+//
+// Uses String.split() on the boundary itself rather than String.match() to build the sentence list:
+// match() requires the whole text to be tiled by successive matches of one pattern, so any period
+// that doesn't qualify as a sentence end (a decimal, an abbreviation) breaks that tiling and silently
+// drops every character before it up to the next valid match. split() has no such requirement — it
+// just finds boundaries wherever they occur and returns everything in between untouched.
 export function splitIntoParagraphs(text, maxChars = 200) {
   if (!text) return [];
-  const sentences = text.match(/[^.!?]+[.!?]+(?:['"’»]?\s+|$)/g) || [text];
+  const sentences = text.split(/(?<=[.!?])['"’»]?\s+(?=[A-ZÀ-Þ«"'])/).filter(Boolean);
   const paragraphs = [];
   let current = '';
   const pushCurrent = () => { if (current.trim()) paragraphs.push(current.trim()); current = ''; };
