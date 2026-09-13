@@ -2032,6 +2032,11 @@ export const MULT_DESC_FR = {
   'Jinhsi': {
     'Temporal Bender': "Taux de gain d'Incandescence +1/s pendant 20 s",
   },
+  'Jianxin': {
+    'Primordial Chi Spiral (Zhoutian Progress)': "248,52 % (Poing Poussant) · 24,86 % par tic (DGT Continus du Cycle du Zhoutian) · 139,17 %/377,74 %/516,91 % (Choc Mineur/Majeur-Interne/Majeur-Externe) · 218,70 % (Traction Cédante)",
+    'Purification Force Field': '29,83 % (continu) + 636,20 % (explosion)',
+    'Transcendence': "+38 % d'Amplification DGT de Libération de Résonance (14 s)",
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2322,5 +2327,11 @@ export const SKILL_DESC_FR = {
     'Illuminous Epiphany': "Remplace la Compétence de Résonance pendant Lueur d'Ordination. Éruption Solaire détone en Éclat Stellaire après un court délai. Éclat Stellaire gagne +44,54 % de Multiplicateur DGT par Incandescence consommée (jusqu'à 50).",
     'Purge of Light': "Recharge de 24 s. Immense nuke de zone.",
     'Temporal Bender': "Utilitaire uniquement, sans DGT direct ni buff d'équipe.",
+  },
+  'Jianxin': {
+    'Calming Air: Chi Counter / Chi Parry': "Maintenez la Compétence pour la Posture de Parade. Répliquer avec Chi si attaquée, Parer avec Chi en relâchant tôt. Recharge de 12 s.",
+    'Primordial Chi Spiral (Zhoutian Progress)': "À Chi maximal, maintenez l'Attaque Lourde pour un état canalisé de bouclier et DGT avec 50 % de réduction des DGT reçus et une résistance accrue à l'interruption.",
+    'Purification Force Field': "Attire les cibles dans le champ, puis explose à expiration. Recharge de 20 s.",
+    'Transcendence': "Confère ce buff au Résonateur entrant, sans DGT direct.",
   },
 };
