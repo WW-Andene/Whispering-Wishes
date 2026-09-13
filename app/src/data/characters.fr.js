@@ -59,7 +59,7 @@ export const CHARACTER_DESC_FR = {
   'Rebecca': "Edgerunner et Arsenal de Type Fureur du crossover Cyberpunk: Edgerunners. Hybride Electro qui bascule entre les postures Chasseresse et Cran, conférant un buff de DGT d'Attaque Lourde d'équipe et d'Amplification de tous les DGT via sa tourelle d'Outro.",
   'Lucilla': "Présidente et directrice de l'Académie Startorch, ancienne rédactrice en chef de la principale revue académique de la Nouvelle Fédération. Hybride Glacio à double mode qui confère un buff de DGT de Givre Glaçant ou de DGT de Compétence d'Écho selon le Mode de Résonance, bâtie autour d'un Ultimate à 5 entrées consommant des Photos.",
   'Lucy': "La Netrunner, du crossover Cyberpunk: Edgerunners. DPS Spectro qui accumule TCP/Accès Racine en une Attaque Lourde renforcée et un Ultimate gelant le champ de bataille avec des debuffs de Programme d'Usurpation sélectionnables, infligeant des DGT bonus via le mécanisme de Piratage.",
-  'Yangyang: Xuanling': "Gardienne Xuan du Bastion de Xuanfang et sœur de Suisui. DPS Havoc sur le terrain qui alterne les Postures d'Épée Azure et à Plumes, appliquant et consommant Havoc Bane pour des Dégâts Critiques auto-buffés massifs — l'un des plus hauts plafonds de dégâts du jeu à sa sortie.",
+  'Yangyang: Xuanling': "Gardienne Xuan du Bastion de Xuanfang et sœur de Suisui. DPS Havoc sur le terrain qui alterne les Postures d'Épée Azure et à Plumes, appliquant et consommant Ravage Havoc pour des Dégâts Critiques auto-buffés massifs — l'un des plus hauts plafonds de dégâts du jeu à sa sortie.",
   'Denia': "Étudiante en Néantologie à l'Académie Startorch qui sert secrètement d'agente pour les Fractsidus. Hybride Fusion à double mode qui bascule entre Mise en Scène et Forme d'Effondrement via ses deux Ultimates, jouant soit sur l'archétype d'équipe Fusion Burst soit sur Tune Strain selon le Mode de Résonance.",
   'Hiyuki': "Miko de Sakura Enflammé d'Ashinohara, désormais dernière membre de la Force de Réaction Spéciale de Lahai-Roi. DPS Glacio sur le terrain qui convertit le Givre Glaçant d'équipe en Morsure Glacio via son Forte, alternant entre Moi Présent et Moi Préfiguré pour un finisseur explosif en Posture Iai.",
   'Suisui': "Directrice de la Guilde du Commerce de Zhaoming et sœur de Yangyang : Xuanling. Soigneuse Glacio à scaling PV qui alterne Posture Zéphyr (soins) et Posture Bruine (DGT Glacio + Chafe) via sa Compétence de Résonance, culminant en une Amplification de tous les DGT d'équipe via son Outro.",
@@ -159,7 +159,7 @@ export const CHAR_BUFF_NOTE_FR = {
   'Lynae': 'Libération : 24 % de tous les DGT (30 s, confirmé exact le 2026-08-16). Outro : 15 % de tous les DGT + 25 % d\'Amplification de Libération pour le suivant (14 s) — auparavant mal classé comme Renforcement, sans fondement. Regain de Rupture Tacet +40 équipe. Réponse de Rupture toutes les 8 s. Tension : 0,12 % DGT par cumul par Regain.',
   'Qingxiao': 'DPS pur en cible unique, sans buff d\'équipe. Les dégâts évoluent avec la Tension Tacet infligée par l\'équipe — Interférence via son mécanisme de cumuls Verrou Mental (kit de base : jusqu\'à 15 cumuls, ~49 % d\'Amplification/Réduction de DGT combinée au maximum — les 7 premiers cumuls valent 7 % chacun, les cumuls restants 2 % chacun ; S1/S2 relèvent le plafond de cumuls à 25). Données de pré-sortie (sortie le 2026-08-20) — sujettes à changement au lancement.',
   'Jingran': 'DPS pur proportionnel aux PV, sans buff d\'équipe. La Chaîne de Résonance 4 confère à l\'équipe +20 % de Bonus de DGT Tous Attributs (30 s) lorsqu\'un Résonateur quelconque obtient un Bouclier — conditionnel, non modélisé comme buff de kit de base.',
-  'Yangyang: Xuanling': 'Principalement une DPS auto-buffeuse (énorme scaling de Dégâts Critiques personnels via Serment Emplumé, plus Souffle Retenu/Tempête Ruisselante +160 % Dégâts Critiques sur son Attaque Lourde conditionnée par le Forte, et l\'Amplification de DGT Havoc Bane de Vœu Inébranlable). L\'Outro confère +20 % DGT Havoc aux autres applicatrices de Havoc Bane de l\'équipe (Chisa).',
+  'Yangyang: Xuanling': 'Principalement une DPS auto-buffeuse (énorme scaling de Dégâts Critiques personnels via Serment Emplumé, plus Souffle Retenu/Tempête Ruisselante +160 % Dégâts Critiques sur son Attaque Lourde conditionnée par le Forte, et l\'Amplification de DGT Ravage Havoc de Vœu Inébranlable). L\'Outro confère +20 % DGT Havoc aux autres applicatrices de Ravage Havoc de l\'équipe (Chisa).',
   'Hiyuki': 'DPS Glacio sur le terrain. L\'Outro confère +20 % DGT Glacio au reste de l\'équipe contre les cibles affectées par Glacio Frisson (20 s). Neige Fine Inhérente : personnel +40 % Dégâts Critiques à 1 cumul de Givre Rouillé, +30 %/+30 % Amplification de DGT Morsure Glacio à 1/3 cumuls — nécessite des coéquipiers appliquant Glacio Frisson ou Havoc Fléau pour atteindre les cumuls max.',
   'Lucy': 'Outro : 25 % Amplification de DGT d\'Attaque Basique pour le Résonateur suivant (14 s) + Programme de Contre-mesure d\'équipe (Piratage - Interféré déclenche +20 % Amplification de tous les DGT). Rupture Tacet : Piratage confirmé de la même famille générique de Rupture Tacet ; la Réponse de Piratage - Crash de Données est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé.',
   'Rebecca': 'Outro : déploie une tourelle pendant 14 s et confère au Résonateur suivant 15 % d\'Amplification de tous les DGT (14 s), montant jusqu\'à 35 % d\'Amplification de DGT d\'Attaque Lourde via l\'accumulation d\'Overlimit. Les deux buffs ne ciblent que le personnage entrant, pas toute l\'équipe. Le mode Chasseresse confère personnellement 30 % Dégâts Critiques ; le mode Cran confère personnellement 15 % d\'Ignorance de DEF (personnel, pas un debuff de Réduction de DEF pour toute l\'équipe — corrigé le 2026-08-16, était mal classé sous debuffs comme defShred). Rupture Tacet : la Réponse de Piratage - Effondrement est authentique (kit de base, une fois/8 s) mais le multiplicateur exact de dégâts de rupture n\'est pas confirmé ; Chat, t\'es Fait ! confère +30 Regain de Rupture Tacet (30 s) confirmé à quel que coéquipier inflige Piratage - Déplacement.',
@@ -957,6 +957,8 @@ export const SKILL_NAME_FR = {
     'Shadow of Xuanling': 'Ombre de Xuanling',
     'Skybound Feather': 'Plume Céleste',
     'As the Wind Wills': 'Au gré du vent',
+    'Feather Fall': 'Chute de Plume',
+    'Havoc in Bloom Stage 1-3': 'Havoc en Éclosion Étape 1-3',
   },
   'Hiyuki': {
     'Present Self Stage 1-3': 'Le Soi Présent Étape 1-3',
@@ -1836,6 +1838,12 @@ export function applyGenericDescPhrases(desc) {
 // line with applyGenericDescPhrases as a substring-level fallback when no entry exists here.
 /** @type {Record<string, Record<string, string>>} */
 export const MULT_DESC_FR = {
+  'Yangyang: Xuanling': {
+    'Azure/Feather Stance Stage 1-4': '47,72 % → 20,14 %×2+60,41 % → 30,21 %+70,48 % → 18,57 %×2+148,49 % (Azur) / 39,77 %×2 → 33,56 %×3 → 14,86 %+7,43 %×3+37,14 % → 71,58 %×2+95,43 % (Plume)',
+    'Sword Stance Switch': '69,95 %+15,55 %×3 (Azur) / 33,56 %×3 (Plume)',
+    'Shadow of Xuanling': "337,98 % ATQ (proc d'invocation)",
+    'As the Wind Wills': "300 % ATQ + buff de DGT Havoc pour l'équipe",
+  },
   'Suisui': {
     'Song of Thoroughfare': "Effet de zone — pas de DGT direct, plafond de cumuls d'États Négatifs de l'équipe +3",
     'Rippling Waters': "25 % d'Amplification de tous les DGT (30 s) + buffs d'équipe liés à la consommation de posture",
@@ -1843,6 +1851,18 @@ export const MULT_DESC_FR = {
 };
 
 export const SKILL_DESC_FR = {
+  'Yangyang: Xuanling': {
+    'Azure/Feather Stance Stage 1-4': "Enchaînement dans l'une ou l'autre posture ; l'Étape 4 applique Ravage Havoc.",
+    'Sword Stance Switch': "Bascule entre la Posture de l'Épée d'Azur et de Plume.",
+    'Azure Sword Stance': "Grand coup en cyclone une fois la Plume d'Azur au maximum.",
+    'Feather Sword Stance': "Coup renforcé une fois la Plume d'Azur au maximum.",
+    'Feather Fall': "S'enchaîne automatiquement après Attaque Lourde : Posture de l'Épée de Plume ; consomme la Plume d'Azur, accorde Écho du Vent (12 s).",
+    'Havoc in Bloom Stage 1-3': "Remplace l'Attaque Normale pendant Écho du Vent ; considérée comme DGT d'Attaque Lourde malgré l'emplacement d'Attaque Normale.",
+    'Hush of a Thousand Voices': 'Frappe ultime, maximise Ravage Havoc au coup.',
+    'Shadow of Xuanling': 'Coup d\'invocation bonus lors de sa prochaine Compétence de changement de posture.',
+    'Skybound Feather': 'Ouverture qui applique Ravage Havoc.',
+    'As the Wind Wills': "Buffe les DGT des autres applicatrices de Ravage Havoc.",
+  },
   'Suisui': {
     'Zephyr Stance Stage 1-4': 'Enchaînement en Posture du Zéphyr (posture de soin) ; accumule le Souffle Nuageux.',
     'Zephyr Stance': 'Plongée aérienne en Posture du Zéphyr.',
