@@ -1084,7 +1084,7 @@ export const SKILL_NAME_FR = {
   },
   'Brant': {
     'Stage 1-4': 'Étape 1-4',
-    'Charged Combo': 'Combo Chargé',
+    'Charged Combo (Stage 2-3)': 'Combo Chargé (Étape 2-3)',
     'Rhapsodic Riff': 'Riff en Rhapsodie',
     'Anchors Aweigh': 'Ancre à la Mer !',
     'To the Horizon': "Vers l'Horizon",
@@ -1835,6 +1835,8 @@ export const GENERIC_SKILL_DESC_FR = {
     'Mode Givre Glaçant ; considérée comme DGT d\'Attaque Normale. Se déclenche automatiquement pendant Formes Retracées Étape 3, consommant des Photos.',
   'Echo mode; considered Echo Skill DMG, each cast counted as a different Echo Skill. Auto-fires during Tracing Forms Stage 3, consuming Photos.':
     "Mode Écho ; considérée comme DGT de Compétence d'Écho, chaque lancer comptant comme une Compétence d'Écho différente. Se déclenche automatiquement pendant Formes Retracées Étape 3, consommant des Photos.",
+  'Confirmed unused in his real rotation (goes straight to Mid-air combat).':
+    'Confirmée inutilisée dans sa vraie rotation (passe directement au combat aérien).',
 };
 
 // PHRASE_FR — bare English DMG-category terms that recur mid-sentence inside otherwise-bespoke,
@@ -1925,6 +1927,9 @@ export const MULT_DESC_FR = {
     'Seraphic Duet': 'Ouverture 17,90 %+14,92 %×6+23,86 %×3+59,65 %×3 / Rappel 17,90 %×4+35,79 %×3+178,93 %',
     'Heavenfall Edict': 'Surtension 186,72 %+248,96 %×3 / Finale 1663,83 %',
     'Silent Protection': "10-20 % d'Amplification de tous les DGT pour l'équipe (20 s), selon le mode",
+  },
+  'Brant': {
+    'The Course is Set!': "+20 % DGT Fusion + 25 % d'Amplification DGT de Compétence (14 s, ou jusqu'à ce que le Résonateur buffé soit remplacé)",
   },
 };
 
@@ -2078,5 +2083,10 @@ export const SKILL_DESC_FR = {
     'Songs Across the Universe': "Compétence d'Intro utilisée en changeant depuis la forme humaine.",
     'Debut of Meteoric Radiance': "Compétence d'Intro utilisée en changeant depuis la Forme Mécha.",
     'Silent Protection': "Buff au changement de personnage pour toute l'équipe ; la force dépend de la forme dans laquelle elle était au moment du changement.",
+  },
+  'Brant': {
+    'Charged Combo (Stage 2-3)': "Étape 2 de base -> Attaque Chargée Étape 2 -> Flip Étape 2 -> Étape 3 de base -> Flip Étape 3 — la vraie séquence à 5 sous-coups que déclenche l'étape « Étape 2-3 + Attaque Chargée + Flip » de CHARACTER_ROTATIONS[\"Brant\"] (Applaudissements d'Interlude de l'Intro saute l'Étape 1).",
+    'Attack Stage 1': "Confirmée inutilisée dans sa vraie rotation — Applaudissements d'Interlude de l'Intro démarre toujours son combo aérien à l'Étape 2 à la place.",
+    'Plunging Attack': "Considérée comme DGT d'Attaque Normale selon son propre texte de kit. Utilisée seulement en option, immédiatement annulée par l'Ultime — aucune contribution DPS séparée dans la rotation modélisée.",
   },
 };
