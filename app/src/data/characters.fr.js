@@ -1471,14 +1471,20 @@ export const SKILL_NAME_FR = {
     // CHARACTER_ROTATIONS phrases this the same skill with an added "a" ("Whispers in A Fleeting
     // Dream") — same translation.
     'Whispers in a Fleeting Dream': "Murmure d'un Rêve Fuyant",
-    'Movement of Fate and Finality': 'Mouvement du Destin et de la Finalité',
+    // Confirmed by the user against the game's actual French client — was 'Mouvement du Destin et de
+    // la Finalité' (a literal guess); matches the 'skills' array's own English alias for this same
+    // move ('Movement of Life and Death' in characters.js).
+    'Movement of Fate and Finality': 'Mouvement de la Vie et de la Mort',
     'Murmurs in a Haunting Dream': "Murmures d'un Rêve Obsédant",
     // Combined rotation-step variant of the two entries above.
-    'Movement of Fate and Finality / Murmurs in a Haunting Dream': "Mouvement du Destin et de la Finalité / Murmures d'un Rêve Obsédant",
-    // No existing precedent for this one; best-effort, not verified against the game's official
-    // French client.
-    'Waltz of Forsaken Depths': 'Valse des Profondeurs Oubliées',
-    'Suite of Quietus': 'Suite de Quiétude',
+    'Movement of Fate and Finality / Murmurs in a Haunting Dream': "Mouvement de la Vie et de la Mort / Murmures d'un Rêve Obsédant",
+    // Confirmed by the user: 'Valse de l'Abîme Délaissé', not the earlier literal guess.
+    'Waltz of Forsaken Depths': "Valse de l'Abîme Délaissé",
+    // Confirmed by the user — 'Quietus' is kept untranslated (proper/Latin term), not 'Quiétude'.
+    'Suite of Quietus': 'Suite de Quietus',
+    // Confirmed by the user — the Forte's own generic name, distinct from its two specific enhanced
+    // finishers above.
+    'Rhapsody of a New World': 'Rhapsodie du Nouveau Monde',
     'Suite of Immortality': "Suite d'Immortalité",
     'Maestro State: Hecate': 'État de Maestro : Hécate',
     'Curtain Call': 'Salut Final',
