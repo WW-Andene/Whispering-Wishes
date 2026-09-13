@@ -1410,7 +1410,9 @@ export const SKILL_NAME_FR = {
     'To Teach / To Save / To Sacrifice': 'Ainsi Parle la Lame : Enseigner / Sauver / Sacrifier',
     'Sundering Strike': 'Coup scindant',
     'Attack the Must-Defend': 'Frapper le point vital',
+    'Straw Cape in Drizzly Rain': 'Cape de Paille sous la Bruine',
     'Strike Before Ready': "Coup de surprise",
+    'Sheath Fallen, New Shoots Revealed': 'Fourreau Tombé, Nouvelles Pousses Révélées',
   },
   'Roccia': {
     'Stage 1-4': 'Étape 1-4',
@@ -2075,6 +2077,10 @@ export const MULT_DESC_FR = {
     'Maestro State: Hecate': 'Cordes 347,9 % / Vents 330,5 % / Cadence 347,9 %',
     'Unfinished Piece': "+20 % DGT Havoc + 25 % d'Amplification DGT d'Attaque Lourde (14 s)",
   },
+  'Qiuyuan': {
+    'Strike Before Ready': "100 % ATQ + 50 % d'Amplification DGT de Compétence d'Écho (14 s)",
+    'Sheath Fallen, New Shoots Revealed': '500 % ATQ',
+  },
 };
 
 export const SKILL_DESC_FR = {
@@ -2439,5 +2445,18 @@ export const SKILL_DESC_FR = {
     'Maestro State: Hecate': "Invoque Hecate pour des DGT Havoc soutenus hors du terrain pendant Maestro.",
     'Curtain Call': "Lancer d'Ultime qui met fin à Accord en Résolution et entre en Maestro.",
     'Unfinished Piece': "Buff au changement de personnage pour le Résonateur suivant. Confère 2 attaques bonus à Hecate si lancé pendant Maestro.",
+  },
+  'Qiuyuan': {
+    'Stage 1-3': "Enchaînement standard avant d'entrer en forme Lavis d'Encre.",
+    'Standard': "Frappe chargée, un solide coup unique.",
+    'Through the Groves': "Frappe de Compétence à coups multiples.",
+    'Undaunted Wayfarer': "Version maintenue de sa Compétence, enchaînement étendu.",
+    'Inkwash 1-4': "Enchaînement transformé par le Forte, sa principale forme de dégâts.",
+    'To Teach / To Save / To Sacrifice': "Finisseurs d'Attaque Lourde en forme Lavis d'Encre, chacun avec un effet de suivi différent.",
+    'Sundering Strike': "Ultime nuke.",
+    'Attack the Must-Defend': "Ouverture au changement de personnage, comptée comme DGT d'Attaque Lourde.",
+    'Straw Cape in Drizzly Rain': "S3+ uniquement : remplace la Compétence une fois l'Énergie de Concerto pleine hors d'Éclaboussure d'Encre de l'Esprit (une fois toutes les 20 s). Comptée comme DGT de Compétence d'Écho. Confère aussi +600 % de Multiplicateur DGT et +100 % Dégâts Critiques à Enseigner/Sauver/Sacrifier pendant 6 s.",
+    'Strike Before Ready': "Buff au changement de personnage conférant au Résonateur suivant une Amplification de DGT de Compétence d'Écho.",
+    'Sheath Fallen, New Shoots Revealed': "S3+ uniquement : hors Co-op, lancer Cape de Paille sous la Bruine remplace le prochain Outro par ce coup. Comptée comme DGT de Compétence d'Écho.",
   },
 };
