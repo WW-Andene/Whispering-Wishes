@@ -1692,7 +1692,9 @@ export const SKILL_NAME_FR = {
     'Whispering Breeze': 'Souffle reposant',
   },
   'Youhu': {
-    'Scroll Divination': 'Rouleau de la chance',
+    'Frosty Punches Stage 1-4': 'Coups Glacés Étape 1-4',
+    'Frostfall': 'Chute de Givre',
+    'Scroll Divination': 'Divination par Parchemin',
     'Chime (Antique Appraisal)': "Carillon (Évaluation des Antiquités)",
     'Ruyi (Antique Appraisal)': "Ruyi (Évaluation des Antiquités)",
     'Ding (Antique Appraisal)': "Ding (Évaluation des Antiquités)",
@@ -2193,6 +2195,9 @@ export const MULT_DESC_FR = {
   },
   'Yangyang': {
     'Whispering Breeze': "Restaure 4 Énergie de Résonance/s (5 s)",
+  },
+  'Youhu': {
+    'Timeless Classics': "Pas de DGT (Amplification DGT d'Attaque Coordonnée +100 %, 28 s)",
   },
 };
 
@@ -2799,5 +2804,18 @@ export const SKILL_DESC_FR = {
     'Wind Spirals': "Un cyclone regroupe les ennemis proches.",
     'Cerulean Song': "Projette la cible en l'air.",
     'Whispering Breeze': "Canalise de l'Énergie vers le Résonateur entrant.",
+  },
+  'Youhu': {
+    'Frostfall': "À Givre plein, s'élance en avant et effectue un Tirage Chanceux.",
+    'Standard': "Disponible seulement sans Antiquité en main. Effectue un Tirage Chanceux.",
+    'Scroll Divination': "Coup Glacio + soin à tous les membres proches de l'équipe + effectue un Tirage Chanceux (confère une Antiquité aléatoire).",
+    'Chime (Antique Appraisal)': "Variante d'Évaluation des Antiquités. Réduit efficacement le Taux de Vibration ennemi.",
+    'Ruyi (Antique Appraisal)': "Variante d'Évaluation des Antiquités avec le plus haut Multiplicateur DGT des quatre.",
+    'Ding (Antique Appraisal)': "Variante d'Évaluation des Antiquités. Brise efficacement la posture ennemie.",
+    'Mask (Antique Appraisal)': "Variante d'Évaluation des Antiquités, DGT les plus faibles. Attire les ennemis sur son passage.",
+    "Fortune's Favor": "Explosion Glacio. Choisissez une Antiquité parmi quatre dans l'invite qui suit (ou obtenez-en une au hasard).",
+    'Poetic Essence': "Maintenez l'Attaque Normale à 4 Auspices. DGT Glacio comptés comme DGT de Compétence de Résonance, soigne tous les membres proches de l'équipe, plus des effets bonus selon la combinaison d'Auspices (Antithèse +70 % DGT, Triplet +175 % DGT, etc.).",
+    'Scroll of Wonders': "Lance le parchemin et effectue un Tirage Chanceux.",
+    'Timeless Classics': "Le Résonateur entrant voit ses DGT d'Attaque Coordonnée amplifiés de 100 % pendant 28 s.",
   },
 };
