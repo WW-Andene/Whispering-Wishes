@@ -1539,7 +1539,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   // shipped to me for hard-coding into the app as a seed.
   const configImportInputRef = useRef(null);
 
-  const handleExportConfig = useCallback(() => {
+  const handleExportConfig = useCallback(async () => {
     const payload = {
       version: 2,
       exportedAt: new Date().toISOString(),
@@ -1548,13 +1548,30 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       iconDrafts: iconDrafts,
       paintStrokes: paintStrokes,
     };
+    const json = JSON.stringify(payload, null, 2);
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `map-editor-config-${stamp}.json`;
+    // An <a download> click silently does nothing in the Capacitor Android
+    // WebView - no default handler for a blob: URL "download", unlike a
+    // real desktop browser - so this used to report "Exported" even though
+    // nothing was ever written to disk. Same fix as idCardRenderer.js's
+    // native branch: write the file for real via @capacitor/filesystem.
+    if (window.Capacitor?.isNativePlatform?.()) {
+      try {
+        const { Filesystem, Directory } = await import('@capacitor/filesystem');
+        await Filesystem.writeFile({ path: filename, data: json, directory: Directory.Documents, encoding: 'utf8' });
+        showToast('Exported to Documents/' + filename);
+      } catch (err) {
+        showToast('Export failed: ' + err.message);
+      }
+      return;
+    }
     try {
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
       a.href = url;
-      a.download = `map-editor-config-${stamp}.json`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
