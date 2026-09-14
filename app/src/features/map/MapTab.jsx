@@ -964,6 +964,16 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     }
     const visible = drafts.filter(d => d.id !== editingId);
     if (visible.length === 0) return;
+    // Same fix as the in-progress authorPoints pane below: a sibling of
+    // .leaflet-map-pane, not nested inside it, so saved zone outlines don't
+    // vanish under a placed sub-map overlay's canvas either (that canvas is
+    // itself a sibling with an explicit z-index, which always wins against
+    // anything living inside .leaflet-map-pane regardless of that thing's
+    // own z-index - see the other pane's comment for the full explanation).
+    if (!map.getPane('zoneAuthorPane')) {
+      map.createPane('zoneAuthorPane', map.getContainer());
+      map.getPane('zoneAuthorPane').style.zIndex = 1000;
+    }
     const group = L.layerGroup();
     const sorted = [...visible].sort((a, b) => (a.parentId ? 1 : 0) - (b.parentId ? 1 : 0));
     sorted.forEach(z => {
@@ -978,6 +988,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         fillOpacity: isSub ? 0.08 : 0.12,
         dashArray: '6 4',
         className: 'zone-polygon zone-draft',
+        pane: 'zoneAuthorPane',
       }).addTo(group);
       const parentName = isSub
         ? (MAP_ZONES.find(p => p.id === z.parentId)?.name

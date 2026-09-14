@@ -7,8 +7,10 @@
 // editor's clipboard-based "Copy all" (the file-download "Export config"
 // path silently no-ops on the native Android app - see MapTab.jsx's
 // handleExportConfig fix) and the same fix's real Filesystem export,
-// pasted back in from a live app session (2026-09-14T10:15:22Z export),
-// superseding the previous seed baked in here.
+// pasted back in from a live app session (2026-09-14T13:05:46Z export,
+// adding 4 new Mengzhou sub-zones: Xuanfang Hold, Eastern Xuan Peaks,
+// Southern Yuan Hills, Eastern Fang Peaks), superseding the previous
+// (10:15:22Z) seed baked in here.
 
 export const DEFAULT_ZONE_DRAFTS = [
   {
@@ -272,6 +274,34 @@ export const DEFAULT_ZONE_DRAFTS = [
     overlayId: 'mengzhou-mplaceholder1',
     parentId: 'huanglong',
     level: 2,
+  },
+  {
+    id: 'xuanfang-hold',
+    name: 'Xuanfang Hold',
+    polygon: [[-505, 6652], [-495, 6492], [-597, 6345], [-767, 6277], [-917, 6269], [-1057, 6314], [-1149, 6408], [-1263, 6538], [-1322, 6665], [-1347, 6803], [-1361, 6930], [-1324, 7056], [-1197, 7027], [-1055, 7012], [-911, 6993], [-784, 6925], [-743, 6818], [-624, 6856], [-534, 6863], [-519, 6758]],
+    parentId: 'overlay-mengzhou-mplaceholder1',
+    level: 3,
+  },
+  {
+    id: 'eastern-xuan-peaks',
+    name: 'Eastern Xuan Peaks',
+    polygon: [[-252, 6181], [37, 6235], [142, 6489], [158, 6739], [92, 6971], [80, 7265], [-28, 7501], [-266, 7651], [-431, 7793], [-597, 7717], [-657, 7592], [-692, 7560], [-697, 7505], [-680, 7453], [-720, 7331], [-700, 7277], [-726, 7257], [-735, 7123], [-751, 7059], [-740, 6907], [-676, 6814], [-602, 6878], [-530, 6866], [-519, 6755], [-463, 6523], [-357, 6352]],
+    parentId: 'overlay-mengzhou-mplaceholder1',
+    level: 3,
+  },
+  {
+    id: 'southern-yuan-hills',
+    name: 'Southern Yuan Hills',
+    polygon: [[-859, 6975], [-767, 6946], [-760, 7022], [-728, 7247], [-717, 7301], [-685, 7444], [-703, 7558], [-648, 7655], [-648, 7745], [-756, 7809], [-855, 7750], [-997, 7765], [-1135, 7692], [-1243, 7607], [-1313, 7306], [-1299, 7107], [-1275, 7036], [-1166, 7039], [-1012, 7007]],
+    parentId: 'overlay-mengzhou-mplaceholder1',
+    level: 3,
+  },
+  {
+    id: 'eastern-fang-peaks',
+    name: 'Eastern Fang Peaks',
+    polygon: [[-1561, 6438], [-1885, 6626], [-2210, 6814], [-2294, 7066], [-2379, 7318], [-2238, 7548], [-2098, 7778], [-1801, 7764], [-1505, 7750], [-1310, 7503], [-1292, 7401], [-1325, 7279], [-1334, 7123], [-1407, 6939], [-1363, 6747], [-1349, 6503]],
+    parentId: 'overlay-mengzhou-mplaceholder1',
+    level: 3,
   },
 ];
 
