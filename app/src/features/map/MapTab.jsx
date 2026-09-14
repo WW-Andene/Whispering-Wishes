@@ -856,6 +856,18 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       activeLayerRef.current = null;
     }
     if (!authorMode || authorPoints.length === 0) return;
+    // Dedicated pane, well above the sub-map overlay canvas (z-index 400)
+    // and paint canvas (450) - those are plain <canvas> elements appended
+    // directly into the map container rather than through Leaflet's own
+    // pane system, so relying on the default markerPane (z-index 600) put
+    // them at the mercy of DOM-order/stacking-context quirks between the
+    // two: points were rendering underneath a placed sub-map overlay
+    // (Mengzhou, Lahai-Roi, ...) while working fine over the base Solaris
+    // map. createPane is idempotent - safe to call on every render.
+    if (!map.getPane('zoneAuthorPane')) {
+      map.createPane('zoneAuthorPane');
+      map.getPane('zoneAuthorPane').style.zIndex = 1000;
+    }
     const group = L.layerGroup();
     const latLngs = authorPoints.map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
 
@@ -863,11 +875,11 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     if (latLngs.length >= 3) {
       L.polygon(latLngs, {
         color: COLOR_ACTIVE, weight: 1.5, fillColor: COLOR_ACTIVE, fillOpacity: 0.12,
-        dashArray: '4 3', className: 'zone-author-poly', interactive: false,
+        dashArray: '4 3', className: 'zone-author-poly', interactive: false, pane: 'zoneAuthorPane',
       }).addTo(group);
     } else if (latLngs.length >= 2) {
       L.polyline(latLngs, {
-        color: COLOR_ACTIVE, weight: 1.5, dashArray: '4 3', className: 'zone-author-poly', interactive: false,
+        color: COLOR_ACTIVE, weight: 1.5, dashArray: '4 3', className: 'zone-author-poly', interactive: false, pane: 'zoneAuthorPane',
       }).addTo(group);
     }
 
@@ -879,7 +891,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         iconSize: [22, 22],
         iconAnchor: [11, 11],
       });
-      const marker = L.marker(ll, { draggable: true, icon, autoPan: false, keyboard: false });
+      const marker = L.marker(ll, { draggable: true, icon, autoPan: false, keyboard: false, pane: 'zoneAuthorPane' });
       marker.on('dragend', (e) => {
         const np = map.project(e.target.getLatLng(), NATIVE_ZOOM);
         const clamped = [
@@ -910,7 +922,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           iconAnchor: [8, 8],
         });
         const insertAt = i + 1;
-        const ghost = L.marker(midLL, { icon: ghostIcon, keyboard: false });
+        const ghost = L.marker(midLL, { icon: ghostIcon, keyboard: false, pane: 'zoneAuthorPane' });
         ghost.on('click', (ev) => {
           L.DomEvent.stopPropagation(ev);
           setAuthorPoints(prev => {
