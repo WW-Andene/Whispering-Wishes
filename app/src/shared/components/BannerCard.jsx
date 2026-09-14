@@ -200,22 +200,21 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               weapon-type icon and element/type badge sit in their own row ABOVE the name again,
               matching StandardBannerSection.jsx's identical "Standard Weapon"/"Available 5-star"
               kuro-badge tag - both a bare kuro-badge with no font-size override, same dimensions.
-              The weapon-type icon square is sized to kuro-badge's ACTUAL rendered height when it
-              holds a 14px icon: 14px icon + 2px*2 padding + 1px*2 border (kuro.css) = 20px - not
-              its 8px/1.4-line-height text height, which the icon (14px) already exceeds. Measured
-              via computed getBoundingClientRect, not assumed, after the first estimate (16px) was
-              still visibly off. */}
+              Direct user request: 20px (14px icon + kuro.css's 2px*2 padding + 1px*2 border) isn't
+              a PerfectSuite value - both tags now use an explicit 24px (Primary) height instead,
+              via min-h-6 on the kuro-badge (whose own CSS padding still yields 20px) and a 24px
+              icon square, rather than editing kuro-badge's shared padding app-wide. */}
           {/* Direct user request: 2px gap between the weapon-type icon and element tag. */}
           <div className="flex items-center gap-[2px] mb-0.5">
             {isChar && getWeaponTypeIcon(item.weaponType) && (
               // Direct user request: border color matches the element kuro-badge's own
               // borderColor (style.borderColor) instead of a generic white/10, so the two
               // tags in this row share the same border color, not just the same dimensions.
-              <span className="w-5 h-5 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
+              <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
                 <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
               </span>
             )}
-            <span className={`kuro-badge ${style.text} inline-flex items-center gap-1`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
+            <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
               {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
               {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
