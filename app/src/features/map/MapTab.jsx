@@ -23,6 +23,10 @@ const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
 const MAP_BG = '#062634';
 const MAP_BG_TRANSPARENT = 'rgba(6, 38, 52, 0.55)';
+// Fully-transparent MAP_BG, for the fade-pen's radial-gradient outer stop
+// (see the paint-stroke draw loop's 'fade' branch) — distinct from
+// MAP_BG_TRANSPARENT above, which is a fixed 55% used for UI chrome, not 0%.
+const MAP_BG_ZERO_ALPHA = 'rgba(6, 38, 52, 0)';
 const BASE = import.meta.env.BASE_URL || '/';
 const AUTHOR_FLAG_KEY = 'ww-zone-author';
 
@@ -65,6 +69,12 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   // Ocean-paint tool state — tap/drag to blot map artefacts with ocean color.
   const [paintMode, setPaintMode] = useState(false);
   const [paintBrushSize, setPaintBrushSize] = useState(40);       // radius in native px
+  // 'solid' = original hard-edged blot; 'fade' = soft radial-gradient dabs
+  // that fade to transparent at the brush edge, for blending over an
+  // artefact's edge rather than cutting it off sharply. Stored per-stroke
+  // (stroke.mode) so existing saved strokes with no mode field still render
+  // as 'solid', unchanged.
+  const [paintBrushMode, setPaintBrushMode] = useState('solid');
   const [paintStrokes, setPaintStrokes] = useState(loadPaintStrokes);
   const paintCanvasRef = useRef(null);
   const paintDrawRef = useRef(() => {});
@@ -1261,23 +1271,43 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
         const pts = stroke.points.map(pt => map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM)));
 
-        // Single opaque pass — no multi-pass layering so strokes look flat,
-        // not embossed. Colour matches the ocean exactly, so painting over
-        // artefacts in ocean areas reads as erasing them.
-        ctx.lineWidth = Math.max(1, radiusPx * 2);
-
-        if (pts.length === 1) {
-          const c = pts[0];
-          ctx.beginPath();
-          ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
-          ctx.fill();
-        } else {
-          ctx.beginPath();
-          pts.forEach((c, i) => {
-            if (i === 0) ctx.moveTo(c.x, c.y);
-            else ctx.lineTo(c.x, c.y);
+        if (stroke.mode === 'fade') {
+          // Fade pen — stamp a soft radial-gradient dab (opaque centre,
+          // fading to fully transparent at the brush edge) at every
+          // recorded point instead of a single hard-edged stroke path, so
+          // the blot blends into whatever's underneath at its edges rather
+          // than cutting it off sharply. Points are recorded at most ~4
+          // native px apart (see onMove's spacing check below), which is
+          // well inside radiusPx for any usable brush size, so consecutive
+          // dabs overlap enough to read as one continuous soft stroke.
+          pts.forEach(c => {
+            const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, radiusPx);
+            grad.addColorStop(0, MAP_BG);
+            grad.addColorStop(1, MAP_BG_ZERO_ALPHA);
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
+            ctx.fill();
           });
-          ctx.stroke();
+        } else {
+          // Solid pen — single opaque pass, no multi-pass layering so
+          // strokes look flat, not embossed. Colour matches the ocean
+          // exactly, so painting over artefacts in ocean areas reads as
+          // erasing them.
+          ctx.lineWidth = Math.max(1, radiusPx * 2);
+          if (pts.length === 1) {
+            const c = pts[0];
+            ctx.beginPath();
+            ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.beginPath();
+            pts.forEach((c, i) => {
+              if (i === 0) ctx.moveTo(c.x, c.y);
+              else ctx.lineTo(c.x, c.y);
+            });
+            ctx.stroke();
+          }
         }
       });
     };
@@ -1333,6 +1363,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       paintLiveRef.current = {
         points: [containerToNative(e.clientX, e.clientY)],
         size: paintBrushSize,
+        mode: paintBrushMode,
       };
       paintDrawRef.current();
       try { canvas.setPointerCapture(e.pointerId); } catch {}
@@ -1390,7 +1421,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       paintLiveRef.current = null;
       paintDrawRef.current();
     };
-  }, [paintMode, paintBrushSize, paintStrokes, mapReady]);
+  }, [paintMode, paintBrushSize, paintBrushMode, paintStrokes, mapReady]);
 
   const handlePaintUndo = useCallback(() => {
     setPaintStrokes(prev => {
@@ -3133,6 +3164,20 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                       className="overlay-slider"
                     />
                   </div>
+                  <button
+                    className={`zone-author-btn ${paintBrushMode === 'solid' ? 'is-active' : ''}`}
+                    type="button"
+                    aria-pressed={paintBrushMode === 'solid'}
+                    onClick={() => setPaintBrushMode('solid')}
+                    title="Hard-edged blot — paints a flat, fully opaque shape"
+                  >Solid</button>
+                  <button
+                    className={`zone-author-btn ${paintBrushMode === 'fade' ? 'is-active' : ''}`}
+                    type="button"
+                    aria-pressed={paintBrushMode === 'fade'}
+                    onClick={() => setPaintBrushMode('fade')}
+                    title="Soft-edged blot — fades to transparent at the brush edge, for blending over an artefact's border"
+                  >Fade</button>
                 </div>
 
                 {/* ── Config export / import — backup & restore the whole editor state ── */}
