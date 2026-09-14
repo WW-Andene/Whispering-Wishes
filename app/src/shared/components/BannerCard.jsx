@@ -205,7 +205,12 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               icon+text layout, via the same kuro-badge class on all three. Role's label
               collapses 'Main DPS'/'Sub DPS' to the shorter 'DPS' (the icon is already shared
               between them); Healer/Support/Support-Healer keep their own distinct ROLE_FR text. */}
-          <div className="flex items-center gap-[2px] flex-wrap mb-0.5">
+          {/* Direct user report: despite mb-0.5/mt-0.5 being numerically equal to the name->title
+              gap below, this one reads visually bigger - text-xl's own line-height adds more
+              half-leading above the glyphs than text-sm's does for the title, on top of the same
+              2px margin. Swapped so this margin is smaller and the title's is bigger, to
+              compensate and make the two gaps look equal rather than just measure equal. */}
+          <div className="flex items-center gap-[2px] flex-wrap">
             {isChar && getRoleIcon(CHARACTER_DATA[item.name]?.role) && (() => {
               const role = CHARACTER_DATA[item.name].role;
               const roleLabel = role.includes('DPS') ? 'DPS' : (getLocale() === 'fr' && ROLE_FR[role]) || role;
@@ -240,7 +245,7 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
             className="font-bold text-xl text-white leading-tight cursor-pointer"
             onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
           >{item.name}</h4>
-          {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
+          {item.title && <p className="text-gray-200 text-sm mt-1 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         
         <div>
