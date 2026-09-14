@@ -24,10 +24,27 @@ function joinUrl(...parts) {
 }
 
 export function tileUrlsForOverlay(cat) {
-  const cols = Math.ceil(cat.naturalWidth / TILE_PX);
-  const rows = Math.ceil(cat.naturalHeight / TILE_PX);
   const encoded = encodeDir(cat.imageUrl);
   const urls = [];
+  // Pyramid overlays (cat.pyramid - see mapOverlays.js's Mengzhou entry)
+  // have a full lossless/{z}/{y}/{x}.png pyramid instead of a single flat
+  // lossless/{y}/{x}.png grid; "download for offline" needs every level's
+  // tiles, same as tileUrlsForBaseMap does for Solaris_3 below.
+  if (cat.pyramid) {
+    for (let z = cat.minZoom; z <= cat.maxZoom; z++) {
+      const factor = Math.pow(2, cat.maxZoom - z);
+      const cols = Math.ceil(cat.naturalWidth / factor / TILE_PX);
+      const rows = Math.ceil(cat.naturalHeight / factor / TILE_PX);
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          urls.push(joinUrl(BASE_URL + encoded, 'lossless', z, y, `${x}.png`));
+        }
+      }
+    }
+    return urls;
+  }
+  const cols = Math.ceil(cat.naturalWidth / TILE_PX);
+  const rows = Math.ceil(cat.naturalHeight / TILE_PX);
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       urls.push(joinUrl(BASE_URL + encoded, 'lossless', y, `${x}.png`));

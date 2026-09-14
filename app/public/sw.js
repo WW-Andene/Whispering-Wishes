@@ -26,9 +26,12 @@ const MAX_IMG_ENTRIES = 250;
 const TILE_CACHE_VERSION = 'v1';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
-//   * sub-map overlays at /<dir>/lossless/{y}/{x}.png
+//   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
+//   * a pyramid sub-map overlay (currently only Mengzhou - see its
+//     mapOverlays.js catalog entry) at /<dir>/lossless/{z}/{y}/{x}.png
 //   * the Solaris_3 base world map at /map-tiles/Solaris_3/{z}/{y}/{x}.webp
 const OVERLAY_TILE_RE = /\/lossless\/\d+\/\d+\.png$/i;
+const OVERLAY_PYRAMID_TILE_RE = /\/lossless\/\d+\/\d+\/\d+\.png$/i;
 const BASE_TILE_RE = /\/map-tiles\/Solaris_3\/\d+\/\d+\/\d+\.webp$/i;
 
 // "Download for offline" persistent asset cache — character portrait/spine
@@ -242,7 +245,7 @@ self.addEventListener('fetch', (event) => {
   // generic image route so these don't get evicted by the 250-entry image
   // LRU. Users can pre-warm via the "download" button (download-overlay
   // message) and purge via the "remove" button.
-  if (OVERLAY_TILE_RE.test(url.pathname) || BASE_TILE_RE.test(url.pathname)) {
+  if (OVERLAY_TILE_RE.test(url.pathname) || OVERLAY_PYRAMID_TILE_RE.test(url.pathname) || BASE_TILE_RE.test(url.pathname)) {
     event.respondWith(jsDelivrCacheFirst(event.request, url, TILE_CACHE));
     return;
   }
@@ -343,7 +346,7 @@ self.addEventListener('message', (event) => {
 function resolveFetchUrl(url) {
   try {
     const u = new URL(url, self.location.origin);
-    const isRemoteAsset = ASSET_DIR_RE.test(u.pathname) || OVERLAY_TILE_RE.test(u.pathname) || BASE_TILE_RE.test(u.pathname);
+    const isRemoteAsset = ASSET_DIR_RE.test(u.pathname) || OVERLAY_TILE_RE.test(u.pathname) || OVERLAY_PYRAMID_TILE_RE.test(u.pathname) || BASE_TILE_RE.test(u.pathname);
     if (u.origin === self.location.origin && isRemoteAsset) {
       return JSDELIVR_ASSET_BASE + u.pathname + u.search;
     }

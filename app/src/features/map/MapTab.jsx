@@ -991,8 +991,11 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
     const tileCache = OVERLAY_TILE_CACHE;
 
-    const getTile = (cat, ty, tx) => {
-      const key = `${cat.id}:${ty}:${tx}`;
+    // `z` is only meaningful for pyramid overlays (cat.pyramid) - undefined
+    // for every flat single-level overlay, so the cache key/URL below stay
+    // byte-identical to before for all of them.
+    const getTile = (cat, ty, tx, z) => {
+      const key = z == null ? `${cat.id}:${ty}:${tx}` : `${cat.id}:${z}:${ty}:${tx}`;
       const hit = tileCache.get(key);
       if (hit) {
         // Bump to most-recent by re-inserting.
@@ -1003,10 +1006,12 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const img = new Image();
       img.decoding = 'async';
       // Derive tile URL from the catalog's imageUrl: replace the filename
-      // with lossless/{y}/{x}.png and URL-encode each segment defensively.
+      // with lossless/{y}/{x}.png (or lossless/{z}/{y}/{x}.png for a
+      // pyramid overlay) and URL-encode each segment defensively.
       const dir = cat.imageUrl.replace(/\/[^/]+$/, '');
       const segs = dir.split('/').map(encodeURIComponent).join('/');
-      const url = (BASE + segs + `/lossless/${ty}/${tx}.png`).replace(/([^:])\/\//g, '$1/');
+      const tilePath = z == null ? `/lossless/${ty}/${tx}.png` : `/lossless/${z}/${ty}/${tx}.png`;
+      const url = (BASE + segs + tilePath).replace(/([^:])\/\//g, '$1/');
       img.src = url;
       img.onload = () => overlayRedrawRef.current();
       img.onerror = () => { tileCache.delete(key); };
@@ -1065,8 +1070,23 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         const displayScale = s * zoomFactor;
         const nw = cat.naturalWidth;
         const nh = cat.naturalHeight;
-        const cols = Math.ceil(nw / OVERLAY_TILE_PX);
-        const rows = Math.ceil(nh / OVERLAY_TILE_PX);
+
+        // Pyramid overlays (cat.pyramid — currently only Mengzhou, see that
+        // catalog entry's own comment) pick the tile level whose native
+        // resolution is closest to 1:1 with the screen, so a fully
+        // zoomed-out overlay draws from a handful of coarse tiles instead of
+        // every native tile at once. Flat overlays are unaffected: z stays
+        // null and tileFactor stays 1, identical to the pre-pyramid tiling.
+        let z = null;
+        let tileFactor = 1;
+        if (cat.pyramid) {
+          const idealZ = cat.maxZoom + Math.log2(displayScale);
+          z = Math.min(cat.maxZoom, Math.max(cat.minZoom, Math.round(idealZ)));
+          tileFactor = Math.pow(2, cat.maxZoom - z);
+        }
+        const tilePx = OVERLAY_TILE_PX * tileFactor;
+        const cols = Math.ceil(nw / tilePx);
+        const rows = Math.ceil(nh / tilePx);
         const centerPt = map.latLngToContainerPoint(map.unproject(ov.center, NATIVE_ZOOM));
 
         // Compute which tiles of the overlay are visible: inverse-transform
@@ -1091,10 +1111,10 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         const maxLx = Math.max(c0.x, c1.x, c2.x, c3.x);
         const minLy = Math.min(c0.y, c1.y, c2.y, c3.y);
         const maxLy = Math.max(c0.y, c1.y, c2.y, c3.y);
-        const tMinX = Math.max(0, Math.floor(minLx / OVERLAY_TILE_PX) - OVERLAY_TILE_MARGIN);
-        const tMaxX = Math.min(cols - 1, Math.floor(maxLx / OVERLAY_TILE_PX) + OVERLAY_TILE_MARGIN);
-        const tMinY = Math.max(0, Math.floor(minLy / OVERLAY_TILE_PX) - OVERLAY_TILE_MARGIN);
-        const tMaxY = Math.min(rows - 1, Math.floor(maxLy / OVERLAY_TILE_PX) + OVERLAY_TILE_MARGIN);
+        const tMinX = Math.max(0, Math.floor(minLx / tilePx) - OVERLAY_TILE_MARGIN);
+        const tMaxX = Math.min(cols - 1, Math.floor(maxLx / tilePx) + OVERLAY_TILE_MARGIN);
+        const tMinY = Math.max(0, Math.floor(minLy / tilePx) - OVERLAY_TILE_MARGIN);
+        const tMaxY = Math.min(rows - 1, Math.floor(maxLy / tilePx) + OVERLAY_TILE_MARGIN);
         if (tMinX > tMaxX || tMinY > tMaxY) return; // overlay entirely off-screen
 
         ctx.save();
@@ -1105,16 +1125,16 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
         for (let ty = tMinY; ty <= tMaxY; ty++) {
           for (let tx = tMinX; tx <= tMaxX; tx++) {
-            const tile = getTile(cat, ty, tx);
+            const tile = getTile(cat, ty, tx, z);
             if (!tile.complete || tile.naturalWidth === 0) continue;
-            // Each tile covers overlay-local [tx·256..tx·256+256, ty·256..ty·256+256].
+            // Each tile covers overlay-local [tx·tilePx..tx·tilePx+tilePx, ty·tilePx..ty·tilePx+tilePx].
             // The ctx was translated to the overlay's centre, so shift by -nw/2, -nh/2.
             ctx.drawImage(
               tile,
-              tx * OVERLAY_TILE_PX - nw / 2,
-              ty * OVERLAY_TILE_PX - nh / 2,
-              OVERLAY_TILE_PX,
-              OVERLAY_TILE_PX,
+              tx * tilePx - nw / 2,
+              ty * tilePx - nh / 2,
+              tilePx,
+              tilePx,
             );
           }
         }
