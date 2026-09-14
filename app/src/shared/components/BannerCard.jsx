@@ -177,10 +177,11 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
             // inline-block child leaves in a block parent's line box - without it, the pill sat
             // further from the card's top edge than from its left edge despite equal padding.
             <div className="mb-2 flex">
-              {/* Direct user request: 16px (PerfectSuite Primary). Horizontal padding matches
-                  kuro-badge's own 8px (kuro.css) rather than Tailwind's 6px px-1.5, so the two
-                  pill badges in this card share the same padding convention. */}
-              <span className="text-[16px] leading-none bg-yellow-500 text-black px-2 py-0.5 rounded-full font-bold" style={{textShadow: 'none'}}>{t('tracker.newBadge')}</span>
+              {/* Direct user request: transparent interior like every other tag - switched from a
+                  solid bg-yellow-500 fill to kuro-badge-yellow (rgba(234,179,8,0.1) background,
+                  same low-opacity fill as the Role/Weapon/Element tags), keeping only the pill
+                  shape (rounded-full) and 16px size as its distinguishing traits. */}
+              <span className="kuro-badge kuro-badge-yellow text-[16px] leading-none px-2 py-0.5 rounded-full font-bold min-h-6">{t('tracker.newBadge')}</span>
             </div>
           )}
           {/* Direct user request 2026-09-11: the main featured 5★'s own name now opens its
