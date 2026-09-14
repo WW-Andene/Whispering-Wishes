@@ -20,7 +20,7 @@ import { ConveneVideo } from './ConveneVideoLayer.jsx';
 import { ConvenePullPills } from './ConvenePullPills.jsx';
 import { ConvenePullSimModal } from './ConvenePullSimModal.jsx';
 import { t, getLocale } from '../../utils/i18n.js';
-import { WEAPON_TYPE_FR } from '../../data/characters.fr.js';
+import { WEAPON_TYPE_FR, ROLE_FR } from '../../data/characters.fr.js';
 import { CURRENT_BANNER_TITLES_FR } from '../../data/banners.fr.js';
 
 const BANNER_GRADIENT_MAP = {
@@ -199,24 +199,35 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               file already passes. */}
           {/* Direct user request: the tag row sits ABOVE the name again, ordered
               Role -> Weapon -> Element (left to right). Role is character-only (isChar &&
-              CHARACTER_DATA[item.name]?.role) - weapons have no combat role. */}
+              CHARACTER_DATA[item.name]?.role) - weapons have no combat role.
+              Direct user request: each tag also carries its text label now (DPS/Healer/Support,
+              and the weapon-type name), not just its icon - matching the Element tag's own
+              icon+text layout, via the same kuro-badge class on all three. Role's label
+              collapses 'Main DPS'/'Sub DPS' to the shorter 'DPS' (the icon is already shared
+              between them); Healer/Support/Support-Healer keep their own distinct ROLE_FR text. */}
           <div className="flex items-center gap-[2px] flex-wrap mb-0.5">
-            {isChar && getRoleIcon(CHARACTER_DATA[item.name]?.role) && (
-              <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
-                <img src={getRoleIcon(CHARACTER_DATA[item.name]?.role)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
-              </span>
-            )}
+            {isChar && getRoleIcon(CHARACTER_DATA[item.name]?.role) && (() => {
+              const role = CHARACTER_DATA[item.name].role;
+              const roleLabel = role.includes('DPS') ? 'DPS' : (getLocale() === 'fr' && ROLE_FR[role]) || role;
+              return (
+                <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
+                  <img src={getRoleIcon(role)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+                  {roleLabel}
+                </span>
+              );
+            })()}
             {/* Direct user request: 2px gap between the weapon-type icon and element tag.
                 Direct user request: 20px (14px icon + kuro.css's 2px*2 padding + 1px*2 border)
                 isn't a PerfectSuite value - both tags use an explicit 24px (Primary) height
-                instead, via min-h-6 on the kuro-badge and a 24px icon square, rather than
-                editing kuro-badge's shared padding app-wide. */}
+                instead, via min-h-6 on the kuro-badge, rather than editing kuro-badge's shared
+                padding app-wide. */}
             {isChar && getWeaponTypeIcon(item.weaponType) && (
               // Direct user request: border color matches the element kuro-badge's own
-              // borderColor (style.borderColor) instead of a generic white/10, so the two
+              // borderColor (style.borderColor) instead of a generic white/10, so all three
               // tags in this row share the same border color, not just the same dimensions.
-              <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
+              <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
                 <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+                {(getLocale() === 'fr' && WEAPON_TYPE_FR[item.weaponType]) || item.weaponType}
               </span>
             )}
             <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
