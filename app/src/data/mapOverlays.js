@@ -66,15 +66,16 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 1200,
   },
   {
-    // .png rather than .webp: source is 16384px wide, 1px over WebP's hard
-    // 16383px-per-dimension encode limit. Same tradeoff as hualong-outlines
-    // above - useOfflineTiles.js only lists .webp-referenced overlays in the
-    // bulk "download for offline" panel, so this one won't appear there, but
-    // the actual tile rendering (lossless/{y}/{x}.png) is unaffected either way.
+    // Source was 16384px wide - 1px over WebP's hard 16383px-per-dimension
+    // encode limit - so the full image was cropped to 16383 wide and the
+    // entire lossless/ tile grid re-sliced from that corrected image before
+    // this .webp was encoded. .webp (not .png) so this overlay is included
+    // in useOfflineTiles.js's "download for offline" list like every other
+    // tileable overlay.
     id: 'mengzhou',
     name: 'Mengzhou',
-    imageUrl: 'map-tiles/Mengzhou/Mengzhou.png',
-    naturalWidth: 16384,
+    imageUrl: 'map-tiles/Mengzhou/Mengzhou.webp',
+    naturalWidth: 16383,
     naturalHeight: 10240,
   },
 ];

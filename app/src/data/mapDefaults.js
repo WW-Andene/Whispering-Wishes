@@ -419,6 +419,19 @@ export const DEFAULT_ZONE_DRAFTS = [
     parentId: 'new-zone-2',
     level: 2,
   },
+  {
+    // Polygon is the overlay's own bounding quad, computed from its
+    // placement draft's center/scale/naturalWidth/naturalHeight (rotation 0,
+    // so an axis-aligned rectangle) - same relationship every other
+    // overlay-linked zone in this file has to its own overlay draft.
+    id: 'overlay-mengzhou-mplaceholder1',
+    name: 'Mengzhou',
+    polygon: [
+      [8517, 4386], [10483, 4386], [10483, 5614], [8517, 5614],
+    ],
+    overlayId: 'mengzhou-mplaceholder1',
+    level: 1,
+  },
 ];
 
 export const DEFAULT_OVERLAY_DRAFTS = [
@@ -487,6 +500,21 @@ export const DEFAULT_OVERLAY_DRAFTS = [
     floor: -4,
     opacity: 1,
     locked: true,
+  },
+  {
+    // Unlocked (unlike the others above) so the zone author can freely
+    // reposition it via the in-app editor. center/scale place it in the
+    // world map's upper-right area, clear of every other overlay's
+    // footprint, at a scale giving it an on-map size comparable to theirs.
+    id: 'mengzhou-mplaceholder1',
+    catalogId: 'mengzhou',
+    name: 'Mengzhou',
+    center: [9500, 5000],
+    scale: 0.12,
+    rotation: 0,
+    floor: 0,
+    opacity: 1,
+    locked: false,
   },
 ];
 
