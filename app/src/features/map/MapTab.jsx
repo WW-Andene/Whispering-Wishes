@@ -69,11 +69,12 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   // Ocean-paint tool state — tap/drag to blot map artefacts with ocean color.
   const [paintMode, setPaintMode] = useState(false);
   const [paintBrushSize, setPaintBrushSize] = useState(40);       // radius in native px
-  // 'solid' = original hard-edged blot; 'fade' = soft radial-gradient dabs
-  // that fade to transparent at the brush edge, for blending over an
-  // artefact's edge rather than cutting it off sharply. Stored per-stroke
-  // (stroke.mode) so existing saved strokes with no mode field still render
-  // as 'solid', unchanged.
+  // 'solid' = original hard-edged blot; 'fade' = soft radial-gradient dab of
+  // translucent ocean colour, fading to transparent at the brush edge;
+  // 'blur' = blurs the map/overlay pixels already there instead of painting
+  // any new colour, feathered the same way 'fade' feathers its colour.
+  // Stored per-stroke (stroke.mode) so existing saved strokes with no mode
+  // field still render as 'solid', unchanged.
   const [paintBrushMode, setPaintBrushMode] = useState('solid');
   const [paintStrokes, setPaintStrokes] = useState(loadPaintStrokes);
   const paintCanvasRef = useRef(null);
@@ -1246,6 +1247,86 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       return { dpr, cw, ch };
     };
 
+    // Blur pen — smooths whatever's actually underneath (base map tiles +
+    // sub-map overlay canvas) instead of painting new colour over it, for
+    // softening a hard edge without erasing/recolouring it. Unlike
+    // 'solid'/'fade' this can't be drawn straight into the shared paint
+    // canvas with a fill style: it has to (1) snapshot the current on-screen
+    // pixels under the stroke, (2) blur that snapshot, (3) feather its edges
+    // with the same soft radial mask 'fade' uses, then (4) composite the
+    // result back. One offscreen pair of canvases per stroke per frame —
+    // acceptable here since this tool only runs in the (rarely used)
+    // author-mode editor, never during normal play.
+    const drawBlurStroke = (ctx, pts, radiusPx, dpr, cw, ch) => {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      pts.forEach(c => {
+        minX = Math.min(minX, c.x - radiusPx); maxX = Math.max(maxX, c.x + radiusPx);
+        minY = Math.min(minY, c.y - radiusPx); maxY = Math.max(maxY, c.y + radiusPx);
+      });
+      const blurPx = Math.max(2, radiusPx * 0.35);
+      // Pad the snapshot beyond the stroke's own bounds so the blur filter
+      // has real pixels to sample from at the stroke's edge instead of
+      // sampling past the snapshot into implicit transparency (which would
+      // fade the blurred result toward transparent black at its border).
+      const pad = Math.ceil(blurPx * 3);
+      const sx = Math.max(0, Math.floor(minX - pad));
+      const sy = Math.max(0, Math.floor(minY - pad));
+      const ex = Math.min(cw, Math.ceil(maxX + pad));
+      const ey = Math.min(ch, Math.ceil(maxY + pad));
+      const sw = ex - sx, sh = ey - sy;
+      if (sw <= 0 || sh <= 0) return;
+
+      const snap = document.createElement('canvas');
+      snap.width = Math.round(sw * dpr);
+      snap.height = Math.round(sh * dpr);
+      const sctx = snap.getContext('2d');
+      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      sctx.translate(-sx, -sy);
+
+      // Base map tiles are plain <img> elements in Leaflet's tile pane, not
+      // a canvas — draw every currently-loaded one that overlaps this
+      // stroke's snapshot rect at its actual on-screen position.
+      const containerRect = container.getBoundingClientRect();
+      container.querySelectorAll('.leaflet-tile-pane img.leaflet-tile-loaded').forEach(img => {
+        const r = img.getBoundingClientRect();
+        const ix = r.left - containerRect.left, iy = r.top - containerRect.top;
+        if (ix > ex || iy > ey || ix + r.width < sx || iy + r.height < sy) return;
+        try { sctx.drawImage(img, ix, iy, r.width, r.height); } catch {}
+      });
+      // Sub-map overlays are already a canvas (overlayCanvasRef) — draw the
+      // whole thing in, drawImage scales from its own backing size to the
+      // 0,0,cw,ch destination regardless of dpr, so no separate handling
+      // needed versus the tile <img>s above.
+      if (overlayCanvasRef.current) {
+        try { sctx.drawImage(overlayCanvasRef.current, 0, 0, cw, ch); } catch {}
+      }
+
+      const blurred = document.createElement('canvas');
+      blurred.width = snap.width;
+      blurred.height = snap.height;
+      const bctx = blurred.getContext('2d');
+      bctx.filter = `blur(${blurPx * dpr}px)`;
+      bctx.drawImage(snap, 0, 0);
+      bctx.filter = 'none';
+
+      // Feather to the brush's circular footprint the same way 'fade'
+      // does, but masking the blurred snapshot's alpha (destination-in)
+      // instead of painting colour.
+      bctx.globalCompositeOperation = 'destination-in';
+      pts.forEach(c => {
+        const grad = bctx.createRadialGradient(c.x - sx, c.y - sy, 0, c.x - sx, c.y - sy, radiusPx);
+        grad.addColorStop(0, 'rgba(0,0,0,1)');
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        bctx.fillStyle = grad;
+        bctx.beginPath();
+        bctx.arc(c.x - sx, c.y - sy, radiusPx, 0, Math.PI * 2);
+        bctx.fill();
+      });
+      bctx.globalCompositeOperation = 'source-over';
+
+      ctx.drawImage(blurred, sx, sy, sw, sh);
+    };
+
     const draw = () => {
       const { dpr, cw, ch } = syncSize();
       const ctx = canvas.getContext('2d');
@@ -1271,7 +1352,9 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
         const pts = stroke.points.map(pt => map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM)));
 
-        if (stroke.mode === 'fade') {
+        if (stroke.mode === 'blur') {
+          drawBlurStroke(ctx, pts, radiusPx, dpr, cw, ch);
+        } else if (stroke.mode === 'fade') {
           // Fade pen — stamp a soft radial-gradient dab (opaque centre,
           // fading to fully transparent at the brush edge) at every
           // recorded point instead of a single hard-edged stroke path, so
@@ -3176,8 +3259,15 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                     type="button"
                     aria-pressed={paintBrushMode === 'fade'}
                     onClick={() => setPaintBrushMode('fade')}
-                    title="Soft-edged blot — fades to transparent at the brush edge, for blending over an artefact's border"
+                    title="Soft-edged blot — paints translucent ocean colour, fading to transparent at the brush edge"
                   >Fade</button>
+                  <button
+                    className={`zone-author-btn ${paintBrushMode === 'blur' ? 'is-active' : ''}`}
+                    type="button"
+                    aria-pressed={paintBrushMode === 'blur'}
+                    onClick={() => setPaintBrushMode('blur')}
+                    title="Blurs the map/overlay pixels already there, feathered at the brush edge — smooths a hard edge without painting any new colour"
+                  >Blur</button>
                 </div>
 
                 {/* ── Config export / import — backup & restore the whole editor state ── */}
