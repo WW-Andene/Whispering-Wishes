@@ -20,7 +20,7 @@ import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { usePersistedState } from '../../hooks/usePersistedState.js';
 import { generateUniqueId } from '../../utils/generateId.js';
-import { getElementColor, getElementShape } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementShape, getRoleIcon } from '../../shared/utils/elementVisuals.js';
 import { CHARACTER_DATA, ALL_5STAR_RESONATORS, ALL_4STAR_RESONATORS } from '../../data/characters.js';
 import { WEAPON_DATA, getLocalizedWeaponData } from '../../data/weapons.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
@@ -1105,7 +1105,10 @@ function PlannerTab({
                               <div className="absolute inset-x-0 bottom-0 h-1/2 kuro-gradient-fade-up" />
                               <div className="absolute top-1 left-1 w-3.5 h-3.5 rounded-full text-2xs font-bold text-white flex items-center justify-center" style={{ background: getElementColor(cd?.element) }}>{getElementShape(cd?.element) || cd?.element?.[0]}</div>
                               <div className="absolute top-1 right-1"><Star size={8} className={rarity5 ? 'text-yellow-400' : 'text-purple-400'} fill="currentColor" /></div>
-                              {cd?.role && <div className="absolute bottom-4 inset-x-0 flex justify-center"><span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{(getLocale() === 'fr' && ROLE_FR[cd.role]) || cd.role}</span></div>}
+                              {cd?.role && <div className="absolute bottom-4 inset-x-0 flex justify-center"><span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)] inline-flex items-center gap-1">
+                                {getRoleIcon(cd.role) && <img src={getRoleIcon(cd.role)} alt="" className="w-2.5 h-2.5" onError={hideOnError} />}
+                                {(getLocale() === 'fr' && ROLE_FR[cd.role]) || cd.role}
+                              </span></div>}
                               <div className="absolute bottom-0 inset-x-0 p-1 z-10"><div className="text-white text-2xs font-medium truncate text-center leading-tight">{name}</div></div>
                             </button>
                           );

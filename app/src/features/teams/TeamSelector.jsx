@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Search, Star, Users, X, Heart, ShieldAlert, Shield, Swords } from 'lucide-react';
 import { CHARACTER_DATA } from '../../data/characters.js';
-import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon, getStatIcon, COMBAT_ROLE_ICONS } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementShape, getElementIcon, getCombatRoleIcon, getRegionIcon, getStatIcon, COMBAT_ROLE_ICONS, getRoleIcon } from '../../shared/utils/elementVisuals.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { KuroSelect } from '../../shared/components/KuroSelect.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -318,7 +318,10 @@ export default function TeamSelector({
                                   {/* Role tag */}
                                   {cd?.role && (
                                     <div className="absolute bottom-4 inset-x-0 flex justify-center">
-                                      <span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)]">{(getLocale() === 'fr' && ROLE_FR[cd.role]) || cd.role}</span>
+                                      <span className="text-2xs px-1 py-0.5 rounded bg-black/60 text-gray-300 border border-[var(--border-medium)] inline-flex items-center gap-1">
+                                        {getRoleIcon(cd.role) && <img src={getRoleIcon(cd.role)} alt="" className="w-2.5 h-2.5" onError={hideOnError} />}
+                                        {(getLocale() === 'fr' && ROLE_FR[cd.role]) || cd.role}
+                                      </span>
                                     </div>
                                   )}
                                   {/* Name */}

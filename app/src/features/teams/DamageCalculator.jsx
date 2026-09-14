@@ -5,7 +5,7 @@ import { WEAPON_DATA } from '../../data/weapons.js';
 import { ECHO_DATA, getEnemyStatsAtLevel } from '../../data/echoes.js';
 import { isHealerRole, DMG_FOCUS_ROLE_TAG } from './calcEngine.js';
 import { haptic } from '../../utils/haptics.js';
-import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon, getRarityIcon } from '../../shared/utils/elementVisuals.js';
+import { getElementColor, getElementBg, getElementBorder, getElementShape, getElementIcon, getSetIcon, getWeaponTypeIcon, getStatIcon, getCombatRoleIcon, getRarityIcon, getRoleIcon } from '../../shared/utils/elementVisuals.js';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -262,7 +262,10 @@ const DamageCalculator = forwardRef(function DamageCalculator({
                         <img src={getRarityIcon(rarity5 ? 5 : 4)} alt={rarity5 ? '5★' : '4★'} className="h-3 flex-shrink-0" onError={hideOnError} />
                       </div>
                       <div className="flex items-center flex-wrap gap-1 mt-1">
-                        <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium`}>{(getLocale() === 'fr' && ROLE_FR[m.d.role]) || m.d.role}</span>
+                        <span className={`kuro-badge ${rc.bg} ${rc.border} ${rc.text} font-medium inline-flex items-center gap-1`}>
+                          {getRoleIcon(m.d.role) && <img src={getRoleIcon(m.d.role)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                          {(getLocale() === 'fr' && ROLE_FR[m.d.role]) || m.d.role}
+                        </span>
                         <span className="kuro-badge font-medium"
                           style={{ color: getElementColor(m.d.element), background: getElementBg(m.d.element), border: `1px solid ${getElementBorder(m.d.element)}` }}>
                           {getElementIcon(m.d.element) && <img src={getElementIcon(m.d.element)} alt="" className="w-3.5 h-3.5 inline-block align-middle mr-0.5" onError={hideOnError} />}

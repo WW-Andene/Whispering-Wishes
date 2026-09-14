@@ -9,7 +9,8 @@ import { FocusTrapModal } from './FocusTrapModal.jsx';
 import { HARD_PITY, SOFT_PITY_START } from '../../data/constants.js';
 import { DEFAULT_COLLECTION_IMAGES, getConveneAnimation } from '../../data/banners.js';
 import { haptic } from '../../utils/haptics.js';
-import { getElementIcon, getWeaponTypeIcon } from '../utils/elementVisuals.js';
+import { getElementIcon, getWeaponTypeIcon, getRoleIcon } from '../utils/elementVisuals.js';
+import { CHARACTER_DATA } from '../../data/characters.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { CountdownTimer } from './CountdownTimer.jsx';
 import { useImageFramingContext } from '../../providers/ImageFramingProvider.jsx';
@@ -196,35 +197,38 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               "twitching". Now uses the same collection-portrait lookup as the featured-4★
               previews just below (previewImg), matching what every other click-through in this
               file already passes. */}
-          {/* Direct user request: tag positioned to the RIGHT of the name (name first in DOM
-              order), not to its left. max-w-[65%] reserves room so this row wraps before running
-              under the absolutely-positioned timer instead of overlapping it. */}
-          <div className="flex items-center gap-2 flex-wrap max-w-[65%]">
-            <h4
-              className="font-bold text-xl text-white leading-tight cursor-pointer"
-              onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
-            >{item.name}</h4>
+          {/* Direct user request: the tag row sits ABOVE the name again, ordered
+              Role -> Weapon -> Element (left to right). Role is character-only (isChar &&
+              CHARACTER_DATA[item.name]?.role) - weapons have no combat role. */}
+          <div className="flex items-center gap-[2px] flex-wrap mb-0.5">
+            {isChar && getRoleIcon(CHARACTER_DATA[item.name]?.role) && (
+              <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
+                <img src={getRoleIcon(CHARACTER_DATA[item.name]?.role)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+              </span>
+            )}
             {/* Direct user request: 2px gap between the weapon-type icon and element tag.
                 Direct user request: 20px (14px icon + kuro.css's 2px*2 padding + 1px*2 border)
                 isn't a PerfectSuite value - both tags use an explicit 24px (Primary) height
                 instead, via min-h-6 on the kuro-badge and a 24px icon square, rather than
                 editing kuro-badge's shared padding app-wide. */}
-            <div className="flex items-center gap-[2px] flex-shrink-0">
-              {isChar && getWeaponTypeIcon(item.weaponType) && (
-                // Direct user request: border color matches the element kuro-badge's own
-                // borderColor (style.borderColor) instead of a generic white/10, so the two
-                // tags in this row share the same border color, not just the same dimensions.
-                <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
-                  <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
-                </span>
-              )}
-              <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
-                {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-                {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
+            {isChar && getWeaponTypeIcon(item.weaponType) && (
+              // Direct user request: border color matches the element kuro-badge's own
+              // borderColor (style.borderColor) instead of a generic white/10, so the two
+              // tags in this row share the same border color, not just the same dimensions.
+              <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
+                <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
               </span>
-            </div>
+            )}
+            <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
+              {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+              {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+              {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
+            </span>
           </div>
+          <h4
+            className="font-bold text-xl text-white leading-tight cursor-pointer"
+            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
+          >{item.name}</h4>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         

@@ -69,6 +69,17 @@ const WEAPON_TYPE_ICONS = {
   Rectifier:  './ui-icons/i.ibb.co-5gds1gDg-Weapon-Type-Rectifier.webp',
 };
 const getWeaponTypeIcon = (type) => WEAPON_TYPE_ICONS[type] || null;
+// Combat-role icons — user-provided 2026-09-14. Only two icons exist for the four role values
+// in CHARACTER_DATA ('Main DPS'/'Sub DPS' both DPS; 'Healer'/'Support'/'Support/Healer' all
+// share one Support-and-Healer icon rather than needing a third asset).
+const ROLE_ICONS = {
+  'Main DPS':       './ui-icons/Role-DPS.webp',
+  'Sub DPS':        './ui-icons/Role-DPS.webp',
+  'Healer':         './ui-icons/Role-Support-Healer.webp',
+  'Support':        './ui-icons/Role-Support-Healer.webp',
+  'Support/Healer': './ui-icons/Role-Support-Healer.webp',
+};
+const getRoleIcon = (role) => ROLE_ICONS[role] || null;
 // Rarity badges (1-5 stars, pre-rendered as one image per tier rather than a repeatable single
 // glyph) — user-provided 2026-09-13, replacing the app's prior plain-text '★' repeats/lucide
 // <Star> loops used for the same purpose across detail modals, collection section headers, and
@@ -333,6 +344,8 @@ export {
   getBuffElementColor,
   WEAPON_TYPE_ICONS,
   getWeaponTypeIcon,
+  ROLE_ICONS,
+  getRoleIcon,
   RARITY_ICONS,
   getRarityIcon,
   STAT_ICONS,

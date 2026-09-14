@@ -14,7 +14,7 @@ import { COMMON_MAT_TIERS, FORGERY_MAT_TIERS, RESONATOR_ASCENSION_COSTS, RESONAT
 import { FocusTrapModal } from '../components/FocusTrapModal.jsx';
 import { stepStyle } from '../../features/teams/RotationTimeline.jsx';
 import { calcTeamStats } from '../../features/teams/calcTeamStats.js';
-import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon, getRarityIcon } from '../utils/elementVisuals.js';
+import { getElementIcon, getWeaponTypeIcon, getStatIcon, getFactionIcon, getRegionIcon, getCombatRoleIcon, getRarityIcon, getRoleIcon } from '../utils/elementVisuals.js';
 import { hideOnError } from '../utils/imageHelpers.js';
 import { splitIntoParagraphs } from '../utils/textFormat.js';
 import { MaterialItem } from '../components/MaterialItem.jsx';
@@ -233,7 +233,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                 {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                 {(getLocale() === 'fr' && WEAPON_TYPE_FR[data.weapon]) || data.weapon}
               </span>
-              <span className="kuro-badge kuro-badge-neutral">{(getLocale() === 'fr' && ROLE_FR[data.role]) || data.role}</span>
+              <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                {getRoleIcon(data.role) && <img src={getRoleIcon(data.role)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {(getLocale() === 'fr' && ROLE_FR[data.role]) || data.role}
+              </span>
             </div>
             <h2 className="text-2xl font-semibold text-white">{name}</h2>
             {data.title && <div className="text-sm text-gray-400 italic -mt-0.5">{getLocalizedCharacterData(getLocale())[name]?.title || data.title}</div>}
@@ -361,7 +364,10 @@ const CharacterDetailModal = ({ name, onClose, imageUrl, framing, infoFraming, o
                       {getWeaponTypeIcon(data.weapon) && <img src={getWeaponTypeIcon(data.weapon)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
                       {(getLocale() === 'fr' && WEAPON_TYPE_FR[data.weapon]) || data.weapon}
                     </span>
-                    {!audited && <span className="kuro-badge kuro-badge-neutral">{(getLocale() === 'fr' && ROLE_FR[data.role]) || data.role}</span>}
+                    {!audited && <span className="kuro-badge kuro-badge-neutral inline-flex items-center gap-1">
+                {getRoleIcon(data.role) && <img src={getRoleIcon(data.role)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {(getLocale() === 'fr' && ROLE_FR[data.role]) || data.role}
+              </span>}
                   </div>
                   {!audited && data.dmgFocus?.length > 0 && (
                     <div>
