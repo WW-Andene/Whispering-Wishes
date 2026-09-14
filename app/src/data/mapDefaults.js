@@ -7,10 +7,10 @@
 // editor's clipboard-based "Copy all" (the file-download "Export config"
 // path silently no-ops on the native Android app - see MapTab.jsx's
 // handleExportConfig fix) and the same fix's real Filesystem export,
-// pasted back in from a live app session (2026-09-14T13:05:46Z export,
-// adding 4 new Mengzhou sub-zones: Xuanfang Hold, Eastern Xuan Peaks,
-// Southern Yuan Hills, Eastern Fang Peaks), superseding the previous
-// (10:15:22Z) seed baked in here.
+// pasted back in from a live app session (2026-09-14T21:24:26Z export,
+// finalizing the Dimmr Plains overlay's placement on the main map, in
+// Roya Frostlands near Lahai Roi, replacing its earlier placeholder
+// position), superseding the previous (13:05:46Z) seed baked in here.
 
 export const DEFAULT_ZONE_DRAFTS = [
   {
@@ -276,14 +276,12 @@ export const DEFAULT_ZONE_DRAFTS = [
     level: 2,
   },
   {
-    // Polygon is the placement draft's own bounding box, computed from its
-    // center/scale/naturalWidth/naturalHeight (rotation 0, axis-aligned) -
-    // same relationship every other overlay-linked zone in this file has.
-    id: 'overlay-dimmr-plains-dplaceholder1',
+    id: 'overlay-dimmr-plains-mu1p74j8',
     name: 'Dimmr Plains',
-    polygon: [[-5498, 2078], [-3502, 2078], [-3502, 3922], [-5498, 3922]],
-    overlayId: 'dimmr-plains-dplaceholder1',
-    level: 1,
+    polygon: [[2697, 3420], [3628, 3584], [3477, 4444], [2546, 4280]],
+    overlayId: 'dimmr-plains-mu1p74j8',
+    parentId: 'roya-frostlands',
+    level: 2,
   },
   {
     id: 'xuanfang-hold',
@@ -394,16 +392,13 @@ export const DEFAULT_OVERLAY_DRAFTS = [
     locked: true,
   },
   {
-    // Placeholder placement, unlocked so it can be repositioned via the
-    // in-app editor - same treatment Mengzhou got before it was moved.
-    // Placed clear of every other overlay's footprint.
-    id: 'dimmr-plains-dplaceholder1',
+    id: 'dimmr-plains-mu1p74j8',
     catalogId: 'dimmr-plains',
     name: 'Dimmr Plains',
-    center: [-4500, 3000],
-    scale: 0.15,
-    rotation: 0,
-    floor: 0,
+    center: [3087, 3932],
+    scale: 0.071,
+    rotation: 10,
+    floor: -6,
     opacity: 1,
     locked: false,
   },
