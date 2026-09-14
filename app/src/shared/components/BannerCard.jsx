@@ -196,15 +196,14 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               "twitching". Now uses the same collection-portrait lookup as the featured-4★
               previews just below (previewImg), matching what every other click-through in this
               file already passes. */}
-          {/* Direct user clarification: the tag sits BESIDE the name when it fits (the normal
-              case) - it only wraps onto its own line above the name for long names/types like
-              "Starfield Calibrator" + "Broadblade". Achieved by keeping [icon+badge group] and
-              [name] as siblings in one flex-wrap row: the icon+badge group is first in DOM order,
-              so when the row is too narrow for both, the name (second) is what wraps, landing
-              below the still-fitting tag group - not the other way around. max-w-[65%] reserves
-              room so this row wraps before running under the absolutely-positioned timer instead
-              of overlapping it (the timer doesn't participate in flex layout). */}
+          {/* Direct user request: tag positioned to the RIGHT of the name (name first in DOM
+              order), not to its left. max-w-[65%] reserves room so this row wraps before running
+              under the absolutely-positioned timer instead of overlapping it. */}
           <div className="flex items-center gap-2 flex-wrap max-w-[65%]">
+            <h4
+              className="font-bold text-xl text-white leading-tight cursor-pointer"
+              onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
+            >{item.name}</h4>
             {/* Direct user request: 2px gap between the weapon-type icon and element tag.
                 Direct user request: 20px (14px icon + kuro.css's 2px*2 padding + 1px*2 border)
                 isn't a PerfectSuite value - both tags use an explicit 24px (Primary) height
@@ -225,10 +224,6 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
                 {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
               </span>
             </div>
-            <h4
-              className="font-bold text-xl text-white leading-tight cursor-pointer"
-              onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
-            >{item.name}</h4>
           </div>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
