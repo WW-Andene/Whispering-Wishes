@@ -90,6 +90,17 @@ app.post('/api/batch-remove-bg', batchRemoveBg);
 app.options('/api/gacha/record/query', gachaQuery); // the handler itself replies to OPTIONS
 app.post('/api/gacha/record/query', gachaQuery);
 
+// The native (Capacitor) app fetches map-tiles/ cross-origin from
+// https://localhost, since that directory is excluded from the app binary
+// and instead proxied through this host (see capacitor-build/build.mjs's
+// injected service-worker patch). Mirrors vercel.json's own map-tiles/ CORS
+// header so a self-hosted deployment isn't a native-app-breaking downgrade
+// from a Vercel-hosted one.
+app.use('/map-tiles', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+});
+
 // ── Static build + SPA fallback ───────────────────────────────────────────────
 // Matches vercel.json's rewrite rule: everything except /spine/* falls back to
 // index.html so client-side routing survives a hard refresh/deep link.
