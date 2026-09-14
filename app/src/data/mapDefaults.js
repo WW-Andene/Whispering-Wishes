@@ -276,6 +276,16 @@ export const DEFAULT_ZONE_DRAFTS = [
     level: 2,
   },
   {
+    // Polygon is the placement draft's own bounding box, computed from its
+    // center/scale/naturalWidth/naturalHeight (rotation 0, axis-aligned) -
+    // same relationship every other overlay-linked zone in this file has.
+    id: 'overlay-dimmr-plains-dplaceholder1',
+    name: 'Dimmr Plains',
+    polygon: [[-5498, 2078], [-3502, 2078], [-3502, 3922], [-5498, 3922]],
+    overlayId: 'dimmr-plains-dplaceholder1',
+    level: 1,
+  },
+  {
     id: 'xuanfang-hold',
     name: 'Xuanfang Hold',
     polygon: [[-505, 6652], [-495, 6492], [-597, 6345], [-767, 6277], [-917, 6269], [-1057, 6314], [-1149, 6408], [-1263, 6538], [-1322, 6665], [-1347, 6803], [-1361, 6930], [-1324, 7056], [-1197, 7027], [-1055, 7012], [-911, 6993], [-784, 6925], [-743, 6818], [-624, 6856], [-534, 6863], [-519, 6758]],
@@ -382,6 +392,20 @@ export const DEFAULT_OVERLAY_DRAFTS = [
     floor: 0,
     opacity: 1,
     locked: true,
+  },
+  {
+    // Placeholder placement, unlocked so it can be repositioned via the
+    // in-app editor - same treatment Mengzhou got before it was moved.
+    // Placed clear of every other overlay's footprint.
+    id: 'dimmr-plains-dplaceholder1',
+    catalogId: 'dimmr-plains',
+    name: 'Dimmr Plains',
+    center: [-4500, 3000],
+    scale: 0.15,
+    rotation: 0,
+    floor: 0,
+    opacity: 1,
+    locked: false,
   },
 ];
 

@@ -91,6 +91,19 @@ export const OVERLAY_CATALOG = [
     minZoom: 0,
     maxZoom: 6,
   },
+  {
+    // Ocean background was an opaque rectangle in the source zip (same
+    // issue Mengzhou had) - cut out via the same border-connected
+    // flood-fill + downsampled-contour-smoothing pipeline before slicing.
+    // Flat single-level grid (not a pyramid like Mengzhou) since this
+    // wasn't reported as having the same too-many-tiles-at-once problem -
+    // add pyramid/minZoom/maxZoom here the same way if it turns out to.
+    id: 'dimmr-plains',
+    name: 'Dimmr Plains',
+    imageUrl: 'map-tiles/Dimmr_Plains/Dimmr_Plains.webp',
+    naturalWidth: 13312,
+    naturalHeight: 12288,
+  },
 ];
 
 const KEY = 'ww-overlay-drafts';
