@@ -179,9 +179,11 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
             <div className="mb-2 flex">
               {/* Direct user request: transparent interior like every other tag - switched from a
                   solid bg-yellow-500 fill to kuro-badge-yellow (rgba(234,179,8,0.1) background,
-                  same low-opacity fill as the Role/Weapon/Element tags), keeping only the pill
-                  shape (rounded-full) and 16px size as its distinguishing traits. */}
-              <span className="kuro-badge kuro-badge-yellow text-[16px] leading-none px-2 py-0.5 rounded-full font-bold min-h-6">{t('tracker.newBadge')}</span>
+                  same low-opacity fill as the Role/Weapon/Element tags), keeping the pill shape
+                  (rounded-full) as its distinguishing trait.
+                  Direct user request: font-size down to 14px (PerfectSuite Tertiary, one step
+                  below 16) - pill stays 24px (min-h-6) since only the text was too big. */}
+              <span className="kuro-badge kuro-badge-yellow text-[14px] leading-none px-2 py-0.5 rounded-full font-bold min-h-6">{t('tracker.newBadge')}</span>
             </div>
           )}
           {/* Direct user request 2026-09-11: the main featured 5★'s own name now opens its
