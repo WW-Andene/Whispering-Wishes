@@ -174,7 +174,12 @@ const StandardBannerSection = memo(({ bannerImage, altText, title, subtitle, ite
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="kuro-badge kuro-badge-cyan" style={{ backgroundColor: 'rgba(0,200,255,0.1)' }}>{subtitle}</span>
+            {/* Direct user request: same dimensions as BannerCard.jsx's element/weapon-type
+                kuro-badge tags. Those contain a 14px icon that drives their height to 20px
+                (14 + padding 2*2 + border 1*2); this tag has no icon, so its own text-only
+                height (8px*1.5 line-height + padding + border = 18px) fell 2px short of that -
+                min-h-5 (20px) makes the two match without adding an icon here. */}
+            <span className="kuro-badge kuro-badge-cyan min-h-5" style={{ backgroundColor: 'rgba(0,200,255,0.1)' }}>{subtitle}</span>
           </div>
           <h4 className="font-bold text-xl text-white leading-tight">{title}</h4>
         </div>
