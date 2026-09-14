@@ -207,7 +207,10 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               still visibly off. */}
           <div className="flex items-center gap-2 mb-0.5">
             {isChar && getWeaponTypeIcon(item.weaponType) && (
-              <span className="w-5 h-5 rounded bg-black/40 border border-white/10 inline-flex items-center justify-center flex-shrink-0">
+              // Direct user request: border color matches the element kuro-badge's own
+              // borderColor (style.borderColor) instead of a generic white/10, so the two
+              // tags in this row share the same border color, not just the same dimensions.
+              <span className="w-5 h-5 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
                 <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
               </span>
             )}
