@@ -196,34 +196,40 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               "twitching". Now uses the same collection-portrait lookup as the featured-4★
               previews just below (previewImg), matching what every other click-through in this
               file already passes. */}
-          {/* Direct user request (superseding the earlier "beside the name" placement): the
-              weapon-type icon and element/type badge sit in their own row ABOVE the name again,
-              matching StandardBannerSection.jsx's identical "Standard Weapon"/"Available 5-star"
-              kuro-badge tag - both a bare kuro-badge with no font-size override, same dimensions.
-              Direct user request: 20px (14px icon + kuro.css's 2px*2 padding + 1px*2 border) isn't
-              a PerfectSuite value - both tags now use an explicit 24px (Primary) height instead,
-              via min-h-6 on the kuro-badge (whose own CSS padding still yields 20px) and a 24px
-              icon square, rather than editing kuro-badge's shared padding app-wide. */}
-          {/* Direct user request: 2px gap between the weapon-type icon and element tag. */}
-          <div className="flex items-center gap-[2px] mb-0.5">
-            {isChar && getWeaponTypeIcon(item.weaponType) && (
-              // Direct user request: border color matches the element kuro-badge's own
-              // borderColor (style.borderColor) instead of a generic white/10, so the two
-              // tags in this row share the same border color, not just the same dimensions.
-              <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
-                <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+          {/* Direct user clarification: the tag sits BESIDE the name when it fits (the normal
+              case) - it only wraps onto its own line above the name for long names/types like
+              "Starfield Calibrator" + "Broadblade". Achieved by keeping [icon+badge group] and
+              [name] as siblings in one flex-wrap row: the icon+badge group is first in DOM order,
+              so when the row is too narrow for both, the name (second) is what wraps, landing
+              below the still-fitting tag group - not the other way around. max-w-[65%] reserves
+              room so this row wraps before running under the absolutely-positioned timer instead
+              of overlapping it (the timer doesn't participate in flex layout). */}
+          <div className="flex items-center gap-2 flex-wrap max-w-[65%]">
+            {/* Direct user request: 2px gap between the weapon-type icon and element tag.
+                Direct user request: 20px (14px icon + kuro.css's 2px*2 padding + 1px*2 border)
+                isn't a PerfectSuite value - both tags use an explicit 24px (Primary) height
+                instead, via min-h-6 on the kuro-badge and a 24px icon square, rather than
+                editing kuro-badge's shared padding app-wide. */}
+            <div className="flex items-center gap-[2px] flex-shrink-0">
+              {isChar && getWeaponTypeIcon(item.weaponType) && (
+                // Direct user request: border color matches the element kuro-badge's own
+                // borderColor (style.borderColor) instead of a generic white/10, so the two
+                // tags in this row share the same border color, not just the same dimensions.
+                <span className="w-6 h-6 rounded bg-black/40 border inline-flex items-center justify-center flex-shrink-0" style={{ borderColor: style.borderColor }}>
+                  <img src={getWeaponTypeIcon(item.weaponType)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />
+                </span>
+              )}
+              <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
+                {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
+                {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
               </span>
-            )}
-            <span className={`kuro-badge ${style.text} inline-flex items-center gap-1 min-h-6`} style={{ borderColor: style.borderColor, backgroundColor: style.bgColor }}>
-              {isChar && getElementIcon(item.element) && <img src={getElementIcon(item.element)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-              {!isChar && getWeaponTypeIcon(item.type) && <img src={getWeaponTypeIcon(item.type)} alt="" className="w-3.5 h-3.5" onError={hideOnError} />}
-              {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
-            </span>
+            </div>
+            <h4
+              className="font-bold text-xl text-white leading-tight cursor-pointer"
+              onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
+            >{item.name}</h4>
           </div>
-          <h4
-            className="font-bold text-xl text-white leading-tight cursor-pointer"
-            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
-          >{item.name}</h4>
           {item.title && <p className="text-gray-200 text-sm mt-0.5 line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         
