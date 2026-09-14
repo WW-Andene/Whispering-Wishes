@@ -65,6 +65,18 @@ export const OVERLAY_CATALOG = [
     naturalWidth: 1156,
     naturalHeight: 1200,
   },
+  {
+    // .png rather than .webp: source is 16384px wide, 1px over WebP's hard
+    // 16383px-per-dimension encode limit. Same tradeoff as hualong-outlines
+    // above - useOfflineTiles.js only lists .webp-referenced overlays in the
+    // bulk "download for offline" panel, so this one won't appear there, but
+    // the actual tile rendering (lossless/{y}/{x}.png) is unaffected either way.
+    id: 'mengzhou',
+    name: 'Mengzhou',
+    imageUrl: 'map-tiles/Mengzhou/Mengzhou.png',
+    naturalWidth: 16384,
+    naturalHeight: 10240,
+  },
 ];
 
 const KEY = 'ww-overlay-drafts';
