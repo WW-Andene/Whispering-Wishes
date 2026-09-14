@@ -5,22 +5,6 @@
   ],
   "headers": [
     {
-      // The native (Capacitor) app fetches map-tiles/ cross-origin from
-      // https://localhost, since that directory is excluded from the app
-      // binary and instead proxied through this hosted deployment (see
-      // capacitor-build/build.mjs's injected service-worker patch). Without
-      // this header the browser blocks the response as a CORS violation,
-      // so tiles silently 503 in the native app while working fine on the
-      // web build (same-origin there, no CORS check applies).
-      "source": "/map-tiles/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        }
-      ]
-    },
-    {
       "source": "/(.*)",
       "headers": [
         {

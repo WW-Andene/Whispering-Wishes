@@ -7,20 +7,17 @@
 // vs a few MB for everything else). convene-animations/ added 2026-08-27 once
 // it grew to ~40 per-character videos (~300MB+); audio/ added once the OST
 // library grew from 4 small ambient loops to ~40 tracks (~200MB+).
-// Those directories are still fetched at runtime, just not from wherever's
-// hosting the app build itself: map-tiles/ is the one exception still routed
-// through the hosted deployment (VITE_API_BASE_URL / CAPACITOR_HOST_URL) —
-// patched into dist-native/sw.js below, and left alone deliberately since
-// it's MapTab's own offline-tile system (see that patch's own comment for
-// why). The other five (portraits/animated-bg/spine/convene-animations/
-// audio) stream straight from the GitHub repo itself via the jsDelivr GitHub
-// CDN instead — see public/sw.js's own JSDELIVR_ASSET_BASE comment — so the
-// hosting platform is only ever asked to serve the app shell, map tiles, and
-// /api/* routes, never any of these ~1GB of media files. Everything else
-// (calculator, planner, collection, teams, tracker — all app logic and
-// small UI assets) ships fully bundled and works with zero network
-// connection, forever, independent of whether any of this hosting is even
-// still running.
+// All six of these directories, map-tiles/ included, stream straight from the
+// GitHub repo itself via the jsDelivr GitHub CDN instead of wherever's
+// hosting the app build — see public/sw.js's own JSDELIVR_ASSET_BASE comment
+// (its OVERLAY_TILE_RE/BASE_TILE_RE handling covers map-tiles/ specifically)
+// — so the hosting platform is only ever asked to serve the app shell and
+// /api/* routes, never any of these ~1GB of media files. This applies
+// identically on web and native: no native-only patching of dist-native/sw.js
+// is needed for any of the six. Everything else (calculator, planner,
+// collection, teams, tracker — all app logic and small UI assets) ships
+// fully bundled and works with zero network connection, forever, independent
+// of whether any of this hosting is even still running.
 //
 // audio/ specifically ALSO needs a native-Java-side (not just WebView-side)
 // version of this: the Soundtrack widget's playback
@@ -66,9 +63,9 @@ loadEnvFile(path.join(APP_ROOT, '.env'));
 const HOST_URL = (process.env.CAPACITOR_HOST_URL || process.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 if (!HOST_URL) {
   console.error('\nCAPACITOR_HOST_URL (or VITE_API_BASE_URL) is not set — the native app needs to know');
-  console.error('where your hosted deployment lives to fetch map tiles (MapTab\'s own offline-tile');
-  console.error('system) and to call /api/* features. Every other excluded media folder (character');
-  console.error('animations, banner videos, soundtrack) streams from the repo itself via jsDelivr now.');
+  console.error('where your hosted deployment lives to call /api/* features (see apiBase.js). Every');
+  console.error('excluded media folder (map tiles, character animations, banner videos, soundtrack)');
+  console.error('streams from the repo itself via jsDelivr instead and needs no host URL at all.');
   console.error('Set it in app/.env.local, e.g.:');
   console.error('  VITE_API_BASE_URL=https://whispering-wishes.vercel.app');
   console.error('See CAPACITOR_APP.md.\n');
@@ -131,74 +128,10 @@ if (NATIVE_BUNDLED_AUDIO_FILES.length > 0) {
   console.log(`Bundled ${NATIVE_BUNDLED_AUDIO_FILES.join(', ')} into dist-native/audio/ despite the audio/ exclusion above`);
 }
 
-// Patch the service worker so requests for map-tiles/ (the one excluded
-// directory still not handled generically by public/sw.js itself — see that
-// file's own JSDELIVR_ASSET_BASE comment for portraits/spine/animated-bg/
-// convene-animations/audio, which no longer need this patch at all) are
-// redirected to the hosted deployment instead of 404ing against local
-// (now-missing) files. Only dist-native/sw.js is touched — the real dist/
-// used for the web deployment is never modified by this script.
-//
-// map-tiles/ stays on VITE_API_BASE_URL rather than moving to jsDelivr like
-// the others, deliberately: it's MapTab's own offline-download system
-// (useOfflineTiles.js, tileSW.js) and this project's standing rule is to
-// never touch anything connected to MapTab without being told to explicitly
-// — so its existing behavior is preserved byte-for-byte here, just with the
-// other 5 directory names dropped out of NATIVE_REMOTE_DIRS below.
-const swPath = path.join(DIST_NATIVE_DIR, 'sw.js');
-let sw = fs.readFileSync(swPath, 'utf-8');
-// stopImmediatePropagation() is essential here — public/sw.js registers its own unconditional
-// 'fetch' listener (routes everything into cacheFirst/staleWhileRevalidate/networkFirst by
-// extension/domain, with no awareness of this native-only redirect). Listeners for the same
-// event fire in registration order; since this patch is PREPENDED (runs first), calling
-// stopImmediatePropagation() only when a path actually matches one of the excluded directories
-// prevents the original handler from also running and calling event.respondWith() a second time
-// on the same event, which throws (each FetchEvent can only be responded to once). Every other
-// request is left completely alone and falls through to the original handler as before.
-//
-// This must itself be cache-first (checking the same TILE_CACHE/ASSET_CACHE the "Download for
-// Offline" button and map-tile downloader fill — see providers/assetSW.js, providers/tileSW.js,
-// and the cache handling below in this same file) rather than a bare network fetch. A previous
-// version did a plain fetch() here with no cache check at all: since this listener runs FIRST and
-// stops the original handler (which is the one that actually implements cache-first for these
-// exact paths) from running, every single image load — even ones the user explicitly downloaded
-// for offline use — went straight to the network and never touched the cache. TILE_CACHE and
-// ASSET_CACHE are referenced here even though they're declared further down in this same file:
-// safe, because this callback only runs once an actual 'fetch' event fires, by which point the
-// whole script (including those consts) has already finished executing top to bottom.
-const patch = `
-// ─── Injected by capacitor-build/build.mjs — DO NOT hand-edit dist-native/sw.js directly,
-// re-run \`npm run build:native\` instead; this file is regenerated from public/sw.js each time. ───
-const NATIVE_REMOTE_BASE = ${JSON.stringify(HOST_URL)};
-const NATIVE_REMOTE_DIRS = ${JSON.stringify(['map-tiles'])};
-self.addEventListener('fetch', (event) => {
-  const u = new URL(event.request.url);
-  const dir = NATIVE_REMOTE_DIRS.find(d => u.pathname.startsWith('/' + d + '/'));
-  if (event.request.method === 'GET' && dir) {
-    event.stopImmediatePropagation();
-    const cacheName = dir === 'map-tiles' ? TILE_CACHE : ASSET_CACHE;
-    // Races the cache-first lookup against a plain direct fetch with ZERO Cache Storage calls —
-    // same fix as the OCR route in public/sw.js (see its own comment): caches.match/caches.open
-    // are a known hang risk in some WebViews (this handler runs in exactly that context, for
-    // every map-tile/portrait/animated-bg/spine/convene-animation request), and a hang here
-    // previously meant the request just never resolved — no error, no timeout, forever.
-    const cacheFirst = (async () => {
-      const cached = await caches.match(event.request, { cacheName });
-      if (cached) return cached;
-      const resp = await fetch(NATIVE_REMOTE_BASE + u.pathname + u.search);
-      if (resp.ok) {
-        const cache = await caches.open(cacheName);
-        cache.put(event.request, resp.clone()).catch(() => {});
-      }
-      return resp;
-    })().catch(() => new Response('', { status: 503 }));
-    const plainFetch = fetch(NATIVE_REMOTE_BASE + u.pathname + u.search).catch(() => new Response('', { status: 503 }));
-    event.respondWith(Promise.race([cacheFirst, plainFetch]));
-  }
-});
-`;
-sw = patch + sw;
-fs.writeFileSync(swPath, sw);
+// No sw.js patching needed anymore: public/sw.js now routes all six excluded
+// directories (map-tiles/ included) through jsDelivr generically, on every
+// platform, so dist-native/sw.js (copied verbatim from dist/sw.js by
+// copyFiltered above) already does the right thing with zero modification.
 
-console.log(`\ndist-native/ ready — map-tiles points at ${HOST_URL}, everything else excluded from the bundle streams from the repo via jsDelivr`);
+console.log(`\ndist-native/ ready — map tiles and every other excluded media folder stream from the repo via jsDelivr`);
 console.log('Next: npx cap sync android   (capacitor.config.json already points webDir at dist-native)');

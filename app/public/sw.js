@@ -233,12 +233,17 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
   // Map overlay tiles + base world map tiles → dedicated persistent cache,
-  // cache-first. Matched BEFORE the generic image route so these don't get
-  // evicted by the 250-entry image LRU. Users can pre-warm via the
-  // "download" button (download-overlay message) and purge via the
-  // "remove" button.
+  // cache-first, fetched from the repo itself via jsDelivr rather than
+  // trusting the app's own host to serve these — same treatment as
+  // ASSET_DIR_RE below and for the same reason (map-tiles/ is excluded from
+  // the native app bundle, see capacitor-build/build.mjs's EXCLUDED_DIRS;
+  // routing every platform through jsDelivr here means the native app never
+  // has to reach the hosted deployment for tiles at all). Matched BEFORE the
+  // generic image route so these don't get evicted by the 250-entry image
+  // LRU. Users can pre-warm via the "download" button (download-overlay
+  // message) and purge via the "remove" button.
   if (OVERLAY_TILE_RE.test(url.pathname) || BASE_TILE_RE.test(url.pathname)) {
-    event.respondWith(cacheFirst(event.request, TILE_CACHE));
+    event.respondWith(jsDelivrCacheFirst(event.request, url, TILE_CACHE));
     return;
   }
 
@@ -329,16 +334,17 @@ self.addEventListener('message', (event) => {
 });
 
 // Redirects a bulk-download URL to jsDelivr the same way the page-level
-// fetch listener's ASSET_DIR_RE/JSDELIVR_ASSET_BASE does — kept as a
-// separate "what do we actually fetch" step from the cache KEY (still the
-// original `url` throughout this function) so a track/animation downloaded
-// here via handleDownloadOverlay and the exact same file loaded normally
-// while browsing land in the identical cache entry instead of two different
-// ones under different keys.
+// fetch listener's ASSET_DIR_RE/OVERLAY_TILE_RE/BASE_TILE_RE/JSDELIVR_ASSET_BASE
+// handling does — kept as a separate "what do we actually fetch" step from
+// the cache KEY (still the original `url` throughout this function) so a
+// track/animation/tile downloaded here via handleDownloadOverlay and the
+// exact same file loaded normally while browsing land in the identical
+// cache entry instead of two different ones under different keys.
 function resolveFetchUrl(url) {
   try {
     const u = new URL(url, self.location.origin);
-    if (u.origin === self.location.origin && ASSET_DIR_RE.test(u.pathname)) {
+    const isRemoteAsset = ASSET_DIR_RE.test(u.pathname) || OVERLAY_TILE_RE.test(u.pathname) || BASE_TILE_RE.test(u.pathname);
+    if (u.origin === self.location.origin && isRemoteAsset) {
       return JSDELIVR_ASSET_BASE + u.pathname + u.search;
     }
   } catch {}
