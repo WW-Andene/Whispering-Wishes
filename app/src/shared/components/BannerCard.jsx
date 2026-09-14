@@ -205,7 +205,8 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               its 8px/1.4-line-height text height, which the icon (14px) already exceeds. Measured
               via computed getBoundingClientRect, not assumed, after the first estimate (16px) was
               still visibly off. */}
-          <div className="flex items-center gap-2 mb-0.5">
+          {/* Direct user request: 2px gap between the weapon-type icon and element tag. */}
+          <div className="flex items-center gap-[2px] mb-0.5">
             {isChar && getWeaponTypeIcon(item.weaponType) && (
               // Direct user request: border color matches the element kuro-badge's own
               // borderColor (style.borderColor) instead of a generic white/10, so the two
