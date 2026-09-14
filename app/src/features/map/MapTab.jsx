@@ -856,16 +856,26 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       activeLayerRef.current = null;
     }
     if (!authorMode || authorPoints.length === 0) return;
-    // Dedicated pane, well above the sub-map overlay canvas (z-index 400)
-    // and paint canvas (450) - those are plain <canvas> elements appended
-    // directly into the map container rather than through Leaflet's own
-    // pane system, so relying on the default markerPane (z-index 600) put
-    // them at the mercy of DOM-order/stacking-context quirks between the
-    // two: points were rendering underneath a placed sub-map overlay
-    // (Mengzhou, Lahai-Roi, ...) while working fine over the base Solaris
-    // map. createPane is idempotent - safe to call on every render.
+    // Dedicated pane, appended as a sibling of Leaflet's own .leaflet-map-pane
+    // (map.getContainer(), not the default _mapPane) rather than inside it.
+    // Leaflet's generic ".leaflet-pane" CSS rule gives .leaflet-map-pane
+    // itself z-index 400 - every pane created the normal way (the default
+    // markerPane included, z-index 600) lives INSIDE that element, so its
+    // z-index only wins against its OTHER children, never against a sibling
+    // of .leaflet-map-pane itself. The sub-map overlay canvas (z-index 400)
+    // and paint canvas (450) are exactly such siblings (plain <canvas>
+    // elements appended directly into the map container), so they always
+    // painted over every Leaflet-pane-hosted layer regardless of that
+    // layer's own z-index - invisible wherever a sub-map overlay (Mengzhou,
+    // Lahai-Roi, ...) actually painted opaque pixels there, while working
+    // fine over the base Solaris map (nothing opaque on the overlay canvas
+    // to sit on top there). createPane is idempotent - safe to call on
+    // every render. Markers reposition correctly on pan/zoom regardless of
+    // which pane hosts them (each Leaflet Marker recalculates its own pixel
+    // position from the map's current view on every relevant map event,
+    // rather than relying on inheriting a transform from its pane parent).
     if (!map.getPane('zoneAuthorPane')) {
-      map.createPane('zoneAuthorPane');
+      map.createPane('zoneAuthorPane', map.getContainer());
       map.getPane('zoneAuthorPane').style.zIndex = 1000;
     }
     const group = L.layerGroup();
