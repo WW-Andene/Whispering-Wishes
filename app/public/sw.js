@@ -100,7 +100,24 @@ const MAX_IMG_ENTRIES = 250;
 // any real coastline still decays to ~0 (the ghost-patch fix stays intact).
 // Devices need a clean re-fetch of both Mengzhou's and Solaris's tiles
 // again.
-const TILE_CACHE_VERSION = 'v10';
+// v10 -> v11: v10 still showed a visible seam line exactly at the coast
+// (reported with a screenshot circling it directly) - because Mengzhou's
+// own alpha edge (baked separately, in bake_mengzhou.py) and Solaris's
+// alpha-weighted seam blend (baked in bake_solaris.py, weighted by a
+// *different*, independently-blurred copy of that same alpha) are two
+// separate fade curves. Live rendering already composites Mengzhou over
+// Solaris using Mengzhou's own real alpha, so Solaris running a second,
+// slightly different fade in the same zone made the two curves visibly
+// kink where they met, rather than reading as one continuous taper.
+// Fixed by no longer having Solaris fade its own blend near the coast at
+// all: it now paints at full strength anywhere close to Mengzhou's real
+// footprint (verified this produces an artifact-free result when composited
+// exactly as the live renderer does - Mengzhou's own alpha remains the only
+// thing controlling the visible taper) and only falls off far out in open
+// ocean, well past where Mengzhou's edge has already faded to nothing, to
+// keep the original ghost-patch fix intact. Devices need a clean re-fetch
+// of both Mengzhou's and Solaris's tiles again.
+const TILE_CACHE_VERSION = 'v11';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
