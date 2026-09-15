@@ -42,6 +42,13 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          # Default packages input is "tools platform-tools" - the legacy
+          # "tools" meta-package was removed from Google's SDK repository,
+          # so sdkmanager now fails outright trying to install it. Drop it;
+          # Gradle auto-installs whatever platform/build-tools it needs
+          # (licenses are still pre-accepted by this action).
+          packages: 'platform-tools'
 
       - name: Install dependencies
         working-directory: app
