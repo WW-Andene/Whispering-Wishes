@@ -35,7 +35,13 @@ const MAX_IMG_ENTRIES = 250;
 // strokes into Solaris_3" commit) - every z/y/x.webp tile's bytes changed,
 // so devices need to re-fetch all of them rather than keep serving the
 // pre-bake pixels from v3's cache indefinitely.
-const TILE_CACHE_VERSION = 'v4';
+// v4 -> v5: the v4 bake only wrote the softening into Solaris_3's tiles -
+// 400 of the 3232 stroke points actually fall inside Mengzhou's own
+// footprint, where Mengzhou draws over Solaris and hides whatever's
+// underneath, so those strokes had no visible effect at all until baked
+// into Mengzhou.webp's own tile pyramid directly. Devices that already
+// fetched Mengzhou's pre-bake tiles under v4 need a clean re-fetch.
+const TILE_CACHE_VERSION = 'v5';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
