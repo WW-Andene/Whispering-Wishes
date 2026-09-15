@@ -1,0 +1,117 @@
+name: Purge jsDelivr cache
+
+# public/sw.js routes every request under these directories through jsDelivr's
+# GitHub CDN (@main) instead of the app's own host — see JSDELIVR_ASSET_BASE
+# and ASSET_DIR_RE/OVERLAY_TILE_RE/OVERLAY_PYRAMID_TILE_RE/BASE_TILE_RE there,
+# and capacitor-build/build.mjs's EXCLUDED_DIRS for why (these directories are
+# too large to ship in the native APK bundle).
+#
+# jsDelivr caches a branch ref like @main independently per edge PoP (dozens
+# worldwide, across its Cloudflare + Fastly providers) and only refreshes each
+# PoP's copy on its own schedule after a push — there is no single "the CDN
+# updated" moment. Without an explicit purge, whichever PoP answers a given
+# request keeps serving pre-push bytes until it independently decides to
+# refetch, so different users (and the same user across requests) can see a
+# stale asset for an unpredictable stretch after a real deploy — exactly what
+# happened to Dimmr Plains's map tiles (some tiles individually confirmed
+# stale on the CDN while origin/main already had the fix).
+#
+# Fix: purge every changed file's jsDelivr URL immediately after it lands on
+# main, so every PoP is forced to refetch on next request instead of serving
+# whatever it happened to cache last.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/public/map-tiles/**'
+      - 'app/public/portraits/**'
+      - 'app/public/animated-bg/**'
+      - 'app/public/spine/**'
+      - 'app/public/convene-animations/**'
+      - 'app/public/audio/**'
+      - '.github/workflows/purge-jsdelivr.yml'
+  workflow_dispatch:
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Purge changed files from jsDelivr
+        env:
+          # workflow_dispatch has no before/after push range - fall back to
+          # diffing the triggering commit against its own parent so a manual
+          # run still purges something sensible instead of erroring out.
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${BEFORE_SHA}" ] && git cat-file -e "${BEFORE_SHA}" 2>/dev/null; then
+            RANGE="${BEFORE_SHA}..${AFTER_SHA}"
+          else
+            RANGE="${AFTER_SHA}~1..${AFTER_SHA}"
+          fi
+
+          echo "Diffing ${RANGE}"
+          mapfile -t CHANGED < <(git diff --name-only --diff-filter=ACMR "${RANGE}" -- \
+            app/public/map-tiles app/public/portraits app/public/animated-bg \
+            app/public/spine app/public/convene-animations app/public/audio)
+
+          if [ "${#CHANGED[@]}" -eq 0 ]; then
+            echo "No matching files changed - nothing to purge."
+            exit 0
+          fi
+
+          echo "Purging ${#CHANGED[@]} file(s):"
+          printf '  %s\n' "${CHANGED[@]}"
+
+          # jsDelivr's purge API is tolerant of a modest batch size (verified
+          # empirically at 50 paths/request); chunk to stay well under any
+          # undocumented per-request limit rather than sending one giant array
+          # or one request per file.
+          python3 - "${CHANGED[@]}" <<'PYEOF'
+          import json
+          import sys
+          import time
+          import urllib.request
+
+          files = sys.argv[1:]
+          base = "/gh/WW-Andene/Whispering-Wishes@main/"
+          paths = [base + f.removeprefix("app/public/") for f in files]
+
+          CHUNK = 50
+          failures = []
+          for i in range(0, len(paths), CHUNK):
+              chunk = paths[i:i + CHUNK]
+              body = json.dumps({"path": chunk}).encode()
+              req = urllib.request.Request(
+                  "https://purge.jsdelivr.net/",
+                  data=body,
+                  headers={"Content-Type": "application/json"},
+                  method="POST",
+              )
+              for attempt in range(3):
+                  try:
+                      with urllib.request.urlopen(req, timeout=30) as resp:
+                          data = json.loads(resp.read())
+                          status = data.get("status")
+                          print(f"chunk {i // CHUNK}: {status}")
+                          if status not in ("finished", "pending"):
+                              failures.append((i, status))
+                          break
+                  except Exception as e:
+                      print(f"chunk {i // CHUNK}: attempt {attempt + 1} failed: {e}")
+                      if attempt == 2:
+                          failures.append((i, str(e)))
+                      else:
+                          time.sleep(2 * (attempt + 1))
+
+          if failures:
+              print(f"::warning::{len(failures)} purge chunk(s) failed: {failures}")
+          PYEOF
