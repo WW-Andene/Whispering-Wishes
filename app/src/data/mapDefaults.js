@@ -393,7 +393,11 @@ export const DEFAULT_OVERLAY_DRAFTS = [
     id: 'mengzhou-mplaceholder1',
     catalogId: 'mengzhou',
     name: 'Mengzhou',
-    center: [-862, 7077],
+    // center.x shifted from -862 (compensates mapOverlays.js naturalWidth's
+    // 16383->17840 growth, which added its 1457px of padding only on the
+    // right: -862 + 1457*0.25/2 = -679.875, keeping the real Mengzhou
+    // content anchored at its original world position).
+    center: [-679.875, 7077],
     scale: 0.25,
     rotation: 360,
     floor: 0,
