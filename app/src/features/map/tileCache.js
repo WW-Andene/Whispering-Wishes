@@ -12,3 +12,10 @@
 
 export const OVERLAY_TILE_CACHE = new Map();        // "catalogId:y:x" → HTMLImageElement
 export const OVERLAY_TILE_CACHE_LIMIT = 2000;
+
+// Retry-attempt counter for tiles that failed to load (transient CDN
+// 503/timeout) — separate from OVERLAY_TILE_CACHE because a failed tile is
+// deleted from that cache so the next getTile() call creates a fresh
+// Image(), which would otherwise lose any attempt count stored on the
+// image itself. Cleared per key once a tile finally loads or gives up.
+export const OVERLAY_TILE_RETRY_COUNTS = new Map(); // "catalogId:y:x" → attempt count
