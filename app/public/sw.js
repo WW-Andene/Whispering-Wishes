@@ -30,7 +30,12 @@ const MAX_IMG_ENTRIES = 250;
 // hold opaque tiles fetched under the old mode, so this forces a clean
 // re-fetch under the corrected mode instead of leaving stale opaque bytes
 // in place indefinitely.
-const TILE_CACHE_VERSION = 'v3';
+// v3 -> v4: Solaris_3's entire tile pyramid was regenerated from a master
+// image with 552 paint strokes baked directly into it (see the "Bake paint
+// strokes into Solaris_3" commit) - every z/y/x.webp tile's bytes changed,
+// so devices need to re-fetch all of them rather than keep serving the
+// pre-bake pixels from v3's cache indefinitely.
+const TILE_CACHE_VERSION = 'v4';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
