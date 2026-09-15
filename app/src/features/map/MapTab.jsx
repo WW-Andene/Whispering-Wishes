@@ -1296,87 +1296,122 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // softening a hard edge without erasing/recolouring it. Unlike
     // 'solid'/'fade' this can't be drawn straight into the shared paint
     // canvas with a fill style: it has to (1) snapshot the current on-screen
-    // pixels under the stroke, (2) blur that snapshot, (3) feather its edges
-    // with the same soft radial mask 'fade' uses, then (4) composite the
-    // result back. One offscreen pair of canvases per stroke per frame —
-    // acceptable here since this tool only runs in the (rarely used)
-    // author-mode editor, never during normal play.
-    const drawBlurStroke = (ctx, pts, radiusPx, dpr, cw, ch) => {
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      pts.forEach(c => {
-        minX = Math.min(minX, c.x - radiusPx); maxX = Math.max(maxX, c.x + radiusPx);
-        minY = Math.min(minY, c.y - radiusPx); maxY = Math.max(maxY, c.y + radiusPx);
+    // pixels under the strokes, (2) blur that snapshot, (3) feather to each
+    // stroke's circular footprint with the same soft radial mask 'fade'
+    // uses, then (4) composite the result back.
+    //
+    // Batched across every blur-mode stroke in ONE pass instead of one
+    // snapshot+blur per stroke: a DOM query (container.querySelectorAll)
+    // plus a CSS blur filter application is not cheap, and this draw() runs
+    // on every map move/zoom/resize event, not just once - with, say, 165
+    // strokes (this map's actual seeded default) that was 165 DOM queries
+    // and 165 blur-filter passes on every single pan/zoom frame. Strokes are
+    // grouped by blur radius (rounded to the nearest 0.25px) since the CSS
+    // blur filter itself is one value applied to a whole canvas - same-size
+    // strokes (the overwhelmingly common case; this map's 165 default
+    // strokes are all identical size) collapse into a single shared
+    // snapshot+blur; only genuinely different brush sizes still get their
+    // own pass, still far fewer than one per stroke.
+    //
+    // Masking switched from destination-in-per-circle (correct only for a
+    // single circle - sequentially destination-in'ing multiple circles onto
+    // the same canvas intersects them rather than unioning them, silently
+    // erasing any part of an earlier stroke that a later one doesn't also
+    // cover) to accumulating every circle's radial-gradient footprint on its
+    // own mask canvas first via normal (source-over) painting, then applying
+    // that combined mask to the blurred snapshot in one destination-in - so
+    // disjoint strokes in the same bucket no longer erase each other, and
+    // overlapping ones correctly build up to full opacity instead.
+    const drawBlurStrokes = (ctx, jobs, dpr, cw, ch) => {
+      const buckets = new Map(); // roundedBlurPx -> { blurPx, circles: [{x,y,radiusPx}] }
+      jobs.forEach(({ pts, radiusPx }) => {
+        const blurPx = Math.max(2, radiusPx * 0.35);
+        const key = Math.round(blurPx * 4) / 4;
+        let bucket = buckets.get(key);
+        if (!bucket) { bucket = { blurPx: key, circles: [] }; buckets.set(key, bucket); }
+        pts.forEach(c => bucket.circles.push({ x: c.x, y: c.y, radiusPx }));
       });
-      const blurPx = Math.max(2, radiusPx * 0.35);
-      // Pad the snapshot beyond the stroke's own bounds so the blur filter
-      // has real pixels to sample from at the stroke's edge instead of
-      // sampling past the snapshot into implicit transparency (which would
-      // fade the blurred result toward transparent black at its border).
-      const pad = Math.ceil(blurPx * 3);
-      const sx = Math.max(0, Math.floor(minX - pad));
-      const sy = Math.max(0, Math.floor(minY - pad));
-      const ex = Math.min(cw, Math.ceil(maxX + pad));
-      const ey = Math.min(ch, Math.ceil(maxY + pad));
-      const sw = ex - sx, sh = ey - sy;
-      if (sw <= 0 || sh <= 0) return;
 
-      const snap = document.createElement('canvas');
-      snap.width = Math.round(sw * dpr);
-      snap.height = Math.round(sh * dpr);
-      const sctx = snap.getContext('2d');
-      sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      sctx.translate(-sx, -sy);
-
-      // Base map tiles are plain <img> elements in Leaflet's tile pane, not
-      // a canvas — draw every currently-loaded one that overlaps this
-      // stroke's snapshot rect at its actual on-screen position.
       const containerRect = container.getBoundingClientRect();
-      container.querySelectorAll('.leaflet-tile-pane img.leaflet-tile-loaded').forEach(img => {
-        const r = img.getBoundingClientRect();
-        const ix = r.left - containerRect.left, iy = r.top - containerRect.top;
-        if (ix > ex || iy > ey || ix + r.width < sx || iy + r.height < sy) return;
-        try { sctx.drawImage(img, ix, iy, r.width, r.height); } catch {}
+      const tileImgs = container.querySelectorAll('.leaflet-tile-pane img.leaflet-tile-loaded');
+
+      buckets.forEach(({ blurPx, circles }) => {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        circles.forEach(c => {
+          minX = Math.min(minX, c.x - c.radiusPx); maxX = Math.max(maxX, c.x + c.radiusPx);
+          minY = Math.min(minY, c.y - c.radiusPx); maxY = Math.max(maxY, c.y + c.radiusPx);
+        });
+        // Pad the snapshot beyond the strokes' own bounds so the blur filter
+        // has real pixels to sample from at the edge instead of sampling
+        // past the snapshot into implicit transparency (which would fade
+        // the blurred result toward transparent black at its border).
+        const pad = Math.ceil(blurPx * 3);
+        const sx = Math.max(0, Math.floor(minX - pad));
+        const sy = Math.max(0, Math.floor(minY - pad));
+        const ex = Math.min(cw, Math.ceil(maxX + pad));
+        const ey = Math.min(ch, Math.ceil(maxY + pad));
+        const sw = ex - sx, sh = ey - sy;
+        if (sw <= 0 || sh <= 0) return;
+
+        const snap = document.createElement('canvas');
+        snap.width = Math.round(sw * dpr);
+        snap.height = Math.round(sh * dpr);
+        const sctx = snap.getContext('2d');
+        sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        sctx.translate(-sx, -sy);
+
+        // Base map tiles are plain <img> elements in Leaflet's tile pane,
+        // not a canvas — draw every currently-loaded one that overlaps this
+        // bucket's snapshot rect at its actual on-screen position.
+        tileImgs.forEach(img => {
+          const r = img.getBoundingClientRect();
+          const ix = r.left - containerRect.left, iy = r.top - containerRect.top;
+          if (ix > ex || iy > ey || ix + r.width < sx || iy + r.height < sy) return;
+          try { sctx.drawImage(img, ix, iy, r.width, r.height); } catch {}
+        });
+        // Sub-map overlays are already a canvas (overlayCanvasRef) — draw
+        // the whole thing in, drawImage scales from its own backing size to
+        // the 0,0,cw,ch destination regardless of dpr, so no separate
+        // handling needed versus the tile <img>s above.
+        if (overlayCanvasRef.current) {
+          try { sctx.drawImage(overlayCanvasRef.current, 0, 0, cw, ch); } catch {}
+        }
+
+        const blurred = document.createElement('canvas');
+        blurred.width = snap.width;
+        blurred.height = snap.height;
+        const bctx = blurred.getContext('2d');
+        bctx.filter = `blur(${blurPx * dpr}px)`;
+        bctx.drawImage(snap, 0, 0);
+        bctx.filter = 'none';
+
+        // Union mask: every circle painted source-over (accumulates, rather
+        // than intersecting) onto its own canvas, in CSS px scaled by the
+        // same dpr transform sctx uses above (needed on any HiDPI screen —
+        // devicePixelRatio 2-3, effectively every phone — or each circle
+        // ends up 1/dpr its intended size in the canvas's corner).
+        const mask = document.createElement('canvas');
+        mask.width = blurred.width;
+        mask.height = blurred.height;
+        const mctx = mask.getContext('2d');
+        mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        circles.forEach(c => {
+          const grad = mctx.createRadialGradient(c.x - sx, c.y - sy, 0, c.x - sx, c.y - sy, c.radiusPx);
+          grad.addColorStop(0, 'rgba(0,0,0,1)');
+          grad.addColorStop(1, 'rgba(0,0,0,0)');
+          mctx.fillStyle = grad;
+          mctx.beginPath();
+          mctx.arc(c.x - sx, c.y - sy, c.radiusPx, 0, Math.PI * 2);
+          mctx.fill();
+        });
+
+        bctx.globalCompositeOperation = 'destination-in';
+        bctx.setTransform(1, 0, 0, 1, 0, 0); // mask is already device-px sized 1:1 with blurred
+        bctx.drawImage(mask, 0, 0);
+        bctx.globalCompositeOperation = 'source-over';
+
+        ctx.drawImage(blurred, sx, sy, sw, sh);
       });
-      // Sub-map overlays are already a canvas (overlayCanvasRef) — draw the
-      // whole thing in, drawImage scales from its own backing size to the
-      // 0,0,cw,ch destination regardless of dpr, so no separate handling
-      // needed versus the tile <img>s above.
-      if (overlayCanvasRef.current) {
-        try { sctx.drawImage(overlayCanvasRef.current, 0, 0, cw, ch); } catch {}
-      }
-
-      const blurred = document.createElement('canvas');
-      blurred.width = snap.width;
-      blurred.height = snap.height;
-      const bctx = blurred.getContext('2d');
-      bctx.filter = `blur(${blurPx * dpr}px)`;
-      bctx.drawImage(snap, 0, 0);
-      bctx.filter = 'none';
-
-      // Feather to the brush's circular footprint the same way 'fade'
-      // does, but masking the blurred snapshot's alpha (destination-in)
-      // instead of painting colour. bctx has been identity-transform up to
-      // here (matching snap's already-device-px drawImage above) - the mask
-      // geometry below is expressed in CSS px like everywhere else in this
-      // function, so it needs the same dpr scale sctx uses, or on any HiDPI
-      // screen (dpr 2-3, effectively every phone) the circle is drawn at
-      // 1/dpr its intended size in the canvas's top-left corner, masking
-      // out almost the entire blurred result - the actual cause of the
-      // blur brush appearing to do nothing.
-      bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      bctx.globalCompositeOperation = 'destination-in';
-      pts.forEach(c => {
-        const grad = bctx.createRadialGradient(c.x - sx, c.y - sy, 0, c.x - sx, c.y - sy, radiusPx);
-        grad.addColorStop(0, 'rgba(0,0,0,1)');
-        grad.addColorStop(1, 'rgba(0,0,0,0)');
-        bctx.fillStyle = grad;
-        bctx.beginPath();
-        bctx.arc(c.x - sx, c.y - sy, radiusPx, 0, Math.PI * 2);
-        bctx.fill();
-      });
-      bctx.globalCompositeOperation = 'source-over';
-
-      ctx.drawImage(blurred, sx, sy, sw, sh);
     };
 
     const draw = () => {
@@ -1397,16 +1432,27 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       ctx.strokeStyle = MAP_BG;
       ctx.globalAlpha = 1;
 
+      // Pre-compute each stroke's screen-space points once and split blur
+      // strokes out into their own batch, drawn in a single pass (see
+      // drawBlurStrokes above) before the solid/fade loop below - blur
+      // softens existing content, so painting solid/fade touch-ups on top
+      // of it (rather than perfectly interleaved in creation order, the one
+      // behaviour trade-off of batching) matches the actual workflow.
+      const blurJobs = [];
+      const rest = [];
       allStrokes.forEach(stroke => {
         if (!stroke || !Array.isArray(stroke.points) || stroke.points.length === 0) return;
         const radiusPx = (stroke.size || 20) * zoomFactor;
         if (radiusPx < 0.5) return;
-
         const pts = stroke.points.map(pt => map.latLngToContainerPoint(map.unproject(pt, NATIVE_ZOOM)));
+        if (stroke.mode === 'blur') blurJobs.push({ pts, radiusPx });
+        else rest.push({ mode: stroke.mode, pts, radiusPx });
+      });
 
-        if (stroke.mode === 'blur') {
-          drawBlurStroke(ctx, pts, radiusPx, dpr, cw, ch);
-        } else if (stroke.mode === 'fade') {
+      if (blurJobs.length > 0) drawBlurStrokes(ctx, blurJobs, dpr, cw, ch);
+
+      rest.forEach(({ mode, pts, radiusPx }) => {
+        if (mode === 'fade') {
           // Fade pen — stamp a soft radial-gradient dab (opaque centre,
           // fading to fully transparent at the brush edge) at every
           // recorded point instead of a single hard-edged stroke path, so
