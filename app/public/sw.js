@@ -59,7 +59,7 @@ const ASSET_DIR_RE = /^\/(portraits|animated-bg|spine|convene-animations|audio)\
 // before it leaves the page.
 const JSDELIVR_ASSET_BASE = 'https://cdn.jsdelivr.net/gh/WW-Andene/Whispering-Wishes@main/app/public';
 async function jsDelivrCacheFirst(request, url, cacheName) {
-  const cached = await caches.match(request);
+  const cached = await caches.match(request, { cacheName });
   if (cached) return cached;
   try {
     const remoteUrl = JSDELIVR_ASSET_BASE + url.pathname + url.search;
