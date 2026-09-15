@@ -23,7 +23,7 @@ const MAX_IMG_ENTRIES = 250;
 // Map-overlay tile cache — independent of APP_VERSION because tile URLs are
 // stable across app deploys. Bumping TILE_CACHE_VERSION is the manual opt-in
 // to force users to re-download tiles (e.g. if we re-slice an overlay).
-const TILE_CACHE_VERSION = 'v1';
+const TILE_CACHE_VERSION = 'v2';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
