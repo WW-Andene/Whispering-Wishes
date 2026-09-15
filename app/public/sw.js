@@ -41,7 +41,16 @@ const MAX_IMG_ENTRIES = 250;
 // underneath, so those strokes had no visible effect at all until baked
 // into Mengzhou.webp's own tile pyramid directly. Devices that already
 // fetched Mengzhou's pre-bake tiles under v4 need a clean re-fetch.
-const TILE_CACHE_VERSION = 'v5';
+// v5 -> v6: the v5 Mengzhou bake only baked points whose CENTER fell
+// strictly inside Mengzhou's [0,natW]x[0,natH] rectangle - 634 of the
+// dataset's points are centered just outside that rectangle but have a
+// brush radius large enough to still paint onto Mengzhou's own edge, so
+// their softening never reached Mengzhou's tiles at all (confirmed
+// visually: a hard, un-softened straight edge on Mengzhou's own boundary
+// even where a stroke's circle clearly overlapped it). Fixed to a
+// radius-aware inclusion test. Devices need a clean re-fetch of
+// Mengzhou's tiles again.
+const TILE_CACHE_VERSION = 'v6';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
