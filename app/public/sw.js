@@ -23,7 +23,14 @@ const MAX_IMG_ENTRIES = 250;
 // Map-overlay tile cache — independent of APP_VERSION because tile URLs are
 // stable across app deploys. Bumping TILE_CACHE_VERSION is the manual opt-in
 // to force users to re-download tiles (e.g. if we re-slice an overlay).
-const TILE_CACHE_VERSION = 'v2';
+// v2 -> v3: fetchTileWithRetry switched jsDelivr-routed tile downloads from
+// no-cors to cors mode (opaque no-cors responses taint any canvas that
+// later drawImage()s them, breaking MapTab.jsx's blur paint brush for every
+// tile a device had ever offline-downloaded) - existing v2 caches may still
+// hold opaque tiles fetched under the old mode, so this forces a clean
+// re-fetch under the corrected mode instead of leaving stale opaque bytes
+// in place indefinitely.
+const TILE_CACHE_VERSION = 'v3';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
@@ -373,15 +380,24 @@ async function fetchTileWithRetry(cache, url, maxAttempts = 3) {
   const existing = await cache.match(url);
   if (existing) return true;
   const fetchUrl = resolveFetchUrl(url);
+  // Map tiles/assets resolve to jsDelivr (resolveFetchUrl only rewrites to
+  // JSDELIVR_ASSET_BASE for those), which always sends
+  // Access-Control-Allow-Origin: * — fetch those in normal 'cors' mode so
+  // the resulting cached Response stays non-opaque. An opaque (no-cors)
+  // response is fine for a plain <img> tag, but MapTab.jsx's blur paint
+  // brush reads pixels back out of these exact tiles via canvas
+  // drawImage() (to snapshot-and-blur what's underneath a stroke) — a
+  // canvas that has ever drawn an opaque response becomes "tainted" and
+  // silently refuses to read its own pixels back, making the blur brush
+  // produce nothing at all for any tile that was ever offline-downloaded.
+  // Other download targets (icon hosts like wuwatracker.com, i.ibb.co)
+  // still need no-cors: they don't send CORS headers at all, so a
+  // same-context 'cors' fetch() would reject outright instead of falling
+  // back the way an <img> tag silently would.
+  const useCors = fetchUrl.startsWith(JSDELIVR_ASSET_BASE);
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      // no-cors: several icon hosts (wuwatracker.com, i.ibb.co, ...) don't
-      // send CORS headers, which would otherwise make a same-context fetch()
-      // call reject outright (unlike an <img> tag, which silently falls
-      // back to a no-cors load on its own). Same-origin requests are
-      // unaffected by the mode and still come back as a normal 'basic'
-      // response with a readable status.
-      const resp = await fetch(fetchUrl, { mode: 'no-cors' });
+      const resp = useCors ? await fetch(fetchUrl) : await fetch(fetchUrl, { mode: 'no-cors' });
       // Opaque = cross-origin no-cors response: status/ok are unreadable by
       // design, but the browser fetched *something* — treat it as success
       // and let cache.put store it (opaque responses are cacheable and
