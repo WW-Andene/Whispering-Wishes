@@ -10,7 +10,7 @@ import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { MAP_W, MAP_H, TILE_SIZE, NATIVE_ZOOM, MAX_ZOOM, rdpSimplify, computePlacementBounds, clampToBounds } from './tileMath.js';
 import { getIconImage } from './iconImageCache.js';
-import { OVERLAY_TILE_CACHE, OVERLAY_TILE_CACHE_LIMIT } from './tileCache.js';
+import { OVERLAY_TILE_CACHE, OVERLAY_TILE_CACHE_LIMIT, OVERLAY_TILE_RETRY_COUNTS } from './tileCache.js';
 import { loadDrafts, saveDrafts, loadPaintStrokes, savePaintStrokes } from './mapStorage.js';
 import { useToast } from './useToast.js';
 import { useOfflineTiles } from './useOfflineTiles.js';
@@ -1074,8 +1074,26 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const tilePath = z == null ? `/lossless/${ty}/${tx}.png` : `/lossless/${z}/${ty}/${tx}.png`;
       const url = (BASE + segs + tilePath).replace(/([^:])\/\//g, '$1/');
       img.src = url;
-      img.onload = () => overlayRedrawRef.current();
-      img.onerror = () => { tileCache.delete(key); };
+      img.onload = () => { OVERLAY_TILE_RETRY_COUNTS.delete(key); overlayRedrawRef.current(); };
+      // A failed fetch (transient CDN 503/timeout - more likely right after
+      // a bulk tile-cache invalidation) just dropped the tile from cache
+      // with nothing to pick it back up: draw() only calls getTile() again
+      // on the next 'move zoom viewreset zoomend resize' event, so a tile
+      // that errored during an otherwise-static view stayed blank until the
+      // user manually panned/zoomed. Retry with backoff instead, and
+      // request a redraw once retried so getTile() re-fetches it on its own.
+      // Attempt count lives in OVERLAY_TILE_RETRY_COUNTS, not on the image
+      // itself - this Image() gets discarded and a fresh one created on
+      // every retry (tileCache.delete below), which would otherwise reset
+      // any counter stored on it back to zero each time.
+      img.onerror = () => {
+        tileCache.delete(key);
+        const attempt = (OVERLAY_TILE_RETRY_COUNTS.get(key) || 0) + 1;
+        if (attempt > 4) { OVERLAY_TILE_RETRY_COUNTS.delete(key); return; }
+        OVERLAY_TILE_RETRY_COUNTS.set(key, attempt);
+        const delay = 400 * Math.pow(2, attempt - 1) + Math.random() * 200;
+        setTimeout(() => { overlayRedrawRef.current(); }, delay);
+      };
       tileCache.set(key, img);
       // Evict oldest when over cap.
       while (tileCache.size > OVERLAY_TILE_CACHE_LIMIT) {
