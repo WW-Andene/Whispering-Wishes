@@ -1074,7 +1074,6 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const tilePath = z == null ? `/lossless/${ty}/${tx}.png` : `/lossless/${z}/${ty}/${tx}.png`;
       const url = (BASE + segs + tilePath).replace(/([^:])\/\//g, '$1/');
       img.src = url;
-      img.onload = () => { OVERLAY_TILE_RETRY_COUNTS.delete(key); overlayRedrawRef.current(); };
       // A failed fetch (transient CDN 503/timeout - more likely right after
       // a bulk tile-cache invalidation) just dropped the tile from cache
       // with nothing to pick it back up: draw() only calls getTile() again
@@ -1086,7 +1085,8 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       // itself - this Image() gets discarded and a fresh one created on
       // every retry (tileCache.delete below), which would otherwise reset
       // any counter stored on it back to zero each time.
-      img.onerror = () => {
+      const retryTile = () => {
+        clearTimeout(stallTimer);
         tileCache.delete(key);
         const attempt = (OVERLAY_TILE_RETRY_COUNTS.get(key) || 0) + 1;
         if (attempt > 4) { OVERLAY_TILE_RETRY_COUNTS.delete(key); return; }
@@ -1094,6 +1094,18 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         const delay = 400 * Math.pow(2, attempt - 1) + Math.random() * 200;
         setTimeout(() => { overlayRedrawRef.current(); }, delay);
       };
+      img.onload = () => { clearTimeout(stallTimer); OVERLAY_TILE_RETRY_COUNTS.delete(key); overlayRedrawRef.current(); };
+      img.onerror = retryTile;
+      // A stalled request (slow/flaky connection) fires neither onload nor
+      // onerror - the browser just keeps waiting - so without an explicit
+      // deadline the tile sat in tileCache as a permanently-pending Image()
+      // forever, and every later getTile() call for the same key returned
+      // that same stuck cache hit instead of starting a fresh fetch. 10s is
+      // generous for a 256px tile on any connection that will complete at
+      // all; on one that won't, retrying (and eventually giving up per-tile
+      // rather than hanging indefinitely) is strictly better than never
+      // recovering without a manual pan/zoom.
+      const stallTimer = setTimeout(retryTile, 10000);
       tileCache.set(key, img);
       // Evict oldest when over cap.
       while (tileCache.size > OVERLAY_TILE_CACHE_LIMIT) {
