@@ -78,6 +78,12 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const [paintBrushMode, setPaintBrushMode] = useState('solid');
   const [paintStrokes, setPaintStrokes] = useState(loadPaintStrokes);
   const paintCanvasRef = useRef(null);
+  // Reusable scratch layer for the fade pen — each fade stroke's own dabs
+  // composite onto this (cleared and reused, not reallocated) with
+  // globalCompositeOperation 'lighten' so a stroke's self-overlaps cap at
+  // the gradient's own peak alpha instead of stacking darker, before being
+  // drawn onto the real paint canvas once. See the fade-mode block below.
+  const fadeLayerCanvasRef = useRef(null);
   const paintDrawRef = useRef(() => {});
   const paintLiveRef = useRef(null); // { points: [[x,y]...], size } while drawing
   const [authorPoints, setAuthorPoints] = useState([]);
@@ -1453,23 +1459,64 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
       rest.forEach(({ mode, pts, radiusPx }) => {
         if (mode === 'fade') {
-          // Fade pen — stamp a soft radial-gradient dab (opaque centre,
-          // fading to fully transparent at the brush edge) at every
-          // recorded point instead of a single hard-edged stroke path, so
-          // the blot blends into whatever's underneath at its edges rather
-          // than cutting it off sharply. Points are recorded at most ~4
-          // native px apart (see onMove's spacing check below), which is
-          // well inside radiusPx for any usable brush size, so consecutive
-          // dabs overlap enough to read as one continuous soft stroke.
+          // Fade pen — stamp a soft radial-gradient dab at every recorded
+          // point instead of a single hard-edged stroke path, so the blot
+          // blends into whatever's underneath at its edges rather than
+          // cutting it off sharply. Points are recorded at most ~4 native px
+          // apart (see onMove's spacing check below), which is well inside
+          // radiusPx for any usable brush size, so consecutive dabs overlap
+          // enough to read as one continuous soft stroke.
+          //
+          // Eased multi-stop falloff (holds most of its opacity out past
+          // the midpoint, then tapers) instead of a straight 0->1 linear
+          // alpha ramp, which still reads as a fairly hard-edged disc with
+          // only a thin feather right at its rim - this spreads the
+          // transition across the whole radius for a visibly more diffuse
+          // blot.
+          //
+          // Self-overlap is capped rather than stacked: every dab in THIS
+          // stroke is composited onto the reusable fadeLayer scratch canvas
+          // with globalCompositeOperation 'lighten', so two overlapping
+          // dabs from the same drag (e.g. a slow stroke doubling back on
+          // itself) settle at whichever's opacity is higher at each pixel
+          // instead of summing to something darker every time they cross.
+          // Different strokes still layer normally against each other and
+          // against solid/blur strokes - only a stroke's own self-overlap
+          // is affected - since fadeLayer is cleared and redrawn onto ctx
+          // fresh for each stroke.
+          let fadeLayer = fadeLayerCanvasRef.current;
+          if (!fadeLayer) {
+            fadeLayer = document.createElement('canvas');
+            fadeLayerCanvasRef.current = fadeLayer;
+          }
+          if (fadeLayer.width !== canvas.width || fadeLayer.height !== canvas.height) {
+            fadeLayer.width = canvas.width;
+            fadeLayer.height = canvas.height;
+          }
+          const fctx = fadeLayer.getContext('2d');
+          fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          fctx.clearRect(0, 0, cw, ch);
+          fctx.globalCompositeOperation = 'lighten';
           pts.forEach(c => {
-            const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, radiusPx);
+            const grad = fctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, radiusPx);
             grad.addColorStop(0, MAP_BG);
+            grad.addColorStop(0.3, 'rgba(6, 38, 52, 0.85)');
+            grad.addColorStop(0.6, 'rgba(6, 38, 52, 0.45)');
             grad.addColorStop(1, MAP_BG_ZERO_ALPHA);
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
-            ctx.fill();
+            fctx.fillStyle = grad;
+            fctx.beginPath();
+            fctx.arc(c.x, c.y, radiusPx, 0, Math.PI * 2);
+            fctx.fill();
           });
+          fctx.globalCompositeOperation = 'source-over';
+          // fadeLayer is already device-px sized 1:1 with the real canvas -
+          // reset ctx to identity for this copy so it isn't scaled a second
+          // time by ctx's own dpr transform (the exact bug already fixed
+          // once for the blur pen's mask).
+          ctx.save();
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.drawImage(fadeLayer, 0, 0);
+          ctx.restore();
         } else {
           // Solid pen — single opaque pass, no multi-pass layering so
           // strokes look flat, not embossed. Colour matches the ocean
