@@ -59,7 +59,23 @@ const MAX_IMG_ENTRIES = 250;
 // cutout edge "clipping" back in on top of the new blur. Fixed so blur
 // strokes only ever blend RGB and never touch Mengzhou's own alpha shape.
 // Devices need a clean re-fetch of Mengzhou's tiles again.
-const TILE_CACHE_VERSION = 'v7';
+// v7 -> v8: two more fixes at the Solaris/Mengzhou seam. (1) Solaris's own
+// composite-based blur bake (baking the visible seam onto Solaris, not
+// Mengzhou) weighted each stroke's blend only by brush-radius falloff, never
+// by how much Mengzhou actually covers that pixel - so wherever a stroke's
+// circle crossed Mengzhou's placement but Mengzhou itself is transparent
+// there (won't render live), Solaris kept a "ghost" patch of Mengzhou-tinted
+// blur floating in open ocean with nothing drawn over it. Now weighted by
+// Mengzhou's own alpha too, so it self-limits to exactly where Mengzhou will
+// actually render. (2) Mengzhou's right edge is a raw crop boundary (its
+//16384px-wide source had to be cropped by 1px to fit WebP's hard limit) -
+// not a coastline - so content was cut off there with zero falloff, a hard
+// vertical cliff in both Mengzhou's own tiles and, via the composite, in
+// Solaris's baked seam. Tapered that edge's alpha to transparent over its
+// final ~200 world-px (matching the ~200px brush radius already used near
+// it) instead of presenting a fabricated or hard-clipped coastline. Devices
+// need a clean re-fetch of both Mengzhou's and Solaris's tiles again.
+const TILE_CACHE_VERSION = 'v8';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
