@@ -50,7 +50,16 @@ const MAX_IMG_ENTRIES = 250;
 // even where a stroke's circle clearly overlapped it). Fixed to a
 // radius-aware inclusion test. Devices need a clean re-fetch of
 // Mengzhou's tiles again.
-const TILE_CACHE_VERSION = 'v6';
+// v6 -> v7: the v6 Mengzhou blur bake blended the blurred composite's own
+// alpha channel back into the master, not just its RGB. That composite is
+// opaque wherever Solaris bleeds through behind Mengzhou's transparent
+// ocean cutout, so any blur stroke crossing the cutout boundary punched a
+// hard, brush-radius-shaped patch of full opacity into the cutout's smooth
+// contour - visually indistinguishable from Mengzhou's old, un-softened
+// cutout edge "clipping" back in on top of the new blur. Fixed so blur
+// strokes only ever blend RGB and never touch Mengzhou's own alpha shape.
+// Devices need a clean re-fetch of Mengzhou's tiles again.
+const TILE_CACHE_VERSION = 'v7';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
