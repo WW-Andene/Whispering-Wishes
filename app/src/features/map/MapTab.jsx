@@ -1355,7 +1355,15 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
       // Feather to the brush's circular footprint the same way 'fade'
       // does, but masking the blurred snapshot's alpha (destination-in)
-      // instead of painting colour.
+      // instead of painting colour. bctx has been identity-transform up to
+      // here (matching snap's already-device-px drawImage above) - the mask
+      // geometry below is expressed in CSS px like everywhere else in this
+      // function, so it needs the same dpr scale sctx uses, or on any HiDPI
+      // screen (dpr 2-3, effectively every phone) the circle is drawn at
+      // 1/dpr its intended size in the canvas's top-left corner, masking
+      // out almost the entire blurred result - the actual cause of the
+      // blur brush appearing to do nothing.
+      bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       bctx.globalCompositeOperation = 'destination-in';
       pts.forEach(c => {
         const grad = bctx.createRadialGradient(c.x - sx, c.y - sy, 0, c.x - sx, c.y - sy, radiusPx);
