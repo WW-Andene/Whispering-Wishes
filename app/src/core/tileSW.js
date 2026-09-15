@@ -154,3 +154,15 @@ export async function queryTiles(item) {
 export function serviceWorkerAvailable() {
   return !!(navigator.serviceWorker && navigator.serviceWorker.controller);
 }
+
+// Full wipe of every downloaded map tile / offline asset, regardless of
+// which specific overlays were fetched — used by "Reset all data" so that
+// action actually clears everything it claims to, not just localStorage.
+export async function purgeAllDownloads() {
+  if (!serviceWorkerAvailable()) return;
+  const id = nextId('all', 'rmall');
+  await callSW(
+    { type: 'purge-all-downloads', id },
+    { matchId: id, terminal: ['purge-all-done'] }
+  );
+}
