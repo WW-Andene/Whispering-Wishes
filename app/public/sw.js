@@ -130,7 +130,26 @@ const MAX_IMG_ENTRIES = 250;
 // smoothly down to zero by ~350px out (also zero slope there), instead of a
 // blur whose derivative peaks exactly where a seam would be most visible.
 // Devices need a clean re-fetch of Solaris's tiles again.
-const TILE_CACHE_VERSION = 'v12';
+// v12 -> v13: v12 fixed alpha continuity but not VALUE continuity - measured
+// with an edge-detection pass on a render compositing Mengzhou over the
+// baked Solaris exactly as the live app does, a color-jump energy spike at
+// the coastline was still ~7x any real terrain edge in the image. Root
+// cause: Mengzhou's own alpha is a hard step (255 to 0 in a single pixel,
+// no antialiasing at this resolution), so neither the raw composite color
+// (which is Solaris's own unrelated original pixel just past the edge) nor
+// the gaussian-blurred composite (a spatial average that pulls in far-away
+// hues) actually equals Mengzhou's true adjacent color - both are real,
+// measured jumps, confirmed by sampling exact RGB values on both sides.
+// Fixed by extrapolating Mengzhou's own edge color outward via a nearest-
+// neighbor distance transform (scipy.ndimage.distance_transform_edt with
+// return_indices), which by construction equals Mengzhou's true edge value
+// at distance 0 - zero jump - fading into the wider gaussian haze only as
+// distance grows, using the same zero-slope smoothstep as before so this
+// doesn't reintroduce a kink of its own. Verified: the color-jump energy at
+// the coastline dropped from ~7x normal to in-line with ordinary terrain
+// detail edges elsewhere in the image. Devices need a clean re-fetch of
+// Solaris's tiles again.
+const TILE_CACHE_VERSION = 'v13';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
