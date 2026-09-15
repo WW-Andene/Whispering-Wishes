@@ -8,7 +8,7 @@ import { MAP_ICON_CATALOG, getIconCatalogEntry } from '../../data/mapIconCatalog
 import { tileUrlsForOverlay } from '../../core/tileSW.js';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
-import { MAP_W, MAP_H, TILE_SIZE, NATIVE_ZOOM, MAX_ZOOM, rdpSimplify } from './tileMath.js';
+import { MAP_W, MAP_H, TILE_SIZE, NATIVE_ZOOM, MAX_ZOOM, rdpSimplify, computePlacementBounds, clampToBounds } from './tileMath.js';
 import { getIconImage } from './iconImageCache.js';
 import { OVERLAY_TILE_CACHE, OVERLAY_TILE_CACHE_LIMIT } from './tileCache.js';
 import { loadDrafts, saveDrafts, loadPaintStrokes, savePaintStrokes } from './mapStorage.js';
@@ -94,6 +94,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const [viewFloor, setViewFloor] = useState(0);
   const [overlayDrafts, setOverlayDrafts] = useState(loadOverlayDrafts);
   const [editingOverlayId, setEditingOverlayId] = useState(null);
+  // Placement clamp bounds — widened beyond Solaris_3's own [0,MAP_W]x[0,MAP_H]
+  // canvas to cover every placed sub-map overlay, so clicking/dragging near
+  // the edge of an overlay that itself sits partly outside Solaris's bounds
+  // (e.g. Mengzhou) doesn't get silently snapped back inside them.
+  const placementBounds = useMemo(
+    () => computePlacementBounds(overlayDrafts, OVERLAY_CATALOG),
+    [overlayDrafts]
+  );
   // Offline cache status per catalog id: { cached, total, downloading, done }.
   // Populated on mount by querying the tile-cache service worker; updated
   // live during downloads so the UI can show a progress indicator.
@@ -817,10 +825,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const mapped = simplified.map(([cx, cy]) => {
         const ll = map.containerPointToLatLng([cx, cy]);
         const nat = map.project(ll, NATIVE_ZOOM);
-        return [
-          Math.max(0, Math.min(MAP_W, Math.round(nat.x))),
-          Math.max(0, Math.min(MAP_H, Math.round(nat.y))),
-        ];
+        return clampToBounds(Math.round(nat.x), Math.round(nat.y), placementBounds);
       });
       setAuthorPoints(mapped);
     };
@@ -844,7 +849,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       map.boxZoom?.enable();
       removeTrace();
     };
-  }, [mapReady, authorMode, freehandMode]);
+  }, [mapReady, authorMode, freehandMode, placementBounds]);
 
   // Render live in-progress polygon with draggable points + midpoint inserters
   useEffect(() => {
@@ -904,10 +909,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const marker = L.marker(ll, { draggable: true, icon, autoPan: false, keyboard: false, pane: 'zoneAuthorPane' });
       marker.on('dragend', (e) => {
         const np = map.project(e.target.getLatLng(), NATIVE_ZOOM);
-        const clamped = [
-          Math.max(0, Math.min(MAP_W, Math.round(np.x))),
-          Math.max(0, Math.min(MAP_H, Math.round(np.y))),
-        ];
+        const clamped = clampToBounds(Math.round(np.x), Math.round(np.y), placementBounds);
         setAuthorPoints(prev => prev.map((p, idx) => idx === i ? clamped : p));
       });
       marker.on('click', (ev) => {
@@ -947,7 +949,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
     group.addTo(map);
     activeLayerRef.current = group;
-  }, [authorMode, authorPoints, mapReady]);
+  }, [authorMode, authorPoints, mapReady, placementBounds]);
 
   // Render saved session drafts (cyan) — only in author mode
   useEffect(() => {
@@ -1466,10 +1468,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const py = clientY - rect.top;
       const ll = map.containerPointToLatLng([px, py]);
       const nat = map.project(ll, NATIVE_ZOOM);
-      return [
-        Math.max(0, Math.min(MAP_W, Math.round(nat.x))),
-        Math.max(0, Math.min(MAP_H, Math.round(nat.y))),
-      ];
+      return clampToBounds(Math.round(nat.x), Math.round(nat.y), placementBounds);
     };
 
     const onDown = (e) => {
@@ -1537,7 +1536,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       paintLiveRef.current = null;
       paintDrawRef.current();
     };
-  }, [paintMode, paintBrushSize, paintBrushMode, paintStrokes, mapReady]);
+  }, [paintMode, paintBrushSize, paintBrushMode, paintStrokes, mapReady, placementBounds]);
 
   const handlePaintUndo = useCallback(() => {
     setPaintStrokes(prev => {
@@ -1952,8 +1951,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     container.style.cursor = 'crosshair';
     const onClick = (e) => {
       const pt = map.project(e.latlng, NATIVE_ZOOM);
-      const x = Math.max(0, Math.min(MAP_W, Math.round(pt.x)));
-      const y = Math.max(0, Math.min(MAP_H, Math.round(pt.y)));
+      const [x, y] = clampToBounds(Math.round(pt.x), Math.round(pt.y), placementBounds);
       // Auto-detect owning zone and inherit the zone's floor (if any)
       // unless the user has already pinned a custom floor.
       const zone = findEnclosingZone(x, y);
@@ -1980,7 +1978,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       map.off('click', onClick);
       container.style.cursor = prevCursor;
     };
-  }, [placingIconId, mapReady, findEnclosingZone, resolveZoneFloor]);
+  }, [placingIconId, mapReady, findEnclosingZone, resolveZoneFloor, placementBounds]);
 
   // Multi-place — each click spawns a clone of the template icon at the
   // click location, keeping the same kind/category/subcategory/visual.
@@ -1994,8 +1992,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     container.style.cursor = 'crosshair';
     const onClick = (e) => {
       const pt = map.project(e.latlng, NATIVE_ZOOM);
-      const x = Math.max(0, Math.min(MAP_W, Math.round(pt.x)));
-      const y = Math.max(0, Math.min(MAP_H, Math.round(pt.y)));
+      const [x, y] = clampToBounds(Math.round(pt.x), Math.round(pt.y), placementBounds);
       const zone = findEnclosingZone(x, y);
       const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
       setIconDrafts((prev) => {
@@ -2029,7 +2026,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       document.removeEventListener('keydown', onKey);
       container.style.cursor = prevCursor;
     };
-  }, [multiPlaceFromId, mapReady, findEnclosingZone, resolveZoneFloor]);
+  }, [multiPlaceFromId, mapReady, findEnclosingZone, resolveZoneFloor, placementBounds]);
 
   // Close the downloads popover when clicking outside it.
   useEffect(() => {
