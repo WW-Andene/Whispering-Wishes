@@ -149,7 +149,19 @@ const MAX_IMG_ENTRIES = 250;
 // the coastline dropped from ~7x normal to in-line with ordinary terrain
 // detail edges elsewhere in the image. Devices need a clean re-fetch of
 // Solaris's tiles again.
-const TILE_CACHE_VERSION = 'v13';
+// v13 -> v14: v13 fixed the color VALUE at the boundary but nearest-neighbor
+// extrapolation is a voronoi partition of source pixels - many nearby query
+// points snap to the same single source pixel, so it reads as a flat,
+// artificial plateau right next to naturally-varying terrain. That's a
+// smaller discontinuity than the original color jump, but still a visible
+// one (reported directly against a fresh render: "still a separation...
+// not smooth seamless continuity"). Fixed by applying a modest gaussian
+// blur (30px) to the extrapolation layer itself before using it - small
+// enough to only mix nearby, already-similar extrapolated colors (not
+// reintroduce the original far-away-hue jump), but enough to break up the
+// voronoi blockiness into natural-looking variation. Devices need a clean
+// re-fetch of Solaris's tiles again.
+const TILE_CACHE_VERSION = 'v14';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
