@@ -91,7 +91,13 @@ export const OVERLAY_CATALOG = [
     id: 'mengzhou',
     name: 'Mengzhou',
     imageUrl: 'map-tiles/Mengzhou/Mengzhou.webp',
-    naturalWidth: 16383,
+    // naturalWidth is 17840, not the .webp's own 16383: the lossless/ tile
+    // pyramid (what the app actually renders) was resliced from a wider,
+    // right-padded master that transplants the Mengzhou-side seam blur
+    // (formerly baked into Solaris_3) directly onto Mengzhou's own canvas,
+    // so the whole soft-taper effect lives in one rendering layer instead
+    // of spanning the Leaflet tile layer and this canvas overlay.
+    naturalWidth: 17840,
     naturalHeight: 10240,
     pyramid: true,
     minZoom: 0,

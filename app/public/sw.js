@@ -161,7 +161,19 @@ const MAX_IMG_ENTRIES = 250;
 // reintroduce the original far-away-hue jump), but enough to break up the
 // voronoi blockiness into natural-looking variation. Devices need a clean
 // re-fetch of Solaris's tiles again.
-const TILE_CACHE_VERSION = 'v14';
+// v14 -> v15: the seam was never fully fixable by matching colors across
+// Solaris's real <img> tile layer and Mengzhou's separate <canvas> overlay -
+// two independently-rendered/scaled paths can't be guaranteed pixel-perfect
+// even with identical source color data. Root-caused and fixed by moving the
+// entire effect into one layer instead: the Mengzhou-adjacent blur/fade that
+// was baked into Solaris_3 is now extracted, transplanted onto Mengzhou's
+// own (right-padded, 16383->17840 wide) canvas, and re-blended there with a
+// feathered blur across the boundary; Solaris_3's cutout region is reverted
+// to its pristine (pre-bake) pixels since the seam-adjacent content no
+// longer needs to live on it. Both Solaris_3's and Mengzhou's tile pyramids
+// were resliced from the updated masters. Devices need a clean re-fetch of
+// both Solaris_3's and Mengzhou's tiles again.
+const TILE_CACHE_VERSION = 'v15';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
