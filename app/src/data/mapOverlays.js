@@ -10,11 +10,17 @@ import { DEFAULT_OVERLAY_DRAFTS } from './mapDefaults.js';
 
 export const OVERLAY_CATALOG = [
   {
+    // Re-detoured (ocean cutout retuned: tighter, more consistent coastline
+    // detection, thin margin) - pyramid/minZoom/maxZoom same convention as
+    // Mengzhou/Dimmr Plains, lossless/{z}/{y}/{x}.png for z in [minZoom, maxZoom].
     id: 'lahai-roi',
     name: 'Lahai Roi',
     imageUrl: 'map-tiles/lahai-roi/Lahai-roi.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 5,
   },
   {
     id: 'tethys-deep',
