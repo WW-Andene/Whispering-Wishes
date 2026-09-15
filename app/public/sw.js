@@ -117,7 +117,20 @@ const MAX_IMG_ENTRIES = 250;
 // ocean, well past where Mengzhou's edge has already faded to nothing, to
 // keep the original ghost-patch fix intact. Devices need a clean re-fetch
 // of both Mengzhou's and Solaris's tiles again.
-const TILE_CACHE_VERSION = 'v11';
+// v11 -> v12: v11's near-coast mask was a gaussian blur of a binary
+// presence mask, saturated to reach ~1 quickly - but a gaussian blur of a
+// step function has its STEEPEST slope exactly at the original step, so a
+// visible kink survived right at the coastline no matter how wide or
+// saturated that blur was (confirmed even in a render compositing Mengzhou
+// over the baked Solaris exactly as the live app does - directly annotated:
+// "look at the difference between two blur[s]", circling that exact spot).
+// Replaced with a proper Euclidean distance-to-nearest-opaque-Mengzhou-pixel
+// transform, fed through a cubic smoothstep: full weight at distance 0 (at
+// the coast, zero slope - no kink where Mengzhou's own alpha takes over),
+// smoothly down to zero by ~350px out (also zero slope there), instead of a
+// blur whose derivative peaks exactly where a seam would be most visible.
+// Devices need a clean re-fetch of Solaris's tiles again.
+const TILE_CACHE_VERSION = 'v12';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
