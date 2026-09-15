@@ -991,6 +991,13 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         dashArray: '6 4',
         className: 'zone-polygon zone-draft',
         pane: 'zoneAuthorPane',
+        // zoneAuthorPane sits at z-index 1000, above the paint canvas
+        // (450) - left interactive while paintMode is on, this polygon's
+        // own hit-testing swallowed the pointerdown that starts a paint
+        // stroke, forcing the user to start every stroke from outside the
+        // zone's fill and drag in. Locking it non-interactive during paint
+        // lets strokes start anywhere, including directly over a zone.
+        interactive: !paintMode,
       }).addTo(group);
       const parentName = isSub
         ? (MAP_ZONES.find(p => p.id === z.parentId)?.name
@@ -998,11 +1005,13 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
            || z.parentId)
         : null;
       const title = parentName ? `${parentName} › ${z.name || z.id}` : (z.name || z.id);
-      poly.bindTooltip(`[draft] ${title}`, { sticky: true, className: 'zone-tooltip zone-tooltip-draft' });
+      if (!paintMode) {
+        poly.bindTooltip(`[draft] ${title}`, { sticky: true, className: 'zone-tooltip zone-tooltip-draft' });
+      }
     });
     group.addTo(map);
     draftsLayerRef.current = group;
-  }, [drafts, editingId, mapReady, authorMode]);
+  }, [drafts, editingId, mapReady, authorMode, paintMode]);
 
   // Sub-map overlay renderer — one shared <canvas>, sized to the map viewport.
   // For each visible placement we iterate the subset of the overlay's native
