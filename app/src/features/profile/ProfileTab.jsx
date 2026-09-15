@@ -15,6 +15,7 @@ import { AMBIENT_OST_TRACKS, AMBIENT_OST_CATEGORIES } from '../../hooks/useAmbie
 import { getElementColor, getElementBg } from '../../shared/utils/elementVisuals.js';
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
+import { purgeAllDownloads } from '../../core/tileSW.js';
 import { renderIdCard } from './idCardRenderer.js';
 import { useFocusTrap, FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 
@@ -1386,6 +1387,10 @@ function ProfileTab({
                     clearAllAuxKeys();
                     // Immediately persist reset to localStorage (don't wait for 300ms debounce)
                     try { localStorage.removeItem('whispering-wishes-v2.2'); } catch {}
+                    // Wipe every downloaded map tile / offline asset too — Cache Storage lives
+                    // outside localStorage, so it wasn't touched by the above and users could
+                    // "reset all data" yet still have gigabytes of downloaded maps sitting there.
+                    await purgeAllDownloads();
                     // Delete cloud backup if signed in (await before sign-out to preserve auth token)
                     if (handleCloudDelete) await handleCloudDelete();
                     if (handleGoogleSignOut) handleGoogleSignOut();

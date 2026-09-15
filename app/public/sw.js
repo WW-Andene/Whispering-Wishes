@@ -334,6 +334,19 @@ self.addEventListener('message', (event) => {
     event.waitUntil(handleQueryOverlay(data, reply));
     return;
   }
+
+  // Full wipe of both persistent download buckets (map tiles + offline
+  // character animations/banners) — used by ProfileTab's "Reset all data",
+  // which otherwise only clears localStorage and left every downloaded map/
+  // asset sitting untouched in Cache Storage.
+  if (data.type === 'purge-all-downloads') {
+    event.waitUntil(
+      Promise.all([caches.delete(TILE_CACHE), caches.delete(ASSET_CACHE)]).then(() => {
+        reply({ type: 'purge-all-done', id: data.id });
+      })
+    );
+    return;
+  }
 });
 
 // Redirects a bulk-download URL to jsDelivr the same way the page-level
