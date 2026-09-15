@@ -84,7 +84,23 @@ const MAX_IMG_ENTRIES = 250;
 // normal zoom (there's genuinely no more source art beyond it), but the
 // shape itself is no longer eaten into. Devices need a clean re-fetch of
 // both Mengzhou's and Solaris's tiles again.
-const TILE_CACHE_VERSION = 'v9';
+// v9 -> v10: v9's ~6px taper was too subtle to read as anything but a flat
+// hard line (reported: "the tip is completely flat, where do you even see
+// it preserved"), and separately, v8's fix of weighting Solaris's seam blur
+// by Mengzhou's raw alpha conflated two different things - it correctly
+// killed the disconnected ghost patch, but it also cut the intentional
+// visual taper off right at Mengzhou's own (sharp) coastline, since that
+// taper necessarily has to extend past the coastline into transparent
+// pixels to read as a taper at all. Reverted Mengzhou.webp to its untouched
+// shape (no edge taper on the terrain itself - the actual landmass is
+// exactly as wide as its source data, nothing eaten into) and instead fixed
+// bake_solaris.py to blur the Mengzhou-alpha mask by the same radius as the
+// stroke's own color blur before using it as a weight, so the seam blend
+// fades out gradually near the coast (a real taper) while a stroke far from
+// any real coastline still decays to ~0 (the ghost-patch fix stays intact).
+// Devices need a clean re-fetch of both Mengzhou's and Solaris's tiles
+// again.
+const TILE_CACHE_VERSION = 'v10';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
