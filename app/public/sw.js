@@ -75,7 +75,16 @@ const MAX_IMG_ENTRIES = 250;
 // final ~200 world-px (matching the ~200px brush radius already used near
 // it) instead of presenting a fabricated or hard-clipped coastline. Devices
 // need a clean re-fetch of both Mengzhou's and Solaris's tiles again.
-const TILE_CACHE_VERSION = 'v8';
+// v8 -> v9: the v8 edge taper (~200 world-px) was wide enough to visibly eat
+// into the actual landmass shape near the crop boundary - the peninsula's
+// tip read as truncated, not just softer-edged (reported directly: "the tip
+// is not the shape it is supposed to be"). Narrowed the taper to ~6 world-px
+// - just enough to avoid a literal single-pixel-wide hard line, without
+// fading out real terrain detail. The boundary still reads as an edge at
+// normal zoom (there's genuinely no more source art beyond it), but the
+// shape itself is no longer eaten into. Devices need a clean re-fetch of
+// both Mengzhou's and Solaris's tiles again.
+const TILE_CACHE_VERSION = 'v9';
 const TILE_CACHE = `ww-tiles-${TILE_CACHE_VERSION}`;
 // Match tiles for either:
 //   * a flat sub-map overlay at /<dir>/lossless/{y}/{x}.png
