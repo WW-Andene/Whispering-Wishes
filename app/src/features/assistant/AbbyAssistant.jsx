@@ -5,8 +5,11 @@
 // echoes, tap a result to open its detail modal. v1 scope is static game data
 // only (see CLAUDE.md session note) - no user progression data indexed yet.
 //
-// Styled as a floating AI-overlay (glass bubble + pill search, no dim scrim,
-// no boxed card) rather than a centered modal dialog, per explicit direction.
+// Layout (top to bottom): a solid comic/manga-panel speech bubble above Abby
+// with its tail pointing down at her, Abby's sprite, then the search input
+// directly beneath her (no gap for anything else), then results below that
+// once there's a query. Floating AI-overlay style overall - no dim scrim, no
+// boxed card - per explicit direction earlier in this session.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -70,46 +73,70 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
     >
       {/* stopPropagation so tapping the floating content itself doesn't
           trigger the backdrop's tap-outside-to-close */}
-      <div className="w-full flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: '8px' }}>
+      <div className="w-full flex flex-col items-center" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: '8px' }}>
 
-        <div className="relative flex flex-col items-center">
-          <button
-            onClick={() => setOpen(false)}
-            aria-label={t('assistant.close')}
-            className="absolute flex items-center justify-center"
-            style={{
-              top: '-8px', right: '-8px', width: '32px', height: '32px', borderRadius: '9999px',
-              ...GLASS_PANEL_STYLE, color: 'var(--text-muted)', fontSize: 'var(--font-sm)', zIndex: 1,
-            }}
-          >
-            ✕
-          </button>
-          <img
-            src="./misc-assets/Abby_Full_Sprite.png"
-            alt=""
+        <button
+          onClick={() => setOpen(false)}
+          aria-label={t('assistant.close')}
+          className="self-end flex items-center justify-center"
+          style={{
+            width: '32px', height: '32px', borderRadius: '9999px', marginBottom: '4px',
+            ...GLASS_PANEL_STYLE, color: 'var(--text-muted)', fontSize: 'var(--font-sm)',
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Comic/manga-panel speech bubble: solid fill (not glass-blurred
+            like the rest), square-ish corners, a bold outline, and a sharp
+            clip-path triangle tail pointing straight down at Abby - reads as
+            a real dialogue-box panel rather than a translucent chat pill. */}
+        <div className="relative rounded" style={{ background: 'var(--bg-card-inner)', border: '2px solid rgba(255,255,255,0.4)', padding: '8px 16px', marginBottom: '14px' }}>
+          <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
+          <div
             aria-hidden="true"
-            className="w-48 h-32 object-contain object-bottom"
-            style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.5))' }}
+            style={{
+              position: 'absolute', bottom: '-14px', left: '50%', transform: 'translateX(-50%)',
+              width: 0, height: 0,
+              borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
+              borderTop: '14px solid rgba(255,255,255,0.4)',
+            }}
           />
-          {/* Comic/manga-style dialogue box - square-ish corners, a bolder
-              border than the other glass panels, and a triangular tail
-              (a rotated square, half-hidden behind the box's own top edge)
-              pointing up at Abby instead of a smooth speech-bubble curve. */}
-          <div className="relative rounded-lg" style={{ ...GLASS_PANEL_STYLE, border: '1px solid var(--border-medium)', padding: '8px 16px', marginTop: '-4px' }}>
-            <div
-              aria-hidden="true"
-              style={{
-                position: 'absolute', top: '-7px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
-                width: '14px', height: '14px', background: 'var(--bg-elevated)',
-                borderLeft: '1px solid var(--border-medium)', borderTop: '1px solid var(--border-medium)',
-              }}
-            />
-            <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
-          </div>
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute', bottom: '-11px', left: '50%', transform: 'translateX(-50%)',
+              width: 0, height: 0,
+              borderLeft: '6px solid transparent', borderRight: '6px solid transparent',
+              borderTop: '12px solid var(--bg-card-inner)',
+            }}
+          />
+        </div>
+
+        <img
+          src="./misc-assets/Abby_Full_Sprite.png"
+          alt=""
+          aria-hidden="true"
+          className="w-48 h-32 object-contain object-bottom"
+          style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.5))' }}
+        />
+
+        {/* Search input - directly beneath Abby, nothing in between. */}
+        <div className="w-full flex items-center gap-2 rounded-full" style={{ ...GLASS_PANEL_STYLE, padding: '8px 16px', marginTop: '-4px' }}>
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('assistant.placeholder')}
+            className="flex-1 min-w-0 bg-transparent outline-none border-0 text-base"
+            style={{ color: 'var(--text-heading)' }}
+            autoComplete="off"
+          />
         </div>
 
         {query.trim() && (
-          <div className="w-full rounded-2xl overflow-y-auto" style={{ ...GLASS_PANEL_STYLE, maxHeight: '256px', padding: '6px' }}>
+          <div className="w-full rounded-2xl overflow-y-auto" style={{ ...GLASS_PANEL_STYLE, maxHeight: '256px', padding: '6px', marginTop: '12px' }}>
             {results.length === 0 && (
               <p className="text-center" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)', padding: '16px 0' }}>
                 {t('assistant.noResults')}
@@ -142,19 +169,6 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
             </div>
           </div>
         )}
-
-        <div className="w-full flex items-center gap-2 rounded-full" style={{ ...GLASS_PANEL_STYLE, padding: '8px 16px' }}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('assistant.placeholder')}
-            className="flex-1 min-w-0 bg-transparent outline-none border-0 text-base"
-            style={{ color: 'var(--text-heading)' }}
-            autoComplete="off"
-          />
-        </div>
       </div>
     </FocusTrapModal>
   );
