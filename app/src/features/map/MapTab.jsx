@@ -766,13 +766,18 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     return () => cancelAnimationFrame(id);
   }, [mapReady, editingModeActive]);
 
-  // Two-finger twist-to-rotate + rotation-corrected one-finger pan.
-  // Only active outside the editing modes above. Leaflet's native dragging
-  // is rotation-unaware, so it's only suspended (in favor of the corrected
-  // pan below) for the duration of a drag that starts while rotated —
-  // leaving both handlers live at once double-pans the view, which is what
-  // made panning look direction-inverted while rotated. At rotation 0,
-  // native dragging (with its inertia) is left alone.
+  // Two-finger twist-to-rotate (combined with its own pinch-zoom) +
+  // rotation-corrected one-finger pan. Only active outside the editing
+  // modes above. Leaflet's native dragging is rotation-unaware, so it's
+  // only suspended (in favor of the corrected pan below) for the duration
+  // of a drag that starts while rotated — leaving both handlers live at
+  // once double-pans the view, which is what made panning look
+  // direction-inverted while rotated. At rotation 0, native dragging (with
+  // its inertia) is left alone. Native touchZoom is replaced outright for
+  // every 2-finger gesture (not just while actually rotated) because a
+  // rotate gesture and a pinch gesture are the same two fingers — without
+  // its own zoom handling here, the twist handler would swallow every
+  // pinch, which is why zoom got "stuck" once you'd rotated at all.
   useEffect(() => {
     const map = mapRef.current;
     const container = containerRef.current;
@@ -780,6 +785,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     if (editingModeActive) return;
 
     const touchAngle = (t0, t1) => Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * 180 / Math.PI;
+    const touchDist = (t0, t1) => Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
     const rotateVector = (dx, dy, deg) => {
       const rad = -deg * Math.PI / 180;
       return {
@@ -805,10 +811,17 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     const onTouchStart = (e) => {
       if (e.touches.length === 2) {
         panTouchRef.current = null;
+        // Native touchZoom doesn't know about the rotated view either (it
+        // zooms around a screen point it converts via Leaflet's own,
+        // rotation-unaware, containerPointToLatLng), so it's replaced here
+        // by our own pinch-zoom (around the map's current center) combined
+        // with the twist-to-rotate, instead of just disabling zoom outright.
         if (map.touchZoom?.enabled()) map.touchZoom.disable();
         rotateTouchRef.current = {
           angle: touchAngle(e.touches[0], e.touches[1]),
           rotation: rotationRef.current,
+          dist: touchDist(e.touches[0], e.touches[1]),
+          zoom: map.getZoom(),
         };
       } else if (e.touches.length === 1) {
         rotateTouchRef.current = null;
@@ -824,6 +837,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         if (next < 0) next += 360;
         rotationRef.current = next;
         setRotation(next);
+
+        const dist = touchDist(e.touches[0], e.touches[1]);
+        if (dist > 0 && rotateTouchRef.current.dist > 0) {
+          const scale = dist / rotateTouchRef.current.dist;
+          const targetZoom = rotateTouchRef.current.zoom + Math.log2(scale);
+          const clamped = Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), targetZoom));
+          map.setZoom(clamped, { animate: false });
+        }
       } else if (e.touches.length === 1 && panTouchRef.current) {
         e.preventDefault();
         const dx = e.touches[0].clientX - panTouchRef.current.x;
