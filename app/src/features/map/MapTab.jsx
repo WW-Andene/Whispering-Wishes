@@ -2993,6 +2993,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           width: 256px;
           overflow: visible;
         }
+        /* ── Bottom instructions bar ───────────────────────────────────── */
+        .map-instructions-bar .kuro-header h3 {
+          font-size: var(--font-sm, 12px);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
         .map-zones-popover .kuro-header { padding: var(--space-sm, 8px) var(--space-md, 12px); }
         .map-zones-popover .kuro-header h3::before { display: none; }
         .map-zones-popover .kuro-header h3 {
@@ -4452,7 +4460,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
               </div>
             )}
 
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
+            <div className="map-instructions-bar" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 10 }}>
               <CardHeader>
                 {authorMode
                   ? (editingId
