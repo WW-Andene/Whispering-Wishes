@@ -172,20 +172,6 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
       
       <div className="absolute inset-0 z-10 p-3 flex flex-col justify-between" style={TEXT_SHADOW_STYLE}>
         <div>
-          {item.isNew && (
-            // flex on the wrapper (not just the pill) removes the inline-block "strut" that an
-            // inline-block child leaves in a block parent's line box - without it, the pill sat
-            // further from the card's top edge than from its left edge despite equal padding.
-            <div className="mb-2 flex">
-              {/* Direct user request: transparent interior like every other tag - switched from a
-                  solid bg-yellow-500 fill to kuro-badge-yellow (rgba(234,179,8,0.1) background,
-                  same low-opacity fill as the Role/Weapon/Element tags), keeping the pill shape
-                  (rounded-full) as its distinguishing trait.
-                  Direct user request: font-size down to 14px (PerfectSuite Tertiary, one step
-                  below 16) - pill stays 24px (min-h-6) since only the text was too big. */}
-              <span className="kuro-badge kuro-badge-yellow text-[14px] leading-none px-2 py-0.5 rounded-full font-bold min-h-6">{t('tracker.newBadge')}</span>
-            </div>
-          )}
           {/* Direct user request 2026-09-11: the main featured 5★'s own name now opens its
               detail modal too, same click-through as the featured-4★ previews below (there
               is no separate small preview picture for the main item, so the name text is the
@@ -241,10 +227,31 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
             </span>
           </div>
+          {/* Direct user request: for a NEW item, deterministically split the
+              name after its first word - "Thousandfold" + the badge on line 1,
+              "Deliverance" (whatever's left) stacked on line 2 below - rather
+              than relying on the browser's own wrap point, which depends on the
+              card's actual rendered width and doesn't reliably land the badge
+              next to the first word. A one-word name has no "rest", so it stays
+              a single line with the badge beside it, same as before. */}
           <h4
             className="font-bold text-xl text-white leading-tight cursor-pointer"
             onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
-          >{item.name}</h4>
+          >
+            {item.isNew ? (() => {
+              const [firstWord, ...restWords] = item.name.split(' ');
+              const rest = restWords.join(' ');
+              return (
+                <>
+                  <span className="block">
+                    {firstWord}
+                    <span className="kuro-badge kuro-badge-yellow text-[14px] leading-none px-2 py-0.5 rounded-full font-bold min-h-6 ml-2 align-middle whitespace-nowrap">{t('tracker.newBadge')}</span>
+                  </span>
+                  {rest && <span className="block">{rest}</span>}
+                </>
+              );
+            })() : item.name}
+          </h4>
           {item.title && <p className="text-gray-200 text-sm line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         
