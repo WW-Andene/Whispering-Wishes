@@ -136,7 +136,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('assistant.placeholder')}
           className="kuro-input w-full text-base"
-          style={{ marginTop: '-4px' }}
+          style={{ marginTop: '12px' }}
           autoComplete="off"
         />
 
