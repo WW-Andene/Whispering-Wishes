@@ -25,9 +25,12 @@ const FILLER_WORDS = [
   'counter', 'contre', 'matchup', 'against', 'vs', 'a', 'of', "d'", 'un', 'une',
 ];
 
-const DIACRITICS_RE = new RegExp('[̀-ͯ]', 'g');
+// \p{Diacritic} (not a literal ̀-ͯ character-range string) so this
+// survives any editor/tool re-encoding the file - a literal combining-mark
+// range embedded in source is exactly the kind of thing that silently
+// mangles on save.
 function normalize(s) {
-  return s.toLowerCase().normalize('NFD').replace(DIACRITICS_RE, '');
+  return s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
 }
 
 export function classifyIntent(query) {
