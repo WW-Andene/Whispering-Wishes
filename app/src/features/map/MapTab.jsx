@@ -797,6 +797,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     if (!map || !container || !mapReady) return;
     if (editingModeActive) return;
 
+    // Without this, the browser can claim a 2-finger gesture for its own
+    // native pinch-zoom-the-page handling at touchstart time (touch-action
+    // is decided before touchmove ever reaches JS), which is what made
+    // twisting and pinching together feel broken — preventDefault() in
+    // onTouchMove alone isn't early enough to stop it.
+    const prevTouchAction = container.style.touchAction;
+    container.style.touchAction = 'none';
+
     const touchAngle = (t0, t1) => Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * 180 / Math.PI;
     const touchDist = (t0, t1) => Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
     const rotateVector = (dx, dy, deg) => {
@@ -902,6 +910,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       container.removeEventListener('touchcancel', onTouchEnd);
       if (map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
       resumeDragging();
+      container.style.touchAction = prevTouchAction;
     };
   }, [mapReady, editingModeActive]);
 
