@@ -13,7 +13,10 @@ import { getLocalizedCharacterData } from '../../data/characters.js';
 import { t } from '../../utils/i18n.js';
 
 const INTENT_KEYWORDS = {
-  team: ['team', 'équipe', 'equipe', 'synergie', 'synergy', 'compo', 'partner', 'pair with', 'squad'],
+  // "weapon"/"arme" lands here (not a separate intent) because bestWeapon is
+  // already part of the team answer - a dedicated weapon-only intent would
+  // just repeat the same lookup with less info in the reply.
+  team: ['team', 'équipe', 'equipe', 'synergie', 'synergy', 'compo', 'partner', 'pair with', 'squad', 'weapon', 'arme'],
   materials: ['matériau', 'materiau', 'material', 'farm', 'ascension', 'mats', 'level up', 'leveling'],
   matchup: ['counter', 'contre', 'faible contre', 'weak against', 'strong against', 'matchup', ' vs ', ' vs.'],
 };
@@ -21,7 +24,7 @@ const INTENT_KEYWORDS = {
 const FILLER_WORDS = [
   'best', 'meilleure', 'meilleur', 'meilleurs', 'meilleures', 'for', 'pour', 'de', 'du', 'des', 'la', 'le', 'les',
   'what', 'whats', "what's", "c'est", 'quoi', 'is', 'the', 'quelle', 'quel', 'team', 'équipe', 'equipe',
-  'synergie', 'synergy', 'compo', 'material', 'materiau', 'matériau', 'materials', 'matériaux', 'farm', 'ascension',
+  'synergie', 'synergy', 'compo', 'weapon', 'weapons', 'arme', 'armes', 'material', 'materiau', 'matériau', 'materials', 'matériaux', 'farm', 'ascension',
   'counter', 'contre', 'matchup', 'against', 'vs', 'a', 'of', "d'", 'un', 'une',
 ];
 
