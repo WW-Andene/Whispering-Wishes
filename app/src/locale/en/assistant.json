@@ -1,0 +1,9 @@
+{
+  "welcome": "Hey, what can I do for you?",
+  "placeholder": "Search characters, weapons, echoes…",
+  "noResults": "Nothing found. Try another spelling?",
+  "close": "Close",
+  "typeCharacter": "Character",
+  "typeWeapon": "Weapon",
+  "typeEcho": "Echo"
+}

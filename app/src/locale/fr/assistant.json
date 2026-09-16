@@ -1,0 +1,9 @@
+{
+  "welcome": "Hey, qu'est-ce que je peux faire pour toi ?",
+  "placeholder": "Cherche un personnage, une arme, un écho…",
+  "noResults": "Rien trouvé. Essaie une autre orthographe ?",
+  "close": "Fermer",
+  "typeCharacter": "Personnage",
+  "typeWeapon": "Arme",
+  "typeEcho": "Écho"
+}
