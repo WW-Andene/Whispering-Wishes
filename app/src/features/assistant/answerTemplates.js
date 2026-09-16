@@ -39,6 +39,18 @@ export function buildWeaponAnswer(name, data) {
   };
 }
 
+export function buildEchoesAnswer(name, data) {
+  const echoes = data.bestEchoes && data.bestEchoes.length ? data.bestEchoes.join(', ') : null;
+  if (!echoes) {
+    return { kind: 'text', text: t('assistant.answerEchoesNoData', { name }), name };
+  }
+  return {
+    kind: 'text',
+    name,
+    text: t('assistant.answerEchoes', { name, echoes }),
+  };
+}
+
 export function buildMaterialsAnswer(name, data) {
   const asc = data.ascension;
   const skill = data.skillMaterials;
@@ -82,6 +94,7 @@ export function buildProfileAnswer(name, data) {
 
 export const ANSWER_BUILDERS = {
   weapon: buildWeaponAnswer,
+  echoes: buildEchoesAnswer,
   team: buildTeamAnswer,
   materials: buildMaterialsAnswer,
   matchup: buildMatchupAnswer,

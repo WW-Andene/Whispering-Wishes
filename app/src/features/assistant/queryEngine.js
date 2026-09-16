@@ -11,17 +11,21 @@
 //      typos)? If not, return null and let the plain multi-type
 //      fuzzy-search results list (which also covers weapons/echoes)
 //      handle it.
-//   2. A character WAS found - which facet did they ask for (team/
-//      materials/matchup keyword)? Defaults to a general profile answer
-//      if no specific facet keyword matched, so finding a real character
+//   2. A character WAS found - which facet(s) did they ask for (weapon/
+//      echoes/team/materials/matchup keyword)? A sentence can name more
+//      than one facet ("best weapon and team for X") - every facet it
+//      names gets answered, combined into one reply, rather than only the
+//      first one recognized. Defaults to a general profile answer if no
+//      specific facet keyword matched at all, so finding a real character
 //      always produces a real answer instead of silently doing nothing
-//      just because the exact keyword wasn't on the list.
-//   3. Template a text answer from that character's own recorded fields
-//      (answerTemplates.js) - never fabricated.
+//      just because no exact keyword was on the list.
+//   3. Template each matched facet's text answer from that character's own
+//      recorded fields (answerTemplates.js) - never fabricated - and join
+//      them into a single reply.
 
 import { getLocalizedCharacterData } from '../../data/characters.js';
 import { findEntityInIndex } from './searchIndex.js';
-import { classifyIntent } from './intentClassifier.js';
+import { classifyIntents } from './intentClassifier.js';
 import { ANSWER_BUILDERS } from './answerTemplates.js';
 
 export function answerQuery(query, locale, index) {
@@ -33,7 +37,14 @@ export function answerQuery(query, locale, index) {
 
   const name = entity.name;
   const data = getLocalizedCharacterData(locale)[name];
-  const intent = classifyIntent(q) || 'profile';
 
-  return ANSWER_BUILDERS[intent](name, data);
+  let intents = classifyIntents(q);
+  if (intents.length === 0) intents = ['profile'];
+  // 'team' already reports the best weapon and best echoes as part of its
+  // own answer, so asking for "team and weapon" shouldn't repeat the same
+  // weapon line twice - drop the now-redundant narrower facets.
+  if (intents.includes('team')) intents = intents.filter(i => i !== 'weapon' && i !== 'echoes');
+
+  const text = intents.map(intent => ANSWER_BUILDERS[intent](name, data).text).join(' ');
+  return { kind: 'text', name, text };
 }
