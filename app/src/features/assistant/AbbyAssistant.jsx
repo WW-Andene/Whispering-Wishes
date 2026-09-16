@@ -5,11 +5,12 @@
 // echoes, tap a result to open its detail modal. v1 scope is static game data
 // only (see CLAUDE.md session note) - no user progression data indexed yet.
 //
-// Layout (top to bottom): a solid comic/manga-panel speech bubble above Abby
-// with its tail pointing down at her, Abby's sprite, then the search input
+// Layout (top to bottom): a comic/manga-panel speech bubble above Abby with
+// its tail pointing down at her, Abby's sprite, then the search input
 // directly beneath her (no gap for anything else), then results below that
-// once there's a query. Floating AI-overlay style overall - no dim scrim, no
-// boxed card - per explicit direction earlier in this session.
+// once there's a query. Floating overlay, vertically centered, no dim scrim
+// behind it - but the bubble/input/results themselves use the app's own
+// kuro-card/kuro-input/kuro-btn styling rather than a bespoke glass look.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -19,14 +20,6 @@ import { buildAssistantIndex, searchAssistant } from './searchIndex.js';
 import { t, getLocale } from '../../utils/i18n.js';
 
 const TYPE_LABEL_KEY = { character: 'assistant.typeCharacter', weapon: 'assistant.typeWeapon', echo: 'assistant.typeEcho' };
-
-const GLASS_PANEL_STYLE = {
-  background: 'var(--bg-elevated)',
-  backdropFilter: 'blur(var(--blur-lg))',
-  WebkitBackdropFilter: 'blur(var(--blur-lg))',
-  border: '1px solid var(--border-subtle)',
-  boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-};
 
 export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }) {
   const [open, setOpen] = useState(false);
@@ -79,20 +72,17 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
         <button
           onClick={() => setOpen(false)}
           aria-label={t('assistant.close')}
-          className="self-end flex items-center justify-center"
-          style={{
-            width: '32px', height: '32px', borderRadius: '9999px', marginBottom: '4px',
-            ...GLASS_PANEL_STYLE, color: 'var(--text-muted)', fontSize: 'var(--font-sm)',
-          }}
+          className="kuro-btn self-end flex items-center justify-center min-h-[48px]"
+          style={{ width: '48px', padding: 0, marginBottom: '4px', borderRadius: '9999px' }}
         >
           ✕
         </button>
 
-        {/* Comic/manga-panel speech bubble: solid fill (not glass-blurred
-            like the rest), square-ish corners, a bold outline, and a sharp
-            clip-path triangle tail pointing straight down at Abby - reads as
-            a real dialogue-box panel rather than a translucent chat pill. */}
-        <div className="relative rounded" style={{ background: 'var(--bg-card-inner)', border: '2px solid rgba(255,255,255,0.4)', padding: '8px 16px', marginBottom: '14px' }}>
+        {/* Comic/manga-panel speech bubble, in the app's own kuro-card
+            styling (same background/border/shadow tokens as every other
+            card) instead of a bespoke glass look, with a triangular tail
+            pointing straight down at Abby. */}
+        <div className="kuro-card relative" style={{ padding: '8px 16px', marginBottom: '14px' }}>
           <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
           <div
             aria-hidden="true"
@@ -100,7 +90,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
               position: 'absolute', bottom: '-14px', left: '50%', transform: 'translateX(-50%)',
               width: 0, height: 0,
               borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
-              borderTop: '14px solid rgba(255,255,255,0.4)',
+              borderTop: '14px solid var(--border-default)',
             }}
           />
           <div
@@ -109,7 +99,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
               position: 'absolute', bottom: '-11px', left: '50%', transform: 'translateX(-50%)',
               width: 0, height: 0,
               borderLeft: '6px solid transparent', borderRight: '6px solid transparent',
-              borderTop: '12px solid var(--bg-card-inner)',
+              borderTop: '12px solid var(--bg-card)',
             }}
           />
         </div>
@@ -122,22 +112,21 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.5))' }}
         />
 
-        {/* Search input - directly beneath Abby, nothing in between. */}
-        <div className="w-full flex items-center gap-2 rounded-full" style={{ ...GLASS_PANEL_STYLE, padding: '8px 16px', marginTop: '-4px' }}>
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('assistant.placeholder')}
-            className="flex-1 min-w-0 bg-transparent outline-none border-0 text-base"
-            style={{ color: 'var(--text-heading)' }}
-            autoComplete="off"
-          />
-        </div>
+        {/* Search input - directly beneath Abby, nothing in between - the
+            app's own kuro-input styling. */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('assistant.placeholder')}
+          className="kuro-input w-full text-base"
+          style={{ marginTop: '-4px' }}
+          autoComplete="off"
+        />
 
         {query.trim() && (
-          <div className="w-full rounded-2xl overflow-y-auto" style={{ ...GLASS_PANEL_STYLE, maxHeight: '256px', padding: '6px', marginTop: '12px' }}>
+          <div className="kuro-card w-full overflow-y-auto" style={{ maxHeight: '256px', padding: '6px', marginTop: '12px' }}>
             {results.length === 0 && (
               <p className="text-center" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)', padding: '16px 0' }}>
                 {t('assistant.noResults')}
@@ -150,7 +139,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
                   <button
                     key={item.id}
                     onClick={() => openResult(item)}
-                    className="w-full flex items-center gap-3 text-left rounded-xl min-h-[48px] transition-colors hover:bg-white/5 active:bg-white/10"
+                    className="kuro-btn w-full flex items-center gap-3 text-left min-h-[48px]"
                     style={{ padding: '6px 12px' }}
                   >
                     {img ? (
