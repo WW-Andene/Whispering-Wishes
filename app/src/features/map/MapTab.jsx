@@ -754,9 +754,25 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     container.style.transformOrigin = '50% 50%';
   }, [rotation]);
 
+  // The container is deliberately oversized (see its inline style below) so
+  // a rotated square still fully covers the axis-aligned viewport instead of
+  // exposing the card background at its corners. Tell Leaflet its size
+  // changed (same zoom/center, just a bigger canvas to tile into) whenever
+  // that sizing toggles.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const id = requestAnimationFrame(() => map.invalidateSize({ animate: false, pan: false }));
+    return () => cancelAnimationFrame(id);
+  }, [mapReady, editingModeActive]);
+
   // Two-finger twist-to-rotate + rotation-corrected one-finger pan.
-  // Only active outside the editing modes above, and only takes over from
-  // Leaflet's native dragging/touchZoom for the duration of a gesture.
+  // Only active outside the editing modes above. Leaflet's native dragging
+  // is rotation-unaware, so it's only suspended (in favor of the corrected
+  // pan below) for the duration of a drag that starts while rotated —
+  // leaving both handlers live at once double-pans the view, which is what
+  // made panning look direction-inverted while rotated. At rotation 0,
+  // native dragging (with its inertia) is left alone.
   useEffect(() => {
     const map = mapRef.current;
     const container = containerRef.current;
@@ -772,18 +788,32 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       };
     };
 
+    let draggingSuspended = false;
+    const suspendDragging = () => {
+      if (rotationRef.current !== 0 && map.dragging?.enabled()) {
+        map.dragging.disable();
+        draggingSuspended = true;
+      }
+    };
+    const resumeDragging = () => {
+      if (draggingSuspended) {
+        map.dragging?.enable();
+        draggingSuspended = false;
+      }
+    };
+
     const onTouchStart = (e) => {
       if (e.touches.length === 2) {
-        if (map.dragging?.enabled()) map.dragging.disable();
-        if (map.touchZoom?.enabled()) map.touchZoom.disable();
         panTouchRef.current = null;
+        if (map.touchZoom?.enabled()) map.touchZoom.disable();
         rotateTouchRef.current = {
           angle: touchAngle(e.touches[0], e.touches[1]),
           rotation: rotationRef.current,
         };
       } else if (e.touches.length === 1) {
         rotateTouchRef.current = null;
-        panTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        suspendDragging();
+        panTouchRef.current = draggingSuspended ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null;
       }
     };
     const onTouchMove = (e) => {
@@ -795,23 +825,21 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         rotationRef.current = next;
         setRotation(next);
       } else if (e.touches.length === 1 && panTouchRef.current) {
+        e.preventDefault();
         const dx = e.touches[0].clientX - panTouchRef.current.x;
         const dy = e.touches[0].clientY - panTouchRef.current.y;
         panTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        if (rotationRef.current) {
-          e.preventDefault();
-          const corrected = rotateVector(dx, dy, rotationRef.current);
-          map.panBy([-corrected.x, -corrected.y], { animate: false });
-        }
+        const corrected = rotateVector(dx, dy, rotationRef.current);
+        map.panBy([-corrected.x, -corrected.y], { animate: false });
       }
     };
     const onTouchEnd = (e) => {
       if (e.touches.length < 2) rotateTouchRef.current = null;
-      if (e.touches.length < 1) panTouchRef.current = null;
-      if (e.touches.length === 0) {
-        if (map.dragging && !map.dragging.enabled()) map.dragging.enable();
-        if (map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
+      if (e.touches.length < 1) {
+        panTouchRef.current = null;
+        resumeDragging();
       }
+      if (e.touches.length === 0 && map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
     };
 
     container.addEventListener('touchstart', onTouchStart, { passive: true });
@@ -823,8 +851,8 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       container.removeEventListener('touchmove', onTouchMove);
       container.removeEventListener('touchend', onTouchEnd);
       container.removeEventListener('touchcancel', onTouchEnd);
-      if (map.dragging && !map.dragging.enabled()) map.dragging.enable();
       if (map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
+      resumeDragging();
     };
   }, [mapReady, editingModeActive]);
 
@@ -3241,7 +3269,19 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
             <div
               ref={containerRef}
               className="leaflet-map-bg"
-              style={{ position: 'absolute', inset: 0, background: MAP_BG, zIndex: 1 }}
+              style={{
+                position: 'absolute',
+                // Oversized outside the editing modes so a rotated square still
+                // fully covers the axis-aligned viewport instead of exposing the
+                // card background at its corners; the editing modes need the
+                // container at its exact, un-rotated footprint (see the effect
+                // above pairing this with map.invalidateSize()).
+                inset: editingModeActive ? 0 : '-30%',
+                width: editingModeActive ? '100%' : '160%',
+                height: editingModeActive ? '100%' : '160%',
+                background: MAP_BG,
+                zIndex: 1,
+              }}
             />
             {status && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
