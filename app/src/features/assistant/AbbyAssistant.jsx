@@ -81,12 +81,12 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
         {/* Comic/manga-panel speech bubble, in the app's own kuro-card
             styling, with the original straight triangular tail - just
             shifted off-center instead of centered under the bubble. */}
-        <div className="kuro-card relative" style={{ padding: '8px 16px', marginBottom: '14px' }}>
+        <div className="kuro-card relative self-start" style={{ padding: '8px 16px', marginBottom: '14px', marginLeft: '8px' }}>
           <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-14px', left: '32px',
+              position: 'absolute', bottom: '-14px', right: '32px',
               width: 0, height: 0,
               borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
               borderTop: '14px solid var(--border-bright)',
@@ -95,7 +95,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-11px', left: '34px',
+              position: 'absolute', bottom: '-11px', right: '34px',
               width: 0, height: 0,
               borderLeft: '6px solid transparent', borderRight: '6px solid transparent',
               borderTop: '12px solid var(--bg-card-inner)',
