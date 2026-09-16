@@ -53,7 +53,6 @@ import { BackupRestoreModal } from './shared/components/BackupRestoreModal.jsx';
 // KuroStyles removed — CSS now loaded via <link> in index.html (src/styles/kuro.css)
 // OLED mode overrides handled by .oled-mode class on root div (no JS needed)
 import { OnboardingModal } from './shared/components/OnboardingModal.jsx';
-import { AbbyAssistant } from './features/assistant/AbbyAssistant.jsx';
 import { ImageFramingProvider, useImageFramingContext } from './providers/ImageFramingProvider.jsx';
 import { CloudStorageProvider, useCloudStorage } from './providers/CloudStorageProvider.jsx';
 // --- shared ---
@@ -1054,10 +1053,6 @@ function WhisperingWishesInner() {
 
       {/* Onboarding Modal */}
       {showOnboarding && bootIntroDone && <OnboardingModal onComplete={handleOnboardingComplete} />}
-
-      {/* Abby assistant — shake the device to summon her, search characters/
-          weapons/echoes, tap a result to open its detail modal. */}
-      <AbbyAssistant collectionImages={collectionImages} setDetailModal={setDetailModal} />
 
       <ColorblindFilterDefs />
 
