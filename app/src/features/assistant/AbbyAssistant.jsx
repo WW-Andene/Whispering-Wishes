@@ -89,7 +89,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
               position: 'absolute', bottom: '-14px', right: '32px',
               width: 0, height: 0,
               borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
-              borderTop: '14px solid var(--border-bright)',
+              borderTop: '14px solid var(--border-default)',
             }}
           />
           <div
@@ -98,7 +98,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
               position: 'absolute', bottom: '-11px', right: '34px',
               width: 0, height: 0,
               borderLeft: '6px solid transparent', borderRight: '6px solid transparent',
-              borderTop: '12px solid var(--bg-card-inner)',
+              borderTop: '12px solid var(--bg-card)',
             }}
           />
         </div>
