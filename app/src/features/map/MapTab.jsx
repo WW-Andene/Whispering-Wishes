@@ -21,12 +21,17 @@ import { t } from '../../utils/i18n.js';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
 
-const MAP_BG = '#062634';
-const MAP_BG_TRANSPARENT = 'rgba(6, 38, 52, 0.55)';
+// Matches the base Solaris_3 tiles' own ocean color (#062634) as it actually
+// renders on screen, i.e. after the .leaflet-tile-pane contrast/brightness/
+// saturation filter (see its CSS rule below) darkens it slightly — using the
+// pre-filter hex here made the flat background peeking out beyond the tiles
+// (e.g. the wide maxBounds padding) read visibly lighter than the ocean.
+const MAP_BG = '#002233';
+const MAP_BG_TRANSPARENT = 'rgba(0, 34, 51, 0.55)';
 // Fully-transparent MAP_BG, for the fade-pen's radial-gradient outer stop
 // (see the paint-stroke draw loop's 'fade' branch) — distinct from
 // MAP_BG_TRANSPARENT above, which is a fixed 55% used for UI chrome, not 0%.
-const MAP_BG_ZERO_ALPHA = 'rgba(6, 38, 52, 0)';
+const MAP_BG_ZERO_ALPHA = 'rgba(0, 34, 51, 0)';
 const BASE = import.meta.env.BASE_URL || '/';
 const AUTHOR_FLAG_KEY = 'ww-zone-author';
 
@@ -1726,8 +1731,8 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           pts.forEach(c => {
             const grad = fctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, radiusPx);
             grad.addColorStop(0, MAP_BG);
-            grad.addColorStop(0.3, 'rgba(6, 38, 52, 0.85)');
-            grad.addColorStop(0.6, 'rgba(6, 38, 52, 0.45)');
+            grad.addColorStop(0.3, 'rgba(0, 34, 51, 0.85)');
+            grad.addColorStop(0.6, 'rgba(0, 34, 51, 0.45)');
             grad.addColorStop(1, MAP_BG_ZERO_ALPHA);
             fctx.fillStyle = grad;
             fctx.beginPath();
