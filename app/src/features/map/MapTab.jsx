@@ -206,8 +206,23 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   // pointer positions through Leaflet's own (rotation-unaware) math.
   const [rotation, setRotation] = useState(0);
   const rotationRef = useRef(0);
-  const rotateTouchRef = useRef(null); // { angle, rotation } captured at 2-finger touchstart
+  const rotateTouchRef = useRef(null); // { angle, rotation, dist, zoom } captured at 2-finger touchstart
   const panTouchRef = useRef(null);    // { x, y } for rotation-corrected 1-finger pan
+  // Live pinch-zoom preview scale (CSS-only, like Leaflet's own native
+  // touchZoom): updated every touchmove for a smooth, continuous feel,
+  // committed to a real map.setZoom() only once the gesture ends — calling
+  // setZoom() on every touchmove instead snapped to zoomSnap each frame
+  // (felt "stepped") and was heavy enough to drop touch events mid-gesture
+  // (made zooming all the way out feel stuck).
+  const pinchScaleRef = useRef(1);
+  const applyMapTransform = () => {
+    const container = containerRef.current;
+    if (!container) return;
+    const scale = pinchScaleRef.current;
+    const deg = rotationRef.current;
+    container.style.transform = (deg || scale !== 1) ? `scale(${scale}) rotate(${deg}deg)` : '';
+    container.style.transformOrigin = '50% 50%';
+  };
 
   // Set of descendant ids of the zone being edited — used to forbid circular parenting.
   const editingDescendants = useMemo(() => {
@@ -745,13 +760,11 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     }
   }, [editingModeActive]);
 
-  // Apply the rotation to the Leaflet container via CSS transform only —
-  // Leaflet's internal pixel/lat-lng math never sees this.
+  // Apply the rotation (+ any live pinch-zoom preview scale) to the Leaflet
+  // container via CSS transform only — Leaflet's internal pixel/lat-lng
+  // math never sees this.
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    container.style.transform = rotation ? `rotate(${rotation}deg)` : '';
-    container.style.transformOrigin = '50% 50%';
+    applyMapTransform();
   }, [rotation]);
 
   // The container is deliberately oversized (see its inline style below) so
@@ -783,6 +796,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     const container = containerRef.current;
     if (!map || !container || !mapReady) return;
     if (editingModeActive) return;
+
+    // Without this, the browser can claim a 2-finger gesture for its own
+    // native pinch-zoom-the-page handling at touchstart time (touch-action
+    // is decided before touchmove ever reaches JS), which is what made
+    // twisting and pinching together feel broken — preventDefault() in
+    // onTouchMove alone isn't early enough to stop it.
+    const prevTouchAction = container.style.touchAction;
+    container.style.touchAction = 'none';
 
     const touchAngle = (t0, t1) => Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * 180 / Math.PI;
     const touchDist = (t0, t1) => Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
@@ -838,12 +859,13 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         rotationRef.current = next;
         setRotation(next);
 
+        // Preview-only: a CSS scale, not a real map.setZoom(), so the pinch
+        // feels continuous instead of snapping to zoomSnap every frame (and
+        // isn't heavy enough to drop touch events mid-gesture).
         const dist = touchDist(e.touches[0], e.touches[1]);
         if (dist > 0 && rotateTouchRef.current.dist > 0) {
-          const scale = dist / rotateTouchRef.current.dist;
-          const targetZoom = rotateTouchRef.current.zoom + Math.log2(scale);
-          const clamped = Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), targetZoom));
-          map.setZoom(clamped, { animate: false });
+          pinchScaleRef.current = dist / rotateTouchRef.current.dist;
+          applyMapTransform();
         }
       } else if (e.touches.length === 1 && panTouchRef.current) {
         e.preventDefault();
@@ -854,8 +876,22 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         map.panBy([-corrected.x, -corrected.y], { animate: false });
       }
     };
+    const commitPinchZoom = () => {
+      const start = rotateTouchRef.current;
+      const scale = pinchScaleRef.current;
+      if (start && start.dist > 0 && scale !== 1) {
+        const targetZoom = start.zoom + Math.log2(scale);
+        const clamped = Math.min(map.getMaxZoom(), Math.max(map.getMinZoom(), targetZoom));
+        map.setZoom(clamped, { animate: false });
+      }
+      pinchScaleRef.current = 1;
+      applyMapTransform();
+    };
     const onTouchEnd = (e) => {
-      if (e.touches.length < 2) rotateTouchRef.current = null;
+      if (e.touches.length < 2) {
+        commitPinchZoom();
+        rotateTouchRef.current = null;
+      }
       if (e.touches.length < 1) {
         panTouchRef.current = null;
         resumeDragging();
@@ -874,6 +910,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       container.removeEventListener('touchcancel', onTouchEnd);
       if (map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
       resumeDragging();
+      container.style.touchAction = prevTouchAction;
     };
   }, [mapReady, editingModeActive]);
 
@@ -3348,20 +3385,25 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                         aria-label="Reset map rotation"
                         title={rotation !== 0 ? `Rotated ${Math.round(rotation)}° · tap to reset` : 'Twist with two fingers to rotate'}
                       >
-                        {/* Custom needle (not lucide's Compass) so the north
-                            half can be painted kuro gold independently of
-                            the south half, which keeps the default icon
-                            color. */}
+                        {/* lucide's own Compass geometry (circle + needle
+                            polygon, same viewBox/stroke), with an extra gold
+                            fill polygon layered over just the needle's north
+                            (upper-right) half — the south half stays exactly
+                            lucide's plain outline. */}
                         <svg
                           width={14}
                           height={14}
                           viewBox="0 0 24 24"
                           fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
                           style={{ transform: `rotate(${-rotation}deg)` }}
                         >
-                          <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="2" />
-                          <polygon points="12,4 16,12 8,12" fill="rgb(var(--color-gold))" />
-                          <polygon points="12,20 16,12 8,12" fill="currentColor" />
+                          <circle cx="12" cy="12" r="10" />
+                          <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
+                          <polygon points="16.24 7.76 14.12 14.12 9.88 9.88" fill="rgb(var(--color-gold))" stroke="none" />
                         </svg>
                       </button>
                     )}
