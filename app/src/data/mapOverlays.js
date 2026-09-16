@@ -47,11 +47,21 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 9984,
   },
   {
+    // Outline work: this source already had a partial, jaggy flood-fill cut
+    // (with noise lumps and inconsistent edge colour picked up from nearby
+    // terrain) - rebuilt from its own solid alpha core with a uniform,
+    // fixed-colour outline band (sampled from the cave art's own dark teal
+    // palette, not derived per-pixel from whatever terrain happened to be
+    // nearby) and small disconnected noise components dropped. Same
+    // pyramid convention as Lahai Roi/Tethys Deep/Mengzhou/Dimmr Plains.
     id: 'vault-underground',
     name: 'Vault Underground',
     imageUrl: 'map-tiles/Vault-Underground/Vault-Underground.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 5,
   },
   {
     // pyramid/minZoom/maxZoom: lossless/{z}/{y}/{x}.png for z in
