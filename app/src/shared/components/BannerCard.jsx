@@ -227,15 +227,31 @@ const BannerCard = memo(({ item, type, bannerImage, visualSettings, endDate, tim
               {isChar ? item.element : ((getLocale() === 'fr' && WEAPON_TYPE_FR[item.type]) || item.type)}
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <h4
-              className="font-bold text-xl text-white leading-tight cursor-pointer"
-              onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
-            >{item.name}</h4>
-            {item.isNew && (
-              <span className="kuro-badge kuro-badge-yellow text-[14px] leading-none px-2 py-0.5 rounded-full font-bold min-h-6 shrink-0">{t('tracker.newBadge')}</span>
-            )}
-          </div>
+          {/* Direct user request: for a NEW item, deterministically split the
+              name after its first word - "Thousandfold" + the badge on line 1,
+              "Deliverance" (whatever's left) stacked on line 2 below - rather
+              than relying on the browser's own wrap point, which depends on the
+              card's actual rendered width and doesn't reliably land the badge
+              next to the first word. A one-word name has no "rest", so it stays
+              a single line with the badge beside it, same as before. */}
+          <h4
+            className="font-bold text-xl text-white leading-tight cursor-pointer"
+            onClick={() => setDetailModal?.({ show: true, type: isChar ? 'character' : 'weapon', name: item.name, imageUrl: (collectionImages || DEFAULT_COLLECTION_IMAGES)[item.name], framing: getImageFraming(`collection-${item.name}`) })}
+          >
+            {item.isNew ? (() => {
+              const [firstWord, ...restWords] = item.name.split(' ');
+              const rest = restWords.join(' ');
+              return (
+                <>
+                  <span className="block">
+                    {firstWord}
+                    <span className="kuro-badge kuro-badge-yellow text-[14px] leading-none px-2 py-0.5 rounded-full font-bold min-h-6 ml-2 align-middle whitespace-nowrap">{t('tracker.newBadge')}</span>
+                  </span>
+                  {rest && <span className="block">{rest}</span>}
+                </>
+              );
+            })() : item.name}
+          </h4>
           {item.title && <p className="text-gray-200 text-sm line-clamp-1">{(getLocale() === 'fr' && CURRENT_BANNER_TITLES_FR[item.title]) || item.title}</p>}
         </div>
         
