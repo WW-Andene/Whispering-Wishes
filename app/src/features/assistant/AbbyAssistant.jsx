@@ -92,7 +92,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-16px', right: '10px',
+              position: 'absolute', bottom: '-10px', right: '40px',
               width: '18px', height: '16px',
               clipPath: 'polygon(0% 0%, 100% 0%, 15% 100%)',
               background: 'rgba(255,255,255,0.25)',
@@ -101,7 +101,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-14px', right: '12px',
+              position: 'absolute', bottom: '-8px', right: '42px',
               width: '14px', height: '13px',
               clipPath: 'polygon(0% 0%, 100% 0%, 20% 100%)',
               background: 'var(--bg-card-inner)',
