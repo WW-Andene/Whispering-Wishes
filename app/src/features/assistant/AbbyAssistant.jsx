@@ -26,7 +26,7 @@ import { t, getLocale } from '../../utils/i18n.js';
 
 const TYPE_LABEL_KEY = { character: 'assistant.typeCharacter', weapon: 'assistant.typeWeapon', echo: 'assistant.typeEcho' };
 
-export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }) {
+export function AbbyAssistant({ collectionImages, setDetailModal }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const inputRef = useRef(null);
@@ -136,12 +136,12 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t('assistant.placeholder')}
           className="kuro-input w-full text-base"
-          style={{ marginTop: '-4px' }}
+          style={{ marginTop: '12px' }}
           autoComplete="off"
         />
 
         {query.trim() && answer && (
-          <div className="kuro-card w-full" style={{ padding: '12px 16px', marginTop: '12px' }}>
+          <div className="kuro-card w-full" style={{ padding: '12px 16px', marginTop: '12px' }} aria-live="polite" aria-atomic="true">
             <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{answer.text}</p>
             {answer.name && (
               <button

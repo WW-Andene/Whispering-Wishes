@@ -1057,7 +1057,7 @@ function WhisperingWishesInner() {
 
       {/* Abby assistant — shake the device to summon her, search characters/
           weapons/echoes, tap a result to open its detail modal. */}
-      <AbbyAssistant collectionImages={collectionImages} setDetailModal={setDetailModal} setActiveTab={setActiveTab} />
+      <AbbyAssistant collectionImages={collectionImages} setDetailModal={setDetailModal} />
 
       <ColorblindFilterDefs />
 

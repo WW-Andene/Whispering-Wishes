@@ -25,9 +25,12 @@ const FILLER_WORDS = [
   'counter', 'contre', 'matchup', 'against', 'vs', 'a', 'of', "d'", 'un', 'une',
 ];
 
-const DIACRITICS_RE = new RegExp('[̀-ͯ]', 'g');
+// \p{Diacritic} (not a literal ̀-ͯ character-range string) so this
+// survives any editor/tool re-encoding the file - a literal combining-mark
+// range embedded in source is exactly the kind of thing that silently
+// mangles on save.
 function normalize(s) {
-  return s.toLowerCase().normalize('NFD').replace(DIACRITICS_RE, '');
+  return s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
 }
 
 export function classifyIntent(query) {
@@ -50,16 +53,34 @@ function stripFillerWords(query) {
 
 let _charFuse = null;
 let _charFuseLocale = null;
+let _charNames = null;
 function getCharacterFuse(locale) {
   if (_charFuse && _charFuseLocale === locale) return _charFuse;
   const data = getLocalizedCharacterData(locale);
-  const items = Object.keys(data).map(name => ({ name }));
+  _charNames = Object.keys(data);
+  const items = _charNames.map(name => ({ name }));
   _charFuse = new Fuse(items, { keys: ['name'], threshold: 0.4, ignoreLocation: true });
   _charFuseLocale = locale;
   return _charFuse;
 }
 
 export function resolveCharacterName(query, locale) {
+  getCharacterFuse(locale); // ensures _charNames is populated for this locale
+  const q = normalize(query);
+
+  // Primary strategy: does the query actually CONTAIN a real character
+  // name? Robust to any phrasing ("who should I pair with Jinhsi", "quel
+  // perso synergise le mieux avec Jinhsi") without needing every possible
+  // filler word enumerated - pick the longest matching name so "Rover:
+  // Havoc" wins over a bare "Rover" false-positive.
+  let best = null;
+  for (const name of _charNames) {
+    if (q.includes(normalize(name)) && (!best || name.length > best.length)) best = name;
+  }
+  if (best) return best;
+
+  // Fallback: fuzzy-match the query after stripping known filler words,
+  // for typos/partial names the substring check above won't catch.
   const cleaned = stripFillerWords(query);
   if (!cleaned) return null;
   const hits = getCharacterFuse(locale).search(cleaned, { limit: 1 });
