@@ -40,11 +40,23 @@ export const OVERLAY_CATALOG = [
     maxZoom: 5,
   },
   {
+    // Outline work: fresh border-connected flood-fill from the raw opaque
+    // source (Avinoleum.png) - same brightness-threshold approach as
+    // Tethys Deep, since this source's background matte and land both
+    // cluster distinctly by luminance. Outline recoloured to a fixed
+    // colour sampled from this map's own dark palette (not derived
+    // per-pixel from nearby terrain) and small disconnected noise
+    // components dropped. Same pyramid convention as the other overlays;
+    // maxZoom:6 matches this asset's size (9216x9984), same as
+    // Fabricatorium of the Deep/Mengzhou.
     id: 'avinoleum',
     name: 'Avinoleum',
     imageUrl: 'map-tiles/Avinoleum/Avinoleum.webp',
     naturalWidth: 9216,
     naturalHeight: 9984,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 6,
   },
   {
     // Outline work: this source already had a partial, jaggy flood-fill cut
