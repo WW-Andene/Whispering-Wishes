@@ -44,11 +44,17 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 8192,
   },
   {
+    // pyramid/minZoom/maxZoom: lossless/{z}/{y}/{x}.png for z in
+    // [minZoom, maxZoom], same convention as Lahai Roi/Mengzhou/Dimmr Plains
+    // (was previously a single flat lossless/{y}/{x}.png grid).
     id: 'fabricatorium-of-the-deep',
     name: 'Fabricatorium of the Deep',
     imageUrl: 'map-tiles/Fabricatorium-of-the-deep/Fabricatorium-of-the-deep.webp',
     naturalWidth: 13312,
     naturalHeight: 8192,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 6,
   },
   {
     id: 'honami-city',
@@ -58,11 +64,17 @@ export const OVERLAY_CATALOG = [
     naturalHeight: 8192,
   },
   {
+    // pyramid/minZoom/maxZoom: lossless/{z}/{y}/{x}.png for z in
+    // [minZoom, maxZoom], same convention as Lahai Roi/Mengzhou/Dimmr Plains
+    // (was previously a single flat lossless/{y}/{x}.png grid).
     id: 'chronorift-metropolis',
     name: 'Chronorift Metropolis',
     imageUrl: 'map-tiles/chronorift-metropolis/chronorift-metropolis.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 5,
   },
   {
     id: 'hualong-outlines',
