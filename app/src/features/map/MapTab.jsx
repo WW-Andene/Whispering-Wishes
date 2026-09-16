@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
+import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X, Compass } from 'lucide-react';
 import { Card, CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -199,6 +199,15 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
 
   const tileLayerRef = useRef(null);
   const gestureActiveRef = useRef(false);
+
+  // View rotation (CSS-transform only — Leaflet's own lat/lng<->pixel math
+  // never learns about it). Two-finger twist changes it; author/freehand/paint
+  // modes force it back to 0 because their click/drag handlers convert raw
+  // pointer positions through Leaflet's own (rotation-unaware) math.
+  const [rotation, setRotation] = useState(0);
+  const rotationRef = useRef(0);
+  const rotateTouchRef = useRef(null); // { angle, rotation } captured at 2-finger touchstart
+  const panTouchRef = useRef(null);    // { x, y } for rotation-corrected 1-finger pan
 
   // Set of descendant ids of the zone being edited — used to forbid circular parenting.
   const editingDescendants = useMemo(() => {
@@ -723,6 +732,101 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       setMapReady(false);
     };
   }, []);
+
+  // Editing modes convert raw pointer positions through Leaflet's own
+  // (rotation-unaware) map.project/e.latlng math, so a non-zero CSS rotation
+  // would place zone points / painted strokes in the wrong spot. Snap back
+  // to 0° the moment any of them turns on.
+  const editingModeActive = authorMode || freehandMode || paintMode;
+  useEffect(() => {
+    if (editingModeActive && rotationRef.current !== 0) {
+      rotationRef.current = 0;
+      setRotation(0);
+    }
+  }, [editingModeActive]);
+
+  // Apply the rotation to the Leaflet container via CSS transform only —
+  // Leaflet's internal pixel/lat-lng math never sees this.
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    container.style.transform = rotation ? `rotate(${rotation}deg)` : '';
+    container.style.transformOrigin = '50% 50%';
+  }, [rotation]);
+
+  // Two-finger twist-to-rotate + rotation-corrected one-finger pan.
+  // Only active outside the editing modes above, and only takes over from
+  // Leaflet's native dragging/touchZoom for the duration of a gesture.
+  useEffect(() => {
+    const map = mapRef.current;
+    const container = containerRef.current;
+    if (!map || !container || !mapReady) return;
+    if (editingModeActive) return;
+
+    const touchAngle = (t0, t1) => Math.atan2(t1.clientY - t0.clientY, t1.clientX - t0.clientX) * 180 / Math.PI;
+    const rotateVector = (dx, dy, deg) => {
+      const rad = -deg * Math.PI / 180;
+      return {
+        x: dx * Math.cos(rad) - dy * Math.sin(rad),
+        y: dx * Math.sin(rad) + dy * Math.cos(rad),
+      };
+    };
+
+    const onTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        if (map.dragging?.enabled()) map.dragging.disable();
+        if (map.touchZoom?.enabled()) map.touchZoom.disable();
+        panTouchRef.current = null;
+        rotateTouchRef.current = {
+          angle: touchAngle(e.touches[0], e.touches[1]),
+          rotation: rotationRef.current,
+        };
+      } else if (e.touches.length === 1) {
+        rotateTouchRef.current = null;
+        panTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    };
+    const onTouchMove = (e) => {
+      if (e.touches.length === 2 && rotateTouchRef.current) {
+        e.preventDefault();
+        const delta = touchAngle(e.touches[0], e.touches[1]) - rotateTouchRef.current.angle;
+        let next = (rotateTouchRef.current.rotation + delta) % 360;
+        if (next < 0) next += 360;
+        rotationRef.current = next;
+        setRotation(next);
+      } else if (e.touches.length === 1 && panTouchRef.current) {
+        const dx = e.touches[0].clientX - panTouchRef.current.x;
+        const dy = e.touches[0].clientY - panTouchRef.current.y;
+        panTouchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        if (rotationRef.current) {
+          e.preventDefault();
+          const corrected = rotateVector(dx, dy, rotationRef.current);
+          map.panBy([-corrected.x, -corrected.y], { animate: false });
+        }
+      }
+    };
+    const onTouchEnd = (e) => {
+      if (e.touches.length < 2) rotateTouchRef.current = null;
+      if (e.touches.length < 1) panTouchRef.current = null;
+      if (e.touches.length === 0) {
+        if (map.dragging && !map.dragging.enabled()) map.dragging.enable();
+        if (map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
+      }
+    };
+
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd, { passive: true });
+    container.addEventListener('touchcancel', onTouchEnd, { passive: true });
+    return () => {
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
+      container.removeEventListener('touchcancel', onTouchEnd);
+      if (map.dragging && !map.dragging.enabled()) map.dragging.enable();
+      if (map.touchZoom && !map.touchZoom.enabled()) map.touchZoom.enable();
+    };
+  }, [mapReady, editingModeActive]);
 
   // Author mode: attach click handler. Map drag stays enabled (one-finger pan).
   // Leaflet distinguishes click (tap) from drag automatically.
@@ -3175,6 +3279,17 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                     >
                       <Hexagon size={14} />
                     </button>
+                    {!editingModeActive && (
+                      <button
+                        type="button"
+                        className={`kuro-btn kuro-btn-sm kuro-btn-icon ${rotation !== 0 ? 'is-active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); rotationRef.current = 0; setRotation(0); }}
+                        aria-label="Reset map rotation"
+                        title={rotation !== 0 ? `Rotated ${Math.round(rotation)}° · tap to reset` : 'Twist with two fingers to rotate'}
+                      >
+                        <Compass size={14} style={{ transform: `rotate(${-rotation}deg)` }} />
+                      </button>
+                    )}
                     <button
                       ref={downloadsAnchorRef}
                       type="button"
@@ -4226,7 +4341,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                   ? (editingId
                       ? `Editing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · tap Update to save`
                       : `Drawing: ${authorPoints.length} point${authorPoints.length === 1 ? '' : 's'} · need 3+ to save`)
-                  : 'Pinch to zoom · Drag to pan'}
+                  : 'Pinch to zoom · Drag to pan · Twist with two fingers to rotate'}
               </CardHeader>
             </div>
           </div>
