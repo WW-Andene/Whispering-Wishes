@@ -17,7 +17,7 @@
 export const MAP_ICON_CATALOG = [
   {
     id: 'resonance-nexus',
-    name: 'Resonance Nexus',
+    name: 'Nexus',
     category: 'Resonance',
     subcategory: 'Nexus',
     imageUrl: 'map-icons/Resonance-Nexus.png',
