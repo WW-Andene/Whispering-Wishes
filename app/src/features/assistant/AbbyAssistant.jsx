@@ -86,7 +86,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-14px', right: '32px',
+              position: 'absolute', bottom: '-14px', right: '12px',
               width: 0, height: 0,
               borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
               borderTop: '14px solid var(--border-default)',
@@ -95,7 +95,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-11px', right: '34px',
+              position: 'absolute', bottom: '-11px', right: '14px',
               width: 0, height: 0,
               borderLeft: '6px solid transparent', borderRight: '6px solid transparent',
               borderTop: '12px solid var(--bg-card)',
