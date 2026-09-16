@@ -109,7 +109,7 @@ describe('Tab SSR rendering', () => {
 
   it('renders PlannerTab', async () => {
     const { default: C } = await import('../features/planner/PlannerTab.jsx');
-    renderComponent(C, {
+    renderWithProviders(C, {
       state: initialState, dispatch: noop, activeBanners: CURRENT_BANNERS,
       bannerEndDate: new Date().toISOString(), toast: mockToast, confirm: noopAsync,
     });
