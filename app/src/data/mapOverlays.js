@@ -23,25 +23,57 @@ export const OVERLAY_CATALOG = [
     maxZoom: 5,
   },
   {
+    // Outline work: border-connected flood-fill cut the surrounding ocean
+    // (not just the black canvas padding) to transparent, leaving only the
+    // land silhouette, with a solid coastal outline band (150px, 100px of
+    // which is a soft AA taper at its outer edge) rather than a hard cutoff
+    // or a wide diffuse glow - same treatment as Lahai Roi/Dimmr Plains.
+    // pyramid/minZoom/maxZoom: lossless/{z}/{y}/{x}.png for z in
+    // [minZoom, maxZoom], same convention as Lahai Roi/Mengzhou/Dimmr Plains.
     id: 'tethys-deep',
     name: 'Tethys Deep',
     imageUrl: 'map-tiles/Tethys_Deep/Tethys_Deep.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 5,
   },
   {
+    // Outline work: fresh border-connected flood-fill from the raw opaque
+    // source (Avinoleum.png) - same brightness-threshold approach as
+    // Tethys Deep, since this source's background matte and land both
+    // cluster distinctly by luminance. Outline recoloured to a fixed
+    // colour sampled from this map's own dark palette (not derived
+    // per-pixel from nearby terrain) and small disconnected noise
+    // components dropped. Same pyramid convention as the other overlays;
+    // maxZoom:6 matches this asset's size (9216x9984), same as
+    // Fabricatorium of the Deep/Mengzhou.
     id: 'avinoleum',
     name: 'Avinoleum',
     imageUrl: 'map-tiles/Avinoleum/Avinoleum.webp',
     naturalWidth: 9216,
     naturalHeight: 9984,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 6,
   },
   {
+    // Outline work: this source already had a partial, jaggy flood-fill cut
+    // (with noise lumps and inconsistent edge colour picked up from nearby
+    // terrain) - rebuilt from its own solid alpha core with a uniform,
+    // fixed-colour outline band (sampled from the cave art's own dark teal
+    // palette, not derived per-pixel from whatever terrain happened to be
+    // nearby) and small disconnected noise components dropped. Same
+    // pyramid convention as Lahai Roi/Tethys Deep/Mengzhou/Dimmr Plains.
     id: 'vault-underground',
     name: 'Vault Underground',
     imageUrl: 'map-tiles/Vault-Underground/Vault-Underground.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 5,
   },
   {
     // pyramid/minZoom/maxZoom: lossless/{z}/{y}/{x}.png for z in
