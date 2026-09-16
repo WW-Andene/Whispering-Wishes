@@ -6,11 +6,14 @@
 import { normalize } from './textNormalize.js';
 
 const INTENT_KEYWORDS = {
-  // weapon/arme lands here (not a separate intent) because bestWeapon is
-  // already part of the team answer.
+  // Checked before 'team' so a weapon-specific question gets the focused
+  // weapon-only answer instead of the full team/weapon/echo dump - a "best
+  // weapon" query is a real facet of its own, not just a keyword that
+  // happens to also appear inside the team answer.
+  weapon: ['weapon', 'arme', 'best weapon', 'meilleure arme', 'quelle arme'],
   team: [
     'team', 'équipe', 'equipe', 'synergie', 'synergise', 'synergy', 'compo', 'partner', 'pair with', 'squad',
-    'weapon', 'arme', 'good with', 'works well', 'pairs well', 'best comp', 'who should i use',
+    'good with', 'works well', 'pairs well', 'best comp', 'who should i use',
     'qui va bien avec', 'bien avec',
   ],
   materials: [

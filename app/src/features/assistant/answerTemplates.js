@@ -28,6 +28,17 @@ export function buildTeamAnswer(name, data) {
   };
 }
 
+export function buildWeaponAnswer(name, data) {
+  if (!data.bestWeapon) {
+    return { kind: 'text', text: t('assistant.answerWeaponNoData', { name }), name };
+  }
+  return {
+    kind: 'text',
+    name,
+    text: t('assistant.answerWeapon', { name, weapon: data.bestWeapon }),
+  };
+}
+
 export function buildMaterialsAnswer(name, data) {
   const asc = data.ascension;
   const skill = data.skillMaterials;
@@ -70,6 +81,7 @@ export function buildProfileAnswer(name, data) {
 }
 
 export const ANSWER_BUILDERS = {
+  weapon: buildWeaponAnswer,
   team: buildTeamAnswer,
   materials: buildMaterialsAnswer,
   matchup: buildMatchupAnswer,

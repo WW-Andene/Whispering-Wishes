@@ -9,6 +9,8 @@
   "viewCharacter": "Voir {{name}}",
   "answerTeam": "Meilleure(s) team(s) pour {{name}} : {{teams}}. Meilleure arme : {{weapon}}. Meilleurs échos : {{echoes}}.",
   "answerTeamNoData": "Je n'ai pas de données de team/arme/écho enregistrées pour {{name}} pour l'instant.",
+  "answerWeapon": "Meilleure arme pour {{name}} : {{weapon}}.",
+  "answerWeaponNoData": "Je n'ai pas de meilleure arme enregistrée pour {{name}} pour l'instant.",
   "answerMaterials": "Matériaux pour {{name}} — Ascension : {{ascension}}. Matériaux de compétence : {{skillMaterials}}.",
   "answerMaterialsNoData": "Je n'ai pas de données de matériaux enregistrées pour {{name}} pour l'instant.",
   "answerMatchup": "{{name}} est un(e) {{role}} {{element}}. Whispering Wishes ne suit pas de données de counter/faiblesse élémentaire — Wuthering Waves n'utilise pas de système élémentaire pierre-papier-ciseaux. Essaie plutôt de demander sa meilleure team.",
