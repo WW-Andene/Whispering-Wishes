@@ -1088,6 +1088,11 @@
       padding: 6px;
       aspect-ratio: 1;
       min-height: 30px;
+      /* .kuro-btn is inline-block by default, so its icon child sits on the
+         text baseline instead of the button's true center. */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* E5-BT6: Button loading state — spinner + preserved width */
