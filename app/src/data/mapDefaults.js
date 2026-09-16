@@ -5,8 +5,8 @@
 //
 // DEFAULT_ZONE_DRAFTS / OVERLAY / ICON recovered via the Map editor's
 // "Export config" (Filesystem export), pasted back in from a live app
-// session (2026-09-15T05:50:12Z export), superseding the previous
-// (2026-09-15T04:37:26Z) seed baked in here.
+// session (2026-09-16T01:14:25Z export), superseding the previous
+// (2026-09-15T05:50:12Z) seed baked in here.
 //
 // DEFAULT_PAINT_STROKES is empty - the 552 strokes from that export (3232
 // points across blur/200, fade/200, blur/113) were baked directly into
@@ -461,6 +461,13 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-moc4ql5q-433', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3570, y: 2462, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4qxo6-3zd', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3252, y: 2541, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4rrm6-1qz', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3246, y: 2947, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3ec6ro-53n', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: -920, y: 6904, label: '', locked: true, zoneId: 'xuanfang-hold', floor: 0, inTree: true },
+  { id: 'icon-mu3ee5ah-5vb', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3434, y: 4113, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
+  { id: 'icon-mu3eg5i2-4vh', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2863, y: 4042, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
+  { id: 'icon-mu3ei5x4-yx', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 2780, y: 3820, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
+  { id: 'icon-mu3ej40r-3mz', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: 3085, y: 3661, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
+  { id: 'icon-mu3elsu4-18w', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: -701, y: 7313, label: '', locked: true, floor: 0, zoneId: 'eastern-xuan-peaks', inTree: true },
+  { id: 'icon-mu3empfa-4t1', kind: 'resonance-nexus', category: 'Featured', subcategory: 'Resonance Nexus', x: -1412, y: 7259, label: '', locked: true, zoneId: 'eastern-fang-peaks', floor: 0, inTree: true },
 ];
 
 export const DEFAULT_PAINT_STROKES = [];
