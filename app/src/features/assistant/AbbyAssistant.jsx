@@ -83,22 +83,28 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
             shifted off-center instead of centered under the bubble. */}
         <div className="kuro-card relative self-start" style={{ padding: '8px 16px', marginBottom: '14px', marginLeft: '8px' }}>
           <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
+          {/* The card's own border/bg tokens are only legible because of its
+              backdrop-filter blur behind them - applied to a lone triangle,
+              blur doesn't give enough contrast to read at all (tried both
+              the border-triangle trick and a real-sized clip-path shape;
+              neither painted visibly). Solid colors in the same navy/white
+              family instead, opaque enough to read on their own. */}
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-14px', right: '12px',
-              width: 0, height: 0,
-              borderLeft: '16px solid transparent', borderRight: '2px solid transparent',
-              borderTop: '14px solid var(--border-default)',
+              position: 'absolute', bottom: '-16px', right: '10px',
+              width: '18px', height: '16px',
+              clipPath: 'polygon(0% 0%, 100% 0%, 15% 100%)',
+              background: 'rgba(255,255,255,0.25)',
             }}
           />
           <div
             aria-hidden="true"
             style={{
-              position: 'absolute', bottom: '-11px', right: '14px',
-              width: 0, height: 0,
-              borderLeft: '12px solid transparent', borderRight: '2px solid transparent',
-              borderTop: '12px solid var(--bg-card)',
+              position: 'absolute', bottom: '-14px', right: '12px',
+              width: '14px', height: '13px',
+              clipPath: 'polygon(0% 0%, 100% 0%, 20% 100%)',
+              background: 'var(--bg-card-inner)',
             }}
           />
         </div>
