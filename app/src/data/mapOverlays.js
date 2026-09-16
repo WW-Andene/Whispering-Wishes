@@ -23,11 +23,21 @@ export const OVERLAY_CATALOG = [
     maxZoom: 5,
   },
   {
+    // Outline work: border-connected flood-fill cut the surrounding ocean
+    // (not just the black canvas padding) to transparent, leaving only the
+    // land silhouette, with a solid coastal outline band (150px, 100px of
+    // which is a soft AA taper at its outer edge) rather than a hard cutoff
+    // or a wide diffuse glow - same treatment as Lahai Roi/Dimmr Plains.
+    // pyramid/minZoom/maxZoom: lossless/{z}/{y}/{x}.png for z in
+    // [minZoom, maxZoom], same convention as Lahai Roi/Mengzhou/Dimmr Plains.
     id: 'tethys-deep',
     name: 'Tethys Deep',
     imageUrl: 'map-tiles/Tethys_Deep/Tethys_Deep.webp',
     naturalWidth: 8192,
     naturalHeight: 8192,
+    pyramid: true,
+    minZoom: 0,
+    maxZoom: 5,
   },
   {
     id: 'avinoleum',
