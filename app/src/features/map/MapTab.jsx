@@ -2327,7 +2327,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
       setIconDrafts((prev) => {
         const tpl = prev.find((i) => i.id === multiPlaceFromId);
-        if (!tpl) return prev;
+        if (!tpl) {
+          // The template icon is gone (e.g. it got committed/removed from
+          // the draft list elsewhere) — stop spawning clones from a
+          // template that no longer exists instead of silently no-op'ing
+          // on every further click while the mode stays stuck on.
+          setMultiPlaceFromId(null);
+          return prev;
+        }
         const id = `icon-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
         const clone = {
           id,
@@ -4192,9 +4199,17 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                             // Add-to-tree = set inTree=true AND locked=true on
                             // every visible icon that has a zoneId. Orphans
                             // (no zoneId) are left in the list untouched.
-                            saveIconDrafts(iconDrafts.map(ic => (!ic.inTree && ic.zoneId)
+                            const next = iconDrafts.map(ic => (!ic.inTree && ic.zoneId)
                               ? { ...ic, inTree: true, locked: true }
-                              : ic));
+                              : ic);
+                            saveIconDrafts(next);
+                            // If multi-place's template icon just got moved
+                            // into the tree, stop the mode instead of
+                            // leaving it stuck spawning clones from an icon
+                            // that no longer lives in the temporary list.
+                            if (multiPlaceFromId && next.find(ic => ic.id === multiPlaceFromId)?.inTree) {
+                              setMultiPlaceFromId(null);
+                            }
                           }}
                         >
                           Add all
@@ -4450,7 +4465,13 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                         <button
                           type="button"
                           className="kuro-btn kuro-btn-sm"
-                          onClick={() => patchIcon({ locked: true, inTree: true })}
+                          onClick={() => {
+                            patchIcon({ locked: true, inTree: true });
+                            // Same as the "Add all" bulk action: don't leave
+                            // multi-place stuck cloning from a template that
+                            // just moved into the tree.
+                            if (multiPlaceFromId === ic.id) setMultiPlaceFromId(null);
+                          }}
                           disabled={!ic.zoneId}
                           title={ic.zoneId
                             ? 'Move this icon to the Regions tree (hides it from the editor list)'
