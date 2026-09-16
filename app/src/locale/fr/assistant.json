@@ -1,0 +1,16 @@
+{
+  "welcome": "Hey, qu'est-ce que je peux faire pour toi ?",
+  "placeholder": "Cherche un personnage, une arme, un écho…",
+  "noResults": "Rien trouvé. Essaie une autre orthographe ?",
+  "close": "Fermer",
+  "typeCharacter": "Personnage",
+  "typeWeapon": "Arme",
+  "typeEcho": "Écho",
+  "viewCharacter": "Voir {{name}}",
+  "entityNotFound": "Je n'ai trouvé aucun personnage correspondant à \"{{query}}\".",
+  "answerTeam": "Meilleure(s) team(s) pour {{name}} : {{teams}}. Meilleure arme : {{weapon}}. Meilleurs échos : {{echoes}}.",
+  "answerTeamNoData": "Je n'ai pas de données de team/arme/écho enregistrées pour {{name}} pour l'instant.",
+  "answerMaterials": "Matériaux pour {{name}} — Ascension : {{ascension}}. Matériaux de compétence : {{skillMaterials}}.",
+  "answerMaterialsNoData": "Je n'ai pas de données de matériaux enregistrées pour {{name}} pour l'instant.",
+  "answerMatchup": "{{name}} est un(e) {{role}} {{element}}. Whispering Wishes ne suit pas de données de counter/faiblesse élémentaire — Wuthering Waves n'utilise pas de système élémentaire pierre-papier-ciseaux. Essaie plutôt de demander sa meilleure team."
+}

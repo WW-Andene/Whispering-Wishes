@@ -1,0 +1,195 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// WHISPERING WISHES — features/assistant/AbbyAssistant.jsx
+// Abby (the onboarding host) doubles as an in-app assistant: shake the
+// device to summon her, ask a question. queryEngine.js's keyword/intent
+// classifier tries first - "team for X", "materials for X", "counter for X"
+// get a templated text answer built from that character's own real data;
+// anything else falls back to plain fuzzy search (searchIndex.js) over
+// characters/weapons/echoes, tap a result to open its detail modal. v1
+// scope is static game data only (see CLAUDE.md session note) - no user
+// progression data indexed yet.
+//
+// Layout (top to bottom): a comic/manga-panel speech bubble above Abby with
+// its tail pointing down at her, Abby's sprite, then the search input
+// directly beneath her (no gap for anything else), then results below that
+// once there's a query. Floating overlay, vertically centered, no dim scrim
+// behind it - but the bubble/input/results themselves use the app's own
+// kuro-card/kuro-input/kuro-btn styling rather than a bespoke glass look.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
+import { useShakeDetection } from '../../hooks/useShakeDetection.js';
+import { buildAssistantIndex, searchAssistant } from './searchIndex.js';
+import { answerQuery } from './queryEngine.js';
+import { t, getLocale } from '../../utils/i18n.js';
+
+const TYPE_LABEL_KEY = { character: 'assistant.typeCharacter', weapon: 'assistant.typeWeapon', echo: 'assistant.typeEcho' };
+
+export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const inputRef = useRef(null);
+
+  useShakeDetection(() => setOpen(true));
+
+  // Rebuilt only when the overlay opens (not on every keystroke) and whenever
+  // the app locale changes while it's open, so results stay in the language
+  // the user is currently reading in.
+  const locale = getLocale();
+  const index = useMemo(() => (open ? buildAssistantIndex(locale) : null), [open, locale]);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    else setQuery('');
+  }, [open]);
+
+  // Keyword/intent engine tries first (team/materials/matchup questions get
+  // a templated text answer from real character data); when it doesn't
+  // recognize the query as one of those intents, it returns null and the
+  // plain fuzzy-search results list below takes over, same as before.
+  const answer = useMemo(() => (query.trim() ? answerQuery(query, locale) : null), [query, locale]);
+  const results = useMemo(() => (index && !answer ? searchAssistant(index, query) : []), [index, query, answer]);
+
+  function openAnswerCharacter() {
+    if (!answer?.name) return;
+    setDetailModal({ show: true, type: 'character', name: answer.name, imageUrl: collectionImages[answer.name] || null, framing: null });
+    setOpen(false);
+  }
+
+  function openResult(item) {
+    setDetailModal({
+      show: true,
+      type: item.type,
+      name: item.name,
+      imageUrl: collectionImages[item.name] || null,
+      framing: null,
+      ...(item.type === 'echo' ? { cost: item.cost } : {}),
+    });
+    setOpen(false);
+  }
+
+  if (!open) return null;
+
+  return (
+    <FocusTrapModal
+      isOpen={true}
+      onClose={() => setOpen(false)}
+      ariaLabel={t('assistant.welcome')}
+      dim={false}
+      centered
+      padding="p-3"
+      onClick={() => setOpen(false)}
+    >
+      {/* stopPropagation so tapping the floating content itself doesn't
+          trigger the backdrop's tap-outside-to-close */}
+      <div className="w-full flex flex-col items-center" onClick={(e) => e.stopPropagation()} style={{ paddingBottom: '8px' }}>
+
+        <button
+          onClick={() => setOpen(false)}
+          aria-label={t('assistant.close')}
+          className="kuro-btn self-end flex items-center justify-center min-h-[48px]"
+          style={{ width: '48px', padding: 0, marginBottom: '4px', borderRadius: '9999px' }}
+        >
+          ✕
+        </button>
+
+        {/* Comic/manga-panel speech bubble, in the app's own kuro-card
+            styling, with the original straight triangular tail - just
+            shifted off-center instead of centered under the bubble. */}
+        <div className="kuro-card relative self-start" style={{ padding: '8px 16px', marginBottom: '14px', marginLeft: '8px', background: 'var(--bg-input)' }}>
+          <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute', bottom: '-14px', right: '4px',
+              width: 0, height: 0,
+              borderLeft: '16px solid transparent', borderRight: '2px solid transparent',
+              borderTop: '14px solid var(--border-default)',
+            }}
+          />
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute', bottom: '-11px', right: '6px',
+              width: 0, height: 0,
+              borderLeft: '12px solid transparent', borderRight: '2px solid transparent',
+              borderTop: '12px solid var(--bg-input)',
+            }}
+          />
+        </div>
+
+        <img
+          src="./misc-assets/Abby_Full_Sprite.png"
+          alt=""
+          aria-hidden="true"
+          className="w-48 h-32 object-contain object-bottom"
+          style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.5))' }}
+        />
+
+        {/* Search input - directly beneath Abby, nothing in between - the
+            app's own kuro-input styling. */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('assistant.placeholder')}
+          className="kuro-input w-full text-base"
+          style={{ marginTop: '-4px' }}
+          autoComplete="off"
+        />
+
+        {query.trim() && answer && (
+          <div className="kuro-card w-full" style={{ padding: '12px 16px', marginTop: '12px' }}>
+            <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{answer.text}</p>
+            {answer.name && (
+              <button
+                onClick={openAnswerCharacter}
+                className="kuro-btn w-full mt-3 min-h-[48px]"
+                style={{ padding: '6px 12px', fontSize: 'var(--font-sm)' }}
+              >
+                {t('assistant.viewCharacter', { name: answer.name })}
+              </button>
+            )}
+          </div>
+        )}
+
+        {query.trim() && !answer && (
+          <div className="kuro-card w-full overflow-y-auto" style={{ maxHeight: '256px', padding: '6px', marginTop: '12px' }}>
+            {results.length === 0 && (
+              <p className="text-center" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)', padding: '16px 0' }}>
+                {t('assistant.noResults')}
+              </p>
+            )}
+            <div className="space-y-1.5">
+              {results.map((item) => {
+                const img = collectionImages[item.name];
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => openResult(item)}
+                    className="kuro-btn w-full flex items-center gap-3 text-left min-h-[48px]"
+                    style={{ padding: '6px 12px' }}
+                  >
+                    {img ? (
+                      <img src={img} alt="" className="w-8 h-8 rounded-lg object-cover shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-lg shrink-0" style={{ background: 'var(--border-subtle)' }} />
+                    )}
+                    <span className="flex-1 min-w-0">
+                      <span className="block truncate" style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{item.name}</span>
+                      <span className="block truncate" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)' }}>
+                        {t(TYPE_LABEL_KEY[item.type])}{item.subtitle ? ` · ${item.subtitle}` : ''}
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </FocusTrapModal>
+  );
+}
