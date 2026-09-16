@@ -80,28 +80,23 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
 
         {/* Comic/manga-panel speech bubble, in the app's own kuro-card
             styling (same background/border/shadow tokens as every other
-            card) instead of a bespoke glass look, with a triangular tail
-            pointing straight down at Abby. */}
-        <div className="kuro-card relative" style={{ padding: '8px 16px', marginBottom: '14px' }}>
+            card) instead of a bespoke glass look, with a curved sideways
+            tail (SVG, not a straight symmetric CSS triangle) pointing down
+            at Abby, off-center like a real comic speech-bubble tail. */}
+        <div className="kuro-card relative" style={{ padding: '8px 16px', marginBottom: '18px' }}>
           <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
-          <div
+          <svg
             aria-hidden="true"
-            style={{
-              position: 'absolute', bottom: '-14px', left: '50%', transform: 'translateX(-50%)',
-              width: 0, height: 0,
-              borderLeft: '8px solid transparent', borderRight: '8px solid transparent',
-              borderTop: '14px solid var(--border-default)',
-            }}
-          />
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute', bottom: '-11px', left: '50%', transform: 'translateX(-50%)',
-              width: 0, height: 0,
-              borderLeft: '6px solid transparent', borderRight: '6px solid transparent',
-              borderTop: '12px solid var(--bg-card)',
-            }}
-          />
+            width="44" height="36" viewBox="0 0 44 36"
+            style={{ position: 'absolute', bottom: '-32px', left: '28px' }}
+          >
+            <path
+              d="M6 0 L26 0 C 24 12, 30 24, 40 34 C 26 26, 12 14, 8 2 Z"
+              style={{ fill: 'var(--bg-card-inner)', stroke: 'var(--border-bright)' }}
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
+          </svg>
         </div>
 
         <img
