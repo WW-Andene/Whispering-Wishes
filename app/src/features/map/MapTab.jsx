@@ -2576,6 +2576,13 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         }
 
         .map-card .kuro-header { background: ${MAP_BG_TRANSPARENT} !important; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+
+        /* Slight lift on the base map tiles only (not the zone/icon overlay
+           canvas or UI chrome on top) — a small contrast/brightness/saturation
+           bump reads as "less flat", closest CSS has to a sharpness nudge. */
+        .leaflet-map-bg .leaflet-tile-pane {
+          filter: contrast(1.06) brightness(1.04) saturate(1.05);
+        }
         .zone-polygon { transition: fill-opacity var(--transition-normal, 160ms); cursor: pointer; }
         .zone-polygon:hover { fill-opacity: 0.22 !important; }
 
