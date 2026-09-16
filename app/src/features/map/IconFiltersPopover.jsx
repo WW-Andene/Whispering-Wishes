@@ -11,6 +11,16 @@ import React from 'react';
 import { Card, CardHeader, CardBody } from '../../shared/components/Card.jsx';
 import { t } from '../../utils/i18n.js';
 
+// Explicit priority for known subcategories (Nexus before Beacon); anything
+// else falls back to alphabetical order after these.
+const SUBCATEGORY_ORDER = ['Nexus', 'Beacon'];
+function compareSubcategories(a, b) {
+  const ia = SUBCATEGORY_ORDER.indexOf(a);
+  const ib = SUBCATEGORY_ORDER.indexOf(b);
+  if (ia !== -1 || ib !== -1) return (ia === -1 ? SUBCATEGORY_ORDER.length : ia) - (ib === -1 ? SUBCATEGORY_ORDER.length : ib);
+  return a.localeCompare(b);
+}
+
 export function IconFiltersPopover({
   panelRef,
   top,
@@ -69,20 +79,22 @@ export function IconFiltersPopover({
             <div className="map-filters-list">
               {cats.map(([cat, entry]) => {
                 const catOff = iconFiltersOff.has(cat);
-                const subs = [...entry.subs.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+                const subs = [...entry.subs.entries()].sort((a, b) => compareSubcategories(a[0], b[0]));
                 return (
                   <React.Fragment key={cat}>
-                    <button
-                      type="button"
-                      className={`kuro-btn kuro-btn-sm zone-selector-item ${catOff ? '' : 'is-current'}`}
-                      onClick={() => toggleIconFilter(cat)}
-                      aria-pressed={!catOff}
-                      title={catOff ? t('map.legend.show', { name: cat }) : t('map.legend.hide', { name: cat })}
-                    >
-                      <span className="zone-selector-caret">{catOff ? '▢' : '▣'}</span>
-                      <span className="zone-selector-name">{cat}</span>
-                      <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{entry.total}</span>
-                    </button>
+                    <div className="zone-selector-row">
+                      <button
+                        type="button"
+                        className={`kuro-btn kuro-btn-sm zone-selector-item ${catOff ? '' : 'is-current'}`}
+                        onClick={() => toggleIconFilter(cat)}
+                        aria-pressed={!catOff}
+                        title={catOff ? t('map.legend.show', { name: cat }) : t('map.legend.hide', { name: cat })}
+                      >
+                        <span className="zone-selector-caret">{catOff ? '▢' : '▣'}</span>
+                        <span className="zone-selector-name">{cat}</span>
+                        <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{entry.total}</span>
+                      </button>
+                    </div>
                     {subs.map(([sub, n]) => {
                       const key = `${cat}/${sub}`;
                       const subOff = iconFiltersOff.has(key);
@@ -91,22 +103,22 @@ export function IconFiltersPopover({
                       // persisting state.
                       const effectiveOff = catOff || subOff;
                       return (
-                        <button
-                          key={key}
-                          type="button"
-                          className={`kuro-btn kuro-btn-sm zone-selector-item ${effectiveOff ? '' : 'is-current'}`}
-                          onClick={() => toggleIconFilter(key)}
-                          aria-pressed={!effectiveOff}
-                          disabled={catOff}
-                          title={catOff
-                            ? t('map.legend.parentHidden', { name: cat })
-                            : (subOff ? t('map.legend.show', { name: sub }) : t('map.legend.hide', { name: sub }))}
-                          style={{ paddingLeft: 'calc(var(--space-md, 12px) + var(--space-sm, 8px))' }}
-                        >
-                          <span className="zone-selector-caret">{effectiveOff ? '▢' : '▣'}</span>
-                          <span className="zone-selector-name">{sub}</span>
-                          <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{n}</span>
-                        </button>
+                        <div key={key} className="zone-selector-row" style={{ paddingLeft: 'var(--space-md, 12px)' }}>
+                          <button
+                            type="button"
+                            className={`kuro-btn kuro-btn-sm zone-selector-item ${effectiveOff ? '' : 'is-current'}`}
+                            onClick={() => toggleIconFilter(key)}
+                            aria-pressed={!effectiveOff}
+                            disabled={catOff}
+                            title={catOff
+                              ? t('map.legend.parentHidden', { name: cat })
+                              : (subOff ? t('map.legend.show', { name: sub }) : t('map.legend.hide', { name: sub }))}
+                          >
+                            <span className="zone-selector-caret">{effectiveOff ? '▢' : '▣'}</span>
+                            <span className="zone-selector-name">{sub}</span>
+                            <span className="kuro-badge kuro-badge-neutral" style={{ marginLeft: 'auto' }}>{n}</span>
+                          </button>
+                        </div>
                       );
                     })}
                   </React.Fragment>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X, Compass } from 'lucide-react';
+import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
 import { Card, CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -3348,7 +3348,21 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                         aria-label="Reset map rotation"
                         title={rotation !== 0 ? `Rotated ${Math.round(rotation)}° · tap to reset` : 'Twist with two fingers to rotate'}
                       >
-                        <Compass size={14} style={{ transform: `rotate(${-rotation}deg)` }} />
+                        {/* Custom needle (not lucide's Compass) so the north
+                            half can be painted kuro gold independently of
+                            the south half, which keeps the default icon
+                            color. */}
+                        <svg
+                          width={14}
+                          height={14}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          style={{ transform: `rotate(${-rotation}deg)` }}
+                        >
+                          <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="2" />
+                          <polygon points="12,4 16,12 8,12" fill="rgb(var(--color-gold))" />
+                          <polygon points="12,20 16,12 8,12" fill="currentColor" />
+                        </svg>
                       </button>
                     )}
                     <button
