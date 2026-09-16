@@ -84,9 +84,6 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           >
             ✕
           </button>
-          <div className="rounded-2xl" style={{ ...GLASS_PANEL_STYLE, padding: '8px 16px', marginBottom: '-8px' }}>
-            <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
-          </div>
           <img
             src="./misc-assets/Abby_Full_Sprite.png"
             alt=""
@@ -94,6 +91,21 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
             className="w-48 h-32 object-contain object-bottom"
             style={{ filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.5))' }}
           />
+          {/* Comic/manga-style dialogue box - square-ish corners, a bolder
+              border than the other glass panels, and a triangular tail
+              (a rotated square, half-hidden behind the box's own top edge)
+              pointing up at Abby instead of a smooth speech-bubble curve. */}
+          <div className="relative rounded-lg" style={{ ...GLASS_PANEL_STYLE, border: '1px solid var(--border-medium)', padding: '8px 16px', marginTop: '-4px' }}>
+            <div
+              aria-hidden="true"
+              style={{
+                position: 'absolute', top: '-7px', left: '50%', transform: 'translateX(-50%) rotate(45deg)',
+                width: '14px', height: '14px', background: 'var(--bg-elevated)',
+                borderLeft: '1px solid var(--border-medium)', borderTop: '1px solid var(--border-medium)',
+              }}
+            />
+            <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{t('assistant.welcome')}</p>
+          </div>
         </div>
 
         {query.trim() && (
