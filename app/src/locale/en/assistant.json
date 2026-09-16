@@ -5,5 +5,12 @@
   "close": "Close",
   "typeCharacter": "Character",
   "typeWeapon": "Weapon",
-  "typeEcho": "Echo"
+  "typeEcho": "Echo",
+  "viewCharacter": "View {{name}}",
+  "entityNotFound": "I couldn't find a character matching \"{{query}}\".",
+  "answerTeam": "Best team(s) for {{name}}: {{teams}}. Best weapon: {{weapon}}. Best echoes: {{echoes}}.",
+  "answerTeamNoData": "I don't have recorded team/weapon/echo data for {{name}} yet.",
+  "answerMaterials": "Materials for {{name}} — Ascension: {{ascension}}. Skill materials: {{skillMaterials}}.",
+  "answerMaterialsNoData": "I don't have recorded material data for {{name}} yet.",
+  "answerMatchup": "{{name}} is a {{element}} {{role}}. Whispering Wishes doesn't track elemental counters/weaknesses — Wuthering Waves doesn't use a rock-paper-scissors elemental system. Try asking for their best team instead."
 }

@@ -1,9 +1,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — features/assistant/AbbyAssistant.jsx
-// Abby (the onboarding host) doubles as an in-app search assistant: shake the
-// device to summon her, type a question, get matching characters/weapons/
-// echoes, tap a result to open its detail modal. v1 scope is static game data
-// only (see CLAUDE.md session note) - no user progression data indexed yet.
+// Abby (the onboarding host) doubles as an in-app assistant: shake the
+// device to summon her, ask a question. queryEngine.js's keyword/intent
+// classifier tries first - "team for X", "materials for X", "counter for X"
+// get a templated text answer built from that character's own real data;
+// anything else falls back to plain fuzzy search (searchIndex.js) over
+// characters/weapons/echoes, tap a result to open its detail modal. v1
+// scope is static game data only (see CLAUDE.md session note) - no user
+// progression data indexed yet.
 //
 // Layout (top to bottom): a comic/manga-panel speech bubble above Abby with
 // its tail pointing down at her, Abby's sprite, then the search input
@@ -17,6 +21,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 import { useShakeDetection } from '../../hooks/useShakeDetection.js';
 import { buildAssistantIndex, searchAssistant } from './searchIndex.js';
+import { answerQuery } from './queryEngine.js';
 import { t, getLocale } from '../../utils/i18n.js';
 
 const TYPE_LABEL_KEY = { character: 'assistant.typeCharacter', weapon: 'assistant.typeWeapon', echo: 'assistant.typeEcho' };
@@ -39,7 +44,18 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
     else setQuery('');
   }, [open]);
 
-  const results = useMemo(() => (index ? searchAssistant(index, query) : []), [index, query]);
+  // Keyword/intent engine tries first (team/materials/matchup questions get
+  // a templated text answer from real character data); when it doesn't
+  // recognize the query as one of those intents, it returns null and the
+  // plain fuzzy-search results list below takes over, same as before.
+  const answer = useMemo(() => (query.trim() ? answerQuery(query, locale) : null), [query, locale]);
+  const results = useMemo(() => (index && !answer ? searchAssistant(index, query) : []), [index, query, answer]);
+
+  function openAnswerCharacter() {
+    if (!answer?.name) return;
+    setDetailModal({ show: true, type: 'character', name: answer.name, imageUrl: collectionImages[answer.name] || null, framing: null });
+    setOpen(false);
+  }
 
   function openResult(item) {
     setDetailModal({
@@ -124,7 +140,22 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
           autoComplete="off"
         />
 
-        {query.trim() && (
+        {query.trim() && answer && (
+          <div className="kuro-card w-full" style={{ padding: '12px 16px', marginTop: '12px' }}>
+            <p style={{ color: 'var(--text-heading)', fontSize: 'var(--font-sm)' }}>{answer.text}</p>
+            {answer.name && (
+              <button
+                onClick={openAnswerCharacter}
+                className="kuro-btn w-full mt-3 min-h-[48px]"
+                style={{ padding: '6px 12px', fontSize: 'var(--font-sm)' }}
+              >
+                {t('assistant.viewCharacter', { name: answer.name })}
+              </button>
+            )}
+          </div>
+        )}
+
+        {query.trim() && !answer && (
           <div className="kuro-card w-full overflow-y-auto" style={{ maxHeight: '256px', padding: '6px', marginTop: '12px' }}>
             {results.length === 0 && (
               <p className="text-center" style={{ color: 'var(--text-muted)', fontSize: 'var(--font-sm)', padding: '16px 0' }}>
