@@ -708,8 +708,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       const topPad = pxToLat(headerH) * scale;
       const bottomPad = pxToLat(footerH) * scale;
       // Extra breathing room on all four sides so edges aren't tight when
-      // authoring zones near the perimeter.
-      const EDGE_PAD_PX = 300;
+      // authoring zones near the perimeter. Several placed zones/overlays
+      // (Huanglong reaches x=-3546, well west of the base canvas's own x=0
+      // edge) extend past the base MAP_W x MAP_H canvas entirely - 300px
+      // wasn't enough slack for that, effectively fencing off part of
+      // Mengzhou (nested inside Huanglong) behind maxBounds and, since
+      // Leaflet won't zoom out past the point where maxBounds already fills
+      // the viewport, capping how far out you could zoom at all.
+      const EDGE_PAD_PX = 4000;
       const edgePad = pxToLat(EDGE_PAD_PX) * scale;
       const paddedBounds = L.latLngBounds(
         [southWest.lat - bottomPad - edgePad, southWest.lng - edgePad],
