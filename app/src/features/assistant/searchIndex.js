@@ -5,6 +5,7 @@ import Fuse from 'fuse.js';
 import { getLocalizedCharacterData } from '../../data/characters.js';
 import { getLocalizedWeaponData } from '../../data/weapons.js';
 import { getLocalizedEchoData, ALL_4COST_ECHOES, ALL_3COST_ECHOES, ALL_1COST_ECHOES } from '../../data/echoes.js';
+import { normalize, stripQuestionWords } from './textNormalize.js';
 
 function echoCost(name) {
   if (ALL_4COST_ECHOES.includes(name)) return 4;
@@ -68,11 +69,52 @@ const FUSE_OPTIONS = {
 
 export function buildAssistantIndex(locale) {
   const items = buildAssistantIndexItems(locale);
-  return { items, fuse: new Fuse(items, FUSE_OPTIONS) };
+  // A dedicated Fuse instance over just names, for findEntityInIndex's fuzzy
+  // fallback (typos) - matching a short cleaned query against bare names
+  // needs a tighter threshold than the general name+subtitle+desc search,
+  // which would otherwise happily "fuzzy match" an unrelated character.
+  const nameFuse = new Fuse(items, { keys: ['name'], threshold: 0.3, ignoreLocation: true });
+  return { items, fuse: new Fuse(items, FUSE_OPTIONS), nameFuse };
+}
+
+// Does the query actually CONTAIN a real item name? This is the primary,
+// most reliable resolution strategy - robust to arbitrary surrounding
+// phrasing ("who should I pair with Jinhsi", "tell me about Ages of
+// Harvest") without needing every possible filler word enumerated, since
+// it doesn't care what else is in the sentence. Picks the longest matching
+// name so "Rover: Havoc" wins over a bare "Rover" false positive, and so a
+// longer, more specific item name wins over a shorter one that happens to
+// be a substring of it.
+export function findEntityInIndex(index, query, { types } = {}) {
+  const q = normalize(query);
+  if (!q) return null;
+  let best = null;
+  for (const item of index.items) {
+    if (types && !types.includes(item.type)) continue;
+    if (q.includes(normalize(item.name)) && (!best || item.name.length > best.name.length)) best = item;
+  }
+  if (best) return best;
+
+  // Fallback: fuzzy-match the query after stripping known question words,
+  // for typos/partial names the substring check above won't catch.
+  const cleaned = stripQuestionWords(query);
+  if (!cleaned) return null;
+  const hits = index.nameFuse.search(cleaned, { limit: 1 });
+  const hit = hits[0]?.item;
+  if (hit && (!types || types.includes(hit.type))) return hit;
+  return null;
 }
 
 export function searchAssistant(index, query, limit = 8) {
   const q = query.trim();
   if (!q) return [];
-  return index.fuse.search(q, { limit }).map(r => r.item);
+
+  // Entity-first: if the query clearly names a real item, lead with it
+  // instead of running the whole (possibly noisy) sentence through fuzzy
+  // search against short name/subtitle/desc fields.
+  const entity = findEntityInIndex(index, q);
+  if (entity) return [entity];
+
+  const cleaned = stripQuestionWords(q) || q;
+  return index.fuse.search(cleaned, { limit }).map(r => r.item);
 }

@@ -1,13 +1,16 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // WHISPERING WISHES — features/assistant/AbbyAssistant.jsx
 // Abby (the onboarding host) doubles as an in-app assistant: shake the
-// device to summon her, ask a question. queryEngine.js's keyword/intent
-// classifier tries first - "team for X", "materials for X", "counter for X"
-// get a templated text answer built from that character's own real data;
-// anything else falls back to plain fuzzy search (searchIndex.js) over
-// characters/weapons/echoes, tap a result to open its detail modal. v1
-// scope is static game data only (see CLAUDE.md session note) - no user
-// progression data indexed yet.
+// device to summon her, ask a question. queryEngine.js resolves which
+// character (if any) the query is actually about FIRST, then refines by
+// facet keyword (team/materials/matchup, defaulting to a general profile
+// answer) - entity resolution, not keyword matching, is what decides
+// whether there's an answer at all, so it isn't thrown off by phrasing
+// that doesn't happen to contain a listed keyword. When the query isn't
+// about a character at all, it falls back to plain fuzzy search
+// (searchIndex.js) over characters/weapons/echoes, tap a result to open
+// its detail modal. v1 scope is static game data only (see CLAUDE.md
+// session note) - no user progression data indexed yet.
 //
 // Layout (top to bottom): a comic/manga-panel speech bubble above Abby with
 // its tail pointing down at her, Abby's sprite, then the search input
@@ -44,11 +47,11 @@ export function AbbyAssistant({ collectionImages, setDetailModal }) {
     else setQuery('');
   }, [open]);
 
-  // Keyword/intent engine tries first (team/materials/matchup questions get
-  // a templated text answer from real character data); when it doesn't
-  // recognize the query as one of those intents, it returns null and the
-  // plain fuzzy-search results list below takes over, same as before.
-  const answer = useMemo(() => (query.trim() ? answerQuery(query, locale) : null), [query, locale]);
+  // Entity-first engine tries first: if the query is about a real
+  // character, it always gets a text answer (team/materials/matchup/
+  // general profile). Only queries that aren't about any character at all
+  // fall back to the plain fuzzy-search results list below.
+  const answer = useMemo(() => (query.trim() && index ? answerQuery(query, locale, index) : null), [query, locale, index]);
   const results = useMemo(() => (index && !answer ? searchAssistant(index, query) : []), [index, query, answer]);
 
   function openAnswerCharacter() {
