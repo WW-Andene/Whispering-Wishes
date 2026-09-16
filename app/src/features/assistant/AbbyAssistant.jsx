@@ -68,6 +68,7 @@ export function AbbyAssistant({ collectionImages, setDetailModal, setActiveTab }
       onClose={() => setOpen(false)}
       ariaLabel={t('assistant.welcome')}
       dim={false}
+      centered
       padding="p-3"
       onClick={() => setOpen(false)}
     >
