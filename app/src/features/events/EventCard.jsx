@@ -144,7 +144,7 @@ const EventCard = memo(({ event, server, bannerImage, visualSettings, status, on
               <span className="kuro-badge kuro-badge-red font-medium">{t('events.expired')}</span>
             ) : (
               <>
-                <div className="text-gray-400 text-sm mb-1">{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
+                <div className={`text-sm mb-1 ${isDaily || isWeekly ? 'text-gray-400' : 'text-[color:var(--text-heading)]'}`}>{isDaily ? 'Resets in' : isWeekly ? 'Weekly reset' : 'Ends in'}</div>
                 <CountdownTimer endDate={endDate} color={event.color} alwaysShow={isDaily || isWeekly || isRecurring} onExpire={handleExpire} recalcFn={recalcFn} />
               </>
             )}
