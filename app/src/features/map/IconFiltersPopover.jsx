@@ -21,6 +21,17 @@ function compareSubcategories(a, b) {
   return a.localeCompare(b);
 }
 
+// Explicit priority for known top-level categories (Zone before Resonance
+// — direct user request); anything else falls back to alphabetical order
+// after these.
+const CATEGORY_ORDER = ['Zone', 'Resonance'];
+function compareCategories(a, b) {
+  const ia = CATEGORY_ORDER.indexOf(a);
+  const ib = CATEGORY_ORDER.indexOf(b);
+  if (ia !== -1 || ib !== -1) return (ia === -1 ? CATEGORY_ORDER.length : ia) - (ib === -1 ? CATEGORY_ORDER.length : ib);
+  return a.localeCompare(b);
+}
+
 export function IconFiltersPopover({
   panelRef,
   top,
@@ -54,7 +65,7 @@ export function IconFiltersPopover({
   if (l3ZoneCount > 0) {
     tree.set('Zone', { total: l3ZoneCount, subs: new Map([['Names', l3ZoneCount], ['Area', l3ZoneCount]]) });
   }
-  const cats = [...tree.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  const cats = [...tree.entries()].sort((a, b) => compareCategories(a[0], b[0]));
 
   return (
     <div

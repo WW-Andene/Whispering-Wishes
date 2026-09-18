@@ -47,6 +47,25 @@ function slugify(s) {
   return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `zone-${Date.now().toString(36)}`;
 }
 
+// One pass of Chaikin corner-cutting (direct user request — "round the
+// corners of the square zones"): each edge (P, Q) contributes two new
+// points 25%/75% of the way along it, replacing the sharp vertex between
+// consecutive edges with a short flat cut. A single light pass (small
+// `cut` fraction) rounds a rectangle's 90° corners noticeably while barely
+// perturbing an already-dense, organically-shaped zone polygon — no need
+// to special-case "is this zone square".
+function roundPolygonCorners(points, cut = 0.18) {
+  if (!Array.isArray(points) || points.length < 3) return points;
+  const out = [];
+  for (let i = 0; i < points.length; i++) {
+    const [x0, y0] = points[i];
+    const [x1, y1] = points[(i + 1) % points.length];
+    out.push([x0 + (x1 - x0) * cut, y0 + (y1 - y0) * cut]);
+    out.push([x0 + (x1 - x0) * (1 - cut), y0 + (y1 - y0) * (1 - cut)]);
+  }
+  return out;
+}
+
 export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -146,14 +165,26 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     } catch { return DEFAULT_ICON_DRAFTS; }
   });
   const [iconFiltersOff, setIconFiltersOff] = useState(() => {
-    // Set of category keys currently hidden. Persisted.
-    if (typeof localStorage === 'undefined') return new Set();
+    // Set of category keys currently hidden. Persisted. 'Zone/Area' defaults
+    // to off (direct user request) — seeded into the off-set exactly once
+    // (tracked by ZONE_AREA_SEEDED_KEY) so a later explicit "turn it on"
+    // sticks across reloads instead of this default re-adding it forever.
+    const ZONE_AREA_SEEDED_KEY = 'ww-icon-filters-zone-area-seeded';
+    if (typeof localStorage === 'undefined') return new Set(['Zone/Area']);
+    let set;
     try {
       const raw = localStorage.getItem('ww-icon-filters-off');
-      if (!raw) return new Set();
-      const parsed = JSON.parse(raw);
-      return new Set(Array.isArray(parsed) ? parsed : []);
-    } catch { return new Set(); }
+      const parsed = raw ? JSON.parse(raw) : [];
+      set = new Set(Array.isArray(parsed) ? parsed : []);
+    } catch { set = new Set(); }
+    try {
+      if (!localStorage.getItem(ZONE_AREA_SEEDED_KEY)) {
+        set.add('Zone/Area');
+        localStorage.setItem(ZONE_AREA_SEEDED_KEY, '1');
+        localStorage.setItem('ww-icon-filters-off', JSON.stringify([...set]));
+      }
+    } catch {}
+    return set;
   });
   const saveIconDrafts = useCallback((next) => {
     setIconDrafts(next);
@@ -1355,23 +1386,35 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       map.getPane('zoneAreaPane').style.pointerEvents = 'none';
     }
     const group = L.layerGroup();
-    l3Zones.forEach(z => {
-      const latLngs = z.polygon.map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
-      L.polygon(latLngs, {
-        color: COLOR_CANON,
-        weight: 2,
-        opacity: 0.7,
-        fill: false,
-        lineJoin: 'round',
-        lineCap: 'round',
-        className: `zone-area-outline ${pulseZoneId === z.id ? 'zone-area-pulse' : ''}`,
-        pane: 'zoneAreaPane',
-        interactive: false,
-      }).addTo(group);
-    });
+    // Floor-gated the same way placed icons already are: a zone whose
+    // resolved floor (via resolveZoneFloor — walks up to the nearest
+    // overlay-linked ancestor) is null shows on every floor; a zone
+    // resolved to a specific sub-map's floor only shows while viewFloor
+    // matches it. Without this, an L3 zone nested inside a placed overlay
+    // (e.g. Mengzhou's Xuanfang Hold) rendered on every floor regardless —
+    // direct user report of zone outlines/labels appearing to "move" was
+    // really this: the same fixed-position outline sitting there whichever
+    // floor/sub-map you'd actually navigated to, no longer matching what
+    // was really at that spot on the floor you were looking at.
+    l3Zones
+      .filter(z => { const f = resolveZoneFloor(z); return f == null || f === viewFloor; })
+      .forEach(z => {
+        const latLngs = roundPolygonCorners(z.polygon).map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
+        L.polygon(latLngs, {
+          color: COLOR_CANON,
+          weight: 2,
+          opacity: 0.7,
+          fill: false,
+          lineJoin: 'round',
+          lineCap: 'round',
+          className: `zone-area-outline ${pulseZoneId === z.id ? 'zone-area-pulse' : ''}`,
+          pane: 'zoneAreaPane',
+          interactive: false,
+        }).addTo(group);
+      });
     group.addTo(map);
     zoneAreaLayerRef.current = group;
-  }, [l3Zones, mapReady, iconFiltersOff, pulseZoneId]);
+  }, [l3Zones, mapReady, iconFiltersOff, pulseZoneId, viewFloor, resolveZoneFloor]);
 
   const zoneNamesLayerRef = useRef(null);
   useEffect(() => {
@@ -1385,21 +1428,27 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     const namesOn = !iconFiltersOff.has('Zone') && !iconFiltersOff.has('Zone/Names');
     if (!namesOn || l3Zones.length === 0) return;
     const group = L.layerGroup();
-    l3Zones.forEach(z => {
-      const center = map.unproject(z.centroid, NATIVE_ZOOM);
-      L.marker(center, {
-        icon: L.divIcon({
-          className: 'zone-name-label-wrap',
-          html: `<span class="zone-name-label">${(z.name || z.id).replace(/</g, '&lt;')}</span>`,
-          iconSize: null,
-        }),
-        interactive: false,
-        keyboard: false,
-      }).addTo(group);
-    });
+    l3Zones
+      .filter(z => { const f = resolveZoneFloor(z); return f == null || f === viewFloor; })
+      .forEach(z => {
+        const center = map.unproject(z.centroid, NATIVE_ZOOM);
+        L.marker(center, {
+          icon: L.divIcon({
+            className: 'zone-name-label-wrap',
+            html: `<span class="zone-name-label">${(z.name || z.id).replace(/</g, '&lt;')}</span>`,
+            // Explicit 0,0 anchor (rather than relying on Leaflet's own
+            // null-iconSize fallback) — the label's own -50%/-50% CSS
+            // transform does the actual centering on the point.
+            iconSize: null,
+            iconAnchor: [0, 0],
+          }),
+          interactive: false,
+          keyboard: false,
+        }).addTo(group);
+      });
     group.addTo(map);
     zoneNamesLayerRef.current = group;
-  }, [l3Zones, mapReady, iconFiltersOff]);
+  }, [l3Zones, mapReady, iconFiltersOff, viewFloor, resolveZoneFloor]);
 
   // Sub-map overlay renderer — one shared <canvas>, sized to the map viewport.
   // For each visible placement we iterate the subset of the overlay's native
@@ -2817,8 +2866,8 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         .zone-name-label {
           display: inline-block;
           transform: translate(-50%, -50%);
-          color: ${COLOR_CANON};
-          font-family: var(--font-display);
+          color: var(--text-heading);
+          font-family: var(--font-zone-label, var(--font-display));
           font-weight: 600;
           font-size: 13px;
           letter-spacing: 0.03em;
