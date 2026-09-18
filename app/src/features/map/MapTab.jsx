@@ -925,6 +925,34 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     };
   }, [mapReady]);
 
+  // 'zoneAuthorPane'/'zoneAreaPane' are both created with an explicit
+  // `map.getContainer()` parent (see their own createPane calls below) so
+  // they sit as true DOM siblings of .leaflet-map-pane and the sub-map
+  // overlay canvas — the only way to stack above that canvas, since a
+  // z-index set on anything still nested inside .leaflet-map-pane is
+  // capped by the stacking context its own CSS transform creates and can
+  // never win against a sibling regardless of value. The cost: escaping
+  // .leaflet-map-pane also escapes the transform Leaflet moves it by on
+  // every pan/zoom, so these panes never followed the map on their own —
+  // direct user report ("les zones se déplacent en décalé" while panning).
+  // Mirrors that same transform onto both panes by hand, every tick.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    const mapPane = map.getPane('mapPane');
+    if (!mapPane) return;
+    const sync = () => {
+      const t = mapPane.style.transform;
+      ['zoneAuthorPane', 'zoneAreaPane'].forEach((name) => {
+        const pane = map.getPane(name);
+        if (pane) pane.style.transform = t;
+      });
+    };
+    map.on('move zoom viewreset zoomend resize', sync);
+    sync();
+    return () => map.off('move zoom viewreset zoomend resize', sync);
+  }, [mapReady]);
+
   // Two-finger twist-to-rotate (combined with its own pinch-zoom) +
   // rotation-corrected one-finger pan. Only active outside the editing
   // modes above. Leaflet's native dragging is rotation-unaware, so it's
@@ -1224,6 +1252,10 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     if (!map.getPane('zoneAuthorPane')) {
       map.createPane('zoneAuthorPane', map.getContainer());
       map.getPane('zoneAuthorPane').style.zIndex = 1000;
+      // First paint of a freshly-created pane: copy the current transform
+      // immediately rather than waiting for the next pan/zoom tick to
+      // reach it via the shared sync effect above.
+      map.getPane('zoneAuthorPane').style.transform = map.getPane('mapPane')?.style.transform || '';
     }
     const group = L.layerGroup();
     const latLngs = authorPoints.map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
@@ -1317,6 +1349,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     if (!map.getPane('zoneAuthorPane')) {
       map.createPane('zoneAuthorPane', map.getContainer());
       map.getPane('zoneAuthorPane').style.zIndex = 1000;
+      map.getPane('zoneAuthorPane').style.transform = map.getPane('mapPane')?.style.transform || '';
     }
     const group = L.layerGroup();
     const sorted = [...visible].sort((a, b) => (a.parentId ? 1 : 0) - (b.parentId ? 1 : 0));
@@ -1384,6 +1417,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       // paint canvas (450) so paint mode is unaffected.
       map.getPane('zoneAreaPane').style.zIndex = 420;
       map.getPane('zoneAreaPane').style.pointerEvents = 'none';
+      map.getPane('zoneAreaPane').style.transform = map.getPane('mapPane')?.style.transform || '';
     }
     const group = L.layerGroup();
     // Floor-gated the same way placed icons already are: a zone whose
