@@ -943,7 +943,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     if (!mapPane) return;
     const sync = () => {
       const t = mapPane.style.transform;
-      ['zoneAuthorPane', 'zoneAreaPane'].forEach((name) => {
+      ['zoneAuthorPane', 'zoneAreaPane', 'zoneNamesPane'].forEach((name) => {
         const pane = map.getPane(name);
         if (pane) pane.style.transform = t;
       });
@@ -1468,11 +1468,12 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // 400) no matter how high it's set — direct user report ("icons are
     // visible on it, instead of being below"). A custom pane, created with
     // an explicit map.getContainer() parent, escapes that nesting the same
-    // way. Unlike the polygons in those two panes, this pane's own markers
-    // don't need the shared pane-sync effect above — each Leaflet Marker
-    // recalculates its own absolute pixel position from the map's current
-    // view on every pan/zoom tick regardless of its pane's transform, so
-    // it was never the reason Names looked like they were "moving".
+    // way. That escape also loses the transform Leaflet moves
+    // .leaflet-map-pane by on every pan/zoom, so — same as zoneAreaPane and
+    // zoneAuthorPane — this pane needs 'zoneNamesPane' in the shared
+    // pane-sync effect above to keep its markers glued to the map while
+    // panning (direct user report: "same move with screen travelling issue
+    // as the zone area before").
     if (!map.getPane('zoneNamesPane')) {
       map.createPane('zoneNamesPane', map.getContainer());
       map.getPane('zoneNamesPane').style.zIndex = 430;
