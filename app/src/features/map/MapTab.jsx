@@ -2867,10 +2867,10 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           display: inline-block;
           transform: translate(-50%, -50%);
           color: var(--text-heading);
-          font-family: var(--font-zone-label, var(--font-display));
+          font-family: var(--font-accent);
           font-weight: 600;
           font-size: 13px;
-          letter-spacing: 0.03em;
+          letter-spacing: 0.06em;
           white-space: nowrap;
           text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);
           pointer-events: none;
