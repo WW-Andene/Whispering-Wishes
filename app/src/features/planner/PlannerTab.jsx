@@ -361,9 +361,33 @@ function PlannerTab({
         goalDaysNeeded = Infinity; // boost expired and no base income — goal is never reached
       }
     }
+    // 3rd "Days to Goal" figure folding in AVG_UPDATE_DAILY_ASTRITE — direct user request,
+    // 2026-09-18: "Days to Goal" never routed through cumulativeIncomeWithUpdates the way
+    // totalAstriteByEndWithUpdates/probByEndWithUpdates already do, so it stayed stuck at the
+    // base-income-only estimate even though the average-update-income bonus was fully wired
+    // in elsewhere. Uses the flat AVG_UPDATE_DAILY_ASTRITE (not the phase-specific rate) since
+    // a days-to-goal horizon can span multiple future patches, same reasoning as the flat
+    // Income Projections row above. Same piecewise Lunite-boost solve as goalDaysNeeded,
+    // just with AVG_UPDATE_DAILY_ASTRITE added to both rate segments (it isn't bounded by
+    // luniteDaysActive the way the Lunite bonus is — it applies to every day).
+    let goalDaysNeededWithUpdates;
+    if (goalNeeded <= 0) {
+      goalDaysNeededWithUpdates = 0;
+    } else {
+      const boostRateWithUpdates = baseDailyAstrite + (luniteDaysActive > 0 ? LUNITE_DAILY_ASTRITE : 0) + AVG_UPDATE_DAILY_ASTRITE;
+      const baseRateWithUpdates = baseDailyAstrite + AVG_UPDATE_DAILY_ASTRITE;
+      const incomeAtBoostEndWithUpdates = cumulativeIncomeWithUpdates(luniteDaysActive);
+      if (goalNeeded <= incomeAtBoostEndWithUpdates) {
+        goalDaysNeededWithUpdates = boostRateWithUpdates > 0 ? Math.ceil(goalNeeded / boostRateWithUpdates) : Infinity;
+      } else if (baseRateWithUpdates > 0) {
+        goalDaysNeededWithUpdates = luniteDaysActive + Math.ceil((goalNeeded - incomeAtBoostEndWithUpdates) / baseRateWithUpdates);
+      } else {
+        goalDaysNeededWithUpdates = Infinity;
+      }
+    }
     const goalProgress = targetPulls > 0 ? Math.min(100, (availablePulls / targetPulls) * 100) : 0;
-    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, incomeByEndWithUpdates, totalAstriteByEndWithUpdates, convenesByEnd, convenesByEndWithUpdates, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalProgress, probNow, probByEnd, probByEndWithUpdates, availablePulls, pullsByEnd };
-  }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome, cumulativeIncomeByPhaseWithUpdates]);
+    return { currentAstrite, daysLeft, incomeByEnd, totalAstriteByEnd, incomeByEndWithUpdates, totalAstriteByEndWithUpdates, convenesByEnd, convenesByEndWithUpdates, isFeatured, isChar, isWeap, goalCopies, goalBannerLabel, targetPulls, targetAstrite, goalNeeded, goalDaysNeeded, goalDaysNeededWithUpdates, goalProgress, probNow, probByEnd, probByEndWithUpdates, availablePulls, pullsByEnd };
+  }, [state.calc, state.planner, bannerEndDate, dailyIncome, baseDailyAstrite, luniteDaysActive, cumulativeIncome, cumulativeIncomeByPhaseWithUpdates, cumulativeIncomeWithUpdates]);
 
   // ── Banner Recommendation ── direct user request: after Goal Progress, a section that gives
   // a realistic "who/what to pull" suggestion based on the player's own collection and this
@@ -838,7 +862,7 @@ function PlannerTab({
               <div className="text-gray-500 text-xs">{t('planner.chanceByEndWithUpdates', { pulls: planData.convenesByEndWithUpdates })}</div>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className="text-yellow-400 kuro-number text-2xl">{formatNumber(planData.goalNeeded)}</div>
               <div className="text-gray-400 text-sm">{t('planner.astriteNeeded')}</div>
@@ -846,6 +870,12 @@ function PlannerTab({
             <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
               <div className="text-yellow-400 kuro-number text-2xl">{planData.goalDaysNeeded === Infinity ? t('planner.infinitySymbol') : formatNumber(planData.goalDaysNeeded)}</div>
               <div className="text-gray-400 text-sm">{t('planner.daysToGoal')}</div>
+            </div>
+            {/* 3rd tile — same figure but with AVG_UPDATE_DAILY_ASTRITE folded in (see
+                goalDaysNeededWithUpdates' own comment above). Direct user request, 2026-09-18. */}
+            <div className="kuro-stat p-3 text-center flex flex-col items-center justify-center">
+              <div className="text-yellow-400 kuro-number text-2xl">{planData.goalDaysNeededWithUpdates === Infinity ? t('planner.infinitySymbol') : formatNumber(planData.goalDaysNeededWithUpdates)}</div>
+              <div className="text-gray-400 text-sm">{t('planner.daysToGoalWithUpdates')}</div>
             </div>
           </div>
           {planData.goalDaysNeeded === Infinity && dailyIncome === 0 && (
@@ -858,9 +888,7 @@ function PlannerTab({
               <span className="text-yellow-400 text-base font-medium">{t('planner.estimated', { date: formatDate(new Date(Date.now() + planData.goalDaysNeeded * 86400000), { month: 'long', day: 'numeric', year: 'numeric' }) })}</span>
             </div>
           )}
-          {planData.goalNeeded >= 16000 && (
-            <p className="text-gray-500 text-sm text-center mt-1">{t('planner.costNote', { cost: formatNumber(Math.ceil(planData.goalNeeded / 60)) })}</p>
-          )}
+          <p className="text-gray-500 text-sm text-center mt-1">{t('planner.auiNote', { astrite: formatNumber(AVG_UPDATE_ASTRITE), days: AVG_UPDATE_DAYS, daily: formatNumber(Math.round(AVG_UPDATE_ASTRITE / AVG_UPDATE_DAYS)) })}</p>
         </CardBody>
         )}
       </Card>

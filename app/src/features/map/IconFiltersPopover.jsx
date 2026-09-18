@@ -29,6 +29,7 @@ export function IconFiltersPopover({
   getIconCatalogEntry,
   iconFiltersOff,
   toggleIconFilter,
+  l3ZoneCount = 0,
   onClose,
 }) {
   // Build a nested category → subcategory tree from the placed icons. A
@@ -45,6 +46,13 @@ export function IconFiltersPopover({
     const entry = tree.get(cat);
     entry.total++;
     if (sub) entry.subs.set(sub, (entry.subs.get(sub) || 0) + 1);
+  }
+  // Synthetic "Zone" category — not derived from placed icons at all (L3
+  // zone Names/Area map layers instead), but toggled through the exact same
+  // iconFiltersOff mechanism so it needs no separate show/hide plumbing.
+  // Direct user request.
+  if (l3ZoneCount > 0) {
+    tree.set('Zone', { total: l3ZoneCount, subs: new Map([['Names', l3ZoneCount], ['Area', l3ZoneCount]]) });
   }
   const cats = [...tree.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 

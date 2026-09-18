@@ -20,6 +20,10 @@ import { IconFiltersPopover } from './IconFiltersPopover.jsx';
 import { t } from '../../utils/i18n.js';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
+// Last-left map position (center in native-zoom pixel coords + zoom), so
+// reopening the Map tab/app resumes where the user left off instead of
+// resetting to the default view every time — direct user request.
+const MAP_LAST_VIEW_KEY = 'ww-map-last-view';
 
 // Matches the base Solaris_3 tiles' own ocean color (#062634) as it actually
 // renders on screen, i.e. after the .leaflet-tile-pane contrast/brightness/
@@ -155,6 +159,18 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     setIconDrafts(next);
     try { localStorage.setItem('ww-icon-drafts', JSON.stringify(next)); } catch {}
   }, []);
+  // Zone id whose Area outline should pulse — set by clicking a zone row in
+  // the Regions popover (ZonesPopover), cleared automatically after the
+  // pulse plays out. Direct user request.
+  const [pulseZoneId, setPulseZoneId] = useState(null);
+  const pulseZoneTimerRef = useRef(null);
+  const triggerZonePulse = useCallback((zoneId) => {
+    setPulseZoneId(zoneId);
+    if (pulseZoneTimerRef.current) clearTimeout(pulseZoneTimerRef.current);
+    pulseZoneTimerRef.current = setTimeout(() => setPulseZoneId(null), 2200);
+  }, []);
+  useEffect(() => () => { if (pulseZoneTimerRef.current) clearTimeout(pulseZoneTimerRef.current); }, []);
+
   const toggleIconFilter = useCallback((cat) => {
     setIconFiltersOff((prev) => {
       const next = new Set(prev);
@@ -289,6 +305,36 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // for canonical zones. The up/down arrows in the drafts panel drive
     // both this tree and the drafts list, regardless of level.
     return byParent;
+  }, [drafts]);
+
+  // L3 zones with a precomputed polygon centroid, feeding the "Zone" icon
+  // filter's Names/Area layers below — direct user request. True polygon
+  // centroid (shoelace-weighted, not just the vertex/bbox average) so a
+  // name label lands visually centered in an irregular zone shape; falls
+  // back to the bbox center for a degenerate (near-zero-area) polygon.
+  const l3Zones = useMemo(() => {
+    return drafts
+      .filter(z => z.level === 3 && Array.isArray(z.polygon) && z.polygon.length >= 3)
+      .map(z => {
+        const pts = z.polygon;
+        let area = 0, cx = 0, cy = 0;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (let i = 0; i < pts.length; i++) {
+          const [x0, y0] = pts[i];
+          const [x1, y1] = pts[(i + 1) % pts.length];
+          const cross = x0 * y1 - x1 * y0;
+          area += cross;
+          cx += (x0 + x1) * cross;
+          cy += (y0 + y1) * cross;
+          if (x0 < minX) minX = x0; if (y0 < minY) minY = y0;
+          if (x0 > maxX) maxX = x0; if (y0 > maxY) maxY = y0;
+        }
+        area *= 0.5;
+        const centroid = Math.abs(area) > 1e-6
+          ? [cx / (6 * area), cy / (6 * area)]
+          : [(minX + maxX) / 2, (minY + maxY) / 2];
+        return { ...z, centroid };
+      });
   }, [drafts]);
 
   // Walk the zone + its ancestor chain until we find one linked to a placed
@@ -730,6 +776,38 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       map.setMaxBounds(paddedBounds);
       map.fitBounds(bounds, { paddingTopLeft: [0, headerH], paddingBottomRight: [0, footerH] });
 
+      // Default opening view: the last position the user left the map at
+      // (persisted below on every pan/zoom), falling back to Huanglong >
+      // Jinzhou on a genuinely first open — direct user request. Overrides
+      // the whole-map fitBounds() above rather than replacing it, so the
+      // maxBounds/minZoom math (which needs the whole-map fit to compute
+      // correctly) stays untouched.
+      let appliedSavedView = false;
+      try {
+        const raw = localStorage.getItem(MAP_LAST_VIEW_KEY);
+        if (raw) {
+          const saved = JSON.parse(raw);
+          if (Number.isFinite(saved?.x) && Number.isFinite(saved?.y) && Number.isFinite(saved?.zoom)) {
+            map.setView(map.unproject([saved.x, saved.y], NATIVE_ZOOM), saved.zoom, { animate: false });
+            appliedSavedView = true;
+          }
+        }
+      } catch {}
+      if (!appliedSavedView) {
+        const jinzhou = drafts.find(z => z.id === 'new-zone-2')
+          || drafts.find(z => z.parentId === 'huanglong' && z.name === 'Jinzhou');
+        if (jinzhou && Array.isArray(jinzhou.polygon) && jinzhou.polygon.length > 1) {
+          let jMinX = Infinity, jMinY = Infinity, jMaxX = -Infinity, jMaxY = -Infinity;
+          jinzhou.polygon.forEach(([x, y]) => {
+            if (x < jMinX) jMinX = x; if (y < jMinY) jMinY = y;
+            if (x > jMaxX) jMaxX = x; if (y > jMaxY) jMaxY = y;
+          });
+          const jNw = map.unproject([jMinX, jMinY], NATIVE_ZOOM);
+          const jSe = map.unproject([jMaxX, jMaxY], NATIVE_ZOOM);
+          map.fitBounds(L.latLngBounds(jNw, jSe), { padding: [40, 40], animate: false });
+        }
+      }
+
       const tileLayer = L.tileLayer(BASE + 'map-tiles/Solaris_3/{z}/{y}/{x}.webp', {
         minZoom,
         maxZoom: MAX_ZOOM,
@@ -789,6 +867,32 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     const id = requestAnimationFrame(() => map.invalidateSize({ animate: false, pan: false }));
     return () => cancelAnimationFrame(id);
   }, [mapReady, editingModeActive]);
+
+  // Persist the current position (center + zoom) on every pan/zoom, debounced,
+  // so the map reopens where the user left it — direct user request. Stored as
+  // native-zoom pixel coords (via map.project) rather than raw lat/lng, same
+  // convention as every zone/icon coordinate elsewhere in this file.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !mapReady) return;
+    let saveTimer = null;
+    const saveView = () => {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        try {
+          const c = map.project(map.getCenter(), NATIVE_ZOOM);
+          localStorage.setItem(MAP_LAST_VIEW_KEY, JSON.stringify({ x: c.x, y: c.y, zoom: map.getZoom() }));
+        } catch {}
+      }, 500);
+    };
+    map.on('moveend', saveView);
+    map.on('zoomend', saveView);
+    return () => {
+      clearTimeout(saveTimer);
+      map.off('moveend', saveView);
+      map.off('zoomend', saveView);
+    };
+  }, [mapReady]);
 
   // Two-finger twist-to-rotate (combined with its own pinch-zoom) +
   // rotation-corrected one-finger pan. Only active outside the editing
@@ -1219,6 +1323,83 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     group.addTo(map);
     draftsLayerRef.current = group;
   }, [drafts, editingId, mapReady, authorMode, paintMode]);
+
+  // "Zone" icon filter — Names/Area layers for L3 zones (direct user
+  // request). Area: same technique as the author-mode zone-drafts polygon
+  // above, but gold/outline-only/no-fill, rounder joints, and a soft blur
+  // for a "vague-ish" look rather than author mode's crisp dashed line —
+  // this is a player-facing reference layer, not an editing aid. Names: a
+  // divIcon label centered at each zone's true polygon centroid (computed
+  // in l3Zones above). Both are independently toggleable via the same
+  // iconFiltersOff Set every icon category already uses ('Zone',
+  // 'Zone/Area', 'Zone/Names' keys), so they share the exact show/hide/
+  // persistence mechanics without any new state plumbing.
+  const zoneAreaLayerRef = useRef(null);
+  useEffect(() => {
+    const map = mapRef.current;
+    const L = leafletRef.current;
+    if (!map || !L || !mapReady) return;
+    if (zoneAreaLayerRef.current) {
+      map.removeLayer(zoneAreaLayerRef.current);
+      zoneAreaLayerRef.current = null;
+    }
+    const areaOn = !iconFiltersOff.has('Zone') && !iconFiltersOff.has('Zone/Area');
+    if (!areaOn || l3Zones.length === 0) return;
+    if (!map.getPane('zoneAreaPane')) {
+      map.createPane('zoneAreaPane', map.getContainer());
+      // Above the sub-map overlay canvas (400) so an L3 zone nested inside a
+      // placed overlay (e.g. Mengzhou's Xuanfang Hold) still shows its
+      // outline instead of it being painted over by that raster; below the
+      // paint canvas (450) so paint mode is unaffected.
+      map.getPane('zoneAreaPane').style.zIndex = 420;
+      map.getPane('zoneAreaPane').style.pointerEvents = 'none';
+    }
+    const group = L.layerGroup();
+    l3Zones.forEach(z => {
+      const latLngs = z.polygon.map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
+      L.polygon(latLngs, {
+        color: COLOR_CANON,
+        weight: 2,
+        opacity: 0.7,
+        fill: false,
+        lineJoin: 'round',
+        lineCap: 'round',
+        className: `zone-area-outline ${pulseZoneId === z.id ? 'zone-area-pulse' : ''}`,
+        pane: 'zoneAreaPane',
+        interactive: false,
+      }).addTo(group);
+    });
+    group.addTo(map);
+    zoneAreaLayerRef.current = group;
+  }, [l3Zones, mapReady, iconFiltersOff, pulseZoneId]);
+
+  const zoneNamesLayerRef = useRef(null);
+  useEffect(() => {
+    const map = mapRef.current;
+    const L = leafletRef.current;
+    if (!map || !L || !mapReady) return;
+    if (zoneNamesLayerRef.current) {
+      map.removeLayer(zoneNamesLayerRef.current);
+      zoneNamesLayerRef.current = null;
+    }
+    const namesOn = !iconFiltersOff.has('Zone') && !iconFiltersOff.has('Zone/Names');
+    if (!namesOn || l3Zones.length === 0) return;
+    const group = L.layerGroup();
+    l3Zones.forEach(z => {
+      const center = map.unproject(z.centroid, NATIVE_ZOOM);
+      L.marker(center, {
+        icon: L.divIcon({
+          className: 'zone-name-label-wrap',
+          html: `<span class="zone-name-label">${(z.name || z.id).replace(/</g, '&lt;')}</span>`,
+          iconSize: null,
+        }),
+        interactive: false,
+        keyboard: false,
+      }).addTo(group);
+    });
+    group.addTo(map);
+    zoneNamesLayerRef.current = group;
+  }, [l3Zones, mapReady, iconFiltersOff]);
 
   // Sub-map overlay renderer — one shared <canvas>, sized to the map viewport.
   // For each visible placement we iterate the subset of the overlay's native
@@ -2604,6 +2785,36 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         .zone-polygon { transition: fill-opacity var(--transition-normal, 160ms); cursor: pointer; }
         .zone-polygon:hover { fill-opacity: 0.22 !important; }
 
+        /* ── "Zone" icon filter — L3 Area outlines / Names ─────────────── */
+        /* Soft blur is what makes this read as "vague-ish" rather than the
+           crisp dashed author-mode outline it's modeled on — a drop-shadow
+           (not filter:blur, which SVG renders per-element and gets clipped
+           to each polygon's own tiny bounding box, cutting the blur off at
+           the path edge) glows the same gold along the whole stroke. */
+        .zone-area-outline {
+          filter: drop-shadow(0 0 3px rgba(237, 175, 24, 0.9)) drop-shadow(0 0 7px rgba(237, 175, 24, 0.5));
+        }
+        .zone-area-pulse {
+          animation: zone-area-pulse-kf 1.1s ease-in-out 2;
+        }
+        @keyframes zone-area-pulse-kf {
+          0%, 100% { opacity: 0.7; filter: drop-shadow(0 0 3px rgba(237, 175, 24, 0.9)) drop-shadow(0 0 7px rgba(237, 175, 24, 0.5)); }
+          50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(237, 175, 24, 1)) drop-shadow(0 0 16px rgba(237, 175, 24, 0.85)); }
+        }
+        .zone-name-label-wrap { background: transparent !important; border: none !important; }
+        .zone-name-label {
+          display: inline-block;
+          transform: translate(-50%, -50%);
+          color: ${COLOR_CANON};
+          font-family: var(--font-display);
+          font-weight: 600;
+          font-size: 13px;
+          letter-spacing: 0.03em;
+          white-space: nowrap;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);
+          pointer-events: none;
+        }
+
         /* ── Leaflet tooltip / popup — Kuro-tokenised ─────────────────── */
         .leaflet-tooltip.zone-tooltip {
           background: var(--bg-card);
@@ -3491,6 +3702,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                 toggleZoneExpanded={toggleZoneExpanded}
                 onFlyToZone={handleFlyToZone}
                 onPushSubMapToEdit={handlePushSubMapToEdit}
+                onZoneClick={triggerZonePulse}
                 showToast={showToast}
                 onClose={() => setZonesOpen(false)}
               />
@@ -3505,6 +3717,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                 getIconCatalogEntry={getIconCatalogEntry}
                 iconFiltersOff={iconFiltersOff}
                 toggleIconFilter={toggleIconFilter}
+                l3ZoneCount={l3Zones.length}
                 onClose={() => setFiltersOpen(false)}
               />
             )}

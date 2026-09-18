@@ -25,6 +25,7 @@ export function ZonesPopover({
   toggleZoneExpanded,
   onFlyToZone,
   onPushSubMapToEdit,
+  onZoneClick,
   showToast,
   onClose,
 }) {
@@ -43,6 +44,10 @@ export function ZonesPopover({
             type="button"
             className={`kuro-btn kuro-btn-sm zone-selector-item ${!hasChildren && pendingZoneId === zone.id ? 'is-armed' : ''} ${isCurrent ? 'is-current' : ''}`}
             onClick={() => {
+              // Direct user request: clicking any zone name here pulses its
+              // Area outline on the map (if visible), independent of the
+              // expand/arm-fire behavior below.
+              onZoneClick?.(zone.id);
               if (hasChildren) {
                 // L1 parent: single click toggles expand;
                 // the LocateFixed icon on the right fires
