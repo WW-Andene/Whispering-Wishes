@@ -66,67 +66,6 @@ function roundPolygonCorners(points, cut = 0.18) {
   return out;
 }
 
-// ── "Cell" relaxation for overlapping L3 zone Area outlines ────────────
-// Direct user request: some zone areas overlap a bit; render them like
-// biological cells packed against each other, each retreating to a shared
-// boundary rather than overlapping — i.e. a Voronoi cell intersected with
-// the zone's own original shape. Only used for the rendered Area outline;
-// the zone's stored polygon (and its Names centroid) are untouched.
-function segmentsIntersect(p1, p2, p3, p4) {
-  const d1x = p2[0] - p1[0], d1y = p2[1] - p1[1];
-  const d2x = p4[0] - p3[0], d2y = p4[1] - p3[1];
-  const denom = d1x * d2y - d1y * d2x;
-  if (Math.abs(denom) < 1e-9) return false;
-  const t = ((p3[0] - p1[0]) * d2y - (p3[1] - p1[1]) * d2x) / denom;
-  const u = ((p3[0] - p1[0]) * d1y - (p3[1] - p1[1]) * d1x) / denom;
-  return t > 0 && t < 1 && u > 0 && u < 1;
-}
-function pointInPolygon([x, y], poly) {
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const [xi, yi] = poly[i], [xj, yj] = poly[j];
-    const crosses = (yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
-    if (crosses) inside = !inside;
-  }
-  return inside;
-}
-function polygonsOverlap(a, b) {
-  for (let i = 0; i < a.length; i++) {
-    const a1 = a[i], a2 = a[(i + 1) % a.length];
-    for (let j = 0; j < b.length; j++) {
-      if (segmentsIntersect(a1, a2, b[j], b[(j + 1) % b.length])) return true;
-    }
-  }
-  // No edge crossings: either disjoint, or one fully contains the other.
-  return pointInPolygon(a[0], b) || pointInPolygon(b[0], a);
-}
-// Sutherland-Hodgman clip of `poly` to the half-plane, on `keepCentroid`'s
-// side of the perpendicular bisector between the two centroids — the
-// Voronoi-cell edge between two neighboring "cells".
-function clipToBisector(poly, keepCentroid, otherCentroid) {
-  const mx = (keepCentroid[0] + otherCentroid[0]) / 2;
-  const my = (keepCentroid[1] + otherCentroid[1]) / 2;
-  const nx = otherCentroid[0] - keepCentroid[0];
-  const ny = otherCentroid[1] - keepCentroid[1];
-  const side = ([x, y]) => (x - mx) * nx + (y - my) * ny; // <=0 on keepCentroid's side
-  const out = [];
-  for (let i = 0; i < poly.length; i++) {
-    const cur = poly[i];
-    const prev = poly[(i - 1 + poly.length) % poly.length];
-    const curSide = side(cur);
-    const prevSide = side(prev);
-    const curIn = curSide <= 0;
-    if (curIn !== (prevSide <= 0)) {
-      const t = prevSide / (prevSide - curSide);
-      out.push([prev[0] + (cur[0] - prev[0]) * t, prev[1] + (cur[1] - prev[1]) * t]);
-    }
-    if (curIn) out.push(cur);
-  }
-  // Never collapse to a degenerate sliver — keep the original shape if a
-  // clip (or a bad bisector on near-identical centroids) would wipe it out.
-  return out.length >= 3 ? out : poly;
-}
-
 export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
@@ -448,36 +387,6 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     }
     return null;
   }, [drafts, overlayDrafts]);
-
-  // "Cell" relaxation of overlapping L3 zone Area outlines — direct user
-  // request. Only zones sharing the same resolved floor (i.e. actually
-  // visible together) are relaxed against each other; each zone is clipped
-  // against every same-floor neighbor its ORIGINAL polygon actually
-  // overlaps, in turn, to the Voronoi bisector between their centroids —
-  // Names/centroid stay on the untouched original shape, only the
-  // rendered Area outline (areaPolygon) is affected.
-  const l3ZonesRelaxed = useMemo(() => {
-    const byFloor = new Map();
-    l3Zones.forEach(z => {
-      const floor = resolveZoneFloor(z);
-      const key = floor == null ? '__all__' : floor;
-      if (!byFloor.has(key)) byFloor.set(key, []);
-      byFloor.get(key).push(z);
-    });
-    const areaById = new Map();
-    byFloor.forEach((group) => {
-      group.forEach(z => {
-        let poly = z.polygon;
-        for (const other of group) {
-          if (other.id === z.id) continue;
-          if (!polygonsOverlap(z.polygon, other.polygon)) continue;
-          poly = clipToBisector(poly, z.centroid, other.centroid);
-        }
-        areaById.set(z.id, poly);
-      });
-    });
-    return l3Zones.map(z => ({ ...z, areaPolygon: areaById.get(z.id) || z.polygon }));
-  }, [l3Zones, resolveZoneFloor]);
 
   // Zone dropdown options for the icon editor, sorted by tree order
   // ("Parent › Child" labels) so admins can pick the correct owning
@@ -1499,7 +1408,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       zoneAreaLayerRef.current = null;
     }
     const areaOn = !iconFiltersOff.has('Zone') && !iconFiltersOff.has('Zone/Area');
-    if (!areaOn || l3ZonesRelaxed.length === 0) return;
+    if (!areaOn || l3Zones.length === 0) return;
     if (!map.getPane('zoneAreaPane')) {
       map.createPane('zoneAreaPane', map.getContainer());
       // Above the sub-map overlay canvas (400) so an L3 zone nested inside a
@@ -1521,10 +1430,10 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // really this: the same fixed-position outline sitting there whichever
     // floor/sub-map you'd actually navigated to, no longer matching what
     // was really at that spot on the floor you were looking at.
-    l3ZonesRelaxed
+    l3Zones
       .filter(z => { const f = resolveZoneFloor(z); return f == null || f === viewFloor; })
       .forEach(z => {
-        const latLngs = roundPolygonCorners(z.areaPolygon).map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
+        const latLngs = roundPolygonCorners(z.polygon).map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
         L.polygon(latLngs, {
           color: '#edf1f8',
           weight: 2,
@@ -1539,7 +1448,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       });
     group.addTo(map);
     zoneAreaLayerRef.current = group;
-  }, [l3ZonesRelaxed, mapReady, iconFiltersOff, pulseZoneId, viewFloor, resolveZoneFloor]);
+  }, [l3Zones, mapReady, iconFiltersOff, pulseZoneId, viewFloor, resolveZoneFloor]);
 
   const zoneNamesLayerRef = useRef(null);
   useEffect(() => {
@@ -1552,6 +1461,24 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     }
     const namesOn = !iconFiltersOff.has('Zone') && !iconFiltersOff.has('Zone/Names');
     if (!namesOn || l3Zones.length === 0) return;
+    // Same fix as zoneAreaPane/zoneAuthorPane: Leaflet's default markerPane
+    // is nested inside .leaflet-map-pane, so its z-index is capped by that
+    // pane's own transform-created stacking context and can never outrank
+    // the icon canvas (a true DOM sibling of .leaflet-map-pane, z-index
+    // 400) no matter how high it's set — direct user report ("icons are
+    // visible on it, instead of being below"). A custom pane, created with
+    // an explicit map.getContainer() parent, escapes that nesting the same
+    // way. Unlike the polygons in those two panes, this pane's own markers
+    // don't need the shared pane-sync effect above — each Leaflet Marker
+    // recalculates its own absolute pixel position from the map's current
+    // view on every pan/zoom tick regardless of its pane's transform, so
+    // it was never the reason Names looked like they were "moving".
+    if (!map.getPane('zoneNamesPane')) {
+      map.createPane('zoneNamesPane', map.getContainer());
+      map.getPane('zoneNamesPane').style.zIndex = 430;
+      map.getPane('zoneNamesPane').style.pointerEvents = 'none';
+      map.getPane('zoneNamesPane').style.transform = map.getPane('mapPane')?.style.transform || '';
+    }
     const group = L.layerGroup();
     // Each label hides once you've zoomed roughly to "fill the viewport
     // with this zone" or closer — direct user request ("disappearing when
@@ -1586,6 +1513,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
             iconSize: null,
             iconAnchor: [0, 0],
           }),
+          pane: 'zoneNamesPane',
           interactive: false,
           keyboard: false,
         }).addTo(group);
@@ -3020,10 +2948,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         .zone-name-label-wrap { background: transparent !important; border: none !important; }
         .zone-name-label {
           display: inline-block;
-          /* Lifted above the point (rather than centered exactly on it) so
-             the label sits above whatever icon shares that zone's centroid
-             instead of overlapping it — direct user request. */
-          transform: translate(-50%, calc(-100% - 10px));
+          transform: translate(-50%, -50%);
           color: var(--text-heading);
           font-family: var(--font-accent);
           font-weight: 600;
