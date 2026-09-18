@@ -1420,18 +1420,19 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       map.getPane('zoneAreaPane').style.transform = map.getPane('mapPane')?.style.transform || '';
     }
     const group = L.layerGroup();
-    // Floor-gated the same way placed icons already are: a zone whose
-    // resolved floor (via resolveZoneFloor — walks up to the nearest
-    // overlay-linked ancestor) is null shows on every floor; a zone
-    // resolved to a specific sub-map's floor only shows while viewFloor
-    // matches it. Without this, an L3 zone nested inside a placed overlay
-    // (e.g. Mengzhou's Xuanfang Hold) rendered on every floor regardless —
-    // direct user report of zone outlines/labels appearing to "move" was
-    // really this: the same fixed-position outline sitting there whichever
-    // floor/sub-map you'd actually navigated to, no longer matching what
-    // was really at that spot on the floor you were looking at.
+    // Floor-gated via resolveZoneFloor (walks up to the nearest
+    // overlay-linked ancestor). Each placed sub-map owns a distinct floor
+    // number (mapDefaults.js's DEFAULT_OVERLAY_DRAFTS — Fabricatorium of
+    // the Deep is -3, Avinoleum is 1, etc.), and a zone with no
+    // overlay-linked ancestor is surface content, i.e. floor 0 — it is
+    // NOT "visible on every floor". Treating an unresolved floor as 0
+    // (rather than as a wildcard) was the direct user-reported bug: every
+    // surface zone (e.g. Rinascita's Ragunna-area names/outlines) kept
+    // rendering while standing on an unrelated sub-map floor like
+    // Fabricatorium of the Deep, since it never had its own overlayId to
+    // resolve a floor from and so matched every viewFloor.
     l3Zones
-      .filter(z => { const f = resolveZoneFloor(z); return f == null || f === viewFloor; })
+      .filter(z => (resolveZoneFloor(z) ?? 0) === viewFloor)
       .forEach(z => {
         const latLngs = roundPolygonCorners(z.polygon).map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
         L.polygon(latLngs, {
@@ -1490,8 +1491,10 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // CURRENT container size, +0.5 so the label survives being exactly at
     // the "just fit" zoom and only fades past it.
     const entries = [];
+    // Same floor-gating as the Area effect above: an unresolved floor
+    // means surface (floor 0), not "every floor" — see its comment.
     l3Zones
-      .filter(z => { const f = resolveZoneFloor(z); return f == null || f === viewFloor; })
+      .filter(z => (resolveZoneFloor(z) ?? 0) === viewFloor)
       .forEach(z => {
         const center = map.unproject(z.centroid, NATIVE_ZOOM);
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
