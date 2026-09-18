@@ -1461,6 +1461,24 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     }
     const namesOn = !iconFiltersOff.has('Zone') && !iconFiltersOff.has('Zone/Names');
     if (!namesOn || l3Zones.length === 0) return;
+    // Same fix as zoneAreaPane/zoneAuthorPane: Leaflet's default markerPane
+    // is nested inside .leaflet-map-pane, so its z-index is capped by that
+    // pane's own transform-created stacking context and can never outrank
+    // the icon canvas (a true DOM sibling of .leaflet-map-pane, z-index
+    // 400) no matter how high it's set — direct user report ("icons are
+    // visible on it, instead of being below"). A custom pane, created with
+    // an explicit map.getContainer() parent, escapes that nesting the same
+    // way. Unlike the polygons in those two panes, this pane's own markers
+    // don't need the shared pane-sync effect above — each Leaflet Marker
+    // recalculates its own absolute pixel position from the map's current
+    // view on every pan/zoom tick regardless of its pane's transform, so
+    // it was never the reason Names looked like they were "moving".
+    if (!map.getPane('zoneNamesPane')) {
+      map.createPane('zoneNamesPane', map.getContainer());
+      map.getPane('zoneNamesPane').style.zIndex = 430;
+      map.getPane('zoneNamesPane').style.pointerEvents = 'none';
+      map.getPane('zoneNamesPane').style.transform = map.getPane('mapPane')?.style.transform || '';
+    }
     const group = L.layerGroup();
     // Each label hides once you've zoomed roughly to "fill the viewport
     // with this zone" or closer — direct user request ("disappearing when
@@ -1495,6 +1513,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
             iconSize: null,
             iconAnchor: [0, 0],
           }),
+          pane: 'zoneNamesPane',
           interactive: false,
           keyboard: false,
         }).addTo(group);
