@@ -2774,7 +2774,19 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           display: none !important;
         }
 
-        .map-card .kuro-header { background: ${MAP_BG_TRANSPARENT} !important; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+        /* Same glass treatment on the mini-panel (Zones/Icon filters/Offline
+           downloads popover) headers as the main map header/bottom bar —
+           they were falling back to plain .kuro-header's near-opaque
+           default instead, direct user report ("opaque instead of also
+           being transparent"). */
+        .map-card .kuro-header,
+        .map-zones-popover .kuro-header,
+        .map-filters-popover .kuro-header,
+        .map-downloads-popover .kuro-header {
+          background: ${MAP_BG_TRANSPARENT} !important;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+        }
 
         /* Slight lift on the base map tiles only (not the zone/icon overlay
            canvas or UI chrome on top) — a small contrast/brightness/saturation
