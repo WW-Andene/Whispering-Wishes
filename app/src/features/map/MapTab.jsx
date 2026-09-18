@@ -2929,10 +2929,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         .zone-name-label-wrap { background: transparent !important; border: none !important; }
         .zone-name-label {
           display: inline-block;
-          /* Lifted above the point (rather than centered exactly on it) so
-             the label sits above whatever icon shares that zone's centroid
-             instead of overlapping it — direct user request. */
-          transform: translate(-50%, calc(-100% - 10px));
+          transform: translate(-50%, -50%);
           color: var(--text-heading);
           font-family: var(--font-accent);
           font-weight: 600;
