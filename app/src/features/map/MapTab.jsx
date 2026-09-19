@@ -1488,8 +1488,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // standing inside is clutter, not information. Threshold is the same
     // fitBounds zoom handleFlyToZone uses to frame a zone, computed once
     // per zone from its own (unrelaxed) polygon bounds against the
-    // CURRENT container size, +0.5 so the label survives being exactly at
-    // the "just fit" zoom and only fades past it.
+    // CURRENT container size, -0.5 so the label fades a step before that
+    // "just fit" zoom instead of surviving right up to it (direct user
+    // request: "les noms de zones devraient disparaitre plus tôt en
+    // zoomant"). Clamped to MAX_ZOOM: for a small zone, getBoundsZoom's
+    // raw "fill the viewport" zoom can exceed the map's own max zoom, a
+    // threshold the map can never actually reach — leaving that zone's
+    // label stuck visible however far in you zoom (direct user report:
+    // "certain noms de zones ne disparaissent pas lorsque l'on zoom in").
     const entries = [];
     // Same floor-gating as the Area effect above: an unresolved floor
     // means surface (floor 0), not "every floor" — see its comment.
@@ -1504,8 +1510,8 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         });
         const nw = map.unproject([minX, minY], NATIVE_ZOOM);
         const se = map.unproject([maxX, maxY], NATIVE_ZOOM);
-        let hideZoom = Infinity;
-        try { hideZoom = map.getBoundsZoom(L.latLngBounds(nw, se), false) + 0.5; } catch {}
+        let hideZoom = MAX_ZOOM;
+        try { hideZoom = Math.min(MAX_ZOOM, map.getBoundsZoom(L.latLngBounds(nw, se), false) - 0.5); } catch {}
         const marker = L.marker(center, {
           icon: L.divIcon({
             className: 'zone-name-label-wrap',
@@ -2961,7 +2967,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           white-space: nowrap;
           text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);
           pointer-events: none;
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(0, 0, 0, 0.25);
           padding: 2px 8px;
           border-radius: 4px;
         }
