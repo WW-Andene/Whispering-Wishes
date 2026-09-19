@@ -2961,6 +2961,9 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           white-space: nowrap;
           text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.6);
           pointer-events: none;
+          background: rgba(0, 0, 0, 0.5);
+          padding: 2px 8px;
+          border-radius: 4px;
         }
 
         /* ── Leaflet tooltip / popup — Kuro-tokenised ─────────────────── */
