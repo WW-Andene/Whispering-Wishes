@@ -1526,12 +1526,13 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // standing inside is clutter, not information. Threshold is the same
     // fitBounds zoom handleFlyToZone uses to frame a zone, computed once
     // per zone from its own (unrelaxed) polygon bounds against the CURRENT
-    // container size, -1.5 so it fades well before the zone fills the
+    // container size, -1.15 so it fades before the zone fills the
     // viewport rather than needing to zoom in that close first — direct
-    // user report ("I need to zoom in a lot before it disappears").
-    // -1.5 zoom levels ≈ 2^1.5 (~2.8×) more of the map showing in each
-    // dimension than the "just fits" zoom, i.e. the label goes as soon as
-    // the zone is roughly a third of the viewport, not all of it.
+    // user report ("I need to zoom in a lot before it disappears"), value
+    // tuned by the user from an initial -1.5.
+    // -1.15 zoom levels ≈ 2^1.15 (~2.2×) more of the map showing in each
+    // dimension than the "just fits" zoom, i.e. the label goes once the
+    // zone is a bit under half the viewport, not all of it.
     const entries = [];
     // Same floor-gating as the Area effect above: an unresolved floor
     // means surface (floor 0), not "every floor" — see its comment.
@@ -1547,7 +1548,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         const nw = map.unproject([minX, minY], NATIVE_ZOOM);
         const se = map.unproject([maxX, maxY], NATIVE_ZOOM);
         let hideZoom = Infinity;
-        try { hideZoom = map.getBoundsZoom(L.latLngBounds(nw, se), false) - 1.5; } catch {}
+        try { hideZoom = map.getBoundsZoom(L.latLngBounds(nw, se), false) - 1.15; } catch {}
         const marker = L.marker(center, {
           icon: L.divIcon({
             className: 'zone-name-label-wrap',
