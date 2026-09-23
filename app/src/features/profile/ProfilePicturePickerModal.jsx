@@ -7,6 +7,15 @@
 // so this reads as the same app-wide picker pattern rather than a one-off. Tapping
 // an entry calls the same handleSetProfilePic the Collection tab's crown button and
 // the ID Card's own picker already use, so all three stay in sync automatically.
+//
+// Tile shape: fixed height (var(--height-card-sm)) in a 3-column grid, matching
+// the Collection grid's own card shape exactly — not an aspect-ratio box. The
+// per-character 'collection-<name>' zoom/x/y values (useImageFraming.js's
+// DEFAULT_IMAGE_FRAMING) were tuned against THAT specific box shape; each
+// source sprite has its own aspect ratio, so reusing those values inside a
+// differently-shaped box (a taller 9/14 card, as first tried here) scales each
+// character inconsistently — some over-zoomed, some left small and floating —
+// rather than by a uniform, correctable amount.
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from 'react';
@@ -43,7 +52,7 @@ export default function ProfilePicturePickerModal({ isOpen, onClose, ownedCharNa
           ) : filtered.length === 0 ? (
             <div className="text-sm text-gray-500 text-center py-6">{t('planner.echoFarm.noOptionsLeft')}</div>
           ) : (
-            <div className="grid grid-cols-4 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5">
               {filtered.map(name => {
                 const imgUrl = collectionImages[name];
                 const f = getImageFraming(`collection-${name}`);
@@ -58,7 +67,7 @@ export default function ProfilePicturePickerModal({ isOpen, onClose, ownedCharNa
                     aria-pressed={isSelected}
                     title={t('profile.idCard.setAsIcon', { name })}
                   >
-                    <div className={`relative rounded-lg overflow-hidden w-full kuro-avatar-frame kuro-shadow-card-subtle${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', border: isSelected ? '1px solid #edaf18' : '1px solid var(--border-medium)', boxShadow: isSelected ? '0 0 8px rgba(237,175,24,0.4)' : undefined }}>
+                    <div className={`relative rounded-lg overflow-hidden w-full kuro-avatar-frame kuro-shadow-card-subtle${is5Star ? ' holo-5star' : ''}`} style={{ height: 'var(--height-card-sm)', border: isSelected ? '1px solid #edaf18' : '1px solid var(--border-medium)', boxShadow: isSelected ? '0 0 8px rgba(237,175,24,0.4)' : undefined }}>
                       {imgUrl ? (
                         <div className="absolute inset-0"><img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} onError={hideOnError} /></div>
                       ) : (
