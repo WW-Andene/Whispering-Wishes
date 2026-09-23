@@ -92,9 +92,25 @@ const DEFAULT_STATE = {
   tacetField: false, // disabled/false-forced only when cost === 4
 };
 
+// An Echo's substats are 5 distinct stats, one per slot — a slot can't roll two stats, and the
+// same stat never appears twice on one Echo (which is why ECHO_SUBSTAT_POOL_SIZE_AT_SLOT shrinks
+// 13→9). Each slot's `stats` holds at most one entry; configs saved before that rule may carry
+// several per slot, so they're trimmed on load: first stat kept, any repeat of an earlier
+// slot's stat dropped.
+function normalizeSubstats(cfg) {
+  const taken = new Set();
+  const substats = (cfg.substats || DEFAULT_STATE.substats).map(slot => {
+    const stat = (slot.stats || []).find(s => !taken.has(s));
+    if (stat) taken.add(stat);
+    return { ...slot, stats: stat ? [stat] : [] };
+  });
+  return { ...cfg, substats };
+}
+const deserializeCfg = (raw) => normalizeSubstats(JSON.parse(raw));
+
 export default function EchoFarmPlanner() {
   const [collapsed, setCollapsed] = usePersistedState('ww-echo-farm-collapsed', false);
-  const [cfg, setCfg] = usePersistedState('ww-echo-farm-config-v3', DEFAULT_STATE);
+  const [cfg, setCfg] = usePersistedState('ww-echo-farm-config-v3', DEFAULT_STATE, { deserialize: deserializeCfg });
   // Which popup is open: null, 'echo', 'main', 'secondary', or a substat slot index.
   const [openPicker, setOpenPicker] = useState(null);
   const [echoSearch, setEchoSearch] = useState('');
@@ -178,9 +194,16 @@ export default function EchoFarmPlanner() {
   const rowLabel = (chance) => `${(chance * 100).toFixed(chance * 100 < 1 ? 2 : 1)}%`;
 
   const updateMain = (stat) => setCfg(p => ({ ...p, mainStats: toggleStat(p.mainStats, stat) }));
+  // Single-select per slot: picking a stat replaces the slot's current one; picking the
+  // current one again clears the slot back to "Any".
   const updateSubstat = (slotIdx, stat) => setCfg(p => ({
-    ...p, substats: p.substats.map((s, j) => j === slotIdx ? { ...s, stats: toggleStat(s.stats, stat) } : s),
+    ...p, substats: p.substats.map((s, j) => j === slotIdx ? { ...s, stats: s.stats[0] === stat ? [] : [stat] } : s),
   }));
+  // Stats already claimed by another slot can't roll in this one (no duplicate substats).
+  const substatOptionsFor = (slotIdx) => {
+    const taken = new Set(cfg.substats.flatMap((s, j) => j === slotIdx ? [] : s.stats));
+    return ALL_ECHO_SUBSTATS.filter(stat => !taken.has(stat));
+  };
   const setSubstatTier = (slotIdx, tierIdx) => setCfg(p => ({
     ...p, substats: p.substats.map((s, j) => j === slotIdx ? { ...s, minTier: tierIdx } : s),
   }));
@@ -427,7 +450,7 @@ export default function EchoFarmPlanner() {
             openPicker === 'main' ? t('planner.echoFarm.mainStat')
             : t('planner.echoFarm.substatSlot', { n: openPicker + 1 })
           }
-          options={openPicker === 'main' ? mainStatOptions : ALL_ECHO_SUBSTATS}
+          options={openPicker === 'main' ? mainStatOptions : substatOptionsFor(openPicker)}
           pool={openPicker === 'main' ? mainStatPool : null}
           selected={
             openPicker === 'main' ? cfg.mainStats

@@ -13,12 +13,26 @@
     "title": "Carte interactive",
     "regions": "Régions",
     "iconFilters": "Filtres d'icônes",
-    "offlineDownloads": "Téléchargements hors ligne"
+    "offlineDownloads": "Téléchargements hors ligne",
+    "referenceImage": "Image de référence"
   },
   "legend": {
     "noIconsPlaced": "Aucune icône placée pour le moment. Ajoutez des icônes depuis le panneau d'édition.",
     "show": "Afficher {{name}}",
     "hide": "Masquer {{name}}",
     "parentHidden": "La catégorie parente « {{name}} » est masquée"
+  },
+  "referenceImage": {
+    "import": "Importer une image",
+    "change": "Changer l'image",
+    "remove": "Retirer l'image",
+    "hint": "Importez un screenshot pour le superposer sur la carte comme guide de positionnement.",
+    "adjustOn": "Ajustement : activé",
+    "adjustOff": "Ajustement : désactivé",
+    "adjustOnHint": "Glissez ou zoomez l'image pour l'aligner. Désactivez pour cliquer à travers et placer des points.",
+    "adjustOffHint": "Les clics traversent vers la carte. Activez pour déplacer/zoomer l'image.",
+    "opacity": "Opacité",
+    "zoom": "Zoom",
+    "rotation": "Rotation"
   }
 }

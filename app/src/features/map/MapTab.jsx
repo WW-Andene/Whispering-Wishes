@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X } from 'lucide-react';
+import { Settings, Trash2, LocateFixed, Map as MapIcon, Hexagon, Plus, Construction, X, ImagePlus } from 'lucide-react';
 import { Card, CardHeader } from '../../shared/components/Card.jsx';
 import { MAP_ZONES } from '../../data/mapZones.js';
 import { OVERLAY_CATALOG, loadOverlayDrafts, saveOverlayDrafts } from '../../data/mapOverlays.js';
@@ -17,6 +17,8 @@ import { useOfflineTiles } from './useOfflineTiles.js';
 import { OfflineDownloadsPopover } from './OfflineDownloadsPopover.jsx';
 import { ZonesPopover } from './ZonesPopover.jsx';
 import { IconFiltersPopover } from './IconFiltersPopover.jsx';
+import { ReferenceImagePopover } from './ReferenceImagePopover.jsx';
+import { ReferenceImageLayer } from './ReferenceImageLayer.jsx';
 import { t } from '../../utils/i18n.js';
 
 const MAP_WIP_SEEN_KEY = 'ww-map-wip-seen';
@@ -152,6 +154,18 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersAnchorRef = useRef(null);
   const filtersPanelRef = useRef(null);
+  // Reference-image overlay — an author-only positioning aid (import a
+  // screenshot, line it up over the real map, place zone/icon points by
+  // eye against it). Direct user request. Session-only: null, or
+  // { url (object URL), x, y, scale, rotation, opacity, adjust }. `adjust`
+  // gates whether the layer captures drag/wheel (positioning it) or lets
+  // clicks pass through to the map beneath (placing points) — see
+  // ReferenceImageLayer.jsx. Never persisted: a screenshot as a data URL
+  // would bloat localStorage, and this is a throwaway aid, not map data.
+  const [refImage, setRefImage] = useState(null);
+  const [refImageOpen, setRefImageOpen] = useState(false);
+  const refImageAnchorRef = useRef(null);
+  const refImagePanelRef = useRef(null);
   // Map icons (placed by admins via the author panel). Each entry:
   //   { id, category, x, y, label? }
   // Persisted to localStorage. Categories drive the filter popover.
@@ -1525,9 +1539,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // zooming into zone"): a big sign floating over a zone you're already
     // standing inside is clutter, not information. Threshold is the same
     // fitBounds zoom handleFlyToZone uses to frame a zone, computed once
-    // per zone from its own (unrelaxed) polygon bounds against the
-    // CURRENT container size, +0.5 so the label survives being exactly at
-    // the "just fit" zoom and only fades past it.
+    // per zone from its own (unrelaxed) polygon bounds against the CURRENT
+    // container size, -1.15 so it fades before the zone fills the
+    // viewport rather than needing to zoom in that close first — direct
+    // user report ("I need to zoom in a lot before it disappears"), value
+    // tuned by the user from an initial -1.5.
+    // -1.15 zoom levels ≈ 2^1.15 (~2.2×) more of the map showing in each
+    // dimension than the "just fits" zoom, i.e. the label goes once the
+    // zone is a bit under half the viewport, not all of it.
     const entries = [];
     // Same floor-gating as the Area effect above: an unresolved floor
     // means surface (floor 0), not "every floor" — see its comment.
@@ -1543,7 +1562,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         const nw = map.unproject([minX, minY], NATIVE_ZOOM);
         const se = map.unproject([maxX, maxY], NATIVE_ZOOM);
         let hideZoom = Infinity;
-        try { hideZoom = map.getBoundsZoom(L.latLngBounds(nw, se), false) + 0.5; } catch {}
+        try { hideZoom = map.getBoundsZoom(L.latLngBounds(nw, se), false) - 1.15; } catch {}
         const marker = L.marker(center, {
           icon: L.divIcon({
             className: 'zone-name-label-wrap',
@@ -2781,6 +2800,43 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     return () => document.removeEventListener('pointerdown', onDown);
   }, [filtersOpen]);
 
+  // Same for the reference-image popover.
+  useEffect(() => {
+    if (!refImageOpen) return;
+    const onDown = (e) => {
+      if (refImagePanelRef.current?.contains(e.target)) return;
+      if (refImageAnchorRef.current?.contains(e.target)) return;
+      setRefImageOpen(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+  }, [refImageOpen]);
+
+  // Revoke the reference image's object URL when it changes to a different
+  // one (new import, or removed) and on unmount — not on every x/y/scale/
+  // rotation/opacity update, which would revoke the URL still in use by the
+  // current image mid-drag. Depending on just the url string (not the whole
+  // refImage object) is what keeps this from firing on those updates.
+  useEffect(() => {
+    const url = refImage?.url;
+    return () => { if (url) URL.revokeObjectURL(url); };
+  }, [refImage?.url]);
+
+  const handleRefImageFile = useCallback((file) => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setRefImage({ url, x: 0, y: 0, scale: 1, rotation: 0, opacity: 0.6, adjust: true });
+  }, []);
+  const handleRefImageChange = useCallback((partial) => {
+    setRefImage(prev => prev ? { ...prev, ...partial } : prev);
+  }, []);
+  const handleRefImageToggleAdjust = useCallback(() => {
+    setRefImage(prev => prev ? { ...prev, adjust: !prev.adjust } : prev);
+  }, []);
+  const handleRefImageRemove = useCallback(() => {
+    setRefImage(null);
+  }, []);
+
   // Triple-tap on header toggles author-enabled. Unlocking author also
   // enters draw mode in one shot (opens the editor panel); locking fully
   // exits — matches the "edition feature lives inside the editor panel"
@@ -3496,6 +3552,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           max-height: 60vh; overflow-y: auto;
         }
         .map-filters-list { display: flex; flex-direction: column; gap: var(--space-xs, 4px); }
+        /* Reference-image popover sliders (opacity/zoom/rotation) — same
+           row shape as .zone-selector-row, label left of the range input. */
+        .map-ref-slider-row {
+          display: flex; align-items: center; gap: var(--space-sm, 8px);
+          font-family: var(--font-display); font-size: 11px; color: var(--text-body);
+        }
+        .map-ref-slider-row label { flex: 0 0 auto; min-width: 44px; }
+        .map-ref-slider-row input[type="range"] { flex: 1 1 auto; accent-color: rgb(var(--color-gold)); }
         /* Gap between label text and count badge (A) matches the
            button's top/bottom padding (D/E = 4 px from .kuro-btn-sm)
            so the badge sits with equal breathing room on its left
@@ -3808,6 +3872,9 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                 zIndex: 1,
               }}
             />
+            {authorMode && (
+              <ReferenceImageLayer refImage={refImage} onChange={handleRefImageChange} />
+            )}
             {status && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888', zIndex: 1000, pointerEvents: 'none' }}>
                 {status}
@@ -3826,7 +3893,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                       ref={zonesAnchorRef}
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${zonesOpen ? 'is-active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); setZonesOpen(v => { if (!v) { setDownloadsOpen(false); setFiltersOpen(false); } return !v; }); }}
+                      onClick={(e) => { e.stopPropagation(); setZonesOpen(v => { if (!v) { setDownloadsOpen(false); setFiltersOpen(false); setRefImageOpen(false); } return !v; }); }}
                       aria-label={t('map.header.regions')}
                       aria-expanded={zonesOpen}
                       title={t('map.header.regions')}
@@ -3837,7 +3904,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                       ref={filtersAnchorRef}
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${filtersOpen ? 'is-active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); setFiltersOpen(v => { if (!v) { setZonesOpen(false); setDownloadsOpen(false); } return !v; }); }}
+                      onClick={(e) => { e.stopPropagation(); setFiltersOpen(v => { if (!v) { setZonesOpen(false); setDownloadsOpen(false); setRefImageOpen(false); } return !v; }); }}
                       aria-label={t('map.header.iconFilters')}
                       aria-expanded={filtersOpen}
                       title={t('map.header.iconFilters')}
@@ -3874,11 +3941,24 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                         </svg>
                       </button>
                     )}
+                    {authorMode && (
+                      <button
+                        ref={refImageAnchorRef}
+                        type="button"
+                        className={`kuro-btn kuro-btn-sm kuro-btn-icon ${refImageOpen ? 'is-active' : ''}`}
+                        onClick={(e) => { e.stopPropagation(); setRefImageOpen(v => { if (!v) { setZonesOpen(false); setFiltersOpen(false); setDownloadsOpen(false); } return !v; }); }}
+                        aria-label={t('map.header.referenceImage')}
+                        aria-expanded={refImageOpen}
+                        title={t('map.header.referenceImage')}
+                      >
+                        <ImagePlus size={14} />
+                      </button>
+                    )}
                     <button
                       ref={downloadsAnchorRef}
                       type="button"
                       className={`kuro-btn kuro-btn-sm kuro-btn-icon ${downloadsOpen ? 'is-active' : ''}`}
-                      onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => { if (!v) { setZonesOpen(false); setFiltersOpen(false); } return !v; }); }}
+                      onClick={(e) => { e.stopPropagation(); setDownloadsOpen(v => { if (!v) { setZonesOpen(false); setFiltersOpen(false); setRefImageOpen(false); } return !v; }); }}
                       aria-label={t('map.header.offlineDownloads')}
                       aria-expanded={downloadsOpen}
                       title={t('map.header.offlineDownloads')}
@@ -3942,6 +4022,20 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                 toggleIconFilter={toggleIconFilter}
                 l3ZoneCount={l3Zones.length}
                 onClose={() => setFiltersOpen(false)}
+              />
+            )}
+
+            {authorMode && refImageOpen && (
+              <ReferenceImagePopover
+                panelRef={refImagePanelRef}
+                top={headerHeight + 8}
+                maxHeight={`calc(var(--canvas-height-px, 100dvh) - ${headerHeight + navPadding + 40}px)`}
+                refImage={refImage}
+                onImportFile={handleRefImageFile}
+                onChange={handleRefImageChange}
+                onToggleAdjust={handleRefImageToggleAdjust}
+                onRemove={handleRefImageRemove}
+                onClose={() => setRefImageOpen(false)}
               />
             )}
 

@@ -135,9 +135,12 @@
     "displayNamePlaceholder": "Entrez votre nom…",
     "profilePicture": "Photo de profil",
     "defaultIcon": "Icône par défaut",
-    "profilePicHint": "Touchez l'icône sur une carte possédée dans l'onglet Collection",
+    "profilePicHint": "Touchez l'icône pour choisir un Résonateur, ou depuis une carte possédée dans l'onglet Collection",
     "resetToDefault": "Réinitialiser par défaut",
-    "viewIdCard": "Voir la carte d'identité du Résonateur"
+    "viewIdCard": "Voir la carte d'identité du Résonateur",
+    "choosePicture": "Choisir une photo de profil",
+    "searchResonators": "Rechercher un Résonateur…",
+    "noOwnedResonators": "Aucun Résonateur possédé pour l'instant — effectuez d'abord des Convocations."
   },
   "server": {
     "title": "Région du serveur",

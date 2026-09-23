@@ -29,6 +29,7 @@ import { ADMIN_BANNER_KEY, ADMIN_HASH } from '../../shared/components/bannerUtil
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 
 import IdCardModal from './IdCardModal.jsx';
+import ProfilePicturePickerModal from './ProfilePicturePickerModal.jsx';
 import AdminPanel from './AdminPanel.jsx';
 import AboutSection from './AboutSection.jsx';
 import OfflineAssetsCard from './OfflineAssetsCard.jsx';
@@ -129,6 +130,7 @@ function ProfileTab({
   // ── Tab-local state ──────────────────────────────────────────────────────
   const appLocale = useAppLocale();
   const [showIdCard, setShowIdCard] = useState(false);
+  const [showPicPicker, setShowPicPicker] = useState(false);
   const [idCardFormat, setIdCardFormat] = useState('landscape');
 
   // ── Admin state (showAdminPanel + adminMiniMode + adminUnlocked from props — survive tab switches) ──
@@ -554,14 +556,20 @@ function ProfileTab({
                 <div>
                   <label className="text-gray-400 text-sm block mb-2">{t('profile.resonator.profilePicture')}</label>
                   <div className="flex items-center gap-3">
-                    <div className={`w-14 h-14 rounded-lg flex-shrink-0 kuro-avatar-frame kuro-shadow-card-deep${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`}>
+                    <button
+                      type="button"
+                      onClick={() => setShowPicPicker(true)}
+                      aria-label={t('profile.resonator.choosePicture')}
+                      title={t('profile.resonator.choosePicture')}
+                      className={`w-14 h-14 rounded-lg flex-shrink-0 kuro-avatar-frame kuro-shadow-card-deep hover:brightness-110 transition-all${CHARACTER_DATA[state.profile.profilePic]?.rarity === 5 ? ' holo-5star' : ''}`}
+                    >
                       {state.profile.profilePic && collectionImages[state.profile.profilePic] ? (() => {
                         const f = getImageFraming(`collection-${state.profile.profilePic}`);
                         return <div className="w-full h-full breath-zoom"><img src={collectionImages[state.profile.profilePic]} alt={state.profile.profilePic} className="w-full h-full object-contain" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} loading="lazy" onError={hideOnError} /></div>;
                       })() : (
                         <img src="./app-title-icon/Abby_app_home_icon.png" alt="Default" className="w-full h-full object-contain bg-neutral-800 p-1 rounded-[inherit]" loading="lazy" onError={hideOnError} />
                       )}
-                    </div>
+                    </button>
                     <div className="flex-1 min-w-0">
                       <p className="text-gray-200 text-base truncate">{state.profile.profilePic || t('profile.resonator.defaultIcon')}</p>
                       <p className="text-gray-400 text-sm mt-0.5">{t('profile.resonator.profilePicHint')} <Crown size={12} className="inline text-yellow-400" /></p>
@@ -1505,6 +1513,16 @@ function ProfileTab({
         idCardTrapRef={idCardTrapRef}
         trophies={trophies}
         handleSetProfilePic={handleSetProfilePic}
+      />
+
+      <ProfilePicturePickerModal
+        isOpen={showPicPicker}
+        onClose={() => setShowPicPicker(false)}
+        ownedCharNames={ownedCharNames}
+        collectionImages={collectionImages}
+        profilePic={state.profile.profilePic}
+        onSelect={handleSetProfilePic}
+        getImageFraming={getImageFraming}
       />
 
       {/* Admin Panel Modal + Mini Window */}

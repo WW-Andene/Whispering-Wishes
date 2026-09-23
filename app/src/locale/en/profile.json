@@ -135,9 +135,12 @@
     "displayNamePlaceholder": "Enter your name…",
     "profilePicture": "Profile Picture",
     "defaultIcon": "Default icon",
-    "profilePicHint": "Tap the icon on any owned card in the Collection tab",
+    "profilePicHint": "Tap the icon to choose a Resonator, or from any owned card in the Collection tab",
     "resetToDefault": "Reset to default",
-    "viewIdCard": "View Resonator ID Card"
+    "viewIdCard": "View Resonator ID Card",
+    "choosePicture": "Choose Profile Picture",
+    "searchResonators": "Search Resonators…",
+    "noOwnedResonators": "No Resonators owned yet — pull some Convenes first."
   },
   "server": {
     "title": "Server Region",
