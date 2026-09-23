@@ -263,6 +263,7 @@
   },
   "idCard": {
     "ariaLabel": "Resonator ID Card",
+    "setAsIcon": "Set {{name}} as header icon",
     "usernameFallback": "Resonator",
     "uid": "UID",
     "server": "SVR",

@@ -814,7 +814,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
                 isFullAnim={visualSettings?.animationsEnabled === 'full'}
@@ -838,7 +838,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={CHARACTER_DATA} dataType="character" isCharacter={true}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 ownedChars={ownedChars} toggleOwned={toggleOwned}
                 onLongPress={showCounterWidget}
                 isFullAnim={visualSettings?.animationsEnabled === 'full'}

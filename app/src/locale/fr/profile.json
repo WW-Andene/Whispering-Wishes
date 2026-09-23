@@ -263,6 +263,7 @@
   },
   "idCard": {
     "ariaLabel": "Carte d'identité du Résonateur",
+    "setAsIcon": "Définir {{name}} comme icône du header",
     "usernameFallback": "Résonateur",
     "uid": "UID",
     "server": "SVR",
