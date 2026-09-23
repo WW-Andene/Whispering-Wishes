@@ -49,6 +49,12 @@ const DEFAULT_VISUAL_SETTINGS = Object.freeze({
   // 'convene' is a valid value too — the pull-simulator's own loop, now
   // just another ambient track choice rather than a separate toggle.
   logScreenTrack: '2',
+  // Settings > Theme > Sigil — replaces the header settings button's gear
+  // icon with a Sigil Card (app/src/data/sigilCards.js) with a Resonator
+  // portrait (app/src/data/resonatorPortraits.js) set into its inner
+  // circle. Either id, or both null for the default gear icon.
+  sigilCardId: null,
+  sigilPortraitId: null,
 });
 
 export { DEFAULT_VISUAL_SETTINGS };

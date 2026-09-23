@@ -220,6 +220,15 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   //   Icon    = iconDraft with inTree === true
   const [selectedDraftIds, setSelectedDraftIds] = useState(() => new Set());
   const [selectedIconIds, setSelectedIconIds] = useState(() => new Set());
+  // Which zone/subzone branches are collapsed in the drafts tree below —
+  // direct user request ("after hundred item i cant figure it out what is
+  // where"). Ephemeral like the selection above, not persisted.
+  const [collapsedDraftIds, setCollapsedDraftIds] = useState(() => new Set());
+  const toggleDraftCollapsed = (id) => setCollapsedDraftIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
   const [bulkFind, setBulkFind] = useState('');
   const [bulkReplace, setBulkReplace] = useState('');
   const [bulkLevel, setBulkLevel] = useState('');
@@ -567,6 +576,35 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     walk(null, 0);
     return out;
   }, [drafts]);
+
+  // Zone/subzone ids that have at least one child draft — drives whether a
+  // collapse toggle shows on that row at all (a leaf zone has nothing to
+  // collapse). Icon children are checked separately per-row since they
+  // live in iconDrafts, not drafts.
+  const draftIdsWithChildren = useMemo(() => {
+    const draftIds = new Set(drafts.map(d => d.id));
+    const s = new Set();
+    drafts.forEach(d => { if (d.parentId && draftIds.has(d.parentId)) s.add(d.parentId); });
+    return s;
+  }, [drafts]);
+
+  // draftTree filtered down to what's visible given collapsedDraftIds —
+  // since draftTree is a pre-order walk, a collapsed node's entire subtree
+  // is the contiguous run of rows right after it with depth > its own, so
+  // one pass tracking the shallowest active collapse is enough.
+  const visibleDraftTree = useMemo(() => {
+    const out = [];
+    let hideDepth = null;
+    for (const node of draftTree) {
+      if (hideDepth != null) {
+        if (node.depth > hideDepth) continue;
+        hideDepth = null;
+      }
+      out.push(node);
+      if (collapsedDraftIds.has(node.id)) hideDepth = node.depth;
+    }
+    return out;
+  }, [draftTree, collapsedDraftIds]);
 
   // Move a draft up/down among ALL its siblings (same parent), regardless
   // of level — gives the user full ordering control. The auto level sort
@@ -2607,19 +2645,24 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     const onClick = (e) => {
       const pt = map.project(e.latlng, NATIVE_ZOOM);
       const [x, y] = clampToBounds(Math.round(pt.x), Math.round(pt.y), placementBounds);
-      // Auto-detect owning zone and inherit the zone's floor (if any)
-      // unless the user has already pinned a custom floor.
-      const zone = findEnclosingZone(x, y);
-      const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
       setIconDrafts((prev) => {
         const next = prev.map((ic) => {
           if (ic.id !== placingIconId) return ic;
           const patch = { x, y };
-          if (zone) patch.zoneId = zone.id;
-          // Only inherit floor when the draft didn't already have one
-          // OR the user hasn't customised it yet (floor === undefined).
-          if (inheritedFloor != null && (ic.floor === undefined || ic.floor === null)) {
-            patch.floor = inheritedFloor;
+          // Auto-detect the owning zone (and inherit its floor) from the
+          // click position only when the icon has no zone of its own yet.
+          // A zone the user picked explicitly in the editor — e.g. an
+          // underground zone that overlaps a surface zone at the same x/y
+          // — must stick; re-detecting from click position would silently
+          // overwrite that choice with whichever zone the point-in-polygon
+          // walk happens to prefer at that spot, regardless of floor.
+          if (!ic.zoneId) {
+            const zone = findEnclosingZone(x, y);
+            const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
+            if (zone) patch.zoneId = zone.id;
+            if (inheritedFloor != null && (ic.floor === undefined || ic.floor === null)) {
+              patch.floor = inheritedFloor;
+            }
           }
           return { ...ic, ...patch };
         });
@@ -2648,8 +2691,6 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     const onClick = (e) => {
       const pt = map.project(e.latlng, NATIVE_ZOOM);
       const [x, y] = clampToBounds(Math.round(pt.x), Math.round(pt.y), placementBounds);
-      const zone = findEnclosingZone(x, y);
-      const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
       setIconDrafts((prev) => {
         const tpl = prev.find((i) => i.id === multiPlaceFromId);
         if (!tpl) {
@@ -2659,6 +2700,20 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           // on every further click while the mode stays stuck on.
           setMultiPlaceFromId(null);
           return prev;
+        }
+        // Zone/floor come from the template, not the click position — the
+        // user picked the template's zone deliberately (e.g. an
+        // underground zone overlapping a surface zone at the same x/y),
+        // and "add many" is meant to keep every clone on that same zone.
+        // Only fall back to auto-detecting from the click when the
+        // template itself has no zone set.
+        let zoneId = tpl.zoneId || null;
+        let floor = tpl.floor ?? null;
+        if (!zoneId) {
+          const zone = findEnclosingZone(x, y);
+          zoneId = zone?.id || null;
+          const inheritedFloor = zone ? resolveZoneFloor(zone) : null;
+          if (inheritedFloor != null) floor = inheritedFloor;
         }
         const id = `icon-${Date.now().toString(36)}-${Math.floor(Math.random() * 1e4).toString(36)}`;
         const clone = {
@@ -2671,8 +2726,8 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           rotation: tpl.rotation ?? 0,
           scale: tpl.scale ?? 1,
           opacity: tpl.opacity ?? 1,
-          zoneId: zone?.id || null,
-          floor: inheritedFloor ?? tpl.floor ?? null,
+          zoneId,
+          floor,
           locked: false,
         };
         const next = [...prev, clone];
@@ -3296,6 +3351,23 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         }
         .zone-author-panel .draft-row .tree-glyph {
           color: rgba(var(--color-cyan), 0.55); font-size: 10px;
+        }
+        .zone-author-panel .draft-row .tree-collapse-toggle {
+          flex: 0 0 auto;
+          width: 14px; height: 14px;
+          display: inline-flex; align-items: center; justify-content: center;
+          background: transparent; border: none; padding: 0;
+          color: rgba(var(--color-cyan), 0.7);
+          font-size: 8px;
+          cursor: pointer;
+        }
+        .zone-author-panel .draft-row .tree-collapse-toggle:hover {
+          color: ${COLOR_CANON};
+        }
+        .zone-author-panel .draft-row .tree-collapse-spacer {
+          display: inline-block;
+          width: 14px; height: 14px;
+          flex: 0 0 auto;
         }
         .zone-author-panel .draft-row .lvl-tag {
           display: inline-flex; align-items: center; justify-content: center;
@@ -4160,7 +4232,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                       );
                     })()}
                     <div className="draft-tree">
-                      {draftTree.map(node => {
+                      {visibleDraftTree.map(node => {
                         const isEditing = node.id === editingId;
                         const canonicalParentName = node.depth === 0 && node.parentId
                           ? (MAP_ZONES.find(p => p.id === node.parentId)?.name || node.parentId)
@@ -4175,6 +4247,8 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                         // composition from within the editor panel.
                         const zoneIcons = iconDrafts.filter(ic => ic.inTree && ic.zoneId === node.id);
                         const isSelected = selectedDraftIds.has(node.id);
+                        const isCollapsed = collapsedDraftIds.has(node.id);
+                        const hasChildren = draftIdsWithChildren.has(node.id) || zoneIcons.length > 0;
                         return (
                           <React.Fragment key={node.id}>
                             <div
@@ -4183,6 +4257,18 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                             >
                               <span className="drname">
                                 {indentLevel > 0 && <span className="tree-glyph">└─ </span>}
+                                {hasChildren ? (
+                                  <button
+                                    type="button"
+                                    className="tree-collapse-toggle"
+                                    onClick={() => toggleDraftCollapsed(node.id)}
+                                    aria-label={isCollapsed ? `Expand ${node.name}` : `Collapse ${node.name}`}
+                                    aria-expanded={!isCollapsed}
+                                    title={isCollapsed ? 'Expand branch' : 'Collapse branch'}
+                                  >{isCollapsed ? '▶' : '▼'}</button>
+                                ) : (
+                                  <span className="tree-collapse-spacer" aria-hidden="true" />
+                                )}
                                 <input
                                   type="checkbox"
                                   className="bulk-check"
@@ -4225,7 +4311,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
                                 <button type="button" onClick={() => handleDeleteDraft(node.id)} aria-label={`Delete ${node.name}`}>Delete</button>
                               </span>
                             </div>
-                            {zoneIcons.map(ic => {
+                            {!isCollapsed && zoneIcons.map(ic => {
                               const icCat = getIconCatalogEntry(ic.kind);
                               const iconSrc = icCat ? (BASE + icCat.imageUrl.split('/').map(encodeURIComponent).join('/')).replace(/([^:])\/\//g, '$1/') : null;
                               const nameText = ic.label || icCat?.name || 'Icon';

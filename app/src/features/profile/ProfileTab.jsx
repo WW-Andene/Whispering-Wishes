@@ -5,11 +5,13 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Award, Check, ChevronDown, Crosshair, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
+import { Award, Check, ChevronDown, CreditCard, Crosshair, Crown, Download, Eye, Globe, Monitor, Settings, Sparkles, Type, User, Volume2, VolumeX } from 'lucide-react';
 import ImportFlow from './ImportFlow.jsx';
 import { SERVERS, getServerOffset } from '../../data/constants.js';
 import { CHARACTER_DATA } from '../../data/characters.js';
 import { CHARACTER_THEMES, VERSION_SPLASH_SCREENS, OTHER_BACKGROUNDS, ANIMATED_BACKGROUNDS } from '../../data/banners.js';
+import { SIGIL_CARDS } from '../../data/sigilCards.js';
+import { RESONATOR_PORTRAITS } from '../../data/resonatorPortraits.js';
 import { haptic } from '../../utils/haptics.js';
 import { AMBIENT_OST_TRACKS, AMBIENT_OST_CATEGORIES } from '../../hooks/useAmbientMusic.js';
 import { getElementColor, getElementBg } from '../../shared/utils/elementVisuals.js';
@@ -164,6 +166,8 @@ function ProfileTab({
   // navigation/background) stays visible even while collapsed, below, since
   // it's the "what's currently set" summary this section is for.
   const [bgSectionCollapsed, setBgSectionCollapsed] = useState(true);
+  // ── Sigil picker state — Settings > Theme > Sigil, direct user request ──
+  const [sigilSubTab, setSigilSubTab] = useState('card');
   // Same collapse pattern as bgSectionCollapsed above — closed by default now
   // that the full 36-track OST library lives in here too. The 4 Login Screen
   // tracks (1.0/2.0/3.0/3.5) stay visible even while collapsed, same
@@ -1151,6 +1155,81 @@ function ProfileTab({
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Sigil — Settings > Theme > Sigil, direct user request.
+                    Only "Card" (SIGIL_CARDS) and "Portrait" (RESONATOR_PORTRAITS)
+                    — nothing else lives in this section. Selecting a card
+                    swaps the header's settings button for that Sigil Card;
+                    selecting a portrait drops it into the card's inner
+                    circle. Both persist to visualSettings.sigilCardId /
+                    sigilPortraitId (App.jsx renders the result). */}
+                <div className="p-3 rounded-lg border border-[var(--border-medium)] bg-white/5">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-[30px] h-[30px] shrink-0 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-btn)', color: '#9ca3af' }}>
+                      <CreditCard size={16} />
+                    </div>
+                    <div>
+                      <div className="text-white text-base font-medium">{t('profile.display.sigil')}</div>
+                      <div className="text-gray-400 text-sm">{t('profile.display.sigilDesc')}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1.5 mb-3">
+                    <button onClick={() => setSigilSubTab('card')} className={`kuro-btn flex-1 text-sm ${sigilSubTab === 'card' ? 'active-gold' : ''}`}>{t('profile.display.sigilCard')}</button>
+                    <button onClick={() => setSigilSubTab('portrait')} className={`kuro-btn flex-1 text-sm ${sigilSubTab === 'portrait' ? 'active-gold' : ''}`}>{t('profile.display.sigilPortrait')}</button>
+                  </div>
+                  {sigilSubTab === 'card' && (
+                    <div className="grid grid-cols-4 gap-1.5">
+                      <button
+                        onClick={() => saveVisualSettings({ ...visualSettings, sigilCardId: null, sigilPortraitId: null })}
+                        className={`relative rounded-lg overflow-hidden border flex items-center justify-center text-gray-400 text-sm transition-all ${!visualSettings.sigilCardId ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                        style={{ aspectRatio: '404 / 581' }}
+                      >
+                        {t('profile.display.default')}
+                      </button>
+                      {SIGIL_CARDS.map(card => (
+                        <button
+                          key={card.id}
+                          onClick={() => saveVisualSettings({ ...visualSettings, sigilCardId: card.id })}
+                          className={`relative rounded-lg overflow-hidden border transition-all ${visualSettings.sigilCardId === card.id ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '404 / 581' }}
+                        >
+                          <img src={`./sigil-cards/${encodeURIComponent(card.file)}`} alt={card.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                          <span className="absolute bottom-0.5 left-1 right-1 text-white text-xs font-medium drop-shadow-lg truncate">{card.name}</span>
+                          {visualSettings.sigilCardId === card.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {sigilSubTab === 'portrait' && (
+                    <div className="grid grid-cols-4 gap-1.5">
+                      <button
+                        onClick={() => saveVisualSettings({ ...visualSettings, sigilPortraitId: null })}
+                        disabled={!visualSettings.sigilCardId}
+                        className={`relative rounded-lg overflow-hidden border flex items-center justify-center text-gray-400 text-sm transition-all disabled:opacity-40 ${!visualSettings.sigilPortraitId ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                        style={{ aspectRatio: '1' }}
+                      >
+                        {t('profile.display.none')}
+                      </button>
+                      {RESONATOR_PORTRAITS.map(portrait => (
+                        <button
+                          key={portrait.id}
+                          onClick={() => saveVisualSettings({ ...visualSettings, sigilPortraitId: portrait.id })}
+                          disabled={!visualSettings.sigilCardId}
+                          className={`relative rounded-full overflow-hidden border transition-all disabled:opacity-40 ${visualSettings.sigilPortraitId === portrait.id ? 'ring-1 border-yellow-500 kuro-shadow-selected-gold' : 'border-[var(--border-medium)] hover:border-gray-500'}`}
+                          style={{ aspectRatio: '1' }}
+                          title={portrait.name}
+                        >
+                          <img src={`./resonator-portraits/${encodeURIComponent(portrait.file)}`} alt={portrait.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={hideOnError} />
+                          {visualSettings.sigilPortraitId === portrait.id && <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={12} className="text-black" /></div>}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {!visualSettings.sigilCardId && sigilSubTab === 'portrait' && (
+                    <div className="text-gray-400 text-xs mt-2">{t('profile.display.sigilPortraitNeedsCard')}</div>
+                  )}
                 </div>
 
                 {/* Sound — subsection within Display Settings: master toggle

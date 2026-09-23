@@ -31,6 +31,30 @@ export const MAP_ICON_CATALOG = [
     imageUrl: 'map-icons/Resonance-beacon.png',
     size: 128,
   },
+  {
+    id: 'treasure-spot',
+    name: 'Treasure Spot',
+    category: 'Collectible',
+    subcategory: 'Treasure Spot',
+    imageUrl: 'map-icons/Treasure-Spot.png',
+    size: 128,
+  },
+  {
+    id: 'sonance-casket',
+    name: 'Sonance Casket',
+    category: 'Collectible',
+    subcategory: 'Sonance Casket',
+    imageUrl: 'map-icons/Sonance-Casket.png',
+    size: 256,
+  },
+  {
+    id: 'supply-chest',
+    name: 'Supply Chest',
+    category: 'Collectible',
+    subcategory: 'Supply Chest',
+    imageUrl: 'map-icons/Supply-Chest.png',
+    size: 128,
+  },
 ];
 
 export function getIconCatalogEntry(kindId) {

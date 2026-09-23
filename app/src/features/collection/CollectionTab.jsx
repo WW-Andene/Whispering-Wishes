@@ -749,7 +749,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 4 })}
                 dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 collapsible
               />
             </CardBody>
@@ -770,7 +770,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 3 })}
                 dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 collapsible
               />
             </CardBody>
@@ -791,7 +791,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={(m) => setDetailModal({ ...m, cost: 1 })}
                 dataLookup={localizedEchoData} dataType="echo" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 collapsible
               />
             </CardBody>
@@ -864,7 +864,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -886,7 +886,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -908,7 +908,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -930,7 +930,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 onLongPress={showCounterWidget}
                 collapsible
               />
@@ -952,7 +952,7 @@ function CollectionTab({
                 withCacheBuster={withCacheBuster}
                 activeBanners={activeBanners} setDetailModal={setDetailModal}
                 dataLookup={localizedWeaponData} dataType="weapon" isCharacter={false}
-                profilePic={state.profile.profilePic} onSetProfilePic={handleSetProfilePic}
+                profilePic={state.profile.profilePic}
                 onLongPress={showCounterWidget}
                 collapsible
               />

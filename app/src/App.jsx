@@ -86,6 +86,8 @@ import { useIsReferenceDevice } from './hooks/useIsReferenceDevice.js';
 import { toCanvasSpace } from './shared/scaling/canvasScale.js';
 import { syncBannerWidget, syncCurrencyWidget } from './utils/widgetSync.js';
 import { initGlassTouch } from './utils/glassTouch.js';
+import { getSigilCard } from './data/sigilCards.js';
+import { getResonatorPortrait } from './data/resonatorPortraits.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -1121,31 +1123,85 @@ function WhisperingWishesInner() {
               </div>
             </div>
             <div className="header-controls flex items-center gap-2">
-              <button id="tab-profile" onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[48px] h-[48px] flex items-center justify-center overflow-hidden transition-all" style={{ borderRadius: '12px', ...(activeTheme && activeTab === 'profile' ? { background: `${themeAccent}30` } : {}) }}>
-                {state.profile.profilePic && collectionImages[state.profile.profilePic]
-                  ? (() => {
-                      const pf = getImageFraming(`collection-${state.profile.profilePic}`);
-                      return (
-                        <div className="absolute inset-0" style={{
-                          maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
-                          WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
-                        }}>
-                          <img
-                            src={collectionImages[state.profile.profilePic]}
-                            alt={state.profile.profilePic}
-                            className={`w-full h-full ${ALL_CHARACTERS.has(state.profile.profilePic) ? 'object-contain' : 'object-cover'}`}
-                            style={{ transform: `scale(${pf.zoom / 100}) translate(${-pf.x}%, ${-pf.y}%)` }}
-                          />
-                        </div>
-                      );
-                    })()
-                  : <img src="./navicon/Icon_Setting.png" alt="" className={`w-6 h-6 ${activeTab === 'profile' ? 'opacity-100' : 'opacity-90'}`} />
-                }
-              </button>
+              {!visualSettings.sigilCardId && (
+                <button id="tab-profile" onClick={() => setActiveTab('profile')} aria-label={t('app.profile')} title={t('app.profile')} className="relative w-[48px] h-[48px] flex items-center justify-center overflow-hidden transition-all" style={{ borderRadius: '12px', ...(activeTheme && activeTab === 'profile' ? { background: `${themeAccent}30` } : {}) }}>
+                  {state.profile.profilePic && collectionImages[state.profile.profilePic]
+                    ? (() => {
+                        const pf = getImageFraming(`collection-${state.profile.profilePic}`);
+                        return (
+                          <div className="absolute inset-0" style={{
+                            maskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+                            WebkitMaskImage: 'radial-gradient(ellipse 85% 80% at center, black 50%, transparent 100%)',
+                          }}>
+                            <img
+                              src={collectionImages[state.profile.profilePic]}
+                              alt={state.profile.profilePic}
+                              className={`w-full h-full ${ALL_CHARACTERS.has(state.profile.profilePic) ? 'object-contain' : 'object-cover'}`}
+                              style={{ transform: `scale(${pf.zoom / 100}) translate(${-pf.x}%, ${-pf.y}%)` }}
+                            />
+                          </div>
+                        );
+                      })()
+                    : <img src="./navicon/Icon_Setting.png" alt="" className={`w-6 h-6 ${activeTab === 'profile' ? 'opacity-100' : 'opacity-90'}`} />
+                  }
+                </button>
+              )}
             </div>
           </div>
         </div>
       </header>
+
+      {/* Settings-button Sigil Card — Settings > Theme > Sigil, direct user
+          request. Rendered as its own fixed sibling (not a header child)
+          since the header itself keeps overflow:hidden for its background
+          art; a descendant there could never hang below it. Position
+          mirrors the header's own top-3/right-3 fixed placement, -1px to
+          sit on the header's own outline rather than just inside it, and
+          +8px past its right inset — the same 8px gap the brand icon on
+          the left keeps from the header's own border. */}
+      {visualSettings.sigilCardId && (() => {
+        const card = getSigilCard(visualSettings.sigilCardId);
+        if (!card) return null;
+        const portrait = visualSettings.sigilPortraitId ? getResonatorPortrait(visualSettings.sigilPortraitId) : null;
+        return (
+          <button
+            id="tab-profile-sigil"
+            onClick={() => setActiveTab('profile')}
+            aria-label={t('app.profile')}
+            title={t('app.profile')}
+            style={{
+              position: 'fixed',
+              top: 'calc(12px + var(--safe-area-top-canvas, 0px) - 1px)',
+              right: 'calc(12px + 8px)',
+              width: 52,
+              zIndex: 51,
+              border: 'none',
+              padding: 0,
+              margin: 0,
+              background: 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            <img
+              src={`./sigil-cards/${encodeURIComponent(card.file)}`}
+              alt={card.name}
+              style={{ display: 'block', width: '100%', aspectRatio: '404 / 581' }}
+            />
+            {portrait && (
+              <div style={{
+                position: 'absolute', left: '50%', top: '65%', width: '80%', aspectRatio: '1',
+                transform: 'translate(-50%, -50%)', borderRadius: '50%', overflow: 'hidden',
+              }}>
+                <img
+                  src={`./resonator-portraits/${encodeURIComponent(portrait.file)}`}
+                  alt={portrait.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              </div>
+            )}
+          </button>
+        );
+      })()}
 
       {/* Floating bottom navigation bar */}
       <nav ref={tabNavRef} className="kuro-card fixed bottom-3 left-3 right-3 z-50 flex items-center justify-center overflow-x-auto scrollbar-hide" style={{ position: 'fixed', zIndex: 50, height: 64, borderRadius: 14, marginBottom: 'var(--safe-area-bottom-canvas, 0px)', overflow: 'hidden', ...(activeTheme ? { borderColor: `${themeAccent}30` } : {}) }} role="tablist" aria-label={t('app.mainNavigation')} onKeyDown={(e) => {
