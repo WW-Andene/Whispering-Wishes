@@ -4,7 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import React from 'react';
-import { Download, Monitor, Smartphone, Star, X } from 'lucide-react';
+import { Check, Crown, Download, Monitor, Smartphone, Star, X } from 'lucide-react';
 import { CHARACTER_DATA, ALL_CHARACTERS } from '../../data/characters.js';
 import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
@@ -26,6 +26,7 @@ export default function IdCardModal({
   ownedCharNames,
   idCardTrapRef,
   trophies,
+  handleSetProfilePic,
 }) {
   const { getImageFraming } = useImageFramingContext();
   if (!showIdCard) return null;
@@ -178,9 +179,18 @@ export default function IdCardModal({
                           const imgUrl = collectionImages[name];
                           const f = getImageFraming(`collection-${name}`);
                           const is5Star = CHARACTER_DATA[name]?.rarity === 5;
+                          const isProfilePic = state.profile.profilePic === name;
                           return (
-                            <div key={name}>
-                              <div className={`relative rounded-lg overflow-hidden w-full kuro-avatar-frame kuro-shadow-card-subtle${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', border: '1px solid var(--border-medium)' }}>
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => handleSetProfilePic?.(name)}
+                              disabled={!handleSetProfilePic}
+                              aria-label={t('profile.idCard.setAsIcon', { name })}
+                              aria-pressed={isProfilePic}
+                              title={t('profile.idCard.setAsIcon', { name })}
+                            >
+                              <div className={`relative rounded-lg overflow-hidden w-full kuro-avatar-frame kuro-shadow-card-subtle${is5Star ? ' holo-5star' : ''}`} style={{ aspectRatio: '9/14', border: isProfilePic ? '1px solid #edaf18' : '1px solid var(--border-medium)', boxShadow: isProfilePic ? '0 0 8px rgba(237,175,24,0.4)' : undefined }}>
                                 <div className="idcard-img-shimmer" />
                                 {imgUrl ? (
                                   <div className="absolute inset-0 breath-zoom"><img src={imgUrl} alt={name} loading="lazy" className="absolute inset-0 w-full h-full object-contain pointer-events-none" style={{ transform: `scale(${f.zoom / 100}) translate(${-f.x}%, ${-f.y}%)` }} /></div>
@@ -192,8 +202,13 @@ export default function IdCardModal({
                                 <div className="absolute bottom-0 left-0 right-0 p-1 pointer-events-none idcard-img-fade--strong">
                                   <span className="text-gray-200 text-center truncate block kuro-tshadow-micro" style={{ fontSize: '8px' }}>{name}</span>
                                 </div>
+                                {isProfilePic ? (
+                                  <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-yellow-500 flex items-center justify-center"><Check size={10} className="text-black" /></div>
+                                ) : handleSetProfilePic && (
+                                  <div className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.5)' }}><Crown size={10} className="text-gray-300" /></div>
+                                )}
                               </div>
-                            </div>
+                            </button>
                           );
                         })}
                         {ownedCharNames.length > 16 && (

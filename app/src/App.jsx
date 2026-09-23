@@ -1396,6 +1396,7 @@ function WhisperingWishesInner() {
             pwa={pwa}
             collectionImages={collectionImages}
             customCollectionImages={customCollectionImages}
+            handleSetProfilePic={handleSetProfilePic}
             saveCollectionImages={saveCollectionImages}
             detailModal={detailModal}
             handleExport={handleExport}

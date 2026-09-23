@@ -80,6 +80,10 @@ function ProfileTab({
   // Collection images
   collectionImages,
   customCollectionImages,
+  // Sets state.profile.profilePic — the header icon. Collection's crown
+  // button no longer does this (direct user request); the Resonator ID
+  // Card modal's own resonator grid is now the only place it happens.
+  handleSetProfilePic,
   saveCollectionImages,
   // Detail modal (for admin mini window framing)
   detailModal,
@@ -1500,6 +1504,7 @@ function ProfileTab({
         ownedCharNames={ownedCharNames}
         idCardTrapRef={idCardTrapRef}
         trophies={trophies}
+        handleSetProfilePic={handleSetProfilePic}
       />
 
       {/* Admin Panel Modal + Mini Window */}
