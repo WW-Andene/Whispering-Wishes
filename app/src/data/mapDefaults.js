@@ -8,6 +8,11 @@
 // session (2026-09-16T01:14:25Z export), superseding the previous
 // (2026-09-15T05:50:12Z) seed baked in here.
 //
+// DEFAULT_ICON_DRAFTS updated again from a 2026-09-23T22:40:44Z export —
+// purely additive vs. the 2026-09-16 seed (zoneDrafts/overlayDrafts
+// unchanged, byte-for-byte): 22 new Resonance Beacon icons placed in
+// Lahai Roi (overlay-lahai-roi-mo6gpzuw, floor -5).
+//
 // DEFAULT_PAINT_STROKES is empty - the 552 strokes from that export (3232
 // points across blur/200, fade/200, blur/113) were baked directly into
 // Solaris_3's master image and its tile pyramid was re-sliced from the
@@ -717,6 +722,28 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-mu6jxrn9-568', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3368, y: 3985, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
   { id: 'icon-mu6jy9ew-37l', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3493, y: 3952, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
   { id: 'icon-mu6jyz9a-6d5', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3338, y: 3745, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
+  { id: 'icon-muenq749-3kc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3120, y: 3583, label: '', locked: true, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, inTree: true },
+  { id: 'icon-muens7o1-73a', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3559, y: 3476, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muentqka-5vh', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3774, y: 3277, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenu4he-6nl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3705, y: 2983, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenuq97-51b', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3502, y: 2763, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenvngt-2az', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3495, y: 2268, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenx6wz-49d', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2630, y: 3457, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueny8jo-2uc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3069, y: 2524, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenyyv3-41n', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3334, y: 2714, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenzli9-1w1', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3124, y: 2683, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo0j0t-10k', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2894, y: 3064, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo1dls-5vl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3315, y: 3189, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo1yxt-3xf', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3264, y: 3289, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo2yfh-3ym', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3079, y: 3298, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo48y3-62y', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3120, y: 2985, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo58x0-26i', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3183, y: 2932, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo5zvo-5gv', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3395, y: 3005, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo6lh7-76q', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3278, y: 2897, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo7ce2-6lx', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3322, y: 2949, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo7rqp-30y', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3298, y: 2986, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo8fqa-5om', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3308, y: 3012, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo8y3e-530', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3249, y: 2985, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
 ];
 
 export const DEFAULT_PAINT_STROKES = [];
