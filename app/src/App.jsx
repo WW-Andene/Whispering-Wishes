@@ -1162,10 +1162,10 @@ function WhisperingWishesInner() {
           request. Rendered as its own fixed sibling (not a header child)
           since the header itself keeps overflow:hidden for its background
           art; a descendant there could never hang below it. Position
-          mirrors the header's own top-3/right-3 fixed placement exactly,
-          so the card's top edge sits flush on the header's outline, and
-          +15px past its right inset — matches the 16px gap the brand
-          logo's own first colored pixel keeps from the header's border. */}
+          mirrors the header's own top-3/right-3 fixed placement, -1px to
+          sit exactly on the header's own outline, and +15px past its right
+          inset — matches the 16px gap the brand logo's own first colored
+          pixel keeps from the header's border. */}
       {visualSettings.sigilCardId && (() => {
         const card = getSigilCard(visualSettings.sigilCardId);
         if (!card) return null;
@@ -1178,7 +1178,7 @@ function WhisperingWishesInner() {
             title={t('app.profile')}
             style={{
               position: 'fixed',
-              top: 'calc(12px + var(--safe-area-top-canvas, 0px))',
+              top: 'calc(12px + var(--safe-area-top-canvas, 0px) - 1px)',
               right: 'calc(12px + 15px)',
               width: 52,
               zIndex: 51,
