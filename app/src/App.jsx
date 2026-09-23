@@ -87,7 +87,7 @@ import { toCanvasSpace } from './shared/scaling/canvasScale.js';
 import { syncBannerWidget, syncCurrencyWidget } from './utils/widgetSync.js';
 import { initGlassTouch } from './utils/glassTouch.js';
 import { getSigilCard } from './data/sigilCards.js';
-import { getResonatorPortrait } from './data/resonatorPortraits.js';
+import { getResonatorPortrait, RESONATOR_PORTRAITS } from './data/resonatorPortraits.js';
 
 // ── Module-level constants (hoisted from render body) ──────────────────────
 const DEBOUNCE_MS = 300;
@@ -589,7 +589,14 @@ function WhisperingWishesInner() {
       dispatch({ type: 'SET_PROFILE_PIC', value: name });
       toast?.addToast?.(t('app.profilePicSet', { name }), 'success');
     }
-  }, [state.profile.profilePic, toast]);
+    // When a Sigil Card is active, the header shows its portrait circle
+    // (sigilPortraitId) instead of profilePic — keep both in sync so a
+    // Resonator ID Card click still changes the visible header icon.
+    if (visualSettings.sigilCardId) {
+      const portraitId = RESONATOR_PORTRAITS.find(p => p.name === name)?.id || null;
+      if (portraitId) saveVisualSettings({ ...visualSettings, sigilPortraitId: visualSettings.sigilPortraitId === portraitId ? null : portraitId });
+    }
+  }, [state.profile.profilePic, toast, visualSettings, saveVisualSettings]);
 
   // Characters marked owned manually in CollectionTab (long-press toggle / +/- counter) live
   // entirely outside pull history, in their own persisted keys — read the same keys here so
@@ -1155,10 +1162,10 @@ function WhisperingWishesInner() {
           request. Rendered as its own fixed sibling (not a header child)
           since the header itself keeps overflow:hidden for its background
           art; a descendant there could never hang below it. Position
-          mirrors the header's own top-3/right-3 fixed placement, -1px to
-          sit on the header's own outline rather than just inside it, and
-          +8px past its right inset — the same 8px gap the brand icon on
-          the left keeps from the header's own border. */}
+          mirrors the header's own top-3/right-3 fixed placement exactly,
+          so the card's top edge sits flush on the header's outline, and
+          +15px past its right inset — matches the 16px gap the brand
+          logo's own first colored pixel keeps from the header's border. */}
       {visualSettings.sigilCardId && (() => {
         const card = getSigilCard(visualSettings.sigilCardId);
         if (!card) return null;
@@ -1171,8 +1178,8 @@ function WhisperingWishesInner() {
             title={t('app.profile')}
             style={{
               position: 'fixed',
-              top: 'calc(12px + var(--safe-area-top-canvas, 0px) - 1px)',
-              right: 'calc(12px + 8px)',
+              top: 'calc(12px + var(--safe-area-top-canvas, 0px))',
+              right: 'calc(12px + 15px)',
               width: 52,
               zIndex: 51,
               border: 'none',
