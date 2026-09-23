@@ -3567,6 +3567,17 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           gap: var(--space-xs, 4px);
           max-height: 60vh; overflow-y: auto;
         }
+        /* Sub-zone rows (role="group", one level under an expanded parent)
+           are a plain nested div, not a direct child of .map-zones-body's
+           own flex column — so they never inherited its row gap and sat
+           flush against each other. Direct user report ("les sous zone
+           n'ont pas de padding"). Same gap value as .map-zones-body for a
+           uniform rhythm from top-level rows down through every nesting
+           depth. */
+        .map-zones-popover .zone-selector-children {
+          display: flex; flex-direction: column;
+          gap: var(--space-xs, 4px);
+        }
 
         /* ── Icon filters popover (hexagon button) ────────────────────── */
         .map-filters-popover {

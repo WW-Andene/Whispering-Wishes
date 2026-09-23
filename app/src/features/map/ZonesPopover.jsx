@@ -100,7 +100,7 @@ export function ZonesPopover({
           )}
         </div>
         {hasChildren && expanded && (
-          <div role="group">
+          <div role="group" className="zone-selector-children">
             {children.map(c => renderNode(c, depth + 1))}
           </div>
         )}
