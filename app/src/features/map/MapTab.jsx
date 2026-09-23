@@ -77,6 +77,14 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
   const headerTapsRef = useRef([]);
   const cardHeaderRef = useRef(null);
   const [headerHeight, setHeaderHeight] = useState(48);
+  // Real, measured size of the map card's viewport (kuro-card-inner) — used
+  // to size the rotated background/Leaflet container to that viewport's own
+  // diagonal (see cardDiagonal below), rather than a fixed oversize
+  // percentage that only fully covers a rotated SQUARE viewport. Direct user
+  // report: on this app's actual tall/narrow phone viewport, a fixed 160%
+  // oversize left the corners uncovered (frame visibly clipped) once
+  // rotated, instead of the camera simply rotating in place.
+  const [cardSize, setCardSize] = useState({ w: 0, h: 0 });
 
   const [status, setStatus] = useState('Loading map...');
   const [mapReady, setMapReady] = useState(false);
@@ -793,6 +801,35 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     return () => ro.disconnect();
   }, [mapReady]);
 
+  // Measure the map card's own viewport (kuro-card-inner, containerRef's
+  // parent) so the rotated background can be sized to ITS diagonal — see
+  // cardSize's own comment. Re-measures on any resize (device rotation,
+  // window resize, the app's own responsive scaling).
+  useEffect(() => {
+    const el = containerRef.current?.parentElement;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) setCardSize({ w: width, h: height });
+      }
+    });
+    ro.observe(el);
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) setCardSize({ w: rect.width, h: rect.height });
+    return () => ro.disconnect();
+  }, [mapReady]);
+
+  // Side of the square background needs to be at least the viewport's own
+  // diagonal to fully cover it at ANY rotation angle (a square circumscribes
+  // the circle a rotating rectangle sweeps out around its own center) —
+  // exact for the real aspect ratio, unlike a fixed oversize percentage.
+  // 0 (not yet measured) falls back to the previous fixed-percentage
+  // approach below rather than rendering an under-sized background.
+  const cardDiagonal = cardSize.w > 0 && cardSize.h > 0
+    ? Math.sqrt(cardSize.w * cardSize.w + cardSize.h * cardSize.h)
+    : 0;
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     document.body.classList.add('map-tab-active');
@@ -939,17 +976,18 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     applyMapTransform();
   }, [rotation]);
 
-  // The container is deliberately oversized (see its inline style below) so
-  // a rotated square still fully covers the axis-aligned viewport instead of
-  // exposing the card background at its corners. Tell Leaflet its size
-  // changed (same zoom/center, just a bigger canvas to tile into) whenever
-  // that sizing toggles.
+  // The container is deliberately oversized (see its inline style below,
+  // sized off cardDiagonal) so a rotated view still fully covers the
+  // viewport instead of exposing the card background at its corners. Tell
+  // Leaflet its size changed (same zoom/center, just a bigger canvas to
+  // tile into) whenever that sizing toggles OR the measured diagonal itself
+  // changes (device rotation, window resize).
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
     const id = requestAnimationFrame(() => map.invalidateSize({ animate: false, pan: false }));
     return () => cancelAnimationFrame(id);
-  }, [mapReady, editingModeActive]);
+  }, [mapReady, editingModeActive, cardDiagonal]);
 
   // Persist the current position (center + zoom) on every pan/zoom, debounced,
   // so the map reopens where the user left it — direct user request. Stored as
@@ -3860,14 +3898,27 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
               className="leaflet-map-bg"
               style={{
                 position: 'absolute',
-                // Oversized outside the editing modes so a rotated square still
-                // fully covers the axis-aligned viewport instead of exposing the
-                // card background at its corners; the editing modes need the
-                // container at its exact, un-rotated footprint (see the effect
-                // above pairing this with map.invalidateSize()).
-                inset: editingModeActive ? 0 : '-30%',
-                width: editingModeActive ? '100%' : '160%',
-                height: editingModeActive ? '100%' : '160%',
+                // Oversized outside the editing modes so a rotated view still
+                // fully covers the (non-square, phone-portrait) viewport
+                // instead of exposing the card background at its corners —
+                // sized to the real, measured viewport diagonal (cardDiagonal
+                // above), not a fixed percentage, since a fixed percentage
+                // only fully covers a rotated SQUARE viewport; the editing
+                // modes need the container at its exact, un-rotated footprint
+                // (see the effect above pairing this with
+                // map.invalidateSize()). Falls back to the old fixed 160%/
+                // -30% oversize for the one frame before cardDiagonal is
+                // first measured.
+                ...(editingModeActive ? {
+                  inset: 0, width: '100%', height: '100%',
+                } : cardDiagonal > 0 ? {
+                  top: `calc(50% - ${cardDiagonal / 2}px)`,
+                  left: `calc(50% - ${cardDiagonal / 2}px)`,
+                  width: `${cardDiagonal}px`,
+                  height: `${cardDiagonal}px`,
+                } : {
+                  inset: '-30%', width: '160%', height: '160%',
+                }),
                 background: MAP_BG,
                 zIndex: 1,
               }}
