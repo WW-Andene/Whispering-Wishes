@@ -38,7 +38,7 @@ export function ZonesPopover({
     const indentLevel = (zone.level != null ? zone.level - 1 : depth);
     const isCurrent = zone.id === currentZoneId;
     return (
-      <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined}>
+      <div key={zone.id} role="treeitem" aria-expanded={hasChildren ? expanded : undefined} className="zone-selector-treeitem">
         <div className="zone-selector-row" style={{ paddingLeft: `calc(${indentLevel} * var(--space-md, 12px))` }}>
           <button
             type="button"

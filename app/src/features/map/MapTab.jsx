@@ -3578,6 +3578,17 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           display: flex; flex-direction: column;
           gap: var(--space-xs, 4px);
         }
+        /* .zone-selector-treeitem wraps a zone's own row AND (if expanded)
+           its .zone-selector-children group as plain block siblings — the
+           fix above only reaches gaps BETWEEN sub-zones, not the gap
+           between a parent's row and its first child (e.g. Rinascita →
+           Ragunna), which sat flush for the same underlying reason: no
+           flex/gap on their actual shared parent. Direct user follow-up
+           report ("pas de padding entre Rinascita et Ragunna"). */
+        .map-zones-popover .zone-selector-treeitem {
+          display: flex; flex-direction: column;
+          gap: var(--space-xs, 4px);
+        }
 
         /* ── Icon filters popover (hexagon button) ────────────────────── */
         .map-filters-popover {
@@ -3775,7 +3786,19 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           opacity: 0.55;
           text-align: center;
         }
+        /* .kuro-btn (kuro.css) is display:inline-block by default, so
+           justify-content/gap here — and .zone-selector-caret's
+           flex-shrink:0 / .zone-selector-name's flex:1 1 auto below — were
+           dead declarations: a caret + a long zone name (e.g. "Roya
+           Frostlands: Frostlands Surface") just wrapped as plain inline
+           content instead of staying on one row with the name properly
+           truncated. display:flex here is what actually turns those other
+           declarations on. Direct user report ("Roya frostland surface à
+           était changé de taille" — it wasn't resized, it was wrapping
+           like this already; fixing the real cause now that it's visible
+           next to the corrected row spacing above). */
         .zone-selector-item {
+          display: flex; align-items: center;
           justify-content: flex-start;
           text-align: left;
           gap: var(--space-xs, 4px);
