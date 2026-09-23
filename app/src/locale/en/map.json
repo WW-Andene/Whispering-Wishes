@@ -13,12 +13,26 @@
     "title": "Interactive Map",
     "regions": "Regions",
     "iconFilters": "Icon filters",
-    "offlineDownloads": "Offline downloads"
+    "offlineDownloads": "Offline downloads",
+    "referenceImage": "Reference image"
   },
   "legend": {
     "noIconsPlaced": "No icons placed yet. Add icons from the editor panel.",
     "show": "Show {{name}}",
     "hide": "Hide {{name}}",
     "parentHidden": "Parent category \"{{name}}\" is hidden"
+  },
+  "referenceImage": {
+    "import": "Import image",
+    "change": "Change image",
+    "remove": "Remove image",
+    "hint": "Import a screenshot to overlay it on the map as a positioning guide.",
+    "adjustOn": "Adjust: on",
+    "adjustOff": "Adjust: off",
+    "adjustOnHint": "Drag or scroll the image to line it up. Turn off to click through and place points.",
+    "adjustOffHint": "Clicks pass through to the map. Turn on to move/zoom the image.",
+    "opacity": "Opacity",
+    "zoom": "Zoom",
+    "rotation": "Rotation"
   }
 }
