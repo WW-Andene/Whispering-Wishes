@@ -3543,7 +3543,19 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           position: absolute;
           right: var(--space-md, 12px);
           z-index: var(--z-overlay, 1000);
-          width: 256px;
+          /* 384 (PerfectSuite 256+128), not the other popovers' shared
+             256 — this is the only popover whose content includes a zone
+             name as long as "Roya Frostlands: Frostlands Surface", whose
+             .zone-selector-name only clears its own text-overflow:ellipsis
+             at 328px (measured directly, canvas-space px); 384 is the
+             narrowest PerfectSuite value at/above that. Direct user
+             request: widen the panel so the full name shows, instead of
+             the ellipsis or the horizontal scroll the same underflow used
+             to cause (see the min-width:0 fix on .zone-selector-row
+             .zone-selector-item below, its actual root cause). Canvas is a
+             fixed 439px-wide box (ScaledCanvas.jsx) — comfortably fits
+             384px + this popover's own right inset. */
+          width: 384px;
           overflow: visible;
         }
         /* ── Bottom instructions bar ───────────────────────────────────── */
@@ -3837,7 +3849,19 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
         .zone-selector-row {
           display: flex; align-items: stretch; gap: var(--space-sm, 8px);
         }
-        .zone-selector-row .zone-selector-item { flex: 1 1 auto; }
+        /* min-width: 0 overrides the flex item's default min-width:auto,
+           which otherwise refuses to shrink below its content's natural
+           width — exactly what a long zone name (e.g. "Roya Frostlands:
+           Frostlands Surface") needs, since without it the button (and the
+           row containing it) overflows .map-zones-body instead of letting
+           .zone-selector-name's own text-overflow:ellipsis engage. That
+           overflow is also why the popover ever needed to horizontally
+           scroll: .map-zones-body only sets overflow-y:auto, and the CSS
+           spec computes an unset overflow-x as auto too the moment
+           overflow-y isn't visible — so an overflowing row got a real
+           horizontal scrollbar, not just a visual clip. Direct user
+           report ("the scroll due to frostland surface"). */
+        .zone-selector-row .zone-selector-item { flex: 1 1 auto; min-width: 0; }
 
         /* ── Sub-map overlay rows (editor panel) ──────────────────────── */
         /* Treat each row as a mini-card: 8px radius (matches kuro-btn-sm
