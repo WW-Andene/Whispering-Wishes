@@ -44,9 +44,17 @@
 // purely additive vs. the prior seed (overlayDrafts/iconDrafts unchanged,
 // byte-for-byte): 4 new L3 sub-zones under Lahai Roi
 // (overlay-lahai-roi-mo6gpzuw) — Bjartr Woods, Stagnant Run, Mawburrow
-// Desert, Giant's Gaze. Unlike the two cases above, icons still pointing
-// at the Lahai Roi parent were NOT reassigned this time — only asked to
-// "Update" here, not told to repeat that follow-up.
+// Desert, Giant's Gaze.
+//
+// DEFAULT_ICON_DRAFTS: same point-in-polygon reassignment requested for
+// the Lahai Roi parent ("same work as Dimmr Plains"), but — unlike the
+// two prior cases, where every candidate icon fell inside exactly one
+// sub-zone — only 15 of the 37 icons still zoneId: 'overlay-lahai-roi-
+// mo6gpzuw' actually fall inside one of its 4 new sub-zones (7 → Bjartr
+// Woods, 4 → Stagnant Run, 1 → Mawburrow Desert, 3 → Giant's Gaze). The
+// other 22 are genuinely outside all 4 sub-zone polygons (Lahai Roi has
+// more spread than Dimmr Plains/Frostlands Surface did) and were left on
+// the parent zone rather than force-assigned to the nearest one.
 //
 // DEFAULT_PAINT_STROKES is empty - the 552 strokes from that export (3232
 // points across blur/200, fade/200, blur/113) were baked directly into
@@ -603,13 +611,13 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-moc4c8mr-78r', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2287, y: 3493, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4erju-305', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3031, y: 2540, floor: 0, zoneId: 'mount-gjallar', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4i9eg-137', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2454, y: 3475, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4kum1-5fw', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3408, y: 3947, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4kum1-5fw', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3408, y: 3947, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4m69j-1np', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2765, y: 3226, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4mw3b-5rc', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2932, y: 2919, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4o79z-644', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3205, y: 3212, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4pgun-1o8', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3663, y: 3234, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4ql5q-433', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3570, y: 2462, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4qxo6-3zd', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3252, y: 2541, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4pgun-1o8', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3663, y: 3234, floor: -5, zoneId: 'stagnant-run', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4ql5q-433', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3570, y: 2462, floor: -5, zoneId: 'mawburrow-desert', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4qxo6-3zd', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3252, y: 2541, floor: -5, zoneId: 'giant-s-gaze', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4rrm6-1qz', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3246, y: 2947, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3ec6ro-53n', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: -920, y: 6904, label: '', locked: true, zoneId: 'xuanfang-hold', floor: 0, inTree: true },
   { id: 'icon-mu3ee5ah-5vb', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3434, y: 4113, label: '', locked: true, zoneId: 'solisia-landing', floor: -6, inTree: true },
@@ -847,20 +855,20 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-mu6j66xa-1vn', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 4973, y: 8098, floor: 0, zoneId: 'overlay-tethys-deep-mo6i9a2z', label: '', locked: true, inTree: true, scale: undefined, rotation: undefined, opacity: undefined },
   { id: 'icon-mu6j7iij-5jl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 5073, y: 8500, floor: -1, zoneId: 'overlay-tethys-deep-mo6i9a2z', label: '', locked: true, inTree: true, scale: undefined, rotation: undefined, opacity: undefined },
   { id: 'icon-mu6jlf43-2cm', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 8641, y: 11790, floor: undefined, zoneId: 'thessaleo-fell', label: '', locked: true, inTree: true, scale: undefined, rotation: undefined, opacity: undefined },
-  { id: 'icon-mu6jowr2-5ej', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3559, y: 4292, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
-  { id: 'icon-mu6jx7fu-368', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3442, y: 4035, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
-  { id: 'icon-mu6jxf0i-2im', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3436, y: 4071, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
-  { id: 'icon-mu6jxrn9-568', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3368, y: 3985, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
-  { id: 'icon-mu6jy9ew-37l', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3493, y: 3952, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
-  { id: 'icon-mu6jyz9a-6d5', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3338, y: 3745, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
+  { id: 'icon-mu6jowr2-5ej', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3559, y: 4292, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
+  { id: 'icon-mu6jx7fu-368', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3442, y: 4035, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
+  { id: 'icon-mu6jxf0i-2im', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3436, y: 4071, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
+  { id: 'icon-mu6jxrn9-568', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3368, y: 3985, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
+  { id: 'icon-mu6jy9ew-37l', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3493, y: 3952, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
+  { id: 'icon-mu6jyz9a-6d5', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3338, y: 3745, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
   { id: 'icon-muenq749-3kc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3120, y: 3583, label: '', locked: true, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, inTree: true },
-  { id: 'icon-muens7o1-73a', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3559, y: 3476, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-muentqka-5vh', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3774, y: 3277, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-muenu4he-6nl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3705, y: 2983, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muens7o1-73a', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3559, y: 3476, rotation: 0, scale: 1, opacity: 1, zoneId: 'stagnant-run', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muentqka-5vh', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3774, y: 3277, rotation: 0, scale: 1, opacity: 1, zoneId: 'stagnant-run', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenu4he-6nl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3705, y: 2983, rotation: 0, scale: 1, opacity: 1, zoneId: 'stagnant-run', floor: -5, locked: true, inTree: true },
   { id: 'icon-muenuq97-51b', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3502, y: 2763, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-muenvngt-2az', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3495, y: 2268, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenvngt-2az', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3495, y: 2268, rotation: 0, scale: 1, opacity: 1, zoneId: 'giant-s-gaze', floor: -5, locked: true, inTree: true },
   { id: 'icon-muenx6wz-49d', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2630, y: 3457, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueny8jo-2uc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3069, y: 2524, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueny8jo-2uc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3069, y: 2524, rotation: 0, scale: 1, opacity: 1, zoneId: 'giant-s-gaze', floor: -5, locked: true, inTree: true },
   { id: 'icon-muenyyv3-41n', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3334, y: 2714, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
   { id: 'icon-muenzli9-1w1', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3124, y: 2683, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
   { id: 'icon-mueo0j0t-10k', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2894, y: 3064, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
