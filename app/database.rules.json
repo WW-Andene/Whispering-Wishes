@@ -31,8 +31,7 @@
                       && newData.child('timestamp').isNumber()
                       && newData.child('timestamp').val() <= now + 60000
                       && newData.child('ownerUid').isString()
-                      && newData.child('ownerUid').val() == auth.uid
-                      && newData.children().count() <= 10"
+                      && newData.child('ownerUid').val() == auth.uid"
       }
     },
     "presence": {
