@@ -30,6 +30,7 @@ import { TROPHY_ICON_MAP } from '../../shared/utils/trophyIcons.js';
 import { hideOnError } from '../../shared/utils/imageHelpers.js';
 import { FocusTrapModal, useFocusTrap } from '../../shared/components/FocusTrapModal.jsx';
 import { buildPityHistogram } from '../../shared/utils/pityHistogram.js';
+import { sanitizeFirebaseKey } from '../../shared/utils/sanitizeFirebaseKey.js';
 import { useCloudStorage } from '../../providers/CloudStorageProvider.jsx';
 
 // Pull-log banner tag → translation key. The underlying `p.banner` values are
@@ -115,7 +116,6 @@ function AnalyticsTab({
   }, []);
 
   // ── Computed values ────────────────────────────────────────────────────────
-  const sanitizeFirebaseKey = (key) => key ? key.replace(/[^a-zA-Z0-9_-]/g, '_') : key;
   const effectiveLeaderboardId = sanitizeFirebaseKey(state.profile.uid) || userLeaderboardId;
 
   // [SECTION:STATS] ── Community stats & histogram computation ────────────────

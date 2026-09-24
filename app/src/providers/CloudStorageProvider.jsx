@@ -416,6 +416,23 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
     } catch { /* best-effort */ }
   }, [getGoogleAuth, googleUser, firebaseFetch]);
 
+  // ── Leaderboard Delete ──────────────────────────────────────────────────
+  // Unlike handleCloudDelete, this uses anonymous Firebase auth (not Google
+  // Sign-In), since leaderboard/community-pulls entries exist for every
+  // user who has ever submitted, not just Google-signed-in ones - same
+  // auth path AnalyticsTab's submitToLeaderboard already uses for its own
+  // cleanup-on-id-change DELETE calls.
+  const handleLeaderboardDelete = useCallback(async (ids) => {
+    const uniqueIds = [...new Set((ids || []).filter(Boolean))];
+    if (!uniqueIds.length) return;
+    const authToken = await getFirebaseAuth();
+    if (!authToken) return;
+    await Promise.all(uniqueIds.flatMap(id => [
+      firebaseFetch(`leaderboard/${id}`, authToken, { method: 'DELETE' }).catch(() => {}),
+      firebaseFetch(`community-pulls/${id}`, authToken, { method: 'DELETE' }).catch(() => {}),
+    ]));
+  }, [getFirebaseAuth, firebaseFetch]);
+
   // ── Context value ───────────────────────────────────────────────────────
   const value = useMemo(() => ({
     // Google auth
@@ -427,6 +444,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
     handleCloudBackup,
     handleCloudRestore,
     handleCloudDelete,
+    handleLeaderboardDelete,
     // Firebase helpers (shared with AnalyticsTab, AdminPanel, etc.)
     getFirebaseAuth,
     firebaseUrl,
@@ -434,7 +452,7 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
     FIREBASE_AVAILABLE,
   }), [
     googleUser, handleGoogleSignIn, handleGoogleSignOut, cloudBackupStatus,
-    handleCloudBackup, handleCloudRestore, handleCloudDelete,
+    handleCloudBackup, handleCloudRestore, handleCloudDelete, handleLeaderboardDelete,
     getFirebaseAuth, firebaseUrl, firebaseFetch,
   ]);
 

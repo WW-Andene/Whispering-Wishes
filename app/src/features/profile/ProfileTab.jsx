@@ -18,6 +18,7 @@ import { getElementColor, getElementBg } from '../../shared/utils/elementVisuals
 import { storageAvailable } from '../../core/storage.js';
 import { clearAllAuxKeys } from '../../core/storageKeys.js';
 import { purgeAllDownloads } from '../../core/tileSW.js';
+import { sanitizeFirebaseKey } from '../../shared/utils/sanitizeFirebaseKey.js';
 import { renderIdCard } from './idCardRenderer.js';
 import { useFocusTrap, FocusTrapModal } from '../../shared/components/FocusTrapModal.jsx';
 
@@ -123,7 +124,7 @@ function ProfileTab({
   // Cloud storage from context (was 10 props)
   const {
     googleUser, handleGoogleSignIn, handleGoogleSignOut,
-    handleCloudBackup, handleCloudRestore, handleCloudDelete, cloudBackupStatus,
+    handleCloudBackup, handleCloudRestore, handleCloudDelete, handleLeaderboardDelete, cloudBackupStatus,
     getFirebaseAuth, firebaseUrl, firebaseFetch,
   } = useCloudStorage();
 
@@ -1474,6 +1475,11 @@ function ProfileTab({
                 <div className="border-t border-red-900/30 mt-4 pt-3">
                   <button onClick={async () => { if (await confirm({ title: t('profile.export.resetTitle'), message: t('profile.export.resetMessage', { cloudNote: googleUser ? t('profile.export.resetCloudNote') : '' }), confirmLabel: t('profile.export.resetConfirm'), destructive: true })) {
                     haptic.warning();
+                    // Capture the leaderboard id(s) before clearAllAuxKeys() wipes
+                    // ww-leaderboard-id from localStorage below.
+                    let storedLeaderboardId = null;
+                    try { storedLeaderboardId = localStorage.getItem('ww-leaderboard-id'); } catch {}
+                    const leaderboardIds = [sanitizeFirebaseKey(state.profile.uid), storedLeaderboardId];
                     dispatch({ type: 'RESET' });
                     clearAllAuxKeys();
                     // Immediately persist reset to localStorage (don't wait for 300ms debounce)
@@ -1482,6 +1488,12 @@ function ProfileTab({
                     // outside localStorage, so it wasn't touched by the above and users could
                     // "reset all data" yet still have gigabytes of downloaded maps sitting there.
                     await purgeAllDownloads();
+                    // Delete this user's public leaderboard/community-pulls entry too — covers
+                    // both possible ids they may have submitted under (the sanitized in-game
+                    // UID, when known, and/or the locally-generated ww-leaderboard-id), same
+                    // dual-id cleanup submitToLeaderboard already does on id change. Uses
+                    // anonymous Firebase auth, so it works even without Google sign-in.
+                    if (handleLeaderboardDelete) await handleLeaderboardDelete(leaderboardIds);
                     // Delete cloud backup if signed in (await before sign-out to preserve auth token)
                     if (handleCloudDelete) await handleCloudDelete();
                     if (handleGoogleSignOut) handleGoogleSignOut();
