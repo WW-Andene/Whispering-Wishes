@@ -56,6 +56,25 @@
 // more spread than Dimmr Plains/Frostlands Surface did) and were left on
 // the parent zone rather than force-assigned to the nearest one.
 //
+// DEFAULT_ZONE_DRAFTS updated again from a 2026-09-24T11:48:56Z export —
+// purely additive vs. the prior seed (overlayDrafts/iconDrafts unchanged,
+// byte-for-byte): 5 more L3 sub-zones under Lahai Roi
+// (overlay-lahai-roi-mo6gpzuw) — Etching Plains, Startorch Academy,
+// Starward Riseway, Fangspire Chasm, Rebirth Uplands. Unlike the two
+// earlier zone-split updates, these 5 aren't appended after the
+// existing entries — they're interspersed at the exact positions the
+// export itself has them (4 right after the Roya Frostlands Surface
+// batch and before the earlier Lahai Roi batch; Rebirth Uplands in the
+// middle of that earlier Lahai Roi batch) — verified byte-identical to
+// the export's own zoneDrafts order after reload, not just its content.
+//
+// DEFAULT_ICON_DRAFTS: direct user follow-up ("Same" — repeat the Dimmr
+// Plains-style reassignment) closed out the 22 icons the prior Lahai Roi
+// pass had left on the parent zone: with these 5 new sub-zones added,
+// all 22 now fall inside exactly one sub-zone (6 → Etching Plains,
+// 8 → Startorch Academy, 1 → Starward Riseway, 2 → Fangspire Chasm,
+// 5 → Rebirth Uplands) — 0 icons remain on the Lahai Roi parent.
+//
 // DEFAULT_PAINT_STROKES is empty - the 552 strokes from that export (3232
 // points across blur/200, fade/200, blur/113) were baked directly into
 // Solaris_3's master image and its tile pyramid was re-sliced from the
@@ -451,6 +470,34 @@ export const DEFAULT_ZONE_DRAFTS = [
     level: 3,
   },
   {
+    id: 'etching-plains',
+    name: 'Etching Plains',
+    polygon: [[3520, 2786], [3520, 2791], [3518, 2798], [3517, 2803], [3514, 2806], [3508, 2807], [3480, 2801], [3443, 2804], [3415, 2809], [3387, 2805], [3371, 2800], [3347, 2791], [3326, 2782], [3302, 2778], [3278, 2783], [3261, 2792], [3238, 2801], [3223, 2806], [3208, 2814], [3192, 2832], [3180, 2844], [3170, 2874], [3160, 2910], [3151, 2929], [3148, 2949], [3157, 2977], [3159, 2997], [3166, 3023], [3172, 3044], [3168, 3065], [3152, 3103], [3131, 3121], [3101, 3152], [3074, 3187], [3048, 3211], [3020, 3219], [2987, 3214], [2962, 3196], [2930, 3161], [2894, 3132], [2868, 3098], [2831, 3036], [2825, 3003], [2808, 2960], [2790, 2910], [2775, 2864], [2759, 2798], [2758, 2703], [2771, 2652], [2798, 2592], [2825, 2536], [2843, 2507], [2860, 2477], [2876, 2458], [2886, 2447], [2901, 2442], [2910, 2445], [2914, 2454], [2917, 2463], [2919, 2472], [2924, 2481], [2933, 2494], [2942, 2507], [2950, 2520], [2957, 2537], [2961, 2555], [2966, 2570], [2976, 2581], [2983, 2585], [2990, 2586], [2997, 2587], [3003, 2586], [3015, 2584], [3028, 2580], [3049, 2569], [3061, 2564], [3072, 2561], [3120, 2553], [3167, 2549], [3205, 2559], [3243, 2573], [3284, 2582], [3324, 2579], [3394, 2571], [3428, 2559], [3453, 2541], [3450, 2549], [3451, 2558], [3453, 2570], [3457, 2581], [3464, 2589], [3466, 2622], [3470, 2676], [3477, 2698], [3486, 2715], [3492, 2723], [3499, 2729], [3507, 2734], [3510, 2736], [3514, 2740], [3517, 2744], [3517, 2749], [3517, 2754], [3516, 2765], [3517, 2770], [3516, 2777], [3517, 2782]],
+    parentId: 'overlay-lahai-roi-mo6gpzuw',
+    level: 3,
+  },
+  {
+    id: 'startorch-academy',
+    name: 'Startorch Academy',
+    polygon: [[3440, 2870], [3432, 2880], [3430, 2895], [3431, 2910], [3435, 2931], [3436, 2953], [3433, 2976], [3427, 2998], [3421, 3013], [3411, 3029], [3390, 3055], [3365, 3076], [3346, 3087], [3322, 3096], [3296, 3095], [3270, 3088], [3238, 3074], [3206, 3056], [3166, 3027], [3159, 3003], [3157, 2978], [3149, 2956], [3151, 2930], [3161, 2907], [3167, 2883], [3175, 2856], [3181, 2843], [3191, 2832], [3208, 2814], [3232, 2803], [3282, 2782], [3296, 2779], [3309, 2779], [3323, 2782], [3336, 2787], [3361, 2796], [3385, 2804], [3414, 2809], [3434, 2806], [3471, 2800], [3493, 2804], [3514, 2807], [3522, 2810], [3528, 2817], [3533, 2824], [3534, 2832], [3532, 2840], [3528, 2847], [3524, 2854], [3519, 2858], [3509, 2862], [3501, 2865], [3489, 2864], [3465, 2861], [3453, 2859], [3444, 2864]],
+    parentId: 'overlay-lahai-roi-mo6gpzuw',
+    level: 3,
+  },
+  {
+    id: 'starward-riseway',
+    name: 'Starward Riseway',
+    polygon: [[2497, 3315], [2456, 3281], [2412, 3258], [2368, 3251], [2311, 3267], [2284, 3320], [2315, 3417], [2328, 3511], [2351, 3586], [2343, 3664], [2355, 3765], [2281, 3858], [2187, 3894], [2117, 3974], [2087, 4040], [2087, 4139], [2087, 4224], [2048, 4307], [2066, 4387], [2141, 4479], [2260, 4544], [2366, 4605], [2456, 4705], [2537, 4745], [2647, 4763], [2757, 4728], [2880, 4676], [3010, 4659], [3138, 4562], [3176, 4416], [3151, 4265], [3129, 4165], [3081, 4063], [3034, 3980], [2981, 3887], [2918, 3795], [2839, 3726], [2759, 3683], [2693, 3639], [2635, 3564], [2582, 3494], [2551, 3404], [2531, 3349], [2516, 3328]],
+    parentId: 'overlay-lahai-roi-mo6gpzuw',
+    level: 3,
+  },
+  {
+    id: 'fangspire-chasm',
+    name: 'Fangspire Chasm',
+    polygon: [[3082, 3541], [3083, 3536], [3082, 3530], [3080, 3525], [3077, 3520], [3068, 3507], [3057, 3498], [3030, 3481], [3004, 3467], [2979, 3451], [2953, 3433], [2930, 3413], [2912, 3387], [2908, 3373], [2908, 3361], [2908, 3341], [2917, 3322], [2943, 3284], [2976, 3246], [2990, 3229], [3009, 3218], [2995, 3215], [2987, 3213], [2981, 3210], [2954, 3188], [2929, 3161], [2902, 3138], [2882, 3117], [2865, 3092], [2834, 3039], [2825, 3005], [2814, 2976], [2788, 2903], [2768, 2841], [2759, 2781], [2761, 2687], [2705, 2631], [2650, 2576], [2567, 2554], [2448, 2598], [2316, 2616], [2256, 2687], [2225, 2827], [2173, 2918], [2115, 2995], [2113, 3111], [2187, 3211], [2295, 3241], [2439, 3265], [2530, 3340], [2557, 3415], [2586, 3501], [2640, 3566], [2718, 3613], [2787, 3617], [2879, 3613], [2941, 3611], [2988, 3602], [3027, 3598], [3048, 3595], [3066, 3581], [3077, 3564], [3080, 3553]],
+    parentId: 'overlay-lahai-roi-mo6gpzuw',
+    level: 3,
+  },
+  {
     id: 'bjartr-woods',
     name: 'Bjartr Woods',
     polygon: [[3692, 4338], [3687, 4236], [3675, 4149], [3691, 4056], [3695, 3977], [3671, 3900], [3620, 3832], [3545, 3795], [3484, 3770], [3446, 3731], [3395, 3697], [3334, 3693], [3262, 3707], [3233, 3745], [3224, 3794], [3236, 3844], [3253, 3902], [3243, 3958], [3211, 4006], [3211, 4064], [3231, 4116], [3272, 4183], [3317, 4236], [3365, 4272], [3405, 4330], [3470, 4373], [3540, 4417], [3638, 4394]],
@@ -461,6 +508,13 @@ export const DEFAULT_ZONE_DRAFTS = [
     id: 'stagnant-run',
     name: 'Stagnant Run',
     polygon: [[3298, 3701], [3274, 3706], [3262, 3711], [3243, 3709], [3214, 3689], [3199, 3661], [3205, 3628], [3223, 3600], [3228, 3572], [3240, 3547], [3262, 3524], [3284, 3505], [3308, 3492], [3322, 3478], [3345, 3458], [3357, 3442], [3363, 3409], [3373, 3383], [3399, 3359], [3417, 3342], [3428, 3325], [3446, 3309], [3461, 3282], [3468, 3253], [3475, 3229], [3482, 3219], [3476, 3208], [3467, 3191], [3471, 3172], [3480, 3156], [3488, 3130], [3490, 3111], [3490, 3090], [3499, 3066], [3503, 3045], [3504, 3025], [3497, 3000], [3492, 2978], [3484, 2954], [3474, 2943], [3460, 2933], [3457, 2926], [3450, 2915], [3445, 2901], [3443, 2891], [3440, 2882], [3440, 2870], [3445, 2863], [3455, 2859], [3467, 2861], [3478, 2863], [3490, 2864], [3500, 2865], [3513, 2861], [3524, 2855], [3528, 2846], [3533, 2838], [3533, 2825], [3526, 2814], [3517, 2807], [3518, 2797], [3522, 2785], [3534, 2777], [3549, 2777], [3563, 2784], [3576, 2784], [3591, 2776], [3607, 2772], [3622, 2765], [3638, 2765], [3656, 2770], [3671, 2783], [3681, 2791], [3698, 2804], [3721, 2819], [3750, 2828], [3767, 2838], [3796, 2850], [3820, 2869], [3848, 2896], [3872, 2933], [3903, 2959], [3923, 2990], [3945, 3051], [3958, 3120], [3967, 3212], [3955, 3323], [3937, 3405], [3924, 3469], [3896, 3539], [3870, 3591], [3840, 3635], [3803, 3667], [3757, 3699], [3715, 3721], [3659, 3745], [3603, 3745], [3551, 3747], [3518, 3748], [3482, 3743], [3454, 3735], [3428, 3720], [3409, 3706], [3394, 3699], [3375, 3696], [3356, 3694], [3335, 3694], [3315, 3696]],
+    parentId: 'overlay-lahai-roi-mo6gpzuw',
+    level: 3,
+  },
+  {
+    id: 'rebirth-uplands',
+    name: 'Rebirth Uplands',
+    polygon: [[3171, 3031], [3171, 3047], [3169, 3063], [3163, 3077], [3156, 3093], [3148, 3107], [3134, 3119], [3110, 3143], [3072, 3188], [3057, 3203], [3043, 3213], [3027, 3218], [3013, 3217], [2991, 3229], [2975, 3248], [2937, 3293], [2907, 3339], [2909, 3382], [2934, 3419], [2993, 3461], [3035, 3484], [3066, 3504], [3084, 3531], [3078, 3556], [3067, 3583], [3066, 3605], [3077, 3628], [3100, 3643], [3130, 3654], [3168, 3663], [3186, 3665], [3201, 3661], [3200, 3655], [3202, 3647], [3204, 3633], [3220, 3604], [3225, 3590], [3229, 3571], [3241, 3546], [3260, 3526], [3283, 3506], [3309, 3491], [3320, 3480], [3332, 3470], [3343, 3460], [3353, 3447], [3355, 3445], [3356, 3442], [3358, 3436], [3359, 3428], [3361, 3422], [3369, 3393], [3371, 3388], [3376, 3381], [3380, 3376], [3386, 3371], [3408, 3351], [3418, 3341], [3426, 3328], [3437, 3317], [3448, 3306], [3455, 3293], [3459, 3286], [3461, 3279], [3465, 3264], [3469, 3248], [3474, 3233], [3477, 3226], [3481, 3220], [3481, 3217], [3480, 3215], [3469, 3195], [3468, 3189], [3469, 3182], [3472, 3170], [3477, 3161], [3480, 3155], [3483, 3148], [3485, 3141], [3488, 3127], [3490, 3112], [3490, 3105], [3490, 3098], [3490, 3094], [3491, 3090], [3492, 3084], [3498, 3069], [3500, 3062], [3501, 3054], [3503, 3042], [3505, 3029], [3498, 3005], [3492, 2980], [3484, 2956], [3481, 2951], [3477, 2946], [3471, 2941], [3467, 2938], [3462, 2935], [3459, 2931], [3456, 2924], [3452, 2919], [3447, 2907], [3444, 2896], [3440, 2882], [3440, 2870], [3435, 2876], [3431, 2883], [3430, 2897], [3434, 2928], [3436, 2959], [3431, 2990], [3418, 3019], [3396, 3049], [3368, 3074], [3353, 3084], [3337, 3091], [3314, 3097], [3292, 3093], [3263, 3085], [3238, 3075], [3201, 3055]],
     parentId: 'overlay-lahai-roi-mo6gpzuw',
     level: 3,
   },
@@ -610,15 +664,15 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-moc43xrn-1dl', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2576, y: 3966, floor: 0, zoneId: 'frostlands-transit-port', label: '', locked: true, inTree: true },
   { id: 'icon-moc4c8mr-78r', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2287, y: 3493, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4erju-305', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3031, y: 2540, floor: 0, zoneId: 'mount-gjallar', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4i9eg-137', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2454, y: 3475, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4i9eg-137', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2454, y: 3475, floor: -5, zoneId: 'starward-riseway', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4kum1-5fw', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3408, y: 3947, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4m69j-1np', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2765, y: 3226, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4mw3b-5rc', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2932, y: 2919, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4o79z-644', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3205, y: 3212, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4m69j-1np', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2765, y: 3226, floor: -5, zoneId: 'fangspire-chasm', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4mw3b-5rc', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2932, y: 2919, floor: -5, zoneId: 'etching-plains', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4o79z-644', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3205, y: 3212, floor: -5, zoneId: 'rebirth-uplands', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4pgun-1o8', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3663, y: 3234, floor: -5, zoneId: 'stagnant-run', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4ql5q-433', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3570, y: 2462, floor: -5, zoneId: 'mawburrow-desert', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4qxo6-3zd', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3252, y: 2541, floor: -5, zoneId: 'giant-s-gaze', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4rrm6-1qz', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3246, y: 2947, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4rrm6-1qz', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3246, y: 2947, floor: -5, zoneId: 'startorch-academy', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3ec6ro-53n', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: -920, y: 6904, label: '', locked: true, zoneId: 'xuanfang-hold', floor: 0, inTree: true },
   { id: 'icon-mu3ee5ah-5vb', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3434, y: 4113, label: '', locked: true, zoneId: 'solisia-landing', floor: -6, inTree: true },
   { id: 'icon-mu3eg5i2-4vh', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2863, y: 4042, label: '', locked: true, zoneId: 'sealed-fissure', floor: -6, inTree: true },
@@ -861,28 +915,28 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-mu6jxrn9-568', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3368, y: 3985, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
   { id: 'icon-mu6jy9ew-37l', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3493, y: 3952, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
   { id: 'icon-mu6jyz9a-6d5', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3338, y: 3745, floor: -5, zoneId: 'bjartr-woods', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 0.85 },
-  { id: 'icon-muenq749-3kc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3120, y: 3583, label: '', locked: true, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, inTree: true },
+  { id: 'icon-muenq749-3kc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3120, y: 3583, label: '', locked: true, zoneId: 'rebirth-uplands', floor: -5, inTree: true },
   { id: 'icon-muens7o1-73a', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3559, y: 3476, rotation: 0, scale: 1, opacity: 1, zoneId: 'stagnant-run', floor: -5, locked: true, inTree: true },
   { id: 'icon-muentqka-5vh', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3774, y: 3277, rotation: 0, scale: 1, opacity: 1, zoneId: 'stagnant-run', floor: -5, locked: true, inTree: true },
   { id: 'icon-muenu4he-6nl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3705, y: 2983, rotation: 0, scale: 1, opacity: 1, zoneId: 'stagnant-run', floor: -5, locked: true, inTree: true },
-  { id: 'icon-muenuq97-51b', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3502, y: 2763, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenuq97-51b', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3502, y: 2763, rotation: 0, scale: 1, opacity: 1, zoneId: 'etching-plains', floor: -5, locked: true, inTree: true },
   { id: 'icon-muenvngt-2az', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3495, y: 2268, rotation: 0, scale: 1, opacity: 1, zoneId: 'giant-s-gaze', floor: -5, locked: true, inTree: true },
-  { id: 'icon-muenx6wz-49d', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2630, y: 3457, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenx6wz-49d', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2630, y: 3457, rotation: 0, scale: 1, opacity: 1, zoneId: 'fangspire-chasm', floor: -5, locked: true, inTree: true },
   { id: 'icon-mueny8jo-2uc', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3069, y: 2524, rotation: 0, scale: 1, opacity: 1, zoneId: 'giant-s-gaze', floor: -5, locked: true, inTree: true },
-  { id: 'icon-muenyyv3-41n', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3334, y: 2714, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-muenzli9-1w1', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3124, y: 2683, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo0j0t-10k', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2894, y: 3064, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo1dls-5vl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3315, y: 3189, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo1yxt-3xf', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3264, y: 3289, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo2yfh-3ym', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3079, y: 3298, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo48y3-62y', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3120, y: 2985, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo58x0-26i', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3183, y: 2932, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo5zvo-5gv', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3395, y: 3005, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo6lh7-76q', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3278, y: 2897, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo7ce2-6lx', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3322, y: 2949, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo7rqp-30y', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3298, y: 2986, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo8fqa-5om', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3308, y: 3012, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
-  { id: 'icon-mueo8y3e-530', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3249, y: 2985, rotation: 0, scale: 1, opacity: 1, zoneId: 'overlay-lahai-roi-mo6gpzuw', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenyyv3-41n', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3334, y: 2714, rotation: 0, scale: 1, opacity: 1, zoneId: 'etching-plains', floor: -5, locked: true, inTree: true },
+  { id: 'icon-muenzli9-1w1', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3124, y: 2683, rotation: 0, scale: 1, opacity: 1, zoneId: 'etching-plains', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo0j0t-10k', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 2894, y: 3064, rotation: 0, scale: 1, opacity: 1, zoneId: 'etching-plains', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo1dls-5vl', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3315, y: 3189, rotation: 0, scale: 1, opacity: 1, zoneId: 'rebirth-uplands', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo1yxt-3xf', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3264, y: 3289, rotation: 0, scale: 1, opacity: 1, zoneId: 'rebirth-uplands', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo2yfh-3ym', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3079, y: 3298, rotation: 0, scale: 1, opacity: 1, zoneId: 'rebirth-uplands', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo48y3-62y', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3120, y: 2985, rotation: 0, scale: 1, opacity: 1, zoneId: 'etching-plains', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo58x0-26i', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3183, y: 2932, rotation: 0, scale: 1, opacity: 1, zoneId: 'startorch-academy', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo5zvo-5gv', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3395, y: 3005, rotation: 0, scale: 1, opacity: 1, zoneId: 'startorch-academy', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo6lh7-76q', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3278, y: 2897, rotation: 0, scale: 1, opacity: 1, zoneId: 'startorch-academy', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo7ce2-6lx', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3322, y: 2949, rotation: 0, scale: 1, opacity: 1, zoneId: 'startorch-academy', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo7rqp-30y', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3298, y: 2986, rotation: 0, scale: 1, opacity: 1, zoneId: 'startorch-academy', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo8fqa-5om', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3308, y: 3012, rotation: 0, scale: 1, opacity: 1, zoneId: 'startorch-academy', floor: -5, locked: true, inTree: true },
+  { id: 'icon-mueo8y3e-530', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', label: '', x: 3249, y: 2985, rotation: 0, scale: 1, opacity: 1, zoneId: 'startorch-academy', floor: -5, locked: true, inTree: true },
 ];
 
 export const DEFAULT_PAINT_STROKES = [];
