@@ -3543,21 +3543,21 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           position: absolute;
           right: var(--space-md, 12px);
           z-index: var(--z-overlay, 1000);
-          /* 320 (PerfectSuite 256+64), not the other popovers' shared 256
-             — direct user follow-up: 384 (this rule's first width, sized
-             to the exact 328px .zone-selector-name needs to clear its own
-             ellipsis for "Roya Frostlands: Frostlands Surface") read as
-             "way too wide" on device — nearly the full 439px canvas
-             (ScaledCanvas.jsx) with almost no side margin. 320 is the
-             PerfectSuite primary+primary sum actually nearest 328 (the
-             §7.1 tie-break this rule's first pass overrode for a fit-
-             everything margin instead) — a visibly narrower panel, at the
-             cost of that one longest name still clearing its own ellipsis
-             by only ~8px, i.e. minor truncation on that single outlier
-             rather than sizing the whole popover around it. The
-             min-width:0 fix below (the actual scroll bug) is unaffected
-             either way. */
-          width: 320px;
+          /* 332px, not a PerfectSuite value — direct user request, after
+             two rounds that each failed one half of it: the full name
+             ("Roya Frostlands: Frostlands Surface") on one line, not
+             truncated, and not noticeably wider than needed to do that.
+             320 (PerfectSuite 256+64) truncates it by ~8px; 384 (256+128)
+             clears it but reads as "way too wide" with almost no side
+             margin against the 439px canvas (ScaledCanvas.jsx). Nothing
+             on the PerfectSuite scale falls between 320 and 384, and this
+             requirement is functional (the name must fully fit), not
+             aesthetic, so it's sized to the actual measured minimum
+             (328px, canvas-space) plus a 4px buffer for cross-device font
+             rendering variance, rather than snapped to either neighboring
+             suite value. The min-width:0 fix below (the actual scroll
+             bug) is unaffected either way. */
+          width: 332px;
           overflow: visible;
         }
         /* ── Bottom instructions bar ───────────────────────────────────── */
