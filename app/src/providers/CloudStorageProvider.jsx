@@ -91,7 +91,14 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
   const googleAuthRef = useRef({ idToken: null, refreshToken: null, expiresAt: 0 });
 
   // ── Firebase Anonymous Auth ─────────────────────────────────────────────
-  const firebaseAuthRef = useRef({ idToken: null, expiresAt: 0 });
+  // The anonymous account's refresh token + uid are persisted to localStorage (unlike
+  // googleAuthRef above) so the SAME Firebase auth.uid is reused across page loads instead
+  // of accounts:signUp minting a brand-new, unrelated uid every session. This uid is what
+  // database.rules.json now binds leaderboard/community-pulls entry ownership to
+  // (`ownerUid`) — without persistence, a user's own delete/re-submit would fail the
+  // ownership check the very next time they opened the app.
+  const ANON_AUTH_KEY = 'ww-firebase-anon';
+  const firebaseAuthRef = useRef({ idToken: null, uid: null, expiresAt: 0 });
   const getFirebaseAuth = useCallback(async () => {
     if (!FIREBASE_AVAILABLE) {
       console.warn('[WW] Firebase config missing - online features disabled.');
@@ -100,6 +107,29 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
     const now = Date.now();
     if (firebaseAuthRef.current.idToken && firebaseAuthRef.current.expiresAt > now + 60000) {
       return firebaseAuthRef.current.idToken;
+    }
+    let stored = null;
+    try { stored = JSON.parse(localStorage.getItem(ANON_AUTH_KEY) || 'null'); } catch {}
+    if (stored?.refreshToken) {
+      try {
+        const res = await fetchWithTimeout('https://securetoken.googleapis.com/v1/token?key=' + FIREBASE_API_KEY, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(stored.refreshToken)}`,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          firebaseAuthRef.current = {
+            idToken: data.id_token,
+            uid: data.user_id || stored.uid,
+            expiresAt: now + (parseInt(data.expires_in, 10) || 3600) * 1000,
+          };
+          return data.id_token;
+        }
+      } catch (e) { console.warn('Firebase anon token refresh failed:', e); }
+      // Refresh token rejected (revoked/expired) — fall through and mint a fresh anonymous
+      // account below; this device's old ownerUid becomes unreachable, same as any other
+      // credential expiry.
     }
     try {
       const res = await fetchWithTimeout(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FIREBASE_API_KEY}`, {
@@ -111,14 +141,23 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
       const data = await res.json();
       firebaseAuthRef.current = {
         idToken: data.idToken,
+        uid: data.localId,
         expiresAt: now + (parseInt(data.expiresIn, 10) || 3600) * 1000
       };
+      try { localStorage.setItem(ANON_AUTH_KEY, JSON.stringify({ uid: data.localId, refreshToken: data.refreshToken })); } catch {}
       return data.idToken;
     } catch (e) {
       console.warn('Firebase anonymous auth failed:', e);
       return null;
     }
   }, []);
+
+  // Resolves once getFirebaseAuth has (re)established the current session, then returns the
+  // stable anonymous auth.uid backing it — used to stamp/verify leaderboard entry ownership.
+  const getFirebaseAuthUid = useCallback(async () => {
+    await getFirebaseAuth();
+    return firebaseAuthRef.current.uid;
+  }, [getFirebaseAuth]);
 
   const firebaseUrl = useCallback((path) => `${FIREBASE_DB}/${path}.json`, []);
 
@@ -447,13 +486,14 @@ export function CloudStorageProvider({ children, getBackupPayload, onRestoreData
     handleLeaderboardDelete,
     // Firebase helpers (shared with AnalyticsTab, AdminPanel, etc.)
     getFirebaseAuth,
+    getFirebaseAuthUid,
     firebaseUrl,
     firebaseFetch,
     FIREBASE_AVAILABLE,
   }), [
     googleUser, handleGoogleSignIn, handleGoogleSignOut, cloudBackupStatus,
     handleCloudBackup, handleCloudRestore, handleCloudDelete, handleLeaderboardDelete,
-    getFirebaseAuth, firebaseUrl, firebaseFetch,
+    getFirebaseAuth, getFirebaseAuthUid, firebaseUrl, firebaseFetch,
   ]);
 
   return (

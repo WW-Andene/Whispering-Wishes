@@ -64,7 +64,7 @@ function AnalyticsTab({
   headerPadding,
   navPadding,
 }) {
-  const { getFirebaseAuth, firebaseUrl, firebaseFetch, FIREBASE_AVAILABLE } = useCloudStorage();
+  const { getFirebaseAuth, getFirebaseAuthUid, firebaseUrl, firebaseFetch, FIREBASE_AVAILABLE } = useCloudStorage();
   // ── Analytics-only state ──────────────────────────────────────────────────
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [selectedTrophy, setSelectedTrophy] = useState(null);
@@ -320,9 +320,15 @@ function AnalyticsTab({
       if (lost5050 < 0 || lost5050 > pulls) throw new Error('Invalid 50/50 loss count');
       if (effectiveLeaderboardId.length > 64) throw new Error('Leaderboard ID too long');
       const hashedUid = await hashUidForStorage(state.profile.uid);
+      const authToken = await getFirebaseAuth();
+      // Firebase's auth.uid for this device's persistent anonymous identity — database.rules.json
+      // binds write/delete access on this entry to whoever's ownerUid matches, so only the
+      // submitter (or Reset All Data running under the same identity) can update or remove it.
+      const ownerUid = await getFirebaseAuthUid();
       const entry = {
         id: effectiveLeaderboardId,
         uid: hashedUid,
+        ownerUid,
         avgPity,
         pulls,
         totalPulls,
@@ -333,7 +339,6 @@ function AnalyticsTab({
         // live version instead of letting pity data from old versions compete forever.
         version: CURRENT_BANNERS.version
       };
-      const authToken = await getFirebaseAuth();
       const res = await firebaseFetch(`leaderboard/${effectiveLeaderboardId}`, authToken, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -348,7 +353,7 @@ function AnalyticsTab({
           await firebaseFetch(`community-pulls/${effectiveLeaderboardId}`, authToken, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now() })
+            body: JSON.stringify({ chars: owned5Chars, weaps: owned5Weaps, timestamp: Date.now(), ownerUid })
           });
         } catch { /* community-pulls is best-effort */ }
       }
@@ -368,7 +373,7 @@ function AnalyticsTab({
       submittingRef.current = false;
       setLeaderboardSubmitting(false);
     }
-  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, firebaseFetch, hashUidForStorage, checkFirebaseRateLimit]);
+  }, [effectiveLeaderboardId, userLeaderboardId, overallStats, state.profile, toast, loadLeaderboard, loadCommunityPulls, leaderboardConsented, getFirebaseAuth, getFirebaseAuthUid, firebaseFetch, hashUidForStorage, checkFirebaseRateLimit]);
 
   // Load leaderboard data when modal opens
   useEffect(() => {

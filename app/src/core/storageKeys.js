@@ -43,6 +43,7 @@ export const AUX_INTERNAL_KEYS = [
   'ww-leaderboard-consent',
   'ww-leaderboard-id',
   'ww-google-user',
+  'ww-firebase-anon',
 ];
 
 // ── Admin/security keys: cleared on reset ──
