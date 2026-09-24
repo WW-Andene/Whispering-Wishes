@@ -3543,19 +3543,21 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
           position: absolute;
           right: var(--space-md, 12px);
           z-index: var(--z-overlay, 1000);
-          /* 384 (PerfectSuite 256+128), not the other popovers' shared
-             256 — this is the only popover whose content includes a zone
-             name as long as "Roya Frostlands: Frostlands Surface", whose
-             .zone-selector-name only clears its own text-overflow:ellipsis
-             at 328px (measured directly, canvas-space px); 384 is the
-             narrowest PerfectSuite value at/above that. Direct user
-             request: widen the panel so the full name shows, instead of
-             the ellipsis or the horizontal scroll the same underflow used
-             to cause (see the min-width:0 fix on .zone-selector-row
-             .zone-selector-item below, its actual root cause). Canvas is a
-             fixed 439px-wide box (ScaledCanvas.jsx) — comfortably fits
-             384px + this popover's own right inset. */
-          width: 384px;
+          /* 320 (PerfectSuite 256+64), not the other popovers' shared 256
+             — direct user follow-up: 384 (this rule's first width, sized
+             to the exact 328px .zone-selector-name needs to clear its own
+             ellipsis for "Roya Frostlands: Frostlands Surface") read as
+             "way too wide" on device — nearly the full 439px canvas
+             (ScaledCanvas.jsx) with almost no side margin. 320 is the
+             PerfectSuite primary+primary sum actually nearest 328 (the
+             §7.1 tie-break this rule's first pass overrode for a fit-
+             everything margin instead) — a visibly narrower panel, at the
+             cost of that one longest name still clearing its own ellipsis
+             by only ~8px, i.e. minor truncation on that single outlier
+             rather than sizing the whole popover around it. The
+             min-width:0 fix below (the actual scroll bug) is unaffected
+             either way. */
+          width: 320px;
           overflow: visible;
         }
         /* ── Bottom instructions bar ───────────────────────────────────── */
