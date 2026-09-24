@@ -27,6 +27,19 @@
 // 17 fell inside exactly one sub-zone (no ties, none left unmatched):
 // 6 → Solisia Landing, 3 → Sealed Fissure, 4 → Silent Crag, 4 → Dimmr Deep.
 //
+// DEFAULT_ZONE_DRAFTS updated again from a 2026-09-24T04:23:53Z export —
+// purely additive vs. the prior seed (overlayDrafts/iconDrafts unchanged,
+// byte-for-byte): 5 new L3 sub-zones under Roya Frostlands: Frostlands
+// Surface (roya-frostlands-sub-1) — Frostlands Transit Port, Mount
+// Gjallar, Starblind Crashsite, Upphaf Forest Ruins, Tidelost Forest.
+//
+// DEFAULT_ICON_DRAFTS: same treatment as the Dimmr Plains case above —
+// the 21 icons still pointing at roya-frostlands-sub-1 (placed there
+// before its 5 new L3 sub-zones existed) were reassigned via the same
+// point-in-polygon test. All 21 fell inside exactly one sub-zone: 3 →
+// Frostlands Transit Port, 5 → Mount Gjallar, 11 → Starblind Crashsite,
+// 1 → Tidelost Forest, 1 → Upphaf Forest Ruins.
+//
 // DEFAULT_PAINT_STROKES is empty - the 552 strokes from that export (3232
 // points across blur/200, fade/200, blur/113) were baked directly into
 // Solaris_3's master image and its tile pyramid was re-sliced from the
@@ -386,6 +399,41 @@ export const DEFAULT_ZONE_DRAFTS = [
     parentId: 'overlay-dimmr-plains-mu1p74j8',
     level: 3,
   },
+  {
+    id: 'frostlands-transit-port',
+    name: 'Frostlands Transit Port',
+    polygon: [[3067, 3869], [3054, 3812], [3015, 3769], [2974, 3752], [2914, 3717], [2868, 3698], [2842, 3689], [2786, 3703], [2740, 3715], [2695, 3714], [2655, 3721], [2615, 3746], [2546, 3783], [2531, 3797], [2501, 3825], [2455, 3859], [2393, 3911], [2337, 3944], [2258, 3988], [2193, 4054], [2164, 4152], [2186, 4244], [2230, 4305], [2329, 4392], [2401, 4542], [2503, 4687], [2666, 4807], [2803, 4859], [2940, 4911], [3123, 4935], [3247, 4897], [3347, 4816], [3466, 4735], [3563, 4669], [3689, 4628], [3791, 4540], [3803, 4387], [3758, 4274], [3679, 4234], [3591, 4221], [3513, 4239], [3426, 4284], [3330, 4281], [3241, 4251], [3184, 4204], [3148, 4141], [3103, 4088], [3079, 4040], [3072, 3981], [3063, 3920]],
+    parentId: 'roya-frostlands-sub-1',
+    level: 3,
+  },
+  {
+    id: 'mount-gjallar',
+    name: 'Mount Gjallar',
+    polygon: [[3909, 3226], [3943, 3194], [3977, 3189], [4005, 3203], [4026, 3232], [4053, 3255], [4074, 3292], [4071, 3349], [4052, 3382], [4011, 3418], [3973, 3432], [3923, 3422], [3880, 3431], [3848, 3467], [3817, 3520], [3792, 3592], [3757, 3649], [3714, 3697], [3667, 3795], [3604, 3893], [3560, 3979], [3493, 4021], [3434, 4044], [3376, 4086], [3341, 4126], [3326, 4163], [3289, 4204], [3244, 4210], [3196, 4208], [3174, 4187], [3130, 4117], [3080, 4036], [3062, 3913], [3073, 3876], [3048, 3797], [2984, 3747], [2912, 3716], [2845, 3691], [2774, 3619], [2706, 3568], [2668, 3503], [2665, 3406], [2683, 3263], [2684, 3137], [2655, 3031], [2648, 2973], [2645, 2915], [2670, 2854], [2690, 2801], [2683, 2740], [2636, 2707], [2599, 2685], [2573, 2652], [2564, 2609], [2585, 2573], [2629, 2532], [2698, 2506], [2735, 2497], [2777, 2467], [2814, 2408], [2832, 2361], [2862, 2314], [2894, 2293], [2924, 2281], [2949, 2264], [2969, 2235], [2990, 2224], [3015, 2222], [3040, 2229], [3073, 2250], [3111, 2284], [3170, 2320], [3236, 2386], [3271, 2470], [3317, 2532], [3334, 2580], [3333, 2623], [3323, 2659], [3318, 2718], [3314, 2768], [3332, 2815], [3329, 2885], [3333, 2956], [3400, 3016], [3415, 3066], [3446, 3111], [3465, 3134], [3475, 3156], [3496, 3167], [3511, 3179], [3525, 3213], [3540, 3253], [3528, 3326], [3509, 3379], [3477, 3436], [3495, 3515], [3535, 3582], [3590, 3587], [3653, 3569], [3695, 3514], [3725, 3463], [3758, 3392], [3799, 3339], [3834, 3292], [3872, 3259]],
+    parentId: 'roya-frostlands-sub-1',
+    level: 3,
+  },
+  {
+    id: 'starblind-crashsite',
+    name: 'Starblind Crashsite',
+    polygon: [[2433, 3877], [2385, 3880], [2309, 3865], [2230, 3872], [2140, 3871], [2072, 3840], [2034, 3752], [1962, 3692], [1878, 3664], [1774, 3593], [1722, 3476], [1641, 3391], [1567, 3297], [1541, 3219], [1527, 3169], [1564, 3110], [1622, 3081], [1699, 3089], [1761, 3091], [1841, 3063], [1896, 3004], [2001, 2958], [2099, 2919], [2157, 2894], [2220, 2832], [2240, 2753], [2279, 2688], [2354, 2620], [2446, 2604], [2509, 2580], [2554, 2595], [2566, 2622], [2570, 2646], [2584, 2664], [2612, 2696], [2650, 2715], [2672, 2733], [2685, 2752], [2687, 2789], [2686, 2812], [2666, 2860], [2650, 2904], [2646, 2924], [2648, 2957], [2648, 3006], [2667, 3063], [2680, 3132], [2684, 3254], [2673, 3370], [2671, 3502], [2697, 3555], [2761, 3612], [2802, 3649], [2831, 3676], [2842, 3689], [2831, 3692], [2808, 3698], [2772, 3707], [2754, 3711], [2718, 3714], [2682, 3716], [2660, 3717], [2593, 3757], [2542, 3784], [2497, 3827]],
+    parentId: 'roya-frostlands-sub-1',
+    level: 3,
+  },
+  {
+    id: 'upphaf-forest-ruins',
+    name: 'Upphaf Forest Ruins',
+    polygon: [[3538, 3578], [3524, 3567], [3515, 3552], [3499, 3519], [3489, 3488], [3481, 3453], [3481, 3427], [3494, 3406], [3507, 3382], [3517, 3358], [3526, 3332], [3530, 3312], [3537, 3267], [3538, 3244], [3530, 3223], [3508, 3176], [3489, 3164], [3479, 3158], [3471, 3150], [3467, 3139], [3459, 3127], [3443, 3106], [3414, 3063], [3407, 3040], [3404, 3027], [3396, 3016], [3382, 2999], [3361, 2982], [3352, 2973], [3348, 2969], [3345, 2967], [3343, 2964], [3338, 2953], [3332, 2942], [3329, 2865], [3331, 2841], [3332, 2830], [3330, 2819], [3329, 2805], [3325, 2797], [3317, 2776], [3315, 2755], [3316, 2733], [3320, 2689], [3326, 2646], [3331, 2628], [3333, 2615], [3333, 2601], [3334, 2587], [3331, 2574], [3323, 2550], [3308, 2520], [3287, 2492], [3268, 2462], [3254, 2431], [3239, 2397], [3215, 2365], [3170, 2322], [3103, 2281], [3084, 2260], [3058, 2240], [3040, 2229], [3010, 2222], [3003, 2188], [3015, 2164], [3036, 2136], [3063, 2116], [3119, 2092], [3160, 2067], [3198, 2043], [3239, 2018], [3285, 2015], [3347, 2031], [3400, 2056], [3473, 2074], [3532, 2079], [3611, 2130], [3742, 2168], [3861, 2221], [3948, 2294], [4020, 2375], [4049, 2470], [4066, 2597], [4106, 2648], [4139, 2712], [4150, 2778], [4126, 2868], [4144, 2942], [4147, 3013], [4121, 3075], [4086, 3116], [4049, 3137], [4012, 3159], [3975, 3180], [3946, 3194], [3915, 3220], [3855, 3271], [3804, 3325], [3762, 3385], [3730, 3457], [3682, 3535], [3654, 3565], [3639, 3574], [3616, 3580], [3577, 3587], [3557, 3585], [3545, 3584]],
+    parentId: 'roya-frostlands-sub-1',
+    level: 3,
+  },
+  {
+    id: 'tidelost-forest',
+    name: 'Tidelost Forest',
+    polygon: [[3247, 2019], [3281, 1992], [3304, 1970], [3326, 1947], [3349, 1934], [3371, 1921], [3397, 1910], [3422, 1899], [3467, 1885], [3498, 1861], [3512, 1826], [3513, 1781], [3494, 1740], [3463, 1707], [3427, 1691], [3379, 1676], [3340, 1687], [3300, 1689], [3257, 1683], [3226, 1668], [3180, 1646], [3130, 1621], [3091, 1627], [3035, 1657], [2979, 1673], [2938, 1674], [2881, 1702], [2808, 1722], [2738, 1767], [2731, 1833], [2723, 1891], [2691, 1944], [2637, 1976], [2572, 2033], [2522, 2116], [2473, 2154], [2388, 2167], [2326, 2190], [2286, 2229], [2238, 2321], [2178, 2381], [2150, 2446], [2121, 2498], [2067, 2548], [2000, 2563], [1961, 2528], [1894, 2492], [1861, 2497], [1814, 2502], [1765, 2552], [1730, 2603], [1675, 2625], [1586, 2638], [1514, 2659], [1483, 2727], [1504, 2788], [1562, 2825], [1594, 2846], [1619, 2877], [1620, 2924], [1593, 2972], [1585, 3021], [1610, 3064], [1636, 3080], [1684, 3088], [1728, 3091], [1775, 3084], [1808, 3074], [1835, 3064], [1861, 3043], [1887, 3016], [1911, 3002], [1948, 2984], [2017, 2953], [2067, 2932], [2106, 2919], [2159, 2894], [2206, 2849], [2223, 2818], [2233, 2778], [2253, 2729], [2283, 2690], [2300, 2668], [2330, 2641], [2353, 2625], [2370, 2618], [2394, 2612], [2420, 2609], [2446, 2604], [2470, 2595], [2490, 2585], [2506, 2580], [2524, 2581], [2542, 2590], [2564, 2586], [2583, 2577], [2604, 2559], [2621, 2542], [2653, 2525], [2685, 2511], [2712, 2501], [2741, 2491], [2768, 2473], [2786, 2454], [2806, 2421], [2821, 2386], [2836, 2352], [2853, 2325], [2879, 2302], [2905, 2290], [2930, 2275], [2949, 2263], [2961, 2245], [2978, 2231], [2991, 2225], [3002, 2222], [3008, 2211], [3007, 2202], [3004, 2191], [3005, 2184], [3009, 2176], [3014, 2167], [3018, 2160], [3025, 2151], [3029, 2145], [3033, 2139], [3040, 2134], [3046, 2129], [3051, 2126], [3059, 2119], [3071, 2113], [3080, 2110], [3095, 2102], [3109, 2096], [3120, 2091], [3134, 2083], [3148, 2075], [3162, 2065], [3174, 2058], [3189, 2049], [3204, 2040], [3224, 2026], [3236, 2020]],
+    parentId: 'roya-frostlands-sub-1',
+    level: 3,
+  },
 ];
 
 export const DEFAULT_OVERLAY_DRAFTS = [
@@ -515,9 +563,9 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-moc3gn8x-77c', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 10187, y: 15922, floor: 0, zoneId: 'rinascita-sub-2', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc3mqzj-1xe', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 8865, y: 11959, floor: 0, zoneId: 'beohr-waters', label: '', locked: true, inTree: true },
   { id: 'icon-moc3yi04-255', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 4980, y: 8118, floor: -4, zoneId: 'overlay-chronorift-metropolis-mobcexa9', label: '', locked: true, inTree: true },
-  { id: 'icon-moc43xrn-1dl', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2576, y: 3966, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true },
-  { id: 'icon-moc4c8mr-78r', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2287, y: 3493, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-moc4erju-305', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3031, y: 2540, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc43xrn-1dl', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2576, y: 3966, floor: 0, zoneId: 'frostlands-transit-port', label: '', locked: true, inTree: true },
+  { id: 'icon-moc4c8mr-78r', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2287, y: 3493, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-moc4erju-305', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3031, y: 2540, floor: 0, zoneId: 'mount-gjallar', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4i9eg-137', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2454, y: 3475, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4kum1-5fw', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3408, y: 3947, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4m69j-1np', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2765, y: 3226, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
@@ -678,24 +726,24 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-mu3wkwrm-5zj', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 9112, y: 12558, floor: 1, zoneId: 'overlay-avinoleum-mo7c3krn', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3wl738-172', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 9406, y: 12420, floor: 1, zoneId: 'overlay-avinoleum-mo7c3krn', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3wn35o-4sn', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 9593, y: 12483, floor: 1, zoneId: 'overlay-avinoleum-mo7c3krn', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46bqvq-p', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3011, y: 3796, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46cxsf-7d7', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2931, y: 3750, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46dpgf-5mt', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2379, y: 3632, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46ehnu-4r6', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2276, y: 3300, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46ft7z-1gv', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2497, y: 3290, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46gqta-ij', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2600, y: 3283, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46h1ew-2gt', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2150, y: 3057, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46hm27-xy', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2425, y: 3189, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46hym2-3wr', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2381, y: 3053, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46il7s-3vd', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2523, y: 3064, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46jaei-1fr', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2534, y: 2801, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46jwd0-5bs', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2535, y: 2928, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46klpu-30d', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3318, y: 3222, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46lh0v-2k3', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3405, y: 3090, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46mcts-418', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3606, y: 2920, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46n6ln-g2', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3323, y: 2622, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46oy77-1s6', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3111, y: 2479, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu46pa9l-79e', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3006, y: 1959, floor: 0, zoneId: 'roya-frostlands-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46bqvq-p', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3011, y: 3796, floor: 0, zoneId: 'frostlands-transit-port', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46cxsf-7d7', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2931, y: 3750, floor: 0, zoneId: 'frostlands-transit-port', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46dpgf-5mt', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2379, y: 3632, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46ehnu-4r6', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2276, y: 3300, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46ft7z-1gv', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2497, y: 3290, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46gqta-ij', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2600, y: 3283, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46h1ew-2gt', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2150, y: 3057, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46hm27-xy', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2425, y: 3189, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46hym2-3wr', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2381, y: 3053, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46il7s-3vd', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2523, y: 3064, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46jaei-1fr', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2534, y: 2801, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46jwd0-5bs', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2535, y: 2928, floor: 0, zoneId: 'starblind-crashsite', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46klpu-30d', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3318, y: 3222, floor: 0, zoneId: 'mount-gjallar', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46lh0v-2k3', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3405, y: 3090, floor: 0, zoneId: 'mount-gjallar', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46mcts-418', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3606, y: 2920, floor: 0, zoneId: 'upphaf-forest-ruins', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46n6ln-g2', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3323, y: 2622, floor: 0, zoneId: 'mount-gjallar', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46oy77-1s6', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3111, y: 2479, floor: 0, zoneId: 'mount-gjallar', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu46pa9l-79e', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3006, y: 1959, floor: 0, zoneId: 'tidelost-forest', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu46r3l7-4l2', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 11243, y: 14761, floor: 0, zoneId: 'rinascita-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu46s52i-5pu', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 11128, y: 14433, floor: 0, zoneId: 'rinascita-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu46su0v-289', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 10953, y: 14685, floor: 0, zoneId: 'rinascita-sub-1', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
