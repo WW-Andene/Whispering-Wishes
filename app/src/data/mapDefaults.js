@@ -19,6 +19,14 @@
 // (overlay-dimmr-plains-mu1p74j8) — Solisia Landing, Sealed Fissure,
 // Silent Crag, Dimmr Deep.
 //
+// DEFAULT_ICON_DRAFTS: the 17 icons still pointing at the Dimmr Plains
+// PARENT zone (overlay-dimmr-plains-mu1p74j8) — placed there before its 4
+// L3 sub-zones above existed — were reassigned to whichever of those 4
+// sub-zone polygons actually contains the icon's (x, y), via a standard
+// ray-casting point-in-polygon test. Direct user request. Every one of the
+// 17 fell inside exactly one sub-zone (no ties, none left unmatched):
+// 6 → Solisia Landing, 3 → Sealed Fissure, 4 → Silent Crag, 4 → Dimmr Deep.
+//
 // DEFAULT_PAINT_STROKES is empty - the 552 strokes from that export (3232
 // points across blur/200, fade/200, blur/113) were baked directly into
 // Solaris_3's master image and its tile pyramid was re-sliced from the
@@ -520,10 +528,10 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-moc4qxo6-3zd', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3252, y: 2541, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-moc4rrm6-1qz', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3246, y: 2947, floor: -5, zoneId: 'overlay-lahai-roi-mo6gpzuw', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3ec6ro-53n', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: -920, y: 6904, label: '', locked: true, zoneId: 'xuanfang-hold', floor: 0, inTree: true },
-  { id: 'icon-mu3ee5ah-5vb', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3434, y: 4113, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
-  { id: 'icon-mu3eg5i2-4vh', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2863, y: 4042, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
-  { id: 'icon-mu3ei5x4-yx', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2780, y: 3820, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
-  { id: 'icon-mu3ej40r-3mz', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3085, y: 3661, label: '', locked: true, zoneId: 'overlay-dimmr-plains-mu1p74j8', floor: -6, inTree: true },
+  { id: 'icon-mu3ee5ah-5vb', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3434, y: 4113, label: '', locked: true, zoneId: 'solisia-landing', floor: -6, inTree: true },
+  { id: 'icon-mu3eg5i2-4vh', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2863, y: 4042, label: '', locked: true, zoneId: 'sealed-fissure', floor: -6, inTree: true },
+  { id: 'icon-mu3ei5x4-yx', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 2780, y: 3820, label: '', locked: true, zoneId: 'silent-crag', floor: -6, inTree: true },
+  { id: 'icon-mu3ej40r-3mz', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: 3085, y: 3661, label: '', locked: true, zoneId: 'dimmr-deep', floor: -6, inTree: true },
   { id: 'icon-mu3elsu4-18w', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: -701, y: 7313, label: '', locked: true, floor: 0, zoneId: 'eastern-xuan-peaks', inTree: true },
   { id: 'icon-mu3empfa-4t1', kind: 'resonance-nexus', category: 'Resonance', subcategory: 'Nexus', x: -1412, y: 7259, label: '', locked: true, zoneId: 'eastern-fang-peaks', floor: 0, inTree: true },
   { id: 'icon-mu3snwlg-1od', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3732, y: 6927, floor: 0, zoneId: 'norfall-barrens', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
@@ -648,19 +656,19 @@ export const DEFAULT_ICON_DRAFTS = [
   { id: 'icon-mu3vzx6c-1ei', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 10547, y: 15604, floor: 0, zoneId: 'rinascita-sub-2', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3w06vp-3h8', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 10480, y: 15508, floor: 0, zoneId: 'rinascita-sub-2', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3w0iwf-4gw', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 10596, y: 15294, floor: 0, zoneId: 'rinascita-sub-2', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w35uv-2j1', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3311, y: 4152, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w3m27-3kn', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3259, y: 4075, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w3z0x-6r8', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3173, y: 4162, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w4el0-6zp', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3090, y: 4184, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w4xq7-3z4', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3067, y: 4066, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w5u3g-ss', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2794, y: 4136, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w6gv5-25m', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2763, y: 4069, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w6y8o-511', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2840, y: 3767, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w77m0-5ie', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2770, y: 3719, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w7r12-2c9', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2963, y: 3580, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w82xs-2cv', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3161, y: 3589, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w8nlf-10u', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3137, y: 3880, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
-  { id: 'icon-mu3w9d4j-6ks', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3120, y: 3777, floor: -6, zoneId: 'overlay-dimmr-plains-mu1p74j8', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w35uv-2j1', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3311, y: 4152, floor: -6, zoneId: 'solisia-landing', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w3m27-3kn', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3259, y: 4075, floor: -6, zoneId: 'solisia-landing', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w3z0x-6r8', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3173, y: 4162, floor: -6, zoneId: 'solisia-landing', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w4el0-6zp', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3090, y: 4184, floor: -6, zoneId: 'solisia-landing', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w4xq7-3z4', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3067, y: 4066, floor: -6, zoneId: 'solisia-landing', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w5u3g-ss', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2794, y: 4136, floor: -6, zoneId: 'sealed-fissure', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w6gv5-25m', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2763, y: 4069, floor: -6, zoneId: 'sealed-fissure', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w6y8o-511', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2840, y: 3767, floor: -6, zoneId: 'silent-crag', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w77m0-5ie', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2770, y: 3719, floor: -6, zoneId: 'silent-crag', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w7r12-2c9', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 2963, y: 3580, floor: -6, zoneId: 'silent-crag', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w82xs-2cv', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3161, y: 3589, floor: -6, zoneId: 'dimmr-deep', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w8nlf-10u', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3137, y: 3880, floor: -6, zoneId: 'dimmr-deep', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
+  { id: 'icon-mu3w9d4j-6ks', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 3120, y: 3777, floor: -6, zoneId: 'dimmr-deep', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3wfnmj-6a8', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 9093, y: 11017, floor: -2, zoneId: 'overlay-vault-underground-mo8pvh7x', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3wg16r-7g1', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 8895, y: 10935, floor: -2, zoneId: 'overlay-vault-underground-mo8pvh7x', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
   { id: 'icon-mu3wisds-1sd', kind: 'resonance-beacon', category: 'Resonance', subcategory: 'Beacon', x: 9454, y: 13104, floor: 1, zoneId: 'overlay-avinoleum-mo7c3krn', label: '', locked: true, inTree: true, scale: 1, rotation: 0, opacity: 1 },
