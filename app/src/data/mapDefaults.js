@@ -103,6 +103,16 @@ export const DEFAULT_ZONE_DRAFTS = [
     level: 1,
   },
   {
+    id: 'the-black-shores',
+    name: 'Black Shores Archipelago',
+    polygon: [[5312, 8345], [5320, 8245], [5392, 8129], [5381, 8009], [5323, 7944], [5269, 7805], [5153, 7758], [5060, 7831], [4954, 7922], [4906, 8028], [4895, 8143], [4940, 8267], [5032, 8347], [5165, 8406]],
+    parentId: 'the-black-shores-2',
+    level: 2,
+    // Direct user request: keep its Area outline rendering despite being L2 —
+    // MapTab.jsx's Area effect draws this via the opt-in extraAreaZones list.
+    showArea: true,
+  },
+  {
     id: 'overlay-tethys-deep-mo6i9a2z',
     name: 'Tethy\'s Deep',
     polygon: [[5169, 8709], [5365, 8531], [5506, 8205], [5490, 7870], [5099, 7679], [4618, 7674], [4231, 7860], [4078, 8162], [4223, 8394], [4459, 8553], [4696, 8558], [4903, 8489]],
@@ -116,16 +126,6 @@ export const DEFAULT_ZONE_DRAFTS = [
     polygon: [[3816, 8416], [3840, 7960], [3920, 7440], [4248, 7240], [4544, 7104], [4616, 6688], [4312, 6368], [3752, 6272], [3304, 6120], [2760, 6016], [2152, 6112], [1800, 6480], [1840, 6944], [1536, 7176], [1336, 7592], [1296, 8104], [1504, 8528], [1792, 8856], [2168, 9272], [2568, 9632], [3104, 9824], [3464, 9872], [3936, 9848], [4328, 9944], [4816, 10048], [5192, 9976], [5456, 9784], [5544, 9368], [5360, 9032], [4936, 8856], [4552, 8856], [4184, 8636]],
     parentId: 'huanglong',
     level: 2,
-  },
-  {
-    id: 'the-black-shores',
-    name: 'Black Shores Archipelago',
-    polygon: [[5312, 8345], [5320, 8245], [5392, 8129], [5381, 8009], [5323, 7944], [5269, 7805], [5153, 7758], [5060, 7831], [4954, 7922], [4906, 8028], [4895, 8143], [4940, 8267], [5032, 8347], [5165, 8406]],
-    parentId: 'the-black-shores-2',
-    level: 2,
-    // Direct user request: keep its Area outline rendering despite being L2 —
-    // MapTab.jsx's Area effect draws this via the opt-in extraAreaZones list.
-    showArea: true,
   },
   {
     id: 'the-black-shores-2',
