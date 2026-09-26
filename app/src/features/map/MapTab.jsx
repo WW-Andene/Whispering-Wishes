@@ -399,6 +399,17 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       });
   }, [drafts]);
 
+  // Zones below L3 that should still draw their Area outline — direct user
+  // request for Black Shores Archipelago specifically after it moved to L2 in
+  // the reparenting cleanup (its outline stopped rendering since the Area
+  // effect below only ever drew l3Zones). Opt-in per zone via a `showArea`
+  // flag rather than widening the L3 filter, so this doesn't turn on every
+  // L2 zone's outline map-wide. No centroid needed — only the Area effect
+  // (not the Names effect) reads this list.
+  const extraAreaZones = useMemo(() => {
+    return drafts.filter(z => z.showArea && z.level !== 3 && Array.isArray(z.polygon) && z.polygon.length >= 3);
+  }, [drafts]);
+
   // Walk the zone + its ancestor chain until we find one linked to a placed
   // sub-map, and return that placement's floor. Lets zones drawn inside a
   // sub-map inherit its floor without needing their own overlayId.
@@ -1498,7 +1509,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       zoneAreaLayerRef.current = null;
     }
     const areaOn = !iconFiltersOff.has('Zone') && !iconFiltersOff.has('Zone/Area');
-    if (!areaOn || l3Zones.length === 0) return;
+    if (!areaOn || (l3Zones.length === 0 && extraAreaZones.length === 0)) return;
     if (!map.getPane('zoneAreaPane')) {
       map.createPane('zoneAreaPane', map.getContainer());
       // Above the sub-map overlay canvas (400) so an L3 zone nested inside a
@@ -1521,7 +1532,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
     // rendering while standing on an unrelated sub-map floor like
     // Fabricatorium of the Deep, since it never had its own overlayId to
     // resolve a floor from and so matched every viewFloor.
-    l3Zones
+    [...l3Zones, ...extraAreaZones]
       .filter(z => (resolveZoneFloor(z) ?? 0) === viewFloor)
       .forEach(z => {
         const latLngs = roundPolygonCorners(z.polygon).map(([x, y]) => map.unproject([x, y], NATIVE_ZOOM));
@@ -1539,7 +1550,7 @@ export default function MapTab({ navPadding = 80, headerPadding = 88 }) {
       });
     group.addTo(map);
     zoneAreaLayerRef.current = group;
-  }, [l3Zones, mapReady, iconFiltersOff, pulseZoneId, viewFloor, resolveZoneFloor]);
+  }, [l3Zones, extraAreaZones, mapReady, iconFiltersOff, pulseZoneId, viewFloor, resolveZoneFloor]);
 
   const zoneNamesLayerRef = useRef(null);
   useEffect(() => {

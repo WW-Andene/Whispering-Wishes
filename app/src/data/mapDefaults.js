@@ -123,6 +123,9 @@ export const DEFAULT_ZONE_DRAFTS = [
     polygon: [[5312, 8345], [5320, 8245], [5392, 8129], [5381, 8009], [5323, 7944], [5269, 7805], [5153, 7758], [5060, 7831], [4954, 7922], [4906, 8028], [4895, 8143], [4940, 8267], [5032, 8347], [5165, 8406]],
     parentId: 'the-black-shores-2',
     level: 2,
+    // Direct user request: keep its Area outline rendering despite being L2 —
+    // MapTab.jsx's Area effect draws this via the opt-in extraAreaZones list.
+    showArea: true,
   },
   {
     id: 'the-black-shores-2',
